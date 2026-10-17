@@ -111,6 +111,7 @@ private:
     void name_patch(lv_obj_t*);
     void confirm_replace(lv_obj_t*);
     void cv_connect(lv_obj_t*);
+    void connect_modules(InstanceId from, InstanceId to);
     void commit_name();
     void replace_patch(Command, Page origin);
     void confirm_action(lv_obj_t*);
@@ -264,8 +265,13 @@ private:
     int start_x_ = 0, start_y_ = 0;
     int pan_x_ = 0, pan_y_ = 0;
     bool dragging_ = false, panning_ = false, long_pressed_ = false;
-    // Control (CV) cables: one connector per module side, the port is chosen from a list.
-    bool cable_cv_ = false;
+    InstanceId pressed_module_ = 0, held_module_ = 0, second_module_ = 0;
+    lv_indev_t *pressed_indev_ = nullptr, *held_indev_ = nullptr, *second_indev_ = nullptr;
+    lv_point_t second_press_{};
+    std::uint32_t second_press_ms_ = 0;
+    bool hold_connected_ = false;
+    // Control (CV) cables and hold-to-connect port choices: the port is chosen from a list when several exist.
+    bool cable_cv_ = false, cv_only_ = false;
     InstanceId cv_from_ = 0, cv_to_ = 0;
     std::string cv_output_;
     std::size_t cv_page_ = 0;

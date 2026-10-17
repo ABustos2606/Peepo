@@ -1185,6 +1185,73 @@ int main(int argc, char** argv) {
             click(app, 70, 456);
             check(!live.watched, "leaving Euclidean did not stop monitoring");
         }
+        // Hold a module and then hold another while still holding the first: direct connect or port selection screen.
+        {
+            static lv_point_t pointer2{};
+            static bool pressed2 = false;
+            auto* indev2 = lv_indev_create();
+            lv_indev_set_type(indev2, LV_INDEV_TYPE_POINTER);
+            lv_indev_set_read_cb(indev2, [](lv_indev_t*, lv_indev_data_t* d) {
+                d->point = pointer2; d->state = pressed2 ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
+            });
+            lv_indev_set_display(indev2, display);
+            peepo::ModuleDefinition gain_def{"urn:peepo:test:gain", "Mono utility", "Utility", "Gain", 0x9aa4b2,
+                {{"in", peepo::Direction::Input}, {"out", peepo::Direction::Output}}, {}};
+            peepo::ModuleDefinition twist_def{"urn:peepo:test:twist", "Twist Wavefolder", "Distortion", "Wavefolder", 0xe57373,
+                {{"in", peepo::Direction::Input}, {"sym_mod", peepo::Direction::Input},
+                 {"out", peepo::Direction::Output}, {"aux", peepo::Direction::Output}}, {}};
+            peepo::register_definitions({gain_def, twist_def});
+            peepo::SimulatedEngine hold_engine;
+            auto g = peepo::empty_graph("Hold connect");
+            g.connections.clear();
+            g.modules.push_back({3, gain_def.uri, gain_def.name, 184, 72, false, false, gain_def.parameters, gain_def.ports});
+            g.modules.push_back({4, twist_def.uri, twist_def.name, 344, 72, false, false, twist_def.parameters, twist_def.ports});
+            g.modules.push_back({5, twist_def.uri, twist_def.name, 504, 72, false, false, twist_def.parameters, twist_def.ports});
+            g.modules.push_back({6, gain_def.uri, gain_def.name, 184, 216, false, false, gain_def.parameters, gain_def.ports});
+            hold_engine.submit(peepo::LoadGraph{g}); hold_engine.advance(100);
+            peepo::Application app(hold_engine); step(app);
+            const auto has_conn = [&](const peepo::Connection& c) {
+                const auto& list = app.graph().connections;
+                return std::find(list.begin(), list.end(), c) != list.end();
+            };
+            // 1) Multi-pointer hold: hold Mono utility #3 (1 output) and then hold Mono utility #6 (1 input) -> connects immediately.
+            pointer = {232, 164}; pressed = true; step(app, 480);
+            pointer2 = {232, 308}; pressed2 = true; step(app, 480);
+            pressed = false; pressed2 = false; step(app, 256);
+            check(app.page() == peepo::Page::Patch && has_conn({3, 6, "out", "in"}), "holding 1-output then 1-input module did not connect immediately");
+            // 2) Single-pointer hold-then-hold: hold Mono utility #3 (1 output) and then hold Twist Wavefolder #4 (2 audio inputs) -> opens port screen for inputs.
+            pointer = {232, 164}; pressed = true; step(app, 480);
+            pointer = {392, 164}; step(app, 480);
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "which input of Twist") != nullptr &&
+                  exact_label(app.screen(), "IN") != nullptr && exact_label(app.screen(), "SYM_MOD") != nullptr,
+                  "holding 1-output then 2-input module did not open input selection screen");
+            pressed = false; step(app);
+            check(app.page() == peepo::Page::CvConnect, "releasing hold dismissed port selection screen prematurely");
+            click(app, 592, 160); step(app, 256);
+            check(app.page() == peepo::Page::Patch && has_conn({3, 4, "out", "sym_mod"}), "choosing second input did not connect to sym_mod");
+            // 3) Hold Twist Wavefolder #4 (2 outputs: out, aux) and then hold Mono utility #6 (1 input: in) -> asks for output, then connects immediately.
+            pointer = {392, 164}; pressed = true; step(app, 480);
+            pointer2 = {232, 308}; pressed2 = true; step(app, 480);
+            pressed = false; pressed2 = false; step(app);
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "Which output of Twist Wavefolder?") != nullptr &&
+                  exact_label(app.screen(), "OUT") != nullptr && exact_label(app.screen(), "AUX") != nullptr,
+                  "holding 2-output then 1-input module did not open output selection screen");
+            click(app, 592, 160); step(app, 256);
+            check(app.page() == peepo::Page::Patch && has_conn({4, 6, "aux", "in"}), "choosing output when target has 1 input did not connect immediately");
+            // 4) Hold Twist Wavefolder #4 (2 outputs) and then hold Twist Wavefolder #5 (2 inputs) -> asks for output, then asks for input.
+            pointer = {392, 164}; pressed = true; step(app, 480);
+            pointer2 = {552, 164}; pressed2 = true; step(app, 480);
+            pressed = false; pressed2 = false; step(app);
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "Which output of Twist Wavefolder?") != nullptr,
+                  "holding 2-output then 2-input module did not ask for output first");
+            click(app, 592, 160);
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "which input of Twist") != nullptr,
+                  "choosing output did not advance to input selection when target has 2 inputs");
+            click(app, 592, 160); step(app, 256);
+            check(app.page() == peepo::Page::Patch && has_conn({4, 5, "aux", "sym_mod"}),
+                  "choosing input did not connect the two multi-port modules");
+            lv_indev_delete(indev2);
+        }
         // Release the headless devices before the global runtime.
         lv_indev_delete(indev);
         lv_indev_delete(keypad);

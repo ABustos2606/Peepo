@@ -133,6 +133,28 @@ std::vector<const Port*> cv_ports(const Module& m, Direction direction) {
     for (const auto& p : module_ports(m)) if (p.type == PortType::Cv && p.direction == direction) found.push_back(&p);
     return found;
 }
+std::vector<const Port*> connectable_ports(const Module& from, const Module& to, const std::string& output_symbol, bool cv_only) {
+    std::vector<const Port*> found;
+    if (output_symbol.empty()) {
+        for (const auto& out : module_ports(from)) {
+            if (out.direction != Direction::Output) continue;
+            if (out.type != PortType::Cv && (cv_only || out.type != PortType::Audio)) continue;
+            const bool has_target = std::any_of(module_ports(to).begin(), module_ports(to).end(), [&](const Port& in) {
+                return in.direction == Direction::Input && in.type == out.type;
+            });
+            if (has_target) found.push_back(&out);
+        }
+    } else {
+        const auto& from_ports = module_ports(from);
+        const auto out = std::find_if(from_ports.begin(), from_ports.end(), [&](const Port& p) {
+            return p.direction == Direction::Output && p.symbol == output_symbol;
+        });
+        if (out == from_ports.end()) return found;
+        for (const auto& in : module_ports(to))
+            if (in.direction == Direction::Input && in.type == out->type) found.push_back(&in);
+    }
+    return found;
+}
 struct Jack { int centre, height; };
 std::optional<Jack> jack(const Module& m, const std::string& symbol, Direction direction, unsigned channel = 0) {
     int count = 0, index = -1;
@@ -372,10 +394,19 @@ void Application::tick(unsigned ms) {
     }
     // Rebuilding during a held key can deliver its release to a new button.
     // Keep both pointer and keypad targets alive until their gesture ends.
-    const bool pressed = (pointer_input_ && lv_indev_get_state(pointer_input_) == LV_INDEV_STATE_PRESSED) ||
+    bool pressed = (pointer_input_ && lv_indev_get_state(pointer_input_) == LV_INDEV_STATE_PRESSED) ||
         (keypad_input_ && lv_indev_get_state(keypad_input_) == LV_INDEV_STATE_PRESSED);
+    for (auto* indev = lv_indev_get_next(nullptr); indev && !pressed; indev = lv_indev_get_next(indev))
+        if (const auto type = lv_indev_get_type(indev); (type == LV_INDEV_TYPE_POINTER || type == LV_INDEV_TYPE_KEYPAD) && lv_indev_get_state(indev) == LV_INDEV_STATE_PRESSED)
+            pressed = true;
+    if (!pressed) {
+        pressed_module_ = held_module_ = second_module_ = 0;
+        pressed_indev_ = held_indev_ = second_indev_ = nullptr;
+        second_press_ms_ = 0;
+        hold_connected_ = false;
+    }
     if (stream_ && !stream_->in_flight && !pressed) stream_.reset();
-    if (rebuild_ && !dragging_ && !panning_ && !cable_source_ && !pressed) rebuild();
+    if (rebuild_ && !dragging_ && !panning_ && !cable_source_ && (!pressed || hold_connected_)) rebuild();
     update_metrics();
     if ((network_age_ += ms) >= 2000) { network_age_ = 0; update_network(); }
     if (system_ && (system_age_ += ms) >= 2000) { system_age_ = 0; update_system(); }
@@ -507,6 +538,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
         auto* indev = lv_indev_active(); if (!indev) return;
         lv_point_t point; lv_indev_get_point(indev, &point);
         if (code == LV_EVENT_PRESSED) {
+            if (held_module_ || pressed_module_) return;
             press_ = point; start_x_ = pan_x_; start_y_ = pan_y_; panning_ = true;
         } else if (code == LV_EVENT_PRESSING && panning_) {
             pan_x_ = std::clamp(start_x_ + press_.x - point.x, 0, canvas_width - 800);
@@ -531,6 +563,16 @@ void Application::handle(Binding& b, lv_event_t* e) {
         const auto* m = find_module(graph_, b.id);
         if (!m) return;
         if (code == LV_EVENT_PRESSED) {
+            if (b.action == Action::Module) {
+                const bool first_held = held_module_ && held_module_ != b.id && (!held_indev_ || lv_indev_get_state(held_indev_) == LV_INDEV_STATE_PRESSED);
+                const bool first_pressed = pressed_module_ && pressed_module_ != b.id && pressed_indev_ && pressed_indev_ != indev && lv_indev_get_state(pressed_indev_) == LV_INDEV_STATE_PRESSED;
+                if (first_held || first_pressed) {
+                    second_module_ = b.id; second_indev_ = indev; second_press_ = point; second_press_ms_ = lv_tick_get();
+                    return;
+                }
+                pressed_module_ = b.id; pressed_indev_ = indev;
+                held_module_ = second_module_ = 0; held_indev_ = second_indev_ = nullptr; second_press_ms_ = 0;
+            }
             press_ = point; start_x_ = m->x; start_y_ = m->y; dragging_ = false; long_pressed_ = false;
             if (b.action == Action::Port && (b.number & 1)) {
                 cable_source_ = b.id; cable_port_ = b.symbol; cable_cv_ = (b.number & 4) != 0;
@@ -544,12 +586,40 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 else preview_points_[0] = {static_cast<lv_value_precise_t>(m->x + module_width - pan_x_), static_cast<lv_value_precise_t>(m->y + (from ? from->centre : module_height / 2) - pan_y_)};
                 indicate_targets(true);
             }
-        } else if (code == LV_EVENT_LONG_PRESSED && b.action == Action::Module && !m->fixed && !dragging_) {
-            long_pressed_ = true; selected_ = b.id; navigate(Page::ModuleActions);
+        } else if (code == LV_EVENT_LONG_PRESSED && b.action == Action::Module && !dragging_) {
+            const InstanceId first = held_module_ && held_module_ != b.id ? held_module_ : (pressed_module_ && pressed_module_ != b.id ? pressed_module_ : 0);
+            auto* first_indev = first == held_module_ ? held_indev_ : pressed_indev_;
+            if (first && (!first_indev || lv_indev_get_state(first_indev) == LV_INDEV_STATE_PRESSED)) {
+                connect_modules(first, b.id);
+                return;
+            }
+            long_pressed_ = true; held_module_ = b.id; held_indev_ = indev;
+            if (!m->fixed && (!second_module_ || !second_indev_ || lv_indev_get_state(second_indev_) != LV_INDEV_STATE_PRESSED)) {
+                selected_ = b.id; navigate(Page::ModuleActions);
+            }
         } else if (code == LV_EVENT_PRESSING) {
-            if (b.action == Action::Module && !m->fixed && !long_pressed_) {
+            if (b.action == Action::Module && indev == second_indev_ && second_module_ == b.id && held_module_ != b.id) return;
+            if (b.action == Action::Module && long_pressed_ && held_module_ == b.id && !dragging_) {
+                InstanceId under = 0;
+                if (point.x >= 0 && point.x < 800 && point.y >= 72 && point.y < 432) {
+                    const int cx = point.x + pan_x_, cy = point.y - 72 + pan_y_;
+                    for (const auto& item : graph_.modules)
+                        if (item.id != b.id && cx >= item.x && cx < item.x + module_width && cy >= item.y && cy < item.y + module_height) {
+                            under = item.id;
+                            break;
+                        }
+                }
+                if (!under) {
+                    if (second_indev_ == indev) { second_module_ = 0; second_press_ms_ = 0; }
+                } else if (under != second_module_ || second_indev_ != indev) {
+                    second_module_ = under; second_indev_ = indev; second_press_ = point; second_press_ms_ = lv_tick_get();
+                } else if (lv_tick_elaps(second_press_ms_) >= 400) {
+                    connect_modules(b.id, under);
+                    return;
+                }
+            } else if (b.action == Action::Module && !m->fixed && !long_pressed_) {
                 const int dx = point.x - press_.x, dy = point.y - press_.y;
-                if (std::abs(dx) + std::abs(dy) > 8) dragging_ = true;
+                if (std::abs(dx) + std::abs(dy) > 8) { dragging_ = true; pressed_module_ = held_module_ = 0; }
                 if (dragging_) {
                     lv_obj_set_pos(target, std::clamp(start_x_ + dx, module_min_x, module_max_x) - pan_x_,
                         std::clamp(start_y_ + dy, module_min_y, module_max_y) - pan_y_);
@@ -559,6 +629,14 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 sample_cable(preview_, preview_points_, preview_points_[0].x, preview_points_[0].y, point.x, point.y - 72, cable_cv_);
             }
         } else if (code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
+            if (b.action == Action::Module) {
+                if (indev == second_indev_ && second_module_ == b.id && held_module_ != b.id) {
+                    second_module_ = 0; second_indev_ = nullptr; second_press_ms_ = 0;
+                    return;
+                }
+                if (b.id == held_module_) { held_module_ = 0; held_indev_ = nullptr; }
+                if (b.id == pressed_module_) { pressed_module_ = 0; pressed_indev_ = nullptr; }
+            }
             if (cable_source_ && cable_cv_) {
                 // A module can have a dozen control inputs, far too many for its edge.
                 // Drop on its control connector, then choose the ports from a list.
@@ -569,7 +647,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
                             std::abs(point.x + pan_x_ - item.x - module_width / 2) <= 24 && std::abs(point.y - 72 + pan_y_ - item.y - module_height) <= 24) destination = item.id;
                 if (destination && code == LV_EVENT_RELEASED) {
                     const auto outputs = cv_ports(*m, Direction::Output);
-                    cv_from_ = cable_source_; cv_to_ = destination; cv_page_ = 0;
+                    cv_from_ = cable_source_; cv_to_ = destination; cv_page_ = 0; cv_only_ = true;
                     cv_output_ = outputs.size() == 1 ? outputs.front()->symbol : std::string();
                     navigate(Page::CvConnect);
                 } else message("Drop the control cable on the square connector under a module.");
@@ -600,7 +678,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
             }
         } else if (code == LV_EVENT_CLICKED && b.action == Action::Module && !m->fixed) {
             // A completed drag is followed by CLICKED; distinguish it using displacement.
-            if (!long_pressed_ && std::abs(point.x - press_.x) + std::abs(point.y - press_.y) <= 8) {
+            if (!long_pressed_ && !held_module_ && std::abs(point.x - press_.x) + std::abs(point.y - press_.y) <= 8) {
                 open_module(b.id);
             }
         }
@@ -829,8 +907,17 @@ void Application::handle(Binding& b, lv_event_t* e) {
         break;
     case Action::CvPage: cv_page_ = static_cast<std::size_t>(b.number); rebuild_ = true; break;
     case Action::CvChoice:
-        if (cv_output_.empty()) { cv_output_ = b.symbol; cv_page_ = 0; rebuild_ = true; }
-        else { submit(Connect{{cv_from_, cv_to_, cv_output_, b.symbol}}); navigate(Page::Patch); }
+        if (cv_output_.empty()) {
+            const auto* from = find_module(graph_, cv_from_);
+            const auto* to = find_module(graph_, cv_to_);
+            const auto inputs = from && to ? connectable_ports(*from, *to, b.symbol, cv_only_) : std::vector<const Port*>{};
+            if (inputs.size() == 1) {
+                submit(Connect{{cv_from_, cv_to_, b.symbol, inputs.front()->symbol}});
+                navigate(Page::Patch);
+            } else {
+                cv_output_ = b.symbol; cv_page_ = 0; rebuild_ = true;
+            }
+        } else { submit(Connect{{cv_from_, cv_to_, cv_output_, b.symbol}}); navigate(Page::Patch); }
         break;
     default: break;
     }
@@ -985,7 +1072,13 @@ void Application::rebuild() {
     case Page::NamePatch: section = "PATCHES"; title = saving_as_ ? "Save as a new patch" : renaming_ ? "Rename patch" : "New patch"; break;
     case Page::ConfirmReplace: section = "PATCHES"; title = "Replace current patch?"; break;
     case Page::ConfirmAction: section = "CONFIRM"; title = confirmation_.title; break;
-    case Page::CvConnect: section = "CABLE"; title = "Control cable"; break;
+    case Page::CvConnect: {
+        section = "CABLE";
+        const auto* from = find_module(graph_, cv_from_); const auto* to = find_module(graph_, cv_to_);
+        const auto ports = from && to ? connectable_ports(*from, *to, cv_output_, cv_only_) : std::vector<const Port*>{};
+        title = cv_only_ || std::all_of(ports.begin(), ports.end(), [](const Port* p) { return p->type == PortType::Cv; }) ? "Control cable" : "Connect cable";
+        break;
+    }
     case Page::Controls: section = "CONTROLS"; title = "Controls"; break;
     case Page::AssignPicker:
         section = "CONTROLS"; title = "Assign " + control_label(editing_control_);
@@ -2055,7 +2148,7 @@ void Application::cv_connect(lv_obj_t* parent) {
     const auto* from = find_module(graph_, cv_from_); const auto* to = find_module(graph_, cv_to_);
     if (!from || !to) { label(parent, "Module no longer exists", 24, 24); return; }
     const bool choosing_output = cv_output_.empty();
-    const auto ports = cv_ports(choosing_output ? *from : *to, choosing_output ? Direction::Output : Direction::Input);
+    const auto ports = connectable_ports(*from, *to, cv_output_, cv_only_);
     auto* prompt = label(parent, choosing_output ? "Which output of " + from->name + "?"
                                                  : from->name + " / " + cv_output_ + "  >  which input of " + to->name + "?", 24, 14, 560, text, &peepo_bold_20);
     lv_label_set_long_mode(prompt, LV_LABEL_LONG_DOT); lv_obj_set_height(prompt, 26);
@@ -2071,8 +2164,37 @@ void Application::cv_connect(lv_obj_t* parent) {
     for (std::size_t i = cv_page_ * 8; i < std::min(ports.size(), cv_page_ * 8 + 8); ++i) {
         const auto slot = i - cv_page_ * 8;
         auto* choice = button(parent, ports[i]->symbol, 24 + static_cast<int>(slot % 2) * 384, 64 + static_cast<int>(slot / 2) * 68, 368, Action::CvChoice, 0, ports[i]->symbol);
-        lv_obj_set_style_border_color(choice, color(control_ink), 0);
+        lv_obj_set_style_border_color(choice, color(ports[i]->type == PortType::Cv ? control_ink : cable_ink), 0);
     }
+}
+void Application::connect_modules(InstanceId from_id, InstanceId to_id) {
+    const auto* from = find_module(graph_, from_id);
+    const auto* to = find_module(graph_, to_id);
+    pressed_module_ = held_module_ = second_module_ = 0;
+    pressed_indev_ = held_indev_ = second_indev_ = nullptr;
+    second_press_ms_ = 0;
+    long_pressed_ = true;
+    dragging_ = false;
+    hold_connected_ = true;
+    for (auto* indev = lv_indev_get_next(nullptr); indev; indev = lv_indev_get_next(indev))
+        if (lv_indev_get_type(indev) == LV_INDEV_TYPE_POINTER && lv_indev_get_state(indev) == LV_INDEV_STATE_PRESSED)
+            lv_indev_wait_release(indev);
+    if (!from || !to || from_id == to_id) { navigate(Page::Patch); return; }
+    const auto outputs = connectable_ports(*from, *to, {}, false);
+    if (outputs.empty()) {
+        message(from->name + " has no output that can connect to " + to->name + ".");
+        navigate(Page::Patch);
+        return;
+    }
+    const auto inputs = outputs.size() == 1 ? connectable_ports(*from, *to, outputs.front()->symbol, false) : std::vector<const Port*>{};
+    if (outputs.size() == 1 && inputs.size() == 1) {
+        submit(Connect{{from_id, to_id, outputs.front()->symbol, inputs.front()->symbol}});
+        navigate(Page::Patch);
+        return;
+    }
+    cv_from_ = from_id; cv_to_ = to_id; cv_page_ = 0; cv_only_ = false;
+    cv_output_ = outputs.size() == 1 ? outputs.front()->symbol : std::string();
+    navigate(Page::CvConnect);
 }
 void Application::confirm_replace(lv_obj_t* parent) {
     label(parent, "Current edits have not been saved", 24, 44, 752, text, &peepo_bold_24);
