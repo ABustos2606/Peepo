@@ -50,6 +50,11 @@ For each candidate, verify model-path (`atom:Path`/patch) handling, LV2 worker/s
 
 ## Inventory and records — 14 October 2026
 
+**Current inventory, 18 October 2026:** the [complete module list](33-module-list.md)
+contains all 291 selected identities, including all 43 GxPlugins. It shows the
+current Pi availability and touchscreen names. The counts below describe the
+original 14 October selection.
+
 The selected inventory is every plugin identity in Beebo's module map and Poly's public plugin sources, plus the MDA and LV2 example plugins used for development: 249 entries, listed in `config/catalogue/inventory.txt`. The exporter offers only those, so installing a package no longer puts its other plugins in front of the player.
 
 Every entry has a compatibility record following the workflow below, on the PC. The results are in [the compatibility matrix](evidence/compatibility-matrix.md) and explained in [the plugin catalogue](22-plugin-catalogue.md). "Essential MODEP effects" is still an open product choice (question 6 of the [decisions](07-source-audit-and-decisions.md)); the Beebo map stands in for it until one is made.

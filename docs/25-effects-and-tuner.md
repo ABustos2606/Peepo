@@ -1,5 +1,9 @@
 # Effects and the instrument tuner
 
+**Full reference:** [complete module list](33-module-list.md), grouped by category
+with every module's description, connections and availability. The [GxPlugins
+table](32-gxplugins.md#all-43-gxplugins) lists all 43 installed Gx effects.
+
 The Add list contains upstream LV2 modules. Addable means the installed
 engine can instantiate a module and the interface can control and connect
 it. It does not mean every effect has passed guitar listening tests on this
@@ -10,8 +14,9 @@ Windows without `--engine` is a simulation and makes no sound.
 
 | Group | Purpose | Installed examples |
 | --- | --- | --- |
-| Drive | Saturation, distortion and lo-fi processing | Overdrive, Bandisto, Degrade, Tubewarmth, Sigmoid Booster, downsamplers |
-| Amp | Conventional amplifier simulations | Combo, Bass amp (SVT), Power amp (Cream), Power amp (Supersonic) |
+| Drive | Saturation, distortion and lo-fi processing | Gain, Overdrive, Bandisto, Degrade, Tubewarmth, Sigmoid Booster, SD-1, Guvnor, Bottle Rocket, the Gx fuzzes, downsamplers |
+| Amp | Conventional amplifier simulations | Combo, Bass amp (SVT), Power amp (Cream), Power amp (Supersonic), Blue Amp, Plexi, Epic, Vox MKII, Ultra Cab |
+| Cabinet | Impulse response cabinet simulation | Cabinet mono, mono-to-stereo and stereo; requires an IR file |
 | Dynamics | Controls level, attack and sustain | Compressor mono/stereo, Dynamics, Limiter, MultiBand, Transient, Slow gear |
 | Filter | Shapes frequency content | Parametric EQ mono/stereo, RezFilter, diode ladder, Korg 35 high/low-pass, Oberheim; vocoders need two input signals |
 | Modulation | Motion and signal combination | Chorus, YK Chorus, flanger, vibrato, harmonic tremolo, Stone phaser, rotary speakers, ring modulation, Warps/Twist modes |
@@ -22,21 +27,29 @@ Windows without `--engine` is a simulation and makes no sound.
 | Resonator | Resonating instruments played by input | Rings/Resonator, Resonestor |
 | Sound source | Generates sound | Plaits, noise, TestTone, BeatBox, Tracker |
 | Control | Modulation, gates, triggers and sequences | Grids, Marbles, Tides, LFOs, envelopes, sequencers, clocks, quantizer, envelope follower |
-| Utility | Routing, level, arithmetic and analysis | Gain, mixers, VCAs, converters, Tuner |
+| Utility | Routing, level, arithmetic and analysis | Mixers, VCAs, converters, Tuner |
 
 `(CV)` variants expose modulation connections; mono/stereo variants have
 different channel layouts. These are functional differences.
 
-NAM and cabinet/IR reverbs are installed but need file selection, which is
-still pending. MIDI-played instruments need MIDI routing. Clouds Beat Repeat,
+NAM and cabinet/IR reverbs have model and impulse response selectors; see
+[file handling](29-parameters-files-tempo.md#model-and-ir-files-p83). The x42 IR
+Convolver remains disabled for its worker error. MIDI-played instruments need MIDI routing. Clouds Beat Repeat,
 the Poly Moog ladder and Bitcrushed delay are withheld for documented defects.
+Clean Boost (`basic_modular#boost`) is hidden from Add as it is a rigid 2×–4×
+multiplier completely redundant with Gain (`eg-amp`, -90 dB to +24 dB); its
+identity remains recognized for saved patches. For coloured boost, use
+Sigmoid Booster or Tubewarmth.
 Disabled entries explain their reason. Category counts now read `ready /
 total`: ready means addable, not completed listening tests.
 
-The retained Pi export from 14 October, with the revised overlay, has **164
-addable entries**, 20 needing adaptation and 40 unavailable, plus two hidden
-tuner identities. See [the technical catalogue record](22-plugin-catalogue.md)
-for compatibility evidence and its limits.
+The retained Pi export from **18 October 2026**, with the current overlay, has
+**216 addable entries**, 10 needing adaptation, 40 unavailable in the current
+host and 3 hidden identities (two duplicate tuners and redundant clean Boost):
+269 installed identities in total. Another 22 selected reference identities are
+not installed. All **43 GxPlugins** are included. See the [complete module
+list](33-module-list.md) for every entry and the [technical catalogue
+record](22-plugin-catalogue.md) for compatibility evidence and its limits.
 
 ## One tuner, with a tuning display
 

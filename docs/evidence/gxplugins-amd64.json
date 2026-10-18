@@ -1,0 +1,612 @@
+{
+  "date": "2026-10-18",
+  "machine": "x86_64",
+  "sample_rate": 48000,
+  "collection_commit": "19df03e5e1be1a97bf3c60c66a0d3f830c0f35b9",
+  "passed": 43,
+  "total": 43,
+  "entries": [
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_AxisFace_#_AxisFace_",
+      "name": "GxAxisFace",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2199 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored ATTACK: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_CreamMachine_#_CreamMachine_",
+      "name": "GxCreamMachine",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.4305 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_DOP250_#_DOP250_",
+      "name": "GxDOP250",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1102 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_Heathkit_#_Heathkit_",
+      "name": "GxHeathkit",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2990 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored LEVEL: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_KnightFuzz_#_KnightFuzz_",
+      "name": "GxKnightFuzz",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2282 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored INPUT: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_MicroAmp_#_MicroAmp_",
+      "name": "GxMicroAmp",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1877 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_SunFace_#_SunFace_",
+      "name": "GxSunFace",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1319 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_TubeDistortion_#_TubeDistortion_",
+      "name": "GxTubeDistortion",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2811 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored INPUT: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_ampegsvt_#_ampegsvt_",
+      "name": "GxSVT",
+      "live": [
+        "PASS",
+        "2 connectors, 8 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2060 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_bajatubedriver_#_bajatubedriver_",
+      "name": "GxBaJaTubeDriver",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.4009 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_blueamp_#_blueamp_",
+      "name": "GxBlueAmp",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.3007 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored MASTER: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_boobtube_#_boobtube_",
+      "name": "GxBoobTube",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2502 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_bottlerocket_#_bottlerocket_",
+      "name": "GxBottleRocket",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1207 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_clubdrive_#_clubdrive_",
+      "name": "GxClubDrive",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1394 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_epic_#_epic_",
+      "name": "GxEpic",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1793 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_eternity_#_eternity_",
+      "name": "GxEternity",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.3139 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_guvnor_#_guvnor_",
+      "name": "GxGuvnor",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.4630 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hotbox_#_hotbox_",
+      "name": "GxHotBox",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1694 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hyperion_#_hyperion_",
+      "name": "GxHyperion",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.3816 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored INTENSITY: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_liquiddrive_#_liquiddrive_",
+      "name": "GxLiquidDrive",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0794 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_luna_#_luna_",
+      "name": "GxLuna",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2166 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_maestro_fz1b_#_maestro_fz1b_",
+      "name": "GxFz1b",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0963 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BALANCE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_maestro_fz1s_#_maestro_fz1s_",
+      "name": "GxFz1s",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1127 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BALANCE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_plexi_#_plexi_",
+      "name": "GxPlexi",
+      "live": [
+        "PASS",
+        "2 connectors, 6 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1234 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_quack_#_quack_",
+      "name": "GxQuack",
+      "live": [
+        "PASS",
+        "2 connectors, 8 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0966 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DEPTH: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_saturate_#_saturate_",
+      "name": "GxSaturator",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1358 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored INTENSITY: set 4.33, read back 4.33",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sd1sim_#_sd1sim_",
+      "name": "GxSD1",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0524 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sd2lead_#_sd2lead_",
+      "name": "GxSD2Lead",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0486 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sfp_#_sfp_",
+      "name": "GxSuperFuzz",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1739 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BALANCE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_shakatube_#_shakatube_",
+      "name": "GxShakaTube",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2132 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sloopyblue_#_sloopyblue_",
+      "name": "GxSloopyBlue",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2920 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_slowgear_#_slowgear_",
+      "name": "GxSlowGear",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1768 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DOWNTIME: set 370, read back 370",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_supersonic_#_supersonic_",
+      "name": "GxSupersonic",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1996 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_timray_#_timray_",
+      "name": "GxTimRay",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1823 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_tonemachine_#_tonemachine_",
+      "name": "GxToneMachine",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1787 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored SUSTAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_ultracab_#_ultracab_",
+      "name": "GxUltraCab",
+      "live": [
+        "PASS",
+        "4 connectors, 7 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2992 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_uvox_#_uvox_",
+      "name": "GxUVox720k",
+      "live": [
+        "PASS",
+        "2 connectors, 7 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2833 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_valvecaster_#_valvecaster_",
+      "name": "GxValveCaster",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.3656 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored GAIN: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vfm_#_vfm_",
+      "name": "GxVintageFuzzMaster",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.5074 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored INTENSITY: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vmk2d_#_vmk2d_",
+      "name": "GxVMK2",
+      "live": [
+        "PASS",
+        "2 connectors, 10 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0666 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_voodoo_#_voodoo_",
+      "name": "GxVoodooFuzz",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 1.0806 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored ATTACK: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_voxbass_#_voxbass_",
+      "name": "GxVBassPreAmp",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1383 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BASS: set 0.37, read back 0.37",
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vstb_#_vstb_",
+      "name": "GxSuppaToneBender",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0357 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored FUZZ: set 0.37, read back 0.37",
+      "passed": true
+    }
+  ]
+}

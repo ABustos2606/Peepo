@@ -36,6 +36,22 @@ Both fonts were downloaded on 15 October 2026. The OFL allows bundling the fonts
 
 Apply the same provenance/notice process to each selected LV2 plugin. Images, presets, NAM models and cabinet impulse responses need their own provenance and applicable terms.
 
+## GxPlugins collection
+
+Since 18 October 2026 Peepo builds all 43 plugins in brummer10's
+[GxPlugins.lv2](https://github.com/brummer10/GxPlugins.lv2). Exact repository
+URLs and commits are recorded in [the manifest](config/catalogue/gxplugins.json).
+The four previously installed revisions are retained. No upstream source is
+modified; the DSP-only `mod` target receives architecture flags through make.
+
+The build packages the exact Git source archives (including all file-specific
+notices), archive checksums, manifest and rebuild script in
+`share/peepo/sources/gxplugins`, plus root notices in
+`share/peepo/licenses/gxplugins`. Those directories travel with the Pi package.
+Keep the grants in the actual sources and license files: some MOD metadata
+declares ISC while the plugin implementation contains GPL notices. See
+[the integration record](docs/32-gxplugins.md).
+
 ## Implementation and release requirements
 
 - Keep original copyright, license and exception notices with reused source, including modifications. Identify changed files and retain their applicable licenses.

@@ -76,6 +76,8 @@ SOURCES = {"tap-": "moddevices/tap-lv2", "stone-phaser": "jpcima/stone-phaser", 
            "stuck": "ssj71/infamousPlugins", "mod-cv": "moddevices/mod-cv-plugins", "gx_ampegsvt": "brummer10/GxSVT.lv2",
            "gx_slowgear": "brummer10/GxSlowGear.lv2", "gx_supersonic": "brummer10/GxSuperSonic.lv2",
            "gx_CreamMachine": "brummer10/GxCreamMachine.lv2"}
+GX_SOURCES = {p["uri"]: "brummer10/" + p["repo"] for p in json.load(open(
+    os.path.join(ROOT, "config", "catalogue", "gxplugins.json"), encoding="utf-8"))["plugins"]}
 MORPH = "http://lv2plug.in/ns/ext/morph#MorphPort"
 
 
@@ -147,6 +149,8 @@ def binary_facts(path):
 
 
 def origin_of(uri, bundle, data_sources):
+    if uri in GX_SOURCES:
+        return GX_SOURCES[uri]
     if uri in data_sources:
         return "Poly: " + ", ".join(data_sources[uri])
     path = bundle.replace("file://", "")
@@ -412,4 +416,5 @@ def main():
     print("==== %s" % ", ".join("%s %d" % kv for kv in sorted(counts.items())))
 
 
-main()
+if __name__ == "__main__":
+    main()

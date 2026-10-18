@@ -1,0 +1,437 @@
+{
+  "collection": "https://github.com/brummer10/GxPlugins.lv2",
+  "collection_commit": "19df03e5e1be1a97bf3c60c66a0d3f830c0f35b9",
+  "note": "The four existing Peepo plugin revisions are retained; the other 39 use the collection gitlinks. File-specific source licenses apply; MOD metadata alone is not a license inventory.",
+  "plugins": [
+    {
+      "repo": "GxAxisFace.lv2",
+      "url": "https://github.com/brummer10/GxAxisFace.lv2",
+      "commit": "3eadc9f0a0eea423571425f4225bc7589ac97ef7",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_AxisFace_#_AxisFace_",
+      "name": "Axis Face",
+      "category": "Drive",
+      "description": "Based on the Axis Face Silicon fuzz.",
+      "bundle": "gx_AxisFace.lv2"
+    },
+    {
+      "repo": "GxBaJaTubeDriver.lv2",
+      "url": "https://github.com/brummer10/GxBaJaTubeDriver.lv2",
+      "commit": "372cbd6201db0df2518fe473430bd495094b6991",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_bajatubedriver_#_bajatubedriver_",
+      "name": "Baja Tube Driver",
+      "category": "Drive",
+      "description": "Based on the BaJaTubeDriver.",
+      "bundle": "gx_bajatubedriver.lv2"
+    },
+    {
+      "repo": "GxBlueAmp.lv2",
+      "url": "https://github.com/brummer10/GxBlueAmp.lv2",
+      "commit": "43a5f7e3e38217f3a264c6770958e318b1b20edc",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_blueamp_#_blueamp_",
+      "name": "Blue Amp",
+      "category": "Amp",
+      "description": "Single-ended amp inspired by late 1950s Fender Princeton and Champ designs.",
+      "bundle": "gx_blueamp.lv2"
+    },
+    {
+      "repo": "GxBoobTube.lv2",
+      "url": "https://github.com/brummer10/GxBoobTube.lv2",
+      "commit": "c00c2bae7bab4352630989a97746a637ded9fb01",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_boobtube_#_boobtube_",
+      "name": "Boob Tube",
+      "category": "Drive",
+      "description": "Based on the Boob Tube.",
+      "bundle": "gx_boobtube.lv2"
+    },
+    {
+      "repo": "GxBottleRocket.lv2",
+      "url": "https://github.com/brummer10/GxBottleRocket.lv2",
+      "commit": "8ec0082f7622057f5ac3709632f9df65c53870e4",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_bottlerocket_#_bottlerocket_",
+      "name": "Bottle Rocket",
+      "category": "Drive",
+      "description": "Based on the Mesa V1 Bottle Rocket tube overdrive.",
+      "bundle": "gx_bottlerocket.lv2"
+    },
+    {
+      "repo": "GxClubDrive.lv2",
+      "url": "https://github.com/brummer10/GxClubDrive.lv2",
+      "commit": "d03bc5b3d164f22b30ed168e2cd5463b2f183ae8",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_clubdrive_#_clubdrive_",
+      "name": "Club Drive",
+      "category": "Drive",
+      "description": "Overdrive Pedal Simulation based on a EF86 Pentode Valve Simulation.",
+      "bundle": "gx_clubdrive.lv2"
+    },
+    {
+      "repo": "GxCreamMachine.lv2",
+      "url": "https://github.com/brummer10/GxCreamMachine.lv2",
+      "commit": "66235e6db14956c95b8a2fe82650d83a58609e50",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_CreamMachine_#_CreamMachine_",
+      "name": "Power amp (Cream)",
+      "category": "Amp",
+      "description": "Cream-coloured power amp emulation with bass and treble.",
+      "bundle": "gx_CreamMachine.lv2"
+    },
+    {
+      "repo": "GxDOP250.lv2",
+      "url": "https://github.com/brummer10/GxDOP250.lv2",
+      "commit": "f34e2dcbfb040983de45b215176e578e0c351ebb",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_DOP250_#_DOP250_",
+      "name": "DOP 250",
+      "category": "Drive",
+      "description": "Based on the Analog Man DOD OD-250 Yellow Overdrive.",
+      "bundle": "gx_DOP250.lv2"
+    },
+    {
+      "repo": "GxEpic.lv2",
+      "url": "https://github.com/brummer10/GxEpic.lv2",
+      "commit": "f561f2bbd95da39ad1d70ec1abe7c37b95206c16",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_epic_#_epic_",
+      "name": "Epic",
+      "category": "Amp",
+      "description": "Based on Valve Junior.",
+      "bundle": "gx_epic.lv2"
+    },
+    {
+      "repo": "GxEternity.lv2",
+      "url": "https://github.com/brummer10/GxEternity.lv2",
+      "commit": "31d2b9b55e9d6a5043da7f5e53764135154890cb",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_eternity_#_eternity_",
+      "name": "Eternity",
+      "category": "Drive",
+      "description": "Low compression overdrive pedal.",
+      "bundle": "gx_eternity.lv2"
+    },
+    {
+      "repo": "GxFz1b.lv2",
+      "url": "https://github.com/brummer10/GxFz1b.lv2",
+      "commit": "5a8b4ccba0c41fd3b5ccd4a5f3065a4b4c1f3a7d",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_maestro_fz1b_#_maestro_fz1b_",
+      "name": "Maestro FZ-1B",
+      "category": "Drive",
+      "description": "Based on the Robert Moog-designed Maestro FZ-1B fuzz.",
+      "bundle": "gx_maestro_fz1b.lv2"
+    },
+    {
+      "repo": "GxFz1s.lv2",
+      "url": "https://github.com/brummer10/GxFz1s.lv2",
+      "commit": "1c9b2add1edbf8e514d3e69a2a13e6345d855354",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_maestro_fz1s_#_maestro_fz1s_",
+      "name": "Maestro FZ-1S",
+      "category": "Drive",
+      "description": "Based on the Maestro FZ-1S Super-Fuzz.",
+      "bundle": "gx_maestro_fz1s.lv2"
+    },
+    {
+      "repo": "GxGuvnor.lv2",
+      "url": "https://github.com/brummer10/GxGuvnor.lv2",
+      "commit": "4a38b1c93557af03f64010568b10c4f2e249fde7",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_guvnor_#_guvnor_",
+      "name": "Guvnor",
+      "category": "Drive",
+      "description": "Based on the Marshall \"The Guv'nor\" Overdrive.",
+      "bundle": "gx_guvnor.lv2"
+    },
+    {
+      "repo": "GxHeathkit.lv2",
+      "url": "https://github.com/brummer10/GxHeathkit.lv2",
+      "commit": "54fe442ceaf7429ed3b01d9fe9e3e6ca21ade3cb",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_Heathkit_#_Heathkit_",
+      "name": "Heathkit",
+      "category": "Drive",
+      "description": "Based on the Heathkit TA-28 distortion/booster/fuzz.",
+      "bundle": "gx_Heathkit.lv2"
+    },
+    {
+      "repo": "GxHotBox.lv2",
+      "url": "https://github.com/brummer10/GxHotBox.lv2",
+      "commit": "0af207cb8c55f450fb597072ccbacec91f07787c",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hotbox_#_hotbox_",
+      "name": "Hot Box",
+      "category": "Drive",
+      "description": "Based on the Matchless Hot Box tube overdrive.",
+      "bundle": "gx_hotbox.lv2"
+    },
+    {
+      "repo": "GxHyperion.lv2",
+      "url": "https://github.com/brummer10/GxHyperion.lv2",
+      "commit": "4272a2c23705e1e86bc8f3b6d604caa1e913f3a6",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hyperion_#_hyperion_",
+      "name": "Hyperion",
+      "category": "Drive",
+      "description": "Based on the Devi Ever FX Hyperion fuzz.",
+      "bundle": "gx_hyperion.lv2"
+    },
+    {
+      "repo": "GxKnightFuzz.lv2",
+      "url": "https://github.com/brummer10/GxKnightFuzz.lv2",
+      "commit": "41f1914d7a854b6889b49264c3a0d3746a128038",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_KnightFuzz_#_KnightFuzz_",
+      "name": "Knight Fuzz",
+      "category": "Drive",
+      "description": "Fuzz based on the Basic Audio Knight Fuzz pedal.",
+      "bundle": "gx_KnightFuzz.lv2"
+    },
+    {
+      "repo": "GxLiquidDrive.lv2",
+      "url": "https://github.com/brummer10/GxLiquidDrive.lv2",
+      "commit": "54d5e01abf4aafc764f1aa378dd37fb4eef2d30f",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_liquiddrive_#_liquiddrive_",
+      "name": "Liquid Drive",
+      "category": "Drive",
+      "description": "Based on the Liquid Drive fuzz, a modified Ross Distortion.",
+      "bundle": "gx_liquiddrive.lv2"
+    },
+    {
+      "repo": "GxLuna.lv2",
+      "url": "https://github.com/brummer10/GxLuna.lv2",
+      "commit": "183459c67249d985f8ebd46f6f40ea616f314b84",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_luna_#_luna_",
+      "name": "Luna",
+      "category": "Drive",
+      "description": "Gnarly overdrive pedal simulation.",
+      "bundle": "gx_luna.lv2"
+    },
+    {
+      "repo": "GxMicroAmp.lv2",
+      "url": "https://github.com/brummer10/GxMicroAmp.lv2",
+      "commit": "b291bb42c1a31cd3867c41b1de0ce04d6ead43c2",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_MicroAmp_#_MicroAmp_",
+      "name": "Micro Amp",
+      "category": "Drive",
+      "description": "A simple booster.",
+      "bundle": "gx_MicroAmp.lv2"
+    },
+    {
+      "repo": "GxPlexi.lv2",
+      "url": "https://github.com/brummer10/GxPlexi.lv2",
+      "commit": "ac248e47d0c1922a2c95a61afa660a6878174703",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_plexi_#_plexi_",
+      "name": "Plexi",
+      "category": "Amp",
+      "description": "Plexi power amp simulation.",
+      "bundle": "gx_plexi.lv2"
+    },
+    {
+      "repo": "GxQuack.lv2",
+      "url": "https://github.com/brummer10/GxQuack.lv2",
+      "commit": "a121f4e67b37945cc8e7fbece9fb96738845d466",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_quack_#_quack_",
+      "name": "Quack",
+      "category": "Filter",
+      "description": "Autowah.",
+      "bundle": "gx_quack.lv2"
+    },
+    {
+      "repo": "GxSD1.lv2",
+      "url": "https://github.com/brummer10/GxSD1.lv2",
+      "commit": "3e0fe8c017d97d60593ae8d80c68cf50f909589f",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sd1sim_#_sd1sim_",
+      "name": "SD-1",
+      "category": "Drive",
+      "description": "Based on the Boss SD-1 Super Overdrive.",
+      "bundle": "gx_sd1sim.lv2"
+    },
+    {
+      "repo": "GxSD2Lead.lv2",
+      "url": "https://github.com/brummer10/GxSD2Lead.lv2",
+      "commit": "c6d8fb3b256bc13b0d44989f721b20964adea77e",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sd2lead_#_sd2lead_",
+      "name": "SD-2 Lead",
+      "category": "Drive",
+      "description": "Based on the Boss SD-2 Dual Overdrive.",
+      "bundle": "gx_sd2lead.lv2"
+    },
+    {
+      "repo": "GxSVT.lv2",
+      "url": "https://github.com/brummer10/GxSVT.lv2",
+      "commit": "f69e9235d98cdf5010e7b000bc8a89f271ba95ca",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_ampegsvt_#_ampegsvt_",
+      "name": "Bass amp (SVT)",
+      "category": "Amp",
+      "description": "Classic tube bass amp simulation.",
+      "bundle": "gx_ampegsvt.lv2"
+    },
+    {
+      "repo": "GxSaturator.lv2",
+      "url": "https://github.com/brummer10/GxSaturator.lv2",
+      "commit": "5ab57852cbb78eff32b97f82831388bae3841d71",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_saturate_#_saturate_",
+      "name": "Saturator",
+      "category": "Drive",
+      "description": "Based on the Joe Satriani-specified Vox Satchurator distortion.",
+      "bundle": "gx_saturate.lv2"
+    },
+    {
+      "repo": "GxShakaTube.lv2",
+      "url": "https://github.com/brummer10/GxShakaTube.lv2",
+      "commit": "7361db45c4b36dcc61c5c869180712dd6d53d111",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_shakatube_#_shakatube_",
+      "name": "Shaka Tube",
+      "category": "Drive",
+      "description": "Based on the ShakaTube.",
+      "bundle": "gx_shakatube.lv2"
+    },
+    {
+      "repo": "GxSloopyBlue.lv2",
+      "url": "https://github.com/brummer10/GxSloopyBlue.lv2",
+      "commit": "be7e6c3aa426bbdf0ef97538fa66363e8d91211c",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sloopyblue_#_sloopyblue_",
+      "name": "Sloopy Blue",
+      "category": "Drive",
+      "description": "Overdrive pedal simulation.",
+      "bundle": "gx_sloopyblue.lv2"
+    },
+    {
+      "repo": "GxSlowGear.lv2",
+      "url": "https://github.com/brummer10/GxSlowGear.lv2",
+      "commit": "20866563995ea1281b0ffd56b8ea248017e7fff7",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_slowgear_#_slowgear_",
+      "name": "Slow gear",
+      "category": "Dynamics",
+      "description": "Automatically swells volume to remove note attack, for violin-like playing.",
+      "bundle": "gx_slowgear.lv2"
+    },
+    {
+      "repo": "GxSunFace.lv2",
+      "url": "https://github.com/brummer10/GxSunFace.lv2",
+      "commit": "fd617d48d90618caafc5a7ab0525c7db80ef95e4",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_SunFace_#_SunFace_",
+      "name": "Sun Face",
+      "category": "Drive",
+      "description": "Based on the Analog Man Sun Face fuzz.",
+      "bundle": "gx_SunFace.lv2"
+    },
+    {
+      "repo": "GxSuperFuzz.lv2",
+      "url": "https://github.com/brummer10/GxSuperFuzz.lv2",
+      "commit": "a812917d03d9ff7087e4307b9d9b7711b28de7dc",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sfp_#_sfp_",
+      "name": "Super Fuzz",
+      "category": "Drive",
+      "description": "Based on the Univox Super-Fuzz.",
+      "bundle": "gx_sfp.lv2"
+    },
+    {
+      "repo": "GxSupersonic.lv2",
+      "url": "https://github.com/brummer10/GxSupersonic.lv2",
+      "commit": "cdaad0946f73ff1affb66ccea52d990e693f888d",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_supersonic_#_supersonic_",
+      "name": "Power amp (Supersonic)",
+      "category": "Amp",
+      "description": "Vintage American power amp emulation.",
+      "bundle": "gx_supersonic.lv2"
+    },
+    {
+      "repo": "GxSuppaToneBender.lv2",
+      "url": "https://github.com/brummer10/GxSuppaToneBender.lv2",
+      "commit": "465630db9baa133f3847fe0f49ccc44cb69ed8bc",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vstb_#_vstb_",
+      "name": "Suppa Tone Bender",
+      "category": "Drive",
+      "description": "Based on the Vox Supa Tonebender fuzz.",
+      "bundle": "gx_vstb.lv2"
+    },
+    {
+      "repo": "GxTimRay.lv2",
+      "url": "https://github.com/brummer10/GxTimRay.lv2",
+      "commit": "d5d569d30d0939fe53fd6354799c4ec83732d02f",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_timray_#_timray_",
+      "name": "Tim Ray",
+      "category": "Drive",
+      "description": "Based on the Vemuram Jan Ray.",
+      "bundle": "gx_timray.lv2"
+    },
+    {
+      "repo": "GxToneMachine.lv2",
+      "url": "https://github.com/brummer10/GxToneMachine.lv2",
+      "commit": "9ad0edda9efd58d48c033bca6014f4fd4ff01c58",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_tonemachine_#_tonemachine_",
+      "name": "Tone Machine",
+      "category": "Drive",
+      "description": "Based on the Foxx Tone Machine fuzz.",
+      "bundle": "gx_tonemachine.lv2"
+    },
+    {
+      "repo": "GxTubeDistortion.lv2",
+      "url": "https://github.com/brummer10/GxTubeDistortion.lv2",
+      "commit": "abadda657881f611d1a6ef881da6ce16799a4e02",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_TubeDistortion_#_TubeDistortion_",
+      "name": "Tube Distortion",
+      "category": "Drive",
+      "description": "Generic tube distortion based on http://www.montagar.com/~patj/tubedist.gif.",
+      "bundle": "gx_TubeDistortion.lv2"
+    },
+    {
+      "repo": "GxUVox720k.lv2",
+      "url": "https://github.com/brummer10/GxUVox720k.lv2",
+      "commit": "8f7365a01e21d7eb6b61caa46ac725b051d04476",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_uvox_#_uvox_",
+      "name": "UVox 720k",
+      "category": "Amp",
+      "description": "Based on Univox 720k keyboard amp from 1978.",
+      "bundle": "gx_uvox.lv2"
+    },
+    {
+      "repo": "GxUltraCab.lv2",
+      "url": "https://github.com/brummer10/GxUltraCab.lv2",
+      "commit": "2cad5980b96a759805bb83df2a4746f7c5a7348f",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_ultracab_#_ultracab_",
+      "name": "Ultra Cab",
+      "category": "Amp",
+      "description": "Cabinet simulator pedal.",
+      "bundle": "gx_ultracab.lv2"
+    },
+    {
+      "repo": "GxVBassPreAmp.lv2",
+      "url": "https://github.com/brummer10/GxVBassPreAmp.lv2",
+      "commit": "2fd32920bd43b284d02958f7f581eb8e10fb1ed7",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_voxbass_#_voxbass_",
+      "name": "VBass Pre Amp",
+      "category": "Amp",
+      "description": "Simulation of the 1984 Vox Venue Bass 100 Pre Amp section.",
+      "bundle": "gx_voxbass.lv2"
+    },
+    {
+      "repo": "GxValveCaster.lv2",
+      "url": "https://github.com/brummer10/GxValveCaster.lv2",
+      "commit": "1fa03c23c5280956e13803fcaa6026e3a61e12cf",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_valvecaster_#_valvecaster_",
+      "name": "Valve Caster",
+      "category": "Drive",
+      "description": "Based on the Valve Caster.",
+      "bundle": "gx_valvecaster.lv2"
+    },
+    {
+      "repo": "GxVintageFuzzMaster.lv2",
+      "url": "https://github.com/brummer10/GxVintageFuzzMaster.lv2",
+      "commit": "75878a1f2aef425e0a311441c29cefb9da8e0638",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vfm_#_vfm_",
+      "name": "Vintage Fuzz Master",
+      "category": "Drive",
+      "description": "Based on the Devi Ever Vintage Fuzz Master.",
+      "bundle": "gx_vfm.lv2"
+    },
+    {
+      "repo": "GxVmk2.lv2",
+      "url": "https://github.com/brummer10/GxVmk2.lv2",
+      "commit": "03931ede20301ab4345e0d377d4c0a901fc5ea08",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vmk2d_#_vmk2d_",
+      "name": "Vox MKII",
+      "category": "Amp",
+      "description": "Based on Vox MKII solid state preamp of the late 60s.",
+      "bundle": "gx_vmk2d.lv2"
+    },
+    {
+      "repo": "GxVoodoFuzz.lv2",
+      "url": "https://github.com/brummer10/GxVoodoFuzz.lv2",
+      "commit": "b960b2fb5540d85771c32dbfa72aa4a02c907bb3",
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_voodoo_#_voodoo_",
+      "name": "Voodoo Fuzz",
+      "category": "Drive",
+      "description": "Based on the Voodoo Lab SuperFuzz.",
+      "bundle": "gx_voodoo.lv2"
+    }
+  ]
+}

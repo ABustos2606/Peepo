@@ -2,9 +2,11 @@
 
 Modular effects instrument for Raspberry Pi 5, with a new touchscreen interface inspired by Poly Effects' Beebo.
 
-**Status:** The engine, touchscreen interface and Tascam audio path run on the Pi. Today's arm64 package includes Clouds, NAM and the full buildable selected catalogue; the catalogue generated on the Pi holds 226 inventory entries. Six offered Clouds modes pass native load/control checks, and granular Clouds processes stereo test audio. The user has confirmed guitar listening through Clouds on the Pi: the first musical milestone. The Clouds patch saves and reloads on the Pi, and an interface-only restart during guitar playing caused no heard interruption or measured audio gap. NAM loads on the Pi but its model selector remains pending. The Windows editor, patch storage and simulated physical controls remain available; GPIO controls are not wired yet. See [Pi bring-up and update](docs/23-pi-bring-up.md).
-**Date:** 12 October 2026 — revised 13 October 2026 (LVGL direction, Casette reference, and NAM evaluation) and 14 October 2026 (patch storage, physical controls)  
-**Project folder:** `C:\Peepo`
+**Status, 18 October 2026:** The engine, touchscreen interface and Tascam audio path run on the Pi. The Pi catalogue contains **269 installed identities**, with **216 ready to add** after presentation restrictions; the selected inventory contains 291 identities in total. All **43 GxPlugins** are installed and passed PC and native Pi functional checks. Clouds has confirmed guitar listening and patch save/reload; an interface-only restart during playing caused no heard interruption or measured audio gap. NAM and IR effects have file selectors. The Windows editor, patch storage and simulated physical controls remain available; GPIO controls are not wired yet. See [Pi bring-up](docs/23-pi-bring-up.md), [GxPlugins results](docs/32-gxplugins.md) and [file handling](docs/29-parameters-files-tempo.md).
+
+**[Complete module list: every module, category, description, connections and availability](docs/33-module-list.md).** Includes all 43 GxPlugins, disabled and hidden identities, and the selected modules not installed.
+
+**Project folder:** `C:\Pedal PI`
 
 ## Purpose
 
@@ -57,6 +59,8 @@ Inside Debian under WSL2, as root: `bash tools/pi/build-arm64.sh` builds the eng
 
 | File | Contents |
 | --- | --- |
+| [Complete module list](docs/33-module-list.md) | All 291 selected identities, grouped by touchscreen category, with descriptions, connections and availability; 216 ready to add |
+| [All 43 GxPlugins](docs/32-gxplugins.md#all-43-gxplugins) | Every Gx effect by its Peepo name, category and description, plus build and native test results |
 | [Requirements](docs/01-requirements.md) | Agreed behaviour, hardware baseline, scope, and success criteria |
 | [Architecture](docs/02-architecture.md) | Audio engine, LVGL touchscreen application, controls, storage, and startup |
 | [Touchscreen and physical controls](docs/03-interface-and-controls.md) | Drag-and-drop 800 × 480 interaction design, series/parallel routing, and control assignments |
@@ -112,20 +116,17 @@ Initialize the top-level references first, then the three repositories with decl
 ## Current facts
 
 - Raspberry Pi 5 with 2 GB RAM.
-- Existing Patchbox OS installation from an experiment last year; release and architecture are unknown.
+- Patchbox OS on Debian 12 arm64, profiled on the Pi on 14 October 2026. Peepo starts directly into its touchscreen interface; MODEP and the desktop are masked ([bring-up](docs/23-pi-bring-up.md), [boot](docs/24-instrument-boot.md)).
 - 5-inch HDMI touchscreen advertised as 800 × 480. The user confirms (13 October 2026) that it is capacitive with five touch points, touch and power over USB, video over HDMI, so it leaves the GPIO header free. The Pi and screen already run Zynthian and Patchbox OS with MODEP, on the official 27 W supply. The controller identity and any calibration still need checking on the Pi.
 - The user has four 20-pulse rotary encoders with push switches and will use three momentary SPST footswitches (14 October 2026); since 17 October 2026 Peepo uses two of the encoders. Their wiring to the Pi is proposed in [physical controls](docs/18-physical-controls.md), not yet built.
-- The audio interface is flexible and still to be selected; an inexpensive USB interface is acceptable to the user. Its suitability for guitar input and low-latency Linux audio must be checked when selecting it.
-- Public Beebo-related source repositories are stored under `reference/` in the project. Their source code has not been compiled, installed, or tested on the Pi.
+- The audio interface is a Tascam US-100, running at 48 kHz, 128 frames and three periods. Guitar through Clouds has been heard and confirmed on this path.
+- Public Beebo-related source repositories are stored under `reference/`. Runtime builds fetch pinned sources separately; the complete installed collection and remaining gaps are in the [module list](docs/33-module-list.md).
 - Casette is also downloaded under `reference/upstream/Casette` at commit `75ded6663e2d758bfe8a290952c672b2e8c01697`. It is a reference for LVGL, JACK, NAM, and preset handling; its fixed effects chain does not replace our modular engine.
-- NAM is a candidate for evaluation on the Pi 5, 2 GB. An optimized runtime is promising, but CPU headroom, memory use, simultaneous model count, and operation alongside Clouds remain unverified. The older downloaded Poly NAM fork and current NeuralAudio-based LV2 implementations need comparison.
+- The current NeuralAudio-based NAM LV2 implementation is selected and has a model selector. Model loading and host/state behavior have been checked; musical listening and dense-patch performance budgets remain separate work ([NAM](docs/21-nam.md), [file handling](docs/29-parameters-files-tempo.md)).
 - Beebo's interface repository (`digit_ui`) is **reference material only**. No code, QML, icons, fonts, or other assets from it will be copied into the new interface.
 
 Original application code and CMake build files now exist under `src/` and `config/`. The simulator is a UI development foundation; it does not process audio. On 14 October 2026 the Pi was profiled and first played guitar through the Peepo engine and interface ([Pi bring-up](docs/23-pi-bring-up.md)); hardware measurements wait for an adequate power supply. Upstream reference repositories remain unchanged.
 
-## Next step after documentation review
+## Remaining validation
 
-1. Try the accepted Windows LVGL desktop editor, with the simulation or against an engine under WSL; prepare/verify the debugger and decide the Linux platform build route once the Pi OS is identified.
-2. Identify the Pi OS, audio interface and touch controller, preserve the existing installation, and establish a minimal JACK/Ingen audio path early.
-3. Repeat the engine adapter's and patch storage's checks on the Pi and add the native touch interface, then the Clouds milestone with physical controls.
-4. Evaluate NAM and expand the tested catalogue before dedicated startup and complete validation. Follow the [detailed phase plan](docs/10-technical-implementation-plan.md); a UI foundation does not complete the hardware-dependent phases.
+The Pi bring-up, native touchscreen, direct boot and first Clouds guitar milestone are complete. Remaining work includes physical GPIO controls, broader guitar listening, model/IR listening and measured performance budgets for combined patches. Follow the [detailed phase plan](docs/10-technical-implementation-plan.md) and the per-module results linked from the [complete module list](docs/33-module-list.md).

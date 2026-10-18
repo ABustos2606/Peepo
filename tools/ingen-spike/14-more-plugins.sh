@@ -199,13 +199,13 @@ third ykchorus https://github.com/SpotlightKid/ykchorus.git ee0e362f8ef30b55a440
 third MVerb https://github.com/DISTRHO/MVerb.git 5ae9f571642822bbc6b9d2e113e3fb0aada36f93 "DPF, no UI" bash -c dpf
 third infamousPlugins https://github.com/ssj71/infamousPlugins.git 8c0e11ecac624e014caba00e5cf4fb0ca2faa806 "cmake (no NTK, so no UIs)" \
     bash -c 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX='"$PREFIX"' -DLIBDIR=lib && cmake --build build -j'"$JOBS"' && cmake --install build'
-# Beebo's guitarix amps are brummer10's standalone MOD builds, not Debian's
-# guitarix: `make mod` builds them without an interface.
-for spec in "GxSVT.lv2 f69e9235d98cdf5010e7b000bc8a89f271ba95ca" "GxSlowGear.lv2 20866563995ea1281b0ffd56b8ea248017e7fff7" \
-            "GxSuperSonic.lv2 cdaad0946f73ff1affb66ccea52d990e693f888d" "GxCreamMachine.lv2 66235e6db14956c95b8a2fe82650d83a58609e50"; do
-    set -- $spec
-    third "$1" "https://github.com/brummer10/$1.git" "$2" "make mod" bash -c "make mod && make install INSTALL_DIR='$LV2DIR'"
-done
+# Full GxPlugins collection, including the four Beebo modules at their
+# existing revisions. All identities and source pins share one manifest.
+if bash "$HERE/21-gxplugins.sh" >"$SRC/GxPlugins.log" 2>&1; then
+    record GxPlugins.lv2 built "43 plugins, make mod; source and notices included"
+else
+    record GxPlugins.lv2 FAILED "see $SRC/GxPlugins.log"
+fi
 third mod-cv-plugins https://github.com/moddevices/mod-cv-plugins.git f0a6b39a5ebb8cf2ab428d76aa8c8262aceb6362 "make" \
     make -j"$JOBS" LV2_DESTDIR="$LV2DIR" install
 

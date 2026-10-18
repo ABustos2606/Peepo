@@ -1,5 +1,14 @@
 # Plugin catalogue: inventory, builds and compatibility records
 
+**Looking for the module names? See the [complete module list](33-module-list.md):
+all 291 selected identities, their touchscreen categories, descriptions,
+connections and current availability.** This page records the build and test history.
+
+**18 October 2026:** all 43 GxPlugins are now built, tested on PC and Pi, and
+installed. The selected inventory has 291 identities. The original counts and
+matrix below remain the 14 October snapshot; see [GxPlugins](32-gxplugins.md)
+for the new source pins, results and activation record.
+
 **Recorded:** 14 October 2026, on the Windows PC with the engine under WSL2 (Debian 13, x86-64). **Scope:** P9.1 (inventory), P9.2 (reproducible builds), P9.3 (compatibility records) and the presentation part of P9.4. **Verified against:** the patched Ingen of [the engine evidence](14-ingen-engine-evidence.md), JACK's dummy backend at 48 kHz and 128 frames. **Results:** [the compatibility matrix](evidence/compatibility-matrix.md), one row per entry, and [compatibility.json](evidence/compatibility.json), the full record. **Not covered:** the Pi, listening, processor load, MIDI routing and file selection.
 
 **Every entry in the selected inventory has a result.** "Supported on the PC" means every host check passed on the PC engine. It becomes "supported" only when the same checks pass on the Pi.
@@ -46,7 +55,7 @@ The agreed collection is "Poly's Mutable-derived modules and compatible MODEP ef
 | `DISTRHO/MVerb` | `5ae9f571` | 1 | DPF, no interface | — |
 | `ssj71/infamousPlugins` | `8c0e11ec` | 3 in the inventory | CMake, no interfaces (NTK absent) | needs `libzita-resampler-dev` |
 | `moddevices/mod-cv-plugins` | `f0a6b39a` | 1 in the inventory | `make` | installs to `/usr/lib/lv2` unless `LV2_DESTDIR` is given |
-| `brummer10/GxSVT`, `GxSlowGear`, `GxSuperSonic`, `GxCreamMachine` (`.lv2`) | `f69e9235`, `20866563`, `cdaad094`, `66235e6d` | 4 | `make mod`, no interface | Beebo's guitarix amps are these MOD builds; Debian's guitarix has none of them |
+| `brummer10/GxPlugins.lv2` collection (expanded 18 October) | [43 per-plugin pins](../config/catalogue/gxplugins.json), preserving the four original revisions | 43 | `21-gxplugins.sh`, `make mod`, no interface | Explicit ARM flags; source archives and notices packaged. [Native results](32-gxplugins.md). |
 | Debian 13 `x42-plugins` | 20240611+ds-1 | 39 in the inventory | package | — |
 | Debian 13 `setbfree`, `blop-lv2`, `fomp`, `calf-plugins`, `mda-lv2`, `lv2-examples` | as installed | 2, 3, 1, 1, 36, 7 | packages | — |
 
@@ -122,7 +131,8 @@ The overlay (`config/catalogue/overlay.json`) now presents the whole offered cat
   - the convolvers and NAM, until a file can be chosen;
   - Clouds' beat repeat;
   - the Moog ladder;
-  - duplicate tuner identities are hidden from Add while retained for saved patches; see [effects and tuner](25-effects-and-tuner.md).
+  - duplicate tuner identities are hidden from Add while retained for saved patches; see [effects and tuner](25-effects-and-tuner.md);
+  - redundant clean Boost (`basic_modular#boost`) is hidden from Add in favour of Gain (`eg-amp`), which covers -90 dB to +24 dB cleanly; its identity is retained for saved patches.
 
   The export may already offer them; withholding them is presentation, so the records above still show the host results.
 

@@ -5,8 +5,8 @@
 The selected inventory (P9.1) is every plugin identity in Beebo's module map
 and in Poly's public plugin sources, as recorded in
 docs/lv2-plugin-comparison-data.json, plus the MDA effects and LV2 examples
-the development engine uses as conventional effects and test plugins, and
-Peepo's own plugins. The
+the development engine uses as conventional effects and test plugins,
+Peepo's own plugins, and the complete pinned GxPlugins collection. The
 exporter offers only what this list names (`--only`): installing a package
 does not put its other plugins in front of the player.
     python3 tools/catalogue-inventory.py
@@ -16,6 +16,7 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "docs", "lv2-plugin-comparison-data.json")
+GX = os.path.join(ROOT, "config", "catalogue", "gxplugins.json")
 OUT = os.path.join(ROOT, "config", "catalogue", "inventory.txt")
 
 MDA = ["Ambience", "Bandisto", "BeatBox", "Combo", "DX10", "DeEss", "Degrade", "Delay", "Detune", "Dither", "DubDelay",
@@ -50,6 +51,10 @@ def main():
         lines.append("")
     lines.append("# Peepo's own plugins")
     lines += PEEPO
+    lines.append("")
+    lines.append("# GxPlugins: full collection (source pins in config/catalogue/gxplugins.json)")
+    gx = json.load(open(GX, encoding="utf-8"))["plugins"]
+    lines += [p["uri"] for p in gx if p["uri"] not in sources and p["uri"] not in keys]
     lines.append("")
     lines.append("# Development: MDA effects (also packaged for MODEP) and the LV2 examples the tests use")
     lines += ["http://drobilla.net/plugins/mda/" + name for name in MDA if "http://drobilla.net/plugins/mda/" + name not in keys]
