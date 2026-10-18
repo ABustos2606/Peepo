@@ -51,7 +51,7 @@
     {"uri": "http://drobilla.net/plugins/mda/Combo", "category": "Amp", "description": "A conventional guitar amp and speaker simulation; no model file needed."},
     {"uri": "http://drobilla.net/plugins/mda/DeEss", "category": "Dynamics", "description": "Reduces harsh high-frequency peaks."},
     {"uri": "http://drobilla.net/plugins/mda/Degrade", "category": "Drive", "description": "Lo-fi distortion through reduced sample rate and resolution."},
-    {"uri": "http://drobilla.net/plugins/mda/Delay", "category": "Delay", "description": "Stereo echo with feedback and filtering."},
+    {"uri": "http://drobilla.net/plugins/mda/Delay", "name": "Stereo delay", "category": "Delay", "description": "Stereo echo with independent left/right delay times, feedback and filtering."},
     {"uri": "http://drobilla.net/plugins/mda/Detune", "category": "Pitch", "description": "Small pitch offsets for doubling and thickening."},
     {"uri": "http://drobilla.net/plugins/mda/DubDelay", "category": "Delay", "description": "Modulated echo with feedback for dub-style repeats."},
     {"uri": "http://drobilla.net/plugins/mda/Dynamics", "category": "Dynamics", "description": "Compressor, limiter and gate for controlling signal level."},
@@ -102,7 +102,7 @@
     {"uri": "http://polyeffects.com/lv2/basic_quantizer", "name": "Quantizer", "category": "Control", "description": "Quantizes a volt per octave signal to a musical scale."},
     {"uri": "http://polyeffects.com/lv2/bitcrushed_delay", "name": "Bitcrushed delay", "category": "Delay", "description": "Flexible delay module with bitcrushed repeats."},
     {"uri": "http://polyeffects.com/lv2/chorus", "name": "Chorus", "category": "Modulation", "description": "8 voice multi-dimensional chorus with internal LFO."},
-    {"uri": "http://polyeffects.com/lv2/digit_delay", "name": "Delay", "category": "Delay", "description": "Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well.", "parameters": [
+    {"uri": "http://polyeffects.com/lv2/digit_delay", "name": "Tempo delay", "category": "Delay", "description": "Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well.", "parameters": [
       {"symbol": "Delay_1", "name": "Time", "unit": "beats"}, {"symbol": "Feedback_4"}, {"symbol": "Amp_5", "name": "Output"},
       {"symbol": "EnableEcho_7", "name": "Input", "kind": "toggle"}, {"symbol": "Warp_2"}, {"symbol": "DelayT60_3", "name": "Glide", "unit": "s"},
       {"symbol": "FeedbackSm_6", "name": "Tone"}, {"symbol": "BPM_0"}
@@ -212,7 +212,7 @@
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/controltocv", "description": "Turns a knob into a control signal you can patch to other modules."},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/cvs", "description": "Four fixed control voltages, each with coarse and fine knobs."},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/cvtocontrol", "description": "Turns a control signal back into a knob value."},
-    {"uri": "http://avwlv2.sourceforge.net/plugins/avw/delay", "description": "Delays a control signal by a set time."},
+    {"uri": "http://avwlv2.sourceforge.net/plugins/avw/delay", "name": "CV delay", "description": "Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers."},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/downsampler_mono", "description": "Lo-fi crusher that lowers the sample rate for gritty, aliased tones."},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/downsampler_stereo", "description": "Stereo lo-fi crusher that lowers the sample rate for gritty, aliased tones."},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/env", "description": "ADSR envelope generator with delay and hold stages. Takes in a gate."},

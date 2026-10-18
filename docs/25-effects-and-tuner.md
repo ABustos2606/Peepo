@@ -16,7 +16,7 @@ Windows without `--engine` is a simulation and makes no sound.
 | Filter | Shapes frequency content | Parametric EQ mono/stereo, RezFilter, diode ladder, Korg 35 high/low-pass, Oberheim; vocoders need two input signals |
 | Modulation | Motion and signal combination | Chorus, YK Chorus, flanger, vibrato, harmonic tremolo, Stone phaser, rotary speakers, ring modulation, Warps/Twist modes |
 | Pitch | Changes pitch | Clouds Stretch, Detune, RePsycho, TAP Pitch Shifter, SubSynth, Shepard |
-| Delay | Echo and looping delay | Delay, DubDelay, AMS Delay, Clouds Looper |
+| Delay | Echo and looping delay | Tempo delay, Stereo delay, DubDelay, CV delay, Clouds Looper, Discipline |
 | Reverb | Acoustic space and sustained tails | Ambience, MVerb, Oliverb |
 | Texture | Granulation, freezing and reversal | Clouds, Clouds Spectral, granulators, beat slicers/repeaters, Vinyl, Reverse, Stuck, Power cut |
 | Resonator | Resonating instruments played by input | Rings/Resonator, Resonestor |

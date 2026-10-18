@@ -1506,8 +1506,8 @@ void Application::browser(lv_obj_t* header, lv_obj_t* content, lv_obj_t* foot) {
             lv_label_set_long_mode(title, LV_LABEL_LONG_DOT); lv_obj_set_height(title, 26);
             // An entry that cannot be added says why instead of what it does.
             const auto about = usable ? d->description : "Needs setup: " + (d->availability_reason.empty() ? d->description : d->availability_reason);
-            auto* description = label(card, about, 18, 58, 344, muted, &lv_font_montserrat_18);
-            lv_label_set_long_mode(description, LV_LABEL_LONG_DOT); lv_obj_set_height(description, 46);
+            auto* description = label(card, about, 18, 54, 344, muted, &lv_font_montserrat_18);
+            lv_label_set_long_mode(description, LV_LABEL_LONG_DOT); lv_obj_set_height(description, 92);
             if (usable) {
                 bind(card, Action::BrowserPick, 0, d->uri);
                 if (group) lv_group_add_obj(group, card);
