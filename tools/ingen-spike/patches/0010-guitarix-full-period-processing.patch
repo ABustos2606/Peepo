@@ -1,0 +1,48 @@
+--- a/src/server/BlockImpl.hpp
++++ b/src/server/BlockImpl.hpp
+@@ -216,6 +216,7 @@
+ 	std::set<BlockImpl*>     _dependants; ///< Blocks this one's output ports are connected to
+ 	Mark                     _mark{Mark::UNVISITED}; ///< Mark for graph walks
+ 	bool                     _polyphonic;
++	bool _fixed_block_length{false}; // Guitarix processors reconfigure on run-size changes
+ 	bool                     _activated{false};
+ 	bool                     _enabled{true};
+ 	float                    _output_gain{1.0f};
+--- a/src/server/LV2Block.cpp
++++ b/src/server/LV2Block.cpp
+@@ -78,6 +78,10 @@
+ 	, _lv2_plugin(plugin)
+ {
+ 	assert(_lv2_plugin);
++	// Guitarix's FFT/convolution workers cannot safely reconfigure for every
++	// sub-period control event. Sample controls once per full engine period.
++	constexpr char prefix[] = "http://guitarix.sourceforge.net/plugins/";
++	_fixed_block_length = std::strncmp(_lv2_plugin->uri().c_str(), prefix, sizeof(prefix) - 1) == 0;
+ }
+ 
+ LV2Block::~LV2Block()
+--- a/src/server/BlockImpl.cpp
++++ b/src/server/BlockImpl.cpp
+@@ -243,7 +243,7 @@
+ 		SampleCount chunk_end = ctx.nframes();
+ 		for (uint32_t i = 0; _ports && i < _ports->size(); ++i) {
+ 			const PortImpl* const port = _ports->at(i);
+-			if (port->type() == PortType::CONTROL && port->is_input()) {
++			if (!_fixed_block_length && port->type() == PortType::CONTROL && port->is_input()) {
+ 				const SampleCount o = port->next_value_offset(
+ 					offset, ctx.nframes());
+ 				chunk_end = std::min(o, chunk_end);
+@@ -257,6 +257,13 @@
+ 		for (uint32_t i = 0; _ports && i < _ports->size(); ++i) {
+ 			_ports->at(i)->connect_buffers(offset);
+ 			_ports->at(i)->pre_run(subcontext);
++			if (_fixed_block_length && _ports->at(i)->type() == PortType::CONTROL &&
++			    _ports->at(i)->is_input()) {
++				// Keep the latest value, including events later in this period.
++				for (uint32_t v = 0; v < _polyphony; ++v) {
++					_ports->at(i)->update_values(ctx.nframes() - 1, v);
++				}
++			}
+ 		}
+ 
+ 		// Run the chunk

@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-19T14:47:15.416003+00:00",
+  "removed_uris": [
+    "http://faust-lv2.googlecode.com/Granulator",
+    "https://ca9.eu/lv2/bolliedelayxt"
+  ],
+  "removed_bundles": [
+    "bolliedelayxt.lv2",
+    "Granulator.lv2"
+  ],
+  "backup": "/var/lib/peepo/plugin-removal-04xa4zn9",
+  "installed_before": 337,
+  "installed_after": 335,
+  "current_patch_unchanged": true,
+  "engine_and_jack_pids": {
+    "peepo-engine": "41642",
+    "peepo-jack": "672"
+  },
+  "ui_active": true
+}

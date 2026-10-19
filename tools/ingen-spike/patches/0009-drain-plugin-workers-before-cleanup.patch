@@ -1,0 +1,143 @@
+--- a/src/server/LV2Block.hpp
++++ b/src/server/LV2Block.hpp
+@@ -33,6 +33,7 @@
+ #include <boost/intrusive/slist.hpp>
+ #include <boost/intrusive/slist_hook.hpp>
+ 
++#include <atomic>
+ #include <cstdint>
+ #include <cstdlib>
+ #include <cstring>
+@@ -86,6 +87,11 @@
+ 	void deactivate() override;
+ 
+ 	LV2_Worker_Status work(uint32_t size, const void* data);
++
++	// Retain asynchronous requests until the non-realtime deletion phase drains them.
++	bool begin_work();
++	void finish_work() { _work_state.fetch_sub(1, std::memory_order_release); }
++	void stop_work();
+ 
+ 	void run(RunContext& ctx) override;
+ 	void post_process(RunContext& ctx) override;
+@@ -177,6 +183,8 @@
+ 	raul::managed_ptr<Instances>               _prepared_instances;
+ 	const LV2_Worker_Interface*                _worker_iface{nullptr};
+ 	std::mutex                                 _work_mutex;
++	static constexpr uint32_t work_stopping = uint32_t(1) << 31;
++	std::atomic<uint32_t> _work_state{0};
+ 	Responses                                  _responses;
+ 	std::shared_ptr<LV2Features::FeatureArray> _features;
+ };
+--- a/src/server/LV2Block.cpp
++++ b/src/server/LV2Block.cpp
+@@ -52,6 +52,8 @@
+ 
+ #include <algorithm>
+ #include <cassert>
++#include <chrono>
++#include <thread>
+ #include <cmath>
+ #include <cstdint>
+ #include <map>
+@@ -80,6 +82,7 @@
+ 
+ LV2Block::~LV2Block()
+ {
++	stop_work();
+ 	if (_activated) {
+ 		LV2Block::deactivate();
+ 	}
+@@ -564,7 +567,9 @@
+ void
+ LV2Block::activate(BufferFactory& bufs)
+ {
++	_work_state.fetch_and(~work_stopping, std::memory_order_acq_rel);
+ 	BlockImpl::activate(bufs);
++	const std::lock_guard<std::mutex> lock{instance_mutex()};
+ 
+ 	for (uint32_t i = 0; i < _polyphony; ++i) {
+ 		lilv_instance_activate(instance(i));
+@@ -575,6 +580,9 @@
+ LV2Block::deactivate()
+ {
+ 	BlockImpl::deactivate();
++	// This runs outside the audio thread after removal from the processing graph.
++	stop_work();
++	const std::lock_guard<std::mutex> lock{instance_mutex()};
+ 
+ 	for (uint32_t i = 0; i < _polyphony; ++i) {
+ 		lilv_instance_deactivate(instance(i));
+@@ -592,10 +600,35 @@
+ 	return LV2_WORKER_SUCCESS;
+ }
+ 
++bool
++LV2Block::begin_work()
++{
++	auto state = _work_state.load(std::memory_order_acquire);
++	do {
++		if (state & work_stopping) {
++			return false;
++		}
++	} while (!_work_state.compare_exchange_weak(state, state + 1,
++	                                            std::memory_order_acq_rel));
++	return true;
++}
++
++void
++LV2Block::stop_work()
++{
++	_work_state.fetch_or(work_stopping, std::memory_order_acq_rel);
++	while ((_work_state.load(std::memory_order_acquire) & ~work_stopping) != 0) {
++		std::this_thread::sleep_for(std::chrono::milliseconds(1));
++	}
++}
++
+ LV2_Worker_Status
+ LV2Block::work(uint32_t size, const void* data)
+ {
+ 	if (_worker_iface) {
++		// Plugin creation, activation, work and cleanup can all touch FFTW's
++		// non-thread-safe planner and Lilv's shared library cache.
++		const std::lock_guard<std::mutex> instance_lock{instance_mutex()};
+ 		const std::lock_guard<std::mutex> lock{_work_mutex};
+ 
+ 		LV2_Handle              inst = lilv_instance_get_handle(instance(0));
+--- a/src/server/Worker.cpp
++++ b/src/server/Worker.cpp
+@@ -76,12 +76,17 @@
+ 		return LV2_WORKER_ERR_NO_SPACE;
+ 	}
+ 
++	if (!block->begin_work()) {
++		return LV2_WORKER_ERR_UNKNOWN;
++	}
+ 	const MessageHeader msg = { block, size };
+ 	if (_requests.write(sizeof(msg), &msg) != sizeof(msg)) {
++		block->finish_work();
+ 		engine.log().error("Error writing header to work request ring\n");
+ 		return LV2_WORKER_ERR_UNKNOWN;
+ 	}
+ 	if (_requests.write(size, data) != size) {
++		block->finish_work();
+ 		engine.log().error("Error writing body to work request ring\n");
+ 		return LV2_WORKER_ERR_UNKNOWN;
+ 	}
+@@ -141,7 +146,7 @@
+ {
+ 	while (_sem.wait() && !_exit_flag) {
+ 		MessageHeader msg{};
+-		if (_requests.read_space() > sizeof(msg)) {
++		if (_requests.read_space() >= sizeof(msg)) {
+ 			if (_requests.read(sizeof(msg), &msg) != sizeof(msg)) {
+ 				_log.error("Error reading header from work request ring\n");
+ 				continue;
+@@ -158,6 +163,7 @@
+ 			}
+ 
+ 			msg.block->work(msg.size, _buffer);
++			msg.block->finish_work();
+ 		}
+ 	}
+ }

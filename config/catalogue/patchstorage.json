@@ -1,0 +1,2854 @@
+{
+  "format": "peepo-patchstorage-plugins",
+  "version": 1,
+  "recorded_date": "2026-10-19",
+  "scope": "Four Dragonfly reverbs and all missing Gx publications",
+  "entries": [
+    {
+      "id": 165904,
+      "title": "Dragonfly Early Reflections",
+      "url": "https://patchstorage.com/dragonfly-early-reflections/",
+      "revision": "4.6",
+      "source_url": "https://github.com/michaelwillis/dragonfly-reverb/tree/master/plugins/dragonfly-early-reflections",
+      "license": {
+        "id": 4178,
+        "name": "GNU General Public License v3.0",
+        "slug": "gpl-3-0",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "urn:dragonfly:early"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/165904/files/165901/download/",
+          "filename": "DragonflyEarlyReflections-6422578ed42cb.lv2.tar.gz",
+          "sha256": "836366c1418abde7b5eb7498900eeef160880b13b997f1be62638d705312e501",
+          "bundles": [
+            "DragonflyEarlyReflections.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/165904/files/165903/download/",
+          "filename": "DragonflyEarlyReflections-64225795ac782.lv2.tar.gz",
+          "sha256": "ced3a031847b09e51260dbb5266fe6290acf4e888321c8c77254ebff21211fb8",
+          "bundles": [
+            "DragonflyEarlyReflections.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "urn:dragonfly:early",
+          "name": "Dragonfly Early Reflections",
+          "bundle": "DragonflyEarlyReflections.lv2",
+          "raw_name": "Dragonfly Early Reflections",
+          "category": "Reverb",
+          "description": "Early room reflections with size, width and filter controls."
+        }
+      ]
+    },
+    {
+      "id": 165909,
+      "title": "Dragonfly Hall Reverb",
+      "url": "https://patchstorage.com/dragonfly-hall-reverb/",
+      "revision": "4.6",
+      "source_url": "https://github.com/michaelwillis/dragonfly-reverb/tree/master/plugins/dragonfly-hall-reverb",
+      "license": {
+        "id": 4178,
+        "name": "GNU General Public License v3.0",
+        "slug": "gpl-3-0",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "https://github.com/michaelwillis/dragonfly-reverb"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/165909/files/165906/download/",
+          "filename": "DragonflyHallReverb-64225893e7afd.lv2.tar.gz",
+          "sha256": "6da88c9cbe86b79035d75eebf9160824fbeb59ca32c584ed5f3890a823269c34",
+          "bundles": [
+            "DragonflyHallReverb.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/165909/files/165908/download/",
+          "filename": "DragonflyHallReverb-6422589f788e9.lv2.tar.gz",
+          "sha256": "3fc7f1d889d7d8c1d06821517331861f8a47b3533fe56c39f46245045c562247",
+          "bundles": [
+            "DragonflyHallReverb.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "https://github.com/michaelwillis/dragonfly-reverb",
+          "name": "Dragonfly Hall",
+          "bundle": "DragonflyHallReverb.lv2",
+          "raw_name": "Dragonfly Hall Reverb",
+          "category": "Reverb",
+          "description": "Hall reverb with early and late reflections, modulation, filters and decay controls."
+        }
+      ]
+    },
+    {
+      "id": 165914,
+      "title": "Dragonfly Plate Reverb",
+      "url": "https://patchstorage.com/dragonfly-plate-reverb/",
+      "revision": "4.6",
+      "source_url": "https://github.com/michaelwillis/dragonfly-reverb/tree/master/plugins/dragonfly-plate-reverb",
+      "license": {
+        "id": 4178,
+        "name": "GNU General Public License v3.0",
+        "slug": "gpl-3-0",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "urn:dragonfly:plate"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/165914/files/165911/download/",
+          "filename": "DragonflyPlateReverb-642259818fedd.lv2.tar.gz",
+          "sha256": "39eef3752dd8d93946a49a4460fc07ebb7a1a9c7889cc2c46075b5ea09d06b9a",
+          "bundles": [
+            "DragonflyPlateReverb.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/165914/files/165913/download/",
+          "filename": "DragonflyPlateReverb-6422598b5e84d.lv2.tar.gz",
+          "sha256": "91ea2b5ef6680d9887f264eff5b21519c055fb02a02661b2d9c89e2467461183",
+          "bundles": [
+            "DragonflyPlateReverb.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "urn:dragonfly:plate",
+          "name": "Dragonfly Plate",
+          "bundle": "DragonflyPlateReverb.lv2",
+          "raw_name": "Dragonfly Plate Reverb",
+          "category": "Reverb",
+          "description": "Plate reverb with selectable algorithms, damping and decay controls."
+        }
+      ]
+    },
+    {
+      "id": 165919,
+      "title": "Dragonfly Room Reverb",
+      "url": "https://patchstorage.com/dragonfly-room-reverb/",
+      "revision": "4.6",
+      "source_url": "https://github.com/michaelwillis/dragonfly-reverb/tree/master/plugins/dragonfly-room-reverb",
+      "license": {
+        "id": 4178,
+        "name": "GNU General Public License v3.0",
+        "slug": "gpl-3-0",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "urn:dragonfly:room"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/165919/files/165916/download/",
+          "filename": "DragonflyRoomReverb-64225a077d186.lv2.tar.gz",
+          "sha256": "fde70cd1984c75cdc64c501aeb7c0e198b9c3f910099de06a3a2adaa8a8f574f",
+          "bundles": [
+            "DragonflyRoomReverb.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/165919/files/165918/download/",
+          "filename": "DragonflyRoomReverb-64225a0d1c16d.lv2.tar.gz",
+          "sha256": "f03034326538abaf5ae3e6b3a490570f9a2869b4b64c2af1abafc9ae89940ac4",
+          "bundles": [
+            "DragonflyRoomReverb.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "urn:dragonfly:room",
+          "name": "Dragonfly Room",
+          "bundle": "DragonflyRoomReverb.lv2",
+          "raw_name": "Dragonfly Room Reverb",
+          "category": "Reverb",
+          "description": "Room reverb with separate early and late levels, size, filters and decay controls."
+        }
+      ]
+    },
+    {
+      "id": 163754,
+      "title": "Gx Studio Preamp Stereo",
+      "url": "https://patchstorage.com/gx-studio-preamp-stereo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_studiopre_st#studiopre_st"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163754/files/163751/download/",
+          "filename": "gx_studiopre_st-63ef74413e266.lv2.tar.gz",
+          "sha256": "4b31cf434552db1f0994d06ac6b04ff85d45411f05e863a136c3dd01aa50acfe",
+          "bundles": [
+            "gx_studiopre_st.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163754/files/163753/download/",
+          "filename": "gx_studiopre_st-63ef74421329d.lv2.tar.gz",
+          "sha256": "4755ff96ee6467a22c8c2e5c8ecaa897febd6b17a55995129b17ee0aebdc908e",
+          "bundles": [
+            "gx_studiopre_st.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre_st#studiopre_st",
+          "name": "Gx Studio preamp stereo",
+          "bundle": "gx_studiopre_st.lv2",
+          "raw_name": "Gx Studio Preamp Stereo",
+          "category": "Amp",
+          "description": "Stereo studio preamp with tone controls."
+        }
+      ]
+    },
+    {
+      "id": 163719,
+      "title": "gx_redeye.lv2 Bundle",
+      "url": "https://patchstorage.com/gx_redeye-lv2-bundle/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_redeye#chump",
+        "http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump",
+        "http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163719/files/163716/download/",
+          "filename": "gx_redeye-63ef742ead95e.lv2.tar.gz",
+          "sha256": "f850be3cb0b74d285938aa739edd57751713aae69b31dcd95cac2f8681804d65",
+          "bundles": [
+            "gx_redeye.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163719/files/163718/download/",
+          "filename": "gx_redeye-63ef742f97d0f.lv2.tar.gz",
+          "sha256": "06ac380eb5b9cee746c6206c3b9c0431022f60208a0a3fee0c4ae1bf7315a0f4",
+          "bundles": [
+            "gx_redeye.lv2"
+          ]
+        }
+      },
+      "metadata_overrides": [
+        {
+          "target": "rpi-aarch64",
+          "from_target": "linux-amd64",
+          "bundle": "gx_redeye.lv2",
+          "files": [
+            "manifest.ttl",
+            "gx_redeye.ttl"
+          ],
+          "reason": "Native binary exports all three Redeye descriptors; its published ARM metadata only describes Vibro Chump. Restore the matching same-publication x64 metadata."
+        }
+      ],
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#chump",
+          "name": "Gx Redeye Chump",
+          "bundle": "gx_redeye.lv2",
+          "raw_name": "GxRedeye Chump",
+          "category": "Amp",
+          "description": "Chump variant of the Redeye guitar amp models."
+        },
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump",
+          "name": "Gx Redeye Big Chump",
+          "bundle": "gx_redeye.lv2",
+          "raw_name": "GxRedeye Big Chump",
+          "category": "Amp",
+          "description": "Big Chump variant of the Redeye guitar amp models."
+        },
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump",
+          "name": "Gx Redeye Vibro Chump",
+          "bundle": "gx_redeye.lv2",
+          "raw_name": "GxRedeye Vibro Chump",
+          "category": "Amp",
+          "description": "Vibro Chump variant of the Redeye guitar amp models."
+        }
+      ]
+    },
+    {
+      "id": 163749,
+      "title": "GxAlembic",
+      "url": "https://patchstorage.com/gxalembic/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163749/files/163746/download/",
+          "filename": "gx_studiopre-63ef743e985e4.lv2.tar.gz",
+          "sha256": "ed95ce23ca93f42e65cc08b97c518c4c40b5d5de7c54d8c744f9ca446b67056c",
+          "bundles": [
+            "gx_studiopre.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163749/files/163748/download/",
+          "filename": "gx_studiopre-63ef743f672fa.lv2.tar.gz",
+          "sha256": "fdd1136926ba0f340928ec54ea5d6ca42953ab91d1c4dc94e4e3f209c5925503",
+          "bundles": [
+            "gx_studiopre.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre",
+          "name": "Gx Alembic preamp",
+          "bundle": "gx_studiopre.lv2",
+          "raw_name": "GxAlembic",
+          "category": "Amp",
+          "description": "Studio preamp with tone controls."
+        }
+      ]
+    },
+    {
+      "id": 163565,
+      "title": "GxAmplifier-Stereo-X",
+      "url": "https://patchstorage.com/gxamplifier-stereo-x/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_amp_stereo#GUITARIX_ST"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163565/files/163562/download/",
+          "filename": "gx_amp_stereo-63ef73dc404c9.lv2.tar.gz",
+          "sha256": "241e031dd4743e6482a21725e07b0bba72a87a2d6af87cab18d079c07f84ce97",
+          "bundles": [
+            "gx_amp_stereo.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163565/files/163564/download/",
+          "filename": "gx_amp_stereo-63ef73dd1b195.lv2.tar.gz",
+          "sha256": "25081a03351f8ebe0b7726d19396d4e1f524448f1104feb7596ba421017cdf89",
+          "bundles": [
+            "gx_amp_stereo.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_amp_stereo#GUITARIX_ST",
+          "name": "Gx Amplifier stereo",
+          "bundle": "gx_amp_stereo.lv2",
+          "raw_name": "GxAmplifier Stereo",
+          "category": "Amp",
+          "description": "Stereo Guitarix amp with tone controls and cabinet processing."
+        }
+      ]
+    },
+    {
+      "id": 163560,
+      "title": "GxAmplifier-X",
+      "url": "https://patchstorage.com/gxamplifier-x/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_amp#GUITARIX"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163560/files/163557/download/",
+          "filename": "gx_amp-63ef73d5e7398.lv2.tar.gz",
+          "sha256": "9dbd2c9db02c6d8b8a7cffd86a6bfde196b2836ed7152d6088ab28dbaa035dce",
+          "bundles": [
+            "gx_amp.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163560/files/163559/download/",
+          "filename": "gx_amp-63ef73d6c049f.lv2.tar.gz",
+          "sha256": "74ebbcdc47a7845cd9d3794d459e890201beea215fdab97d891977e3e3bdf393",
+          "bundles": [
+            "gx_amp.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_amp#GUITARIX",
+          "name": "Gx Amplifier",
+          "bundle": "gx_amp.lv2",
+          "raw_name": "GxAmplifier-X",
+          "category": "Amp",
+          "description": "Guitarix guitar amp with tone controls and cabinet processing."
+        }
+      ]
+    },
+    {
+      "id": 163568,
+      "title": "GxBarkGraphicEQ",
+      "url": "https://patchstorage.com/gxbarkgraphiceq/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_barkgraphiceq_#_barkgraphiceq_"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163568/files/163567/download/",
+          "filename": "gx_barkgraphiceq-63ef73e13be2b.lv2.tar.gz",
+          "sha256": "68d646f5a0da4d1dff38f0337154b918a4d3956cebf492aad8410340a3f817f9",
+          "bundles": [
+            "gx_barkgraphiceq.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_barkgraphiceq.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_barkgraphiceq_#_barkgraphiceq_",
+          "name": "Gx Bark graphic EQ",
+          "bundle": "gx_barkgraphiceq.lv2",
+          "raw_name": "GxBarkGraphicEQ",
+          "category": "Filter",
+          "description": "Graphic equalizer with frequency bands spaced on the Bark scale."
+        }
+      ]
+    },
+    {
+      "id": 163533,
+      "title": "GxBooster",
+      "url": "https://patchstorage.com/gxbooster/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxbooster#booster"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163533/files/163530/download/",
+          "filename": "gxbooster-63ef73c501033.lv2.tar.gz",
+          "sha256": "c7bce68728e2b85b4c303b48781ce0d84b1a231f848124584e205044d191dfd0",
+          "bundles": [
+            "gxbooster.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163533/files/163532/download/",
+          "filename": "gxbooster-63ef73c60d98e.lv2.tar.gz",
+          "sha256": "4a283334a639b5ccdc5e6472981e6998c8e0ae424d0012223f390beaae9b6ea4",
+          "bundles": [
+            "gxbooster.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxbooster#booster",
+          "name": "Gx Booster",
+          "bundle": "gxbooster.lv2",
+          "raw_name": "GxBooster",
+          "category": "Drive",
+          "description": "Raises the signal level."
+        }
+      ]
+    },
+    {
+      "id": 163573,
+      "title": "GxCabinet",
+      "url": "https://patchstorage.com/gxcabinet/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163573/files/163570/download/",
+          "filename": "gx_cabinet-63ef73e3bd45f.lv2.tar.gz",
+          "sha256": "3feeae42a7ae004237ecdfacb999e2012dc06e7d76b8535d2c147792cf44f2bd",
+          "bundles": [
+            "gx_cabinet.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163573/files/163572/download/",
+          "filename": "gx_cabinet-63ef73e48eb8b.lv2.tar.gz",
+          "sha256": "3eda1a1e881e099a3ca95d28cca854710887df2df5b228492ce6681cce7325ee",
+          "bundles": [
+            "gx_cabinet.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
+          "name": "Gx Cabinet",
+          "bundle": "gx_cabinet.lv2",
+          "raw_name": "GxCabinet",
+          "category": "Cabinet",
+          "description": "Speaker cabinet simulator with a selection of built-in models."
+        }
+      ]
+    },
+    {
+      "id": 163576,
+      "title": "GxChorus-Stereo",
+      "url": "https://patchstorage.com/gxchorus-stereo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_chorus_stereo#_chorus_stereo"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163576/files/163575/download/",
+          "filename": "gx_chorus-63ef73e64c186.lv2.tar.gz",
+          "sha256": "46761880c875c4b4e86c9feeda0ee5c6c00ef98a070025a0d55a80fd073833ca",
+          "bundles": [
+            "gx_chorus.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_chorus.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_chorus_stereo#_chorus_stereo",
+          "name": "Gx Chorus stereo",
+          "bundle": "gx_chorus.lv2",
+          "raw_name": "GxChorus-Stereo",
+          "category": "Modulation",
+          "description": "Stereo chorus with rate and depth controls."
+        }
+      ]
+    },
+    {
+      "id": 163586,
+      "title": "GxColorSound Tonebender",
+      "url": "https://patchstorage.com/gxcolorsound-tonebender/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_cstb_#_cstb_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163586/files/163583/download/",
+          "filename": "gx_cstb-63ef73ea867e1.lv2.tar.gz",
+          "sha256": "f2958178f5b2164d0b02c2b207fd005f1a8bcd9b7c7eb9b46dfe5d8fbe39730c",
+          "bundles": [
+            "gx_cstb.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163586/files/163585/download/",
+          "filename": "gx_cstb-63ef73eb52fc6.lv2.tar.gz",
+          "sha256": "cc15f0f1f2334f9328c10e46d9f979d357d2865611c5cfb6b2a1d8231aaf8e12",
+          "bundles": [
+            "gx_cstb.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_cstb_#_cstb_",
+          "name": "Gx ColorSound Tonebender",
+          "bundle": "gx_cstb.lv2",
+          "raw_name": "GxColorSoundTonebender",
+          "category": "Drive",
+          "description": "Tonebender-style fuzz distortion."
+        }
+      ]
+    },
+    {
+      "id": 163581,
+      "title": "GxCompressor",
+      "url": "https://patchstorage.com/gxcompressor/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_compressor#_compressor"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163581/files/163578/download/",
+          "filename": "gx_compressor-63ef73e80873a.lv2.tar.gz",
+          "sha256": "fdac2afbc8be3eb1145a6b462675caa5dbb2b724f0e9c0ae194529c92a0189b2",
+          "bundles": [
+            "gx_compressor.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163581/files/163580/download/",
+          "filename": "gx_compressor-63ef73e8c2bcf.lv2.tar.gz",
+          "sha256": "f0fa0445a85bb21cb86b9e1277a6d373377fae4e8bf73390056f8892acbcbc81",
+          "bundles": [
+            "gx_compressor.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_compressor#_compressor",
+          "name": "Gx Compressor",
+          "bundle": "gx_compressor.lv2",
+          "raw_name": "GxCompressor",
+          "category": "Dynamics",
+          "description": "Controls signal dynamics with compression and output gain."
+        }
+      ]
+    },
+    {
+      "id": 164997,
+      "title": "GxCrybabyGCB95",
+      "url": "https://patchstorage.com/gxcrybabygcb95/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_gcb_95_#_gcb_95_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/164997/files/164994/download/",
+          "filename": "gx_gcb_95-640417ae423ad.lv2.tar.gz",
+          "sha256": "242becc261589feefb000c0abbdf39ed2b57b3dbe14d02d33941521583e5fcdc",
+          "bundles": [
+            "gx_gcb_95.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/164997/files/164996/download/",
+          "filename": "gx_gcb_95-640417b4d63c6.lv2.tar.gz",
+          "sha256": "52a9c9f7ab2260107e17e66d930fbb0f1cc3d01c377b41714c973240fb7bc633",
+          "bundles": [
+            "gx_gcb_95.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_gcb_95_#_gcb_95_",
+          "name": "Gx Crybaby GCB95",
+          "bundle": "gx_gcb_95.lv2",
+          "raw_name": "GxCrybabyGCB95",
+          "category": "Filter",
+          "description": "Crybaby-style wah filter with a sweep control."
+        }
+      ]
+    },
+    {
+      "id": 163591,
+      "title": "GxDelay-Stereo",
+      "url": "https://patchstorage.com/gxdelay-stereo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_delay_stereo#_delay_stereo"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163591/files/163588/download/",
+          "filename": "gx_delay-63ef73ed0e3c4.lv2.tar.gz",
+          "sha256": "9d282770d70d689b734edebc533f5fe891711e58745ffab70e9edd4a3f49d642",
+          "bundles": [
+            "gx_delay.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163591/files/163590/download/",
+          "filename": "gx_delay-63ef73edca6b2.lv2.tar.gz",
+          "sha256": "74981206d06a56c0129a6497208345a619d4c30f066e0db76db626cbdf072fe3",
+          "bundles": [
+            "gx_delay.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_delay_stereo#_delay_stereo",
+          "name": "Gx Delay stereo",
+          "bundle": "gx_delay.lv2",
+          "raw_name": "GxDelay-Stereo",
+          "category": "Delay",
+          "description": "Stereo delay with time, feedback and mix controls."
+        }
+      ]
+    },
+    {
+      "id": 163596,
+      "title": "Gxdetune",
+      "url": "https://patchstorage.com/gxdetune/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_detune_#_detune_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163596/files/163593/download/",
+          "filename": "gx_detune-63ef73ef75b95.lv2.tar.gz",
+          "sha256": "1ff693d4eb6487925d132fc03d556250d6b4a321ca48b2b5d43b1b0e350bee0f",
+          "bundles": [
+            "gx_detune.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163596/files/163595/download/",
+          "filename": "gx_detune-63ef73f039f19.lv2.tar.gz",
+          "sha256": "7e690a62fbfae1e8d66400e0646e5952a62980f742062b61cd1df5320393f64b",
+          "bundles": [
+            "gx_detune.lv2"
+          ]
+        }
+      },
+      "binary_rebuild": {
+        "kind": "guitarix-detune",
+        "commit": "b337e6c3b7d54a605922af201804fb71a4b83f1d",
+        "archive_filename": "guitarix-detune-b337e6c3b7d54a605922af201804fb71a4b83f1d.tar.gz",
+        "raw_base": "https://raw.githubusercontent.com/moddevices/guitarix/b337e6c3b7d54a605922af201804fb71a4b83f1d/",
+        "source_files": {
+          "trunk/COPYING": "f9e41f39dc0416875696e9825edfb32788ba94715574cf019d46a7648dc4f12a",
+          "trunk/src/LV2/DSP/gx_common.h": "4b4f3e87f944f91e916d2e424a05edd5fa4ba406425a198d708b64dcfaf74e51",
+          "trunk/src/LV2/DSP/gx_compiler.h": "3bf5097504ac4aef0cbbd97db9c121448dbac781174b4e80b5e56058bcb209b6",
+          "trunk/src/LV2/DSP/gx_pluginlv2.h": "5b5bc7350470036e76b63149ca114396f6473af9fb7e69631c29577b1cda5353",
+          "trunk/src/LV2/DSP/gx_resampler.cc": "5ed480d7d8786cd6c16343b5aa92bfd2264ec0fc486d556c3433cec6d12e9dbf",
+          "trunk/src/LV2/DSP/gx_resampler.h": "f89008a3eafa7bf75cd83d8edb3ff36114fcfc99fea51f31f30022563e1fb464",
+          "trunk/src/LV2/gx_detune.lv2/detune.cc": "99bcd81fd54a285eee4343581d6a10c90bf45c34292b676ed2fad7647c551f25",
+          "trunk/src/LV2/gx_detune.lv2/gx_detune.cpp": "d2b51a556a31351359ea849d5b6d9f4eb47d922eeaaeb627578d00197f593503",
+          "trunk/src/LV2/gx_detune.lv2/gx_detune.h": "8bbf819b17bff0919a19f0f5f8396d6d27676b26bd92c07d18fa18d63307f97d"
+        },
+        "change": "Use FFTW_ESTIMATE for both plans instead of FFTW_MEASURE; retain ports and URI."
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_detune_#_detune_",
+          "name": "Gx Detune",
+          "bundle": "gx_detune.lv2",
+          "raw_name": "Gxdetune",
+          "category": "Pitch",
+          "description": "Pitch detuning and octave effects with wet and dry levels."
+        }
+      ]
+    },
+    {
+      "id": 163601,
+      "title": "Gxdigital_delay",
+      "url": "https://patchstorage.com/gxdigital_delay/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_digital_delay_#_digital_delay_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163601/files/163598/download/",
+          "filename": "gx_digital_delay-63ef73f1ecd3e.lv2.tar.gz",
+          "sha256": "087f7032d4f203dc85fa2b0183607e1d7013642839b2144be65086ea659c1b39",
+          "bundles": [
+            "gx_digital_delay.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163601/files/163600/download/",
+          "filename": "gx_digital_delay-63ef73f2c7d05.lv2.tar.gz",
+          "sha256": "adc443199f056d47341372859a85dc9af8e75849d2866ed7e9f96c0ec639a1b7",
+          "bundles": [
+            "gx_digital_delay.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_#_digital_delay_",
+          "name": "Gx Digital delay",
+          "bundle": "gx_digital_delay.lv2",
+          "raw_name": "Gxdigital_delay",
+          "category": "Delay",
+          "description": "Mono digital delay with feedback and mix controls."
+        }
+      ]
+    },
+    {
+      "id": 163606,
+      "title": "Gxdigital_delay_st",
+      "url": "https://patchstorage.com/gxdigital_delay_st/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_digital_delay_st_#_digital_delay_st_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163606/files/163603/download/",
+          "filename": "gx_digital_delay_st-63ef73f497a9f.lv2.tar.gz",
+          "sha256": "1f3c708b264044c99fbea813e939e4cd1736060d602b5d433a47688440984473",
+          "bundles": [
+            "gx_digital_delay_st.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163606/files/163605/download/",
+          "filename": "gx_digital_delay_st-63ef73f55da34.lv2.tar.gz",
+          "sha256": "51db4dd88b38c3ae43d585e563c2f6c5ea5ef733980480fed109dbf125a31c93",
+          "bundles": [
+            "gx_digital_delay_st.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_st_#_digital_delay_st_",
+          "name": "Gx Digital delay stereo",
+          "bundle": "gx_digital_delay_st.lv2",
+          "raw_name": "Gxdigital_delay_st",
+          "category": "Delay",
+          "description": "Stereo digital delay with feedback and mix controls."
+        }
+      ]
+    },
+    {
+      "id": 163611,
+      "title": "Gxduck_delay",
+      "url": "https://patchstorage.com/gxduck_delay/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_duck_delay_#_duck_delay_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163611/files/163608/download/",
+          "filename": "gx_duck_delay-63ef73f7271bd.lv2.tar.gz",
+          "sha256": "7d51d8a4b576d5dbd1fbff3782e5b3274d9cb637b42134273d505153c8d5f300",
+          "bundles": [
+            "gx_duck_delay.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163611/files/163610/download/",
+          "filename": "gx_duck_delay-63ef73f7ea7a9.lv2.tar.gz",
+          "sha256": "df4f06b82c68102831e2c5604eeb54d8fcf0feaa753e7202d5edfe5f54d1bfe9",
+          "bundles": [
+            "gx_duck_delay.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_duck_delay_#_duck_delay_",
+          "name": "Gx Duck delay",
+          "bundle": "gx_duck_delay.lv2",
+          "raw_name": "Gxduck_delay",
+          "category": "Delay",
+          "description": "Mono delay that reduces the repeats while the input is playing."
+        }
+      ]
+    },
+    {
+      "id": 163616,
+      "title": "Gxduck_delay_st",
+      "url": "https://patchstorage.com/gxduck_delay_st/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_duck_delay_st_#_duck_delay_st_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163616/files/163613/download/",
+          "filename": "gx_duck_delay_st-63ef73f99fac5.lv2.tar.gz",
+          "sha256": "20e63d52ec0774069456e4da954dc9de449524982630855182f515f9df094e9c",
+          "bundles": [
+            "gx_duck_delay_st.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163616/files/163615/download/",
+          "filename": "gx_duck_delay_st-63ef73fa6f794.lv2.tar.gz",
+          "sha256": "1a2a45aaa4b9639ddb6fcfa46cfbf33c33cbdc5834a79f312fa1e54906108095",
+          "bundles": [
+            "gx_duck_delay_st.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_duck_delay_st_#_duck_delay_st_",
+          "name": "Gx Duck delay stereo",
+          "bundle": "gx_duck_delay_st.lv2",
+          "raw_name": "Gxduck_delay_st",
+          "category": "Delay",
+          "description": "Stereo delay that reduces the repeats while the input is playing."
+        }
+      ]
+    },
+    {
+      "id": 163621,
+      "title": "GxEcho-Stereo",
+      "url": "https://patchstorage.com/gxecho-stereo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163621/files/163618/download/",
+          "filename": "gx_echo-63ef73fc3970f.lv2.tar.gz",
+          "sha256": "9a111d409b6c8e11841f4e629927f717d32e2f129f92ec49f9af8fd729076379",
+          "bundles": [
+            "gx_echo.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163621/files/163620/download/",
+          "filename": "gx_echo-63ef73fd07f2a.lv2.tar.gz",
+          "sha256": "eb78c60bc5184ddba01767e00330b076184d793e9429e5eab82b202d37c961ec",
+          "bundles": [
+            "gx_echo.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo",
+          "name": "Gx Echo stereo",
+          "bundle": "gx_echo.lv2",
+          "raw_name": "GxEcho-Stereo",
+          "category": "Delay",
+          "description": "Stereo echo effect with feedback and level controls."
+        }
+      ]
+    },
+    {
+      "id": 163536,
+      "title": "GxEchoCat",
+      "url": "https://patchstorage.com/gxechocat/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxechocat#echocat"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163536/files/163535/download/",
+          "filename": "gxechocat-63ef73c7d3101.lv2.tar.gz",
+          "sha256": "394f2be41b12aca954e10b3f0e0e98aaf5a8d55b7e73b5454ef46314f38dea0e",
+          "bundles": [
+            "gxechocat.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gxechocat.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxechocat#echocat",
+          "name": "Gx Echo Cat",
+          "bundle": "gxechocat.lv2",
+          "raw_name": "GxEchoCat",
+          "category": "Delay",
+          "description": "Echo effect with controls for its repeat character."
+        }
+      ]
+    },
+    {
+      "id": 163626,
+      "title": "GxExpander",
+      "url": "https://patchstorage.com/gxexpander/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_expander#_expander"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163626/files/163623/download/",
+          "filename": "gx_expander-63ef73febc5f4.lv2.tar.gz",
+          "sha256": "bc25bcaabff88e7e80735f38ff7927dd995e50cd538c073379e8d614eaee399f",
+          "bundles": [
+            "gx_expander.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163626/files/163625/download/",
+          "filename": "gx_expander-63ef73ff7f3e4.lv2.tar.gz",
+          "sha256": "c67efe0942fd4cd158a77bb6135656104f2d3ba602617acba74fef5acd2dadbc",
+          "bundles": [
+            "gx_expander.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_expander#_expander",
+          "name": "Gx Expander",
+          "bundle": "gx_expander.lv2",
+          "raw_name": "GxExpander",
+          "category": "Dynamics",
+          "description": "Expands dynamics to reduce quiet background sound."
+        }
+      ]
+    },
+    {
+      "id": 163631,
+      "title": "GxFlanger",
+      "url": "https://patchstorage.com/gxflanger/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_flanger#_flanger"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163631/files/163628/download/",
+          "filename": "gx_flanger-63ef74017129f.lv2.tar.gz",
+          "sha256": "f03b299457f36fa07c27389f80057412c1e21133f916d120b8a3c4823edb217f",
+          "bundles": [
+            "gx_flanger.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163631/files/163630/download/",
+          "filename": "gx_flanger-63ef74023d8d1.lv2.tar.gz",
+          "sha256": "d4f5989f2fa94652310bbc87ff10b6aac710333eec1966b113d9789a92726ebb",
+          "bundles": [
+            "gx_flanger.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_flanger#_flanger",
+          "name": "Gx Flanger",
+          "bundle": "gx_flanger.lv2",
+          "raw_name": "GxFlanger",
+          "category": "Modulation",
+          "description": "Sweeping comb-filter modulation with rate and depth controls."
+        }
+      ]
+    },
+    {
+      "id": 163641,
+      "title": "GxFuzz",
+      "url": "https://patchstorage.com/gxfuzz/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_fuzz_#fuzz_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163641/files/163638/download/",
+          "filename": "gx_fuzz-63ef740650b7e.lv2.tar.gz",
+          "sha256": "5d50e8ecff60fc851a534f9b629cc0f2ae9711f202ba3f661381cf84d000d5d5",
+          "bundles": [
+            "gx_fuzz.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163641/files/163640/download/",
+          "filename": "gx_fuzz-63ef74071d0b9.lv2.tar.gz",
+          "sha256": "c5f9011b6764e94486425e8efe72a499b876cbd04ebf9122bdeac5197f26ca42",
+          "bundles": [
+            "gx_fuzz.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzz_#fuzz_",
+          "name": "Gx Fuzz",
+          "bundle": "gx_fuzz.lv2",
+          "raw_name": "GxFuzz",
+          "category": "Drive",
+          "description": "Guitarix fuzz distortion."
+        }
+      ]
+    },
+    {
+      "id": 163651,
+      "title": "GxFuzzFaceFuller",
+      "url": "https://patchstorage.com/gxfuzzfacefuller/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_fuzzfacefm_#_fuzzfacefm_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163651/files/163648/download/",
+          "filename": "gx_fuzzfacefm-63ef740b73661.lv2.tar.gz",
+          "sha256": "b6109ba41765eab001b8998b5e18620d973ff5461861c9092b44eaab23f24765",
+          "bundles": [
+            "gx_fuzzfacefm.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163651/files/163650/download/",
+          "filename": "gx_fuzzfacefm-63ef740c46be4.lv2.tar.gz",
+          "sha256": "3aea10d42f638e98921bc5aa9106f9672e1d6280ac1a04c02070066f0ca8fa48",
+          "bundles": [
+            "gx_fuzzfacefm.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzzfacefm_#_fuzzfacefm_",
+          "name": "Gx Fuzz Face Fuller",
+          "bundle": "gx_fuzzfacefm.lv2",
+          "raw_name": "GxFuzzFaceFullerMod",
+          "category": "Drive",
+          "description": "Fuzz Face-style distortion with the Fuller modification."
+        }
+      ]
+    },
+    {
+      "id": 163646,
+      "title": "GxFuzzFaceJH2",
+      "url": "https://patchstorage.com/gxfuzzfacejh2/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_fuzzface_#_fuzzface_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163646/files/163643/download/",
+          "filename": "gx_fuzzface-63ef7408df664.lv2.tar.gz",
+          "sha256": "bb7ea34e36645183ccdaebdddb525f8d100b2754545bb6dad5f5a816d5d5e118",
+          "bundles": [
+            "gx_fuzzface.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163646/files/163645/download/",
+          "filename": "gx_fuzzface-63ef7409a7412.lv2.tar.gz",
+          "sha256": "442803146c285b09f5f7d0f5a5913342df1f359885fdcbf23a9da1d3cf0359d4",
+          "bundles": [
+            "gx_fuzzface.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzzface_#_fuzzface_",
+          "name": "Gx Fuzz Face JH-2",
+          "bundle": "gx_fuzzface.lv2",
+          "raw_name": "GxFuzzFaceJH-2",
+          "category": "Drive",
+          "description": "Fuzz Face-style distortion, JH-2 variant."
+        }
+      ]
+    },
+    {
+      "id": 163636,
+      "title": "GxFuzzMaster",
+      "url": "https://patchstorage.com/gxfuzzmaster/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_fumaster_#_fumaster_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163636/files/163633/download/",
+          "filename": "gx_fumaster-63ef7403e1be6.lv2.tar.gz",
+          "sha256": "cf75fa00dc6ca07b1ebda4bd226a222f4818261e846675d63d05de3d38e19e3e",
+          "bundles": [
+            "gx_fumaster.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163636/files/163635/download/",
+          "filename": "gx_fumaster-63ef7404ae84b.lv2.tar.gz",
+          "sha256": "1ef8d66a17eec8031a4a16874448f41399a265e7fd343f3cc8ce137933b0b80a",
+          "bundles": [
+            "gx_fumaster.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_fumaster_#_fumaster_",
+          "name": "Gx Fuzz Master",
+          "bundle": "gx_fumaster.lv2",
+          "raw_name": "GxFuzzMaster",
+          "category": "Drive",
+          "description": "Fuzz distortion with tone and output controls."
+        }
+      ]
+    },
+    {
+      "id": 163654,
+      "title": "GxGraphicEQ",
+      "url": "https://patchstorage.com/gxgraphiceq/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_graphiceq_#_graphiceq_"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163654/files/163653/download/",
+          "filename": "gx_graphiceq-63ef740e0a80f.lv2.tar.gz",
+          "sha256": "baabfd4fbe4084cfcfae9018e6b33c23450fe5aee0e62752d78b491488bdf7ed",
+          "bundles": [
+            "gx_graphiceq.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_graphiceq.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_graphiceq_#_graphiceq_",
+          "name": "Gx Graphic EQ",
+          "bundle": "gx_graphiceq.lv2",
+          "raw_name": "GxGraphicEQ",
+          "category": "Filter",
+          "description": "Graphic equalizer with separate frequency-band gains."
+        }
+      ]
+    },
+    {
+      "id": 163659,
+      "title": "GxHF_Brightener",
+      "url": "https://patchstorage.com/gxhf_brightener/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_hfb_#_hfb_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163659/files/163656/download/",
+          "filename": "gx_hfb-63ef740fb584e.lv2.tar.gz",
+          "sha256": "b5bc685928988cb5ccc767cd45b2af230d92fc0465537950ef82cd3da6776518",
+          "bundles": [
+            "gx_hfb.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163659/files/163658/download/",
+          "filename": "gx_hfb-63ef741084ef3.lv2.tar.gz",
+          "sha256": "e9b13c32382a8b97f31b305ea345bc995e94c79a4ea4e8d2f360f535a5a62a60",
+          "bundles": [
+            "gx_hfb.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_hfb_#_hfb_",
+          "name": "Gx HF Brightener",
+          "bundle": "gx_hfb.lv2",
+          "raw_name": "GxHighFrequencyBrightener",
+          "category": "Drive",
+          "description": "Brightens the signal's upper frequencies."
+        }
+      ]
+    },
+    {
+      "id": 163664,
+      "title": "GxHogsFoot",
+      "url": "https://patchstorage.com/gxhogsfoot/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163664/files/163661/download/",
+          "filename": "gx_hogsfoot-63ef74122e0db.lv2.tar.gz",
+          "sha256": "650796d6989479e30a42609d355828bfa65c6113b71548307202a114b912b074",
+          "bundles": [
+            "gx_hogsfoot.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163664/files/163663/download/",
+          "filename": "gx_hogsfoot-63ef7412e8cc5.lv2.tar.gz",
+          "sha256": "0358f7ea31ceb73869c53c22d20d746e236be4832ca643af2d66ff8e4c951980",
+          "bundles": [
+            "gx_hogsfoot.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_",
+          "name": "Gx Hogs Foot",
+          "bundle": "gx_hogsfoot.lv2",
+          "raw_name": "GxHogsFoot",
+          "category": "Drive",
+          "description": "Bass booster emphasizing low frequencies."
+        }
+      ]
+    },
+    {
+      "id": 163669,
+      "title": "GxHornet",
+      "url": "https://patchstorage.com/gxhornet/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163669/files/163666/download/",
+          "filename": "gx_hornet-63ef741484998.lv2.tar.gz",
+          "sha256": "30e9dd20ed0370fa64afd71c33152b0121b6e092d945da43ec67ab6059950a0c",
+          "bundles": [
+            "gx_hornet.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163669/files/163668/download/",
+          "filename": "gx_hornet-63ef741546002.lv2.tar.gz",
+          "sha256": "d9d393a57f13a7bdae173dc9c1dc92ac9d357fda13801e3577c7a438e444ede2",
+          "bundles": [
+            "gx_hornet.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_",
+          "name": "Gx Hornet",
+          "bundle": "gx_hornet.lv2",
+          "raw_name": "GxHornet",
+          "category": "Drive",
+          "description": "Guitarix Hornet distortion effect."
+        }
+      ]
+    },
+    {
+      "id": 163674,
+      "title": "Gxjcm800pre",
+      "url": "https://patchstorage.com/gxjcm800pre/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_#_jcm800pre_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163674/files/163671/download/",
+          "filename": "gx_jcm800pre-63ef7416f1f08.lv2.tar.gz",
+          "sha256": "ee6e2f2f8f1e6fe2721f6a99521f1fb817857308910b36d5ec4340c33bef24cd",
+          "bundles": [
+            "gx_jcm800pre.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163674/files/163673/download/",
+          "filename": "gx_jcm800pre-63ef7417b72ca.lv2.tar.gz",
+          "sha256": "4eadcc60e010ff97c301c4a73623117b69db77948736579c99da948acaa53397",
+          "bundles": [
+            "gx_jcm800pre.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_#_jcm800pre_",
+          "name": "Gx JCM800 preamp",
+          "bundle": "gx_jcm800pre.lv2",
+          "raw_name": "GxJCM800pre",
+          "category": "Amp",
+          "description": "JCM800-style guitar preamp."
+        }
+      ]
+    },
+    {
+      "id": 163679,
+      "title": "Gxjcm800preST",
+      "url": "https://patchstorage.com/gxjcm800prest/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_st#_jcm800pre_st"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163679/files/163676/download/",
+          "filename": "gx_jcm800pre_st-63ef7419764fc.lv2.tar.gz",
+          "sha256": "00812c2de82c61d035c6530af66c96ee53790e119cfaf1214f0bf5a3b759588c",
+          "bundles": [
+            "gx_jcm800pre_st.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163679/files/163678/download/",
+          "filename": "gx_jcm800pre_st-63ef741a4bc35.lv2.tar.gz",
+          "sha256": "2e8418680d4d504a923dec2e77540d66a1c4ba848f1f6c238e32db0f6d19640e",
+          "bundles": [
+            "gx_jcm800pre_st.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_st#_jcm800pre_st",
+          "name": "Gx JCM800 preamp stereo",
+          "bundle": "gx_jcm800pre_st.lv2",
+          "raw_name": "GxJCM800pre ST",
+          "category": "Amp",
+          "description": "Stereo JCM800-style guitar preamp."
+        }
+      ]
+    },
+    {
+      "id": 163682,
+      "title": "Gxlivelooper",
+      "url": "https://patchstorage.com/gxlivelooper/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163682/files/163681/download/",
+          "filename": "gx_livelooper-63ef741c1f278.lv2.tar.gz",
+          "sha256": "ae739c753ab602fad81a77c7747e9b6ce5324519b1b3bd0a6277007dbb905825",
+          "bundles": [
+            "gx_livelooper.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_livelooper.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_",
+          "name": "Gx Live looper",
+          "bundle": "gx_livelooper.lv2",
+          "raw_name": "Gxlivelooper",
+          "category": "Delay",
+          "description": "Four loop tracks with recording, playback, reverse, speed and level controls. Captured audio is not promised to persist with a patch."
+        }
+      ]
+    },
+    {
+      "id": 165002,
+      "title": "GxMole",
+      "url": "https://patchstorage.com/gxmole/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/165002/files/164999/download/",
+          "filename": "gx_mole-6404186d3c752.lv2.tar.gz",
+          "sha256": "167c087eac5f6ab39507c915638f79b21b7852f8d12689c77ed4ea8e6581d1a1",
+          "bundles": [
+            "gx_mole.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/165002/files/165001/download/",
+          "filename": "gx_mole-640418746fd96.lv2.tar.gz",
+          "sha256": "3fc3d27ff165bfd9ed6857b48e1d4f7066e5efb1811179e904ef8c5f57326d42",
+          "bundles": [
+            "gx_mole.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_",
+          "name": "Gx Mole",
+          "bundle": "gx_mole.lv2",
+          "raw_name": "GxMole",
+          "category": "Drive",
+          "description": "Low-frequency booster for adding weight to the signal."
+        }
+      ]
+    },
+    {
+      "id": 165007,
+      "title": "GxMuff",
+      "url": "https://patchstorage.com/gxmuff/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_muff_#_muff_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/165007/files/165004/download/",
+          "filename": "gx_muff-640418c472cfe.lv2.tar.gz",
+          "sha256": "322b4bf7e670eefd6aceedac1264104bea1831b9fecc8cd23459f90f4503614f",
+          "bundles": [
+            "gx_muff.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/165007/files/165006/download/",
+          "filename": "gx_muff-640418ca7b3fb.lv2.tar.gz",
+          "sha256": "e02ea9f33ba2071d1637b15e43faa364dcacb1e1f7398d8f1a4ac8783a0c2c9c",
+          "bundles": [
+            "gx_muff.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_muff_#_muff_",
+          "name": "Gx Muff",
+          "bundle": "gx_muff.lv2",
+          "raw_name": "GxMuff",
+          "category": "Drive",
+          "description": "Muff-style fuzz distortion."
+        }
+      ]
+    },
+    {
+      "id": 163685,
+      "title": "GxMultiBandCompressor",
+      "url": "https://patchstorage.com/gxmultibandcompressor/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163685/files/163684/download/",
+          "filename": "gx_mbcompressor-63ef741dd0338.lv2.tar.gz",
+          "sha256": "b44033ae56ff8faec4f46488cb8db29e1a7f7454a9dcb545c19a6b444660218c",
+          "bundles": [
+            "gx_mbcompressor.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_mbcompressor.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_",
+          "name": "Gx Multiband compressor",
+          "bundle": "gx_mbcompressor.lv2",
+          "raw_name": "GxMultiBandCompressor",
+          "category": "Dynamics",
+          "description": "Compresses separate frequency bands."
+        }
+      ]
+    },
+    {
+      "id": 163690,
+      "title": "GxMultiBandDelay",
+      "url": "https://patchstorage.com/gxmultibanddelay/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163690/files/163687/download/",
+          "filename": "gx_mbdelay-63ef741f944ee.lv2.tar.gz",
+          "sha256": "e65d1a77e65903c5aadf408a04ef97e98ea6e0f3bbc6a033d5311966deaee711",
+          "bundles": [
+            "gx_mbdelay.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163690/files/163689/download/",
+          "filename": "gx_mbdelay-63ef742056fe7.lv2.tar.gz",
+          "sha256": "a5755aee43b50d62c4f6fdcf3c6fd78927644fb0015864f7188aa65990772acd",
+          "bundles": [
+            "gx_mbdelay.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_",
+          "name": "Gx Multiband delay",
+          "bundle": "gx_mbdelay.lv2",
+          "raw_name": "GxMultiBandDelay",
+          "category": "Delay",
+          "description": "Applies delay to separate frequency bands."
+        }
+      ]
+    },
+    {
+      "id": 163693,
+      "title": "GxMultiBandDistortion",
+      "url": "https://patchstorage.com/gxmultibanddistortion/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163693/files/163692/download/",
+          "filename": "gx_mbdistortion-63ef7422175a7.lv2.tar.gz",
+          "sha256": "fea45eb7fc406fb1bf4bcb89ff61a566d56619a45183c0c94654a69c004d08a9",
+          "bundles": [
+            "gx_mbdistortion.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_mbdistortion.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_",
+          "name": "Gx Multiband distortion",
+          "bundle": "gx_mbdistortion.lv2",
+          "raw_name": "GxMultiBandDistortion",
+          "category": "Drive",
+          "description": "Applies distortion to separate frequency bands."
+        }
+      ]
+    },
+    {
+      "id": 163696,
+      "title": "GxMultiBandEcho",
+      "url": "https://patchstorage.com/gxmultibandecho/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_mbecho_#_mbecho_"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163696/files/163695/download/",
+          "filename": "gx_mbecho-63ef7423e2a09.lv2.tar.gz",
+          "sha256": "4322953d8fbf3c0df9c4c0fe2a7e05abb47b074f5f595b56e5e15b3a348bbc38",
+          "bundles": [
+            "gx_mbecho.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_mbecho.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_mbecho_#_mbecho_",
+          "name": "Gx Multiband echo",
+          "bundle": "gx_mbecho.lv2",
+          "raw_name": "GxMultiBandEcho",
+          "category": "Delay",
+          "description": "Echo processing with separate frequency bands."
+        }
+      ]
+    },
+    {
+      "id": 163699,
+      "title": "GxMultiBandReverb",
+      "url": "https://patchstorage.com/gxmultibandreverb/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163699/files/163698/download/",
+          "filename": "gx_mbreverb-63ef742595a4a.lv2.tar.gz",
+          "sha256": "f775aa688a6859cc43fc7915117c0e8b929640df07adcde07c225a0209a12236",
+          "bundles": [
+            "gx_mbreverb.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_mbreverb.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_",
+          "name": "Gx Multiband reverb",
+          "bundle": "gx_mbreverb.lv2",
+          "raw_name": "GxMultiBandReverb",
+          "category": "Reverb",
+          "description": "Reverb processing with separate frequency bands."
+        }
+      ]
+    },
+    {
+      "id": 163704,
+      "title": "Gxoc_2",
+      "url": "https://patchstorage.com/gxoc_2/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_oc_2_#_oc_2_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163704/files/163701/download/",
+          "filename": "gx_oc_2-63ef742735ea2.lv2.tar.gz",
+          "sha256": "f6c79aad1f932bc9dc66bb0fedc2e7fa16fa466c2e49551ba7ee9b3881f00b3c",
+          "bundles": [
+            "gx_oc_2.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163704/files/163703/download/",
+          "filename": "gx_oc_2-63ef74280e4b2.lv2.tar.gz",
+          "sha256": "0d91c72bcf2c82a0e46e5ebc03ee83705b9d0a0d87ebcaa76b7a6c268db5822d",
+          "bundles": [
+            "gx_oc_2.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_oc_2_#_oc_2_",
+          "name": "Gx OC-2",
+          "bundle": "gx_oc_2.lv2",
+          "raw_name": "GxOC-2",
+          "category": "Pitch",
+          "description": "Octave-down effect with separate octave and dry levels."
+        }
+      ]
+    },
+    {
+      "id": 163709,
+      "title": "GxPhaser",
+      "url": "https://patchstorage.com/gxphaser/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163709/files/163706/download/",
+          "filename": "gx_phaser-63ef7429b322e.lv2.tar.gz",
+          "sha256": "b26d3c4d73391b16b9ef89d499b1c1486c2b4927adb739483289637458638e06",
+          "bundles": [
+            "gx_phaser.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163709/files/163708/download/",
+          "filename": "gx_phaser-63ef742a75a15.lv2.tar.gz",
+          "sha256": "989c3ee8e0f04971d93ed1ea99d0e634076ee4dfbc751f5735c4ae2a0ea447ed",
+          "bundles": [
+            "gx_phaser.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser",
+          "name": "Gx Phaser",
+          "bundle": "gx_phaser.lv2",
+          "raw_name": "GxPhaser",
+          "category": "Modulation",
+          "description": "Sweeping phase-shift effect."
+        }
+      ]
+    },
+    {
+      "id": 163714,
+      "title": "GxRangeMaster",
+      "url": "https://patchstorage.com/gxrangemaster/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_rangem_#_rangem_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163714/files/163711/download/",
+          "filename": "gx_rangem-63ef742c2fbf9.lv2.tar.gz",
+          "sha256": "39508d7539936ead5e55b95d6317d9e840cd3eaa495824e6d44d3a0e482abcad",
+          "bundles": [
+            "gx_rangem.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163714/files/163713/download/",
+          "filename": "gx_rangem-63ef742ced46c.lv2.tar.gz",
+          "sha256": "8acdf5af60d2e8ae67069545b52f8957ba6adfc44ba58fdf5b9ea6631f83b5c6",
+          "bundles": [
+            "gx_rangem.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_rangem_#_rangem_",
+          "name": "Gx Rangemaster",
+          "bundle": "gx_rangem.lv2",
+          "raw_name": "GxRangemaster",
+          "category": "Drive",
+          "description": "Rangemaster-style treble booster."
+        }
+      ]
+    },
+    {
+      "id": 163724,
+      "title": "GxReverb-Stereo",
+      "url": "https://patchstorage.com/gxreverb-stereo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163724/files/163721/download/",
+          "filename": "gx_reverb-63ef743161f11.lv2.tar.gz",
+          "sha256": "ca869d3276862cbf022237637ba111fa29679747ae0409beec53c4866b5d967e",
+          "bundles": [
+            "gx_reverb.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163724/files/163723/download/",
+          "filename": "gx_reverb-63ef743237418.lv2.tar.gz",
+          "sha256": "294ea2ccd5938e4a3ca43cced45342f3a3237e2d75d0f286fab7f7b59d568a12",
+          "bundles": [
+            "gx_reverb.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo",
+          "name": "Gx Reverb stereo",
+          "bundle": "gx_reverb.lv2",
+          "raw_name": "GxReverb-Stereo",
+          "category": "Reverb",
+          "description": "Stereo algorithmic reverb."
+        }
+      ]
+    },
+    {
+      "id": 163729,
+      "title": "Gxroom_simulator",
+      "url": "https://patchstorage.com/gxroom_simulator/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163729/files/163726/download/",
+          "filename": "gx_room_simulator-63ef7433edad1.lv2.tar.gz",
+          "sha256": "44965a9be59607381cb8bdb9c8472dde23697e36e3748309e36482699b989c77",
+          "bundles": [
+            "gx_room_simulator.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163729/files/163728/download/",
+          "filename": "gx_room_simulator-63ef7434c5cd2.lv2.tar.gz",
+          "sha256": "7e3d6c26344aa3e28a7f30546479f85382dc75c2b1eb6f1b09717da4853d56d9",
+          "bundles": [
+            "gx_room_simulator.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_",
+          "name": "Gx Room simulator",
+          "bundle": "gx_room_simulator.lv2",
+          "raw_name": "Gxroom_simulator",
+          "category": "Reverb",
+          "description": "Room ambience simulator."
+        }
+      ]
+    },
+    {
+      "id": 163734,
+      "title": "GxScreamingBird",
+      "url": "https://patchstorage.com/gxscreamingbird/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163734/files/163731/download/",
+          "filename": "gx_scream-63ef743677093.lv2.tar.gz",
+          "sha256": "36802de34dd379adbcd4effe072a43f87c6c35b421cbf14bbd935a4bbedacdd5",
+          "bundles": [
+            "gx_scream.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163734/files/163733/download/",
+          "filename": "gx_scream-63ef74374f8e4.lv2.tar.gz",
+          "sha256": "ecb9f7757892404e2397b798cbc2cecf4d0129ed4ecc3823a2d6ee71c9ae0cc6",
+          "bundles": [
+            "gx_scream.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_",
+          "name": "Gx Screaming Bird",
+          "bundle": "gx_scream.lv2",
+          "raw_name": "GxScreamingBird",
+          "category": "Drive",
+          "description": "Treble booster for bright, cutting tones."
+        }
+      ]
+    },
+    {
+      "id": 163739,
+      "title": "Gxshimmizita",
+      "url": "https://patchstorage.com/gxshimmizita/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163739/files/163736/download/",
+          "filename": "gx_shimmizita-63ef743924836.lv2.tar.gz",
+          "sha256": "bc692ca9e9b0a01f60a4827ce6ab5e0b39eb49be64e6951830600e296d9b3345",
+          "bundles": [
+            "gx_shimmizita.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163739/files/163738/download/",
+          "filename": "gx_shimmizita-63ef743a0b07a.lv2.tar.gz",
+          "sha256": "0720c21adfe8f14a4bee4363b2fcf07bfe225cf000b87431189be975570cf2f9",
+          "bundles": [
+            "gx_shimmizita.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_",
+          "name": "Gx Shimmizita",
+          "bundle": "gx_shimmizita.lv2",
+          "raw_name": "Gxshimmizita",
+          "category": "Reverb",
+          "description": "Shimmer reverb combining pitch shifting and a reverb tail."
+        }
+      ]
+    },
+    {
+      "id": 163759,
+      "title": "GxSustainer",
+      "url": "https://patchstorage.com/gxsustainer/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163759/files/163756/download/",
+          "filename": "gx_susta-63ef7443c3338.lv2.tar.gz",
+          "sha256": "8619b1d756031f07c6d8fdf5073aa4342f74528618c28e4b233d4577f3df5c52",
+          "bundles": [
+            "gx_susta.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163759/files/163758/download/",
+          "filename": "gx_susta-63ef74449496a.lv2.tar.gz",
+          "sha256": "979ce19f4c077e8a09e61783b9c76f5b2b5519c110dd94fcca53f7ba5c367c61",
+          "bundles": [
+            "gx_susta.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_",
+          "name": "Gx Sustainer",
+          "bundle": "gx_susta.lv2",
+          "raw_name": "GxSustainer",
+          "category": "Dynamics",
+          "description": "Controls level to extend sustain."
+        }
+      ]
+    },
+    {
+      "id": 163764,
+      "title": "Gxswitched_tremolo",
+      "url": "https://patchstorage.com/gxswitched_tremolo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163764/files/163761/download/",
+          "filename": "gx_switched_tremolo-63ef74463a79b.lv2.tar.gz",
+          "sha256": "90fbfd97bc9d88bb98d399950bfb7d0b0b5986de99e50c03af7b5e4ed759c7ce",
+          "bundles": [
+            "gx_switched_tremolo.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163764/files/163763/download/",
+          "filename": "gx_switched_tremolo-63ef744703ae9.lv2.tar.gz",
+          "sha256": "b2853419d97c19e351af11a3d9138aabe712172bf2d5a4707accb4e940d292cd",
+          "bundles": [
+            "gx_switched_tremolo.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_",
+          "name": "Gx Switched tremolo",
+          "bundle": "gx_switched_tremolo.lv2",
+          "raw_name": "Gxswitched_tremolo",
+          "category": "Modulation",
+          "description": "Switched tremolo for pronounced rhythmic level changes."
+        }
+      ]
+    },
+    {
+      "id": 163541,
+      "title": "GxSwitchlessWah",
+      "url": "https://patchstorage.com/gxswitchlesswah/",
+      "revision": "1.0",
+      "source_url": "https://github.com/moddevices/GxSwitchlessWah.lv2",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163541/files/163538/download/",
+          "filename": "GxSwitchlessWah-63ef73c978bd4.lv2.tar.gz",
+          "sha256": "8a64461bca69ea261e210a8c7524ce593faae75e88378f476b9afc02c17ced83",
+          "bundles": [
+            "GxSwitchlessWah.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163541/files/163540/download/",
+          "filename": "GxSwitchlessWah-63ef73ca3e17e.lv2.tar.gz",
+          "sha256": "cd0dbda441740af69e3eca46ed0f177c46acbdb0d81f0426e1e04f7eb07e9666",
+          "bundles": [
+            "GxSwitchlessWah.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah",
+          "name": "Gx Switchless wah",
+          "bundle": "GxSwitchlessWah.lv2",
+          "raw_name": "GxSwitchlessWah",
+          "category": "Filter",
+          "description": "Wah filter with automatic switching."
+        }
+      ]
+    },
+    {
+      "id": 163546,
+      "title": "GxTiltTone",
+      "url": "https://patchstorage.com/gxtilttone/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxtilttone#tilttone"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163546/files/163543/download/",
+          "filename": "gxtilttone-63ef73cbe7c07.lv2.tar.gz",
+          "sha256": "9b8e766afe44a8a6e30f4dfb2c0917a6adbc6b7297ae7e60e014bc5455d44547",
+          "bundles": [
+            "gxtilttone.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163546/files/163545/download/",
+          "filename": "gxtilttone-63ef73ccbc1e9.lv2.tar.gz",
+          "sha256": "623d3c5bdfc6b734b487151e14946f7306a173869d7a0a7ac66c56722f1153a4",
+          "bundles": [
+            "gxtilttone.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxtilttone#tilttone",
+          "name": "Gx Tilt tone",
+          "bundle": "gxtilttone.lv2",
+          "raw_name": "GxTiltTone",
+          "category": "Filter",
+          "description": "Tilts the balance between low and high frequencies."
+        }
+      ]
+    },
+    {
+      "id": 163767,
+      "title": "GxTremolo",
+      "url": "https://patchstorage.com/gxtremolo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_tremolo#_tremolo"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163767/files/163766/download/",
+          "filename": "gx_tremolo-63ef744896781.lv2.tar.gz",
+          "sha256": "ef3a752e1632e5633a64d7d88358e4950eee4768d35b8feaf884f75f25fccdc3",
+          "bundles": [
+            "gx_tremolo.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_tremolo.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_tremolo#_tremolo",
+          "name": "Gx Tremolo",
+          "bundle": "gx_tremolo.lv2",
+          "raw_name": "GxTremolo",
+          "category": "Modulation",
+          "description": "Rhythmic volume modulation."
+        }
+      ]
+    },
+    {
+      "id": 163549,
+      "title": "GxTubeDelay",
+      "url": "https://patchstorage.com/gxtubedelay/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163549/files/163548/download/",
+          "filename": "gxtubedelay-63ef73ce91ece.lv2.tar.gz",
+          "sha256": "fa1161fa23b5838dba7a167742e273edc63765bf6bc5659678d7584f7f064b09",
+          "bundles": [
+            "gxtubedelay.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gxtubedelay.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay",
+          "name": "Gx Tube delay",
+          "bundle": "gxtubedelay.lv2",
+          "raw_name": "GxTubeDelay",
+          "category": "Delay",
+          "description": "Tube-style delay effect."
+        }
+      ]
+    },
+    {
+      "id": 164565,
+      "title": "GxTubeScreamer",
+      "url": "https://patchstorage.com/gxtubescreamer/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxts9#ts9sim"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/164565/files/164562/download/",
+          "filename": "gxts9-63f59b2db1b95.lv2.tar.gz",
+          "sha256": "34aee4a5664f6fdc0792127aad3eed6f696e13c988d849bf3631d42f15fd10de",
+          "bundles": [
+            "gxts9.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/164565/files/164564/download/",
+          "filename": "gxts9-63f59b3593d45.lv2.tar.gz",
+          "sha256": "b7f1d390246e0449f3635fdf670c9c969290624f16bf3539e63cf9cae2f95de5",
+          "bundles": [
+            "gxts9.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxts9#ts9sim",
+          "name": "Gx Tube Screamer",
+          "bundle": "gxts9.lv2",
+          "raw_name": "GxTubeScreamer",
+          "category": "Drive",
+          "description": "Tube Screamer-style overdrive."
+        }
+      ]
+    },
+    {
+      "id": 163552,
+      "title": "GxTubeTremelo",
+      "url": "https://patchstorage.com/gxtubetremelo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163552/files/163551/download/",
+          "filename": "gxtubetremelo-63ef73d138107.lv2.tar.gz",
+          "sha256": "6bc38c167b54b55a88c278e8bc033cf83f1d554bbf87a532619c6411dc4d34df",
+          "bundles": [
+            "gxtubetremelo.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gxtubetremelo.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo",
+          "name": "Gx Tube tremolo",
+          "bundle": "gxtubetremelo.lv2",
+          "raw_name": "GxTubeTremelo",
+          "category": "Modulation",
+          "description": "Tube-style rhythmic volume modulation."
+        }
+      ]
+    },
+    {
+      "id": 163555,
+      "title": "GxTubeVibrato",
+      "url": "https://patchstorage.com/gxtubevibrato/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163555/files/163554/download/",
+          "filename": "gxtubevibrato-63ef73d35749f.lv2.tar.gz",
+          "sha256": "2227b48c88fa372d400126a7058e9ba6ce0f5e2940a905fb7ee83a2bd4923a5a",
+          "bundles": [
+            "gxtubevibrato.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gxtubevibrato.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato",
+          "name": "Gx Tube vibrato",
+          "bundle": "gxtubevibrato.lv2",
+          "raw_name": "GxTubeVibrato",
+          "category": "Modulation",
+          "description": "Tube-style pitch modulation."
+        }
+      ]
+    },
+    {
+      "id": 163528,
+      "title": "gxwah.lv2 Bundle",
+      "url": "https://patchstorage.com/gxautowah/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gxautowah#wah",
+        "http://guitarix.sourceforge.net/plugins/gxautowah#autowah"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/163528/files/164120/download/",
+          "filename": "gxwah-63ef7ad0843b3.lv2.tar.gz",
+          "sha256": "47a51ade7db390e77e39c1589719adf49ff84552e842bd59f0d3d6063508b5f4",
+          "bundles": [
+            "gxwah.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163528/files/164122/download/",
+          "filename": "gxwah-63ef7ad1489a1.lv2.tar.gz",
+          "sha256": "900a68b8de1288c9e10195b20b79be0a4dcab4e2f8c46b7f3426eb710c215d12",
+          "bundles": [
+            "gxwah.lv2"
+          ]
+        }
+      },
+      "manifest_additions": [
+        {
+          "bundle": "gxwah.lv2",
+          "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#autowah",
+          "reason": "The binary exports both wah and autowah, and gxautowah.ttl describes both, but the published manifest indexes only wah.",
+          "turtle": "<http://guitarix.sourceforge.net/plugins/gxautowah#autowah> a lv2:Plugin ; lv2:binary <gxautowah.so> ; rdfs:seeAlso <gxautowah.ttl> ."
+        }
+      ],
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#wah",
+          "name": "Gx Wah",
+          "bundle": "gxwah.lv2",
+          "raw_name": "GxWah",
+          "category": "Filter",
+          "description": "Wah filter with a manual sweep control."
+        },
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#autowah",
+          "name": "Gx Auto wah",
+          "bundle": "gxwah.lv2",
+          "raw_name": "GxAutoWah",
+          "category": "Filter",
+          "description": "Automatic wah filtering driven by the input signal."
+        }
+      ]
+    },
+    {
+      "id": 164990,
+      "title": "GxWahwah",
+      "url": "https://patchstorage.com/gxwahwah/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_"
+      ],
+      "archives": {
+        "linux-amd64": {
+          "url": "https://patchstorage.com/api/beta/patches/164990/files/164987/download/",
+          "filename": "gx_colwah-6404141e863d5.lv2.tar.gz",
+          "sha256": "7dc43c28aff9d2a129924929a7a3b7d2088d6b0d3a26f24b37a7040222db491d",
+          "bundles": [
+            "gx_colwah.lv2"
+          ]
+        },
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/164990/files/164989/download/",
+          "filename": "gx_colwah-6404142611242.lv2.tar.gz",
+          "sha256": "33f4fea2831e1c4aabd3b42415aa67501f2802466b24e38bc25e5ca5942ef5c5",
+          "bundles": [
+            "gx_colwah.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_",
+          "name": "Gx Wahwah",
+          "bundle": "gx_colwah.lv2",
+          "raw_name": "GxWahwah",
+          "category": "Filter",
+          "description": "Wah filter with a sweep control."
+        }
+      ]
+    },
+    {
+      "id": 163770,
+      "title": "GxZita_rev1-Stereo",
+      "url": "https://patchstorage.com/gxzita_rev1-stereo/",
+      "revision": "28.3",
+      "source_url": "https://github.com/moddevices/guitarix",
+      "license": {
+        "id": 4197,
+        "name": "ISC",
+        "slug": "isc",
+        "custom_license_text": ""
+      },
+      "advertised_uris": [
+        "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo"
+      ],
+      "archives": {
+        "rpi-aarch64": {
+          "url": "https://patchstorage.com/api/beta/patches/163770/files/163769/download/",
+          "filename": "gx_zita_rev1-63ef744a2e471.lv2.tar.gz",
+          "sha256": "82928c860740bb7ee3ad2e42aa96f10158cc1187277c9d00e7202fb558756dea",
+          "bundles": [
+            "gx_zita_rev1.lv2"
+          ]
+        }
+      },
+      "package_targets": {
+        "linux-amd64": {
+          "package": "guitarix-debian-amd64",
+          "bundles": [
+            "gx_zita_rev1.lv2"
+          ]
+        }
+      },
+      "plugins": [
+        {
+          "uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo",
+          "name": "Gx Zita reverb stereo",
+          "bundle": "gx_zita_rev1.lv2",
+          "raw_name": "GxZita_rev1-Stereo",
+          "category": "Reverb",
+          "description": "Stereo Zita reverb."
+        }
+      ]
+    }
+  ],
+  "packages": {
+    "guitarix-debian-amd64": {
+      "url": "https://deb.debian.org/debian/pool/main/g/guitarix/guitarix-lv2_0.46.0%2bdfsg-1_amd64.deb",
+      "filename": "guitarix-lv2_0.46.0+dfsg-1_amd64.deb",
+      "sha256": "37c9e8c5745123e54c6b67f3f9553a8b89d238f8e7eae9dfc03219a6add14835",
+      "version": "0.46.0+dfsg-1",
+      "source_url": "https://sources.debian.org/src/guitarix/0.46.0%2Bdfsg-1/"
+    }
+  }
+}

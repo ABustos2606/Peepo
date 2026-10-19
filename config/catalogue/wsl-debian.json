@@ -4350,7 +4350,8 @@
         {"symbol": "feedback_param", "name": "Pitch Mod", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.55, "logarithmic": false, "choices": []},
         {"symbol": "reverb_param", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.6, "logarithmic": false, "choices": []},
         {"symbol": "freeze_param", "name": "Freeze", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+,
         {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
@@ -4394,7 +4395,8 @@
         {"symbol": "feedback_param", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.55, "logarithmic": false, "choices": []},
         {"symbol": "reverb_param", "name": "Reverb", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.6, "logarithmic": false, "choices": []},
         {"symbol": "freeze_param", "name": "Freeze", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+,
         {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
@@ -4438,7 +4440,8 @@
         {"symbol": "feedback_param", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.53, "logarithmic": false, "choices": []},
         {"symbol": "reverb_param", "name": "Reverb", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.3, "logarithmic": false, "choices": []},
         {"symbol": "freeze_param", "name": "Freeze", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+,
         {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
@@ -4482,7 +4485,8 @@
         {"symbol": "feedback_param", "name": "Modulation Speed", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.44, "logarithmic": false, "choices": []},
         {"symbol": "reverb_param", "name": "Modulation Amount", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
         {"symbol": "freeze_param", "name": "Hold", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+,
         {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
@@ -4526,7 +4530,8 @@
         {"symbol": "feedback_param", "name": "Harmonics", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.6, "logarithmic": false, "choices": []},
         {"symbol": "reverb_param", "name": "Scatter", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.08, "logarithmic": false, "choices": []},
         {"symbol": "freeze_param", "name": "Switch Voice", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+,
         {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
@@ -4570,7 +4575,8 @@
         {"symbol": "feedback_param", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
         {"symbol": "reverb_param", "name": "Reverb", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
         {"symbol": "freeze_param", "name": "Freeze", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+,
         {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
@@ -4614,7 +4620,8 @@
         {"symbol": "feedback_param", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.48, "logarithmic": false, "choices": []},
         {"symbol": "reverb_param", "name": "Reverb", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.15, "logarithmic": false, "choices": []},
         {"symbol": "freeze_param", "name": "Freeze", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+,
         {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
@@ -6391,6 +6398,1661 @@
         {"symbol": "FUZZ", "name": "FUZZ", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
         {"symbol": "TONE", "name": "TONE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
         {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_amp#GUITARIX",
+      "name": "GxAmplifier-X",
+      "category": "Amp",
+      "description": "Simulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Simulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_amp.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "control", "direction": "input", "type": "midi"},
+        {"symbol": "notify", "direction": "output", "type": "midi"}
+      ],
+      "parameters": [
+        {"symbol": "MasterGain", "name": "MasterGain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": -15, "logarithmic": false, "choices": []},
+        {"symbol": "PreGain", "name": "PreGain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Distortion", "name": "Distortion", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "Drive", "name": "Drive", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 1, "default": 0.25, "logarithmic": false, "choices": []},
+        {"symbol": "Middle", "name": "Middle", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Bass", "name": "Bass", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Treble", "name": "Treble", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Cabinet", "name": "Cabinet", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 20, "default": 10, "logarithmic": false, "choices": []},
+        {"symbol": "Presence", "name": "Presence", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 10, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "model", "name": "Model", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 17, "default": 0, "logarithmic": false, "choices": ["12ax7", "12AU7", "12AT7", "6DJ8", "6C16", "6V6", "12ax7 feedback", "12AU7 feedback", "12AT7 feedback", "6DJ8 feedback", "pre 12ax7/ master 6V6", "pre 12AU7/ master 6V6", "pre 12AT7/ master 6V6", "pre 6DJ8/ master 6V6", "pre 12ax7/ push-pull 6V6", "pre 12AU7/ push-pull 6V6", "pre 12AT7/ push pull 6V6", "pre 6DJ8/ push-pull 6V6"]},
+        {"symbol": "t_model", "name": "Tonestack Model", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 26, "default": 1, "logarithmic": false, "choices": ["default", "Bassman", "Twin Reverb", "Princeton", "JCM-800", "JCM-2000", "M-Lead", "M2199", "AC-30", "Mesa Boogie", "SOL 100", "JTM-45", "AC-15", "Peavey", "Ibanez", "Roland", "Ampeg", "Rev.Rocket", "MIG 100 H", "Triple Giant", "Trio Preamp", "Hughes&Kettner", "Fender Junior", "Fender", "Fender Deville", "Gibsen", "Off"]},
+        {"symbol": "c_model", "name": "Cab Model", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 18, "default": 0, "logarithmic": false, "choices": ["4x12", "2x12", "1x12", "4x10", "2x10", "HighGain", "Twin", "Bassman", "Marshall", "AC30", "Princeton", "A2", "1x15", "Mesa", "Briliant", "Vitalize", "Charisma", "1x8", "Off"]}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_amp_stereo#GUITARIX_ST",
+      "name": "GxAmplifier Stereo",
+      "category": "Amp",
+      "description": "Simulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Simulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_amp_stereo.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"},
+        {"symbol": "control", "direction": "input", "type": "midi"},
+        {"symbol": "notify", "direction": "output", "type": "midi"}
+      ],
+      "parameters": [
+        {"symbol": "MasterGain", "name": "MasterGain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": -15, "logarithmic": false, "choices": []},
+        {"symbol": "PreGain", "name": "PreGain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": -15, "logarithmic": false, "choices": []},
+        {"symbol": "Distortion", "name": "Distortion", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "Drive", "name": "Drive", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 1, "default": 0.25, "logarithmic": false, "choices": []},
+        {"symbol": "Middle", "name": "Middle", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Bass", "name": "Bass", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Treble", "name": "Treble", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Cabinet", "name": "Cabinet", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 20, "default": 10, "logarithmic": false, "choices": []},
+        {"symbol": "Presence", "name": "Presence", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 10, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "model", "name": "Model", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 17, "default": 0, "logarithmic": false, "choices": ["12ax7", "12AU7", "12AT7", "6DJ8", "6C16", "6V6", "12ax7 feedback", "12AU7 feedback", "12AT7 feedback", "6DJ8 feedback", "pre 12ax7/ master 6V6", "pre 12AU7/ master 6V6", "pre 12AT7/ master 6V6", "pre 6DJ8/ master 6V6", "pre 12ax7/ push-pull 6V6", "pre 12AU7/ push-pull 6V6", "pre 12AT7/ push pull 6V6", "pre 6DJ8/ push-pull 6V6"]},
+        {"symbol": "t_model", "name": "Tonestack Model", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 26, "default": 1, "logarithmic": false, "choices": ["default", "Bassman", "Twin Reverb", "Princeton", "JCM-800", "JCM-2000", "M-Lead", "M2199", "AC-30", "Mesa Boogie", "SOL 100", "JTM-45", "AC-15", "Peavey", "Ibanez", "Roland", "Ampeg", "Rev.Rocket", "MIG 100 H", "Triple Giant", "Trio Preamp", "Hughes&Kettner", "Fender Junior", "Fender", "Fender Deville", "Gibsen", "Off"]},
+        {"symbol": "c_model", "name": "Cab Model", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 18, "default": 0, "logarithmic": false, "choices": ["4x12", "2x12", "1x12", "4x10", "2x10", "HighGain", "Twin", "Bassman", "Marshall", "AC30", "Princeton", "A2", "1x15", "Mesa", "Briliant", "Vitalize", "Charisma", "1x8", "Off"]}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_barkgraphiceq_#_barkgraphiceq_",
+      "name": "GxBarkGraphicEQ",
+      "category": "Filter",
+      "description": "Equaliser",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Equaliser; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_barkgraphiceq.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "G1", "name": "G1", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G2", "name": "G2", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G3", "name": "G3", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G4", "name": "G4", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G5", "name": "G5", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G6", "name": "G6", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G7", "name": "G7", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G8", "name": "G8", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G9", "name": "G9", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G10", "name": "G10", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G11", "name": "G11", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G12", "name": "G12", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G13", "name": "G13", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G14", "name": "G14", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G15", "name": "G15", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G16", "name": "G16", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G17", "name": "G17", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G18", "name": "G18", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G19", "name": "G19", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G20", "name": "G20", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G21", "name": "G21", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G22", "name": "G22", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G23", "name": "G23", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G24", "name": "G24", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
+      "name": "GxCabinet",
+      "category": "Amp",
+      "description": "Simulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Simulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_cabinet.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "control", "direction": "input", "type": "midi"},
+        {"symbol": "notify", "direction": "output", "type": "midi"}
+      ],
+      "parameters": [
+        {"symbol": "CLevel", "name": "Cabinet", "unit": "", "kind": "continuous", "minimum": 0.5, "maximum": 5, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "CBass", "name": "Bass", "unit": "", "kind": "continuous", "minimum": -10, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "CTreble", "name": "Treble", "unit": "", "kind": "continuous", "minimum": -10, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "c_model", "name": "Cab Model", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 18, "default": 0, "logarithmic": false, "choices": ["4x12", "2x12", "1x12", "4x10", "2x10", "HighGain", "Twin", "Bassman", "Marshall", "AC30", "Princeton", "A2", "1x15", "Mesa", "Briliant", "Vitalize", "Charisma", "1x8", "Off"]}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_chorus_stereo#_chorus_stereo",
+      "name": "GxChorus-Stereo",
+      "category": "Modulation",
+      "description": "Chorus",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Chorus; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_chorus.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "level", "name": "Level", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "delay", "name": "Delay", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.2, "default": 0.02, "logarithmic": false, "choices": []},
+        {"symbol": "depth", "name": "Depth", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.02, "logarithmic": false, "choices": []},
+        {"symbol": "freq", "name": "Freq", "unit": "Hz", "kind": "continuous", "minimum": 0.1, "maximum": 10, "default": 3, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_",
+      "name": "GxWahwah",
+      "category": "Modulation",
+      "description": "Modulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Modulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_colwah.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "WAH", "name": "WAH", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "FREQ", "name": "FREQ", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 24, "logarithmic": false, "choices": []},
+        {"symbol": "MODE", "name": "MODE", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 2, "default": 0, "logarithmic": false, "choices": ["manual", "auto", "alien"]},
+        {"symbol": "MODEL", "name": "MODEL", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 6, "default": 0, "logarithmic": false, "choices": ["Colorsound Wah", "Dallas Wah", "Foxx Wah", "Jen Wah", "Maestro Wah", "SelmerWah", "Vox Wah V847"]},
+        {"symbol": "WET_DRY", "name": "WET DRY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_compressor#_compressor",
+      "name": "GxCompressor",
+      "category": "Dynamics",
+      "description": "Compressor",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Compressor; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_compressor.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "RATIO", "name": "RATIO", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 20, "default": 2, "logarithmic": false, "choices": []},
+        {"symbol": "KNEE", "name": "KNEE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 20, "default": 3, "logarithmic": false, "choices": []},
+        {"symbol": "THRESHOLD", "name": "THRESHOLD", "unit": "", "kind": "continuous", "minimum": -96, "maximum": 10, "default": -20, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE", "name": "RELEASE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK", "name": "ATTACK", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.002, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_cstb_#_cstb_",
+      "name": "GxColorSoundTonebender",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_cstb.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "ATTACK", "name": "ATTACK", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.95, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "LEVEL", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY", "name": "WET DRY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_delay_stereo#_delay_stereo",
+      "name": "GxDelay-Stereo",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_delay.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "mode", "name": "Mode", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": ["linear", "pingpong"]},
+        {"symbol": "level_r", "name": "R Level", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": -10, "logarithmic": false, "choices": []},
+        {"symbol": "timt_r", "name": "R Time", "unit": "ms", "kind": "continuous", "minimum": 1, "maximum": 5000, "default": 1000, "logarithmic": false, "choices": []},
+        {"symbol": "level_l", "name": "L Level", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": -10, "logarithmic": false, "choices": []},
+        {"symbol": "timt_l", "name": "L Time", "unit": "ms", "kind": "continuous", "minimum": 1, "maximum": 5000, "default": 1000, "logarithmic": false, "choices": []},
+        {"symbol": "lfo", "name": "LFO", "unit": "", "kind": "continuous", "minimum": 0.2, "maximum": 5, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "link", "name": "Link (L+R)", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_detune_#_detune_",
+      "name": "Gxdetune",
+      "category": "Pitch",
+      "description": "Pitch Shifter",
+      "color": "#bfa1ed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Pitch Shifter; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_detune.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "DETUNE", "name": "DETUNE", "unit": "", "kind": "continuous", "minimum": -0.25, "maximum": 0.25, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "OCTAVE", "name": "OCTAVE", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 2, "default": 0, "logarithmic": false, "choices": ["normal", "up", "down"]},
+        {"symbol": "COMPENSATE", "name": "COMPENSATE", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": ["latency", "compensate"]},
+        {"symbol": "WET", "name": "WET", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "DRY", "name": "DRY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "LOW", "name": "LOW", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 2, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "MIDDLELOW", "name": "MIDDLELOW", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 2, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "MIDDLETREBLE", "name": "MIDDLETREBLE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 2, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "TREBLE", "name": "TREBLE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 2, "default": 1, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_#_digital_delay_",
+      "name": "Gxdigital_delay",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_digital_delay.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "BPM", "name": "BPM", "unit": "BPM", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 120, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK", "name": "FEEDBACK", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN", "name": "GAIN", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 120, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "HIGHPASS", "name": "HIGHPASS", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 120, "logarithmic": true, "choices": []},
+        {"symbol": "HOWPASS", "name": "HOWPASS", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 12000, "logarithmic": true, "choices": []},
+        {"symbol": "LEVEL", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "MODE", "name": "MODE", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 3, "default": 0, "logarithmic": false, "choices": ["plain", "presence", "tape", "tape2"]},
+        {"symbol": "NOTES", "name": "NOTES", "unit": "", "kind": "integer", "minimum": 1, "maximum": 18, "default": 5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_st_#_digital_delay_st_",
+      "name": "Gxdigital_delay_st",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_digital_delay_st.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "BPM", "name": "BPM", "unit": "BPM", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 120, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK", "name": "FEEDBACK", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN", "name": "GAIN", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 120, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "HIGHPASS", "name": "HIGHPASS", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 120, "logarithmic": true, "choices": []},
+        {"symbol": "HOWPASS", "name": "HOWPASS", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 12000, "logarithmic": true, "choices": []},
+        {"symbol": "LEVEL", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "MODE", "name": "MODE", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 3, "default": 0, "logarithmic": false, "choices": ["plain", "presence", "tape", "tape2"]},
+        {"symbol": "NOTES", "name": "NOTES", "unit": "", "kind": "integer", "minimum": 1, "maximum": 18, "default": 5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_duck_delay_#_duck_delay_",
+      "name": "Gxduck_delay",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_duck_delay.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "AMOUNT", "name": "AMOUNT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 56, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK", "name": "ATTACK", "unit": "", "kind": "continuous", "minimum": 0.05, "maximum": 0.5, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK", "name": "FEEDBACK", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "RELESE", "name": "RELESE", "unit": "", "kind": "continuous", "minimum": 0.05, "maximum": 2, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "TIME", "name": "TIME", "unit": "ms", "kind": "continuous", "minimum": 1, "maximum": 2000, "default": 500, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_duck_delay_st_#_duck_delay_st_",
+      "name": "Gxduck_delay_st",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_duck_delay_st.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "AMOUNT", "name": "AMOUNT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 56, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK", "name": "ATTACK", "unit": "", "kind": "continuous", "minimum": 0.05, "maximum": 0.5, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "COLORATION", "name": "COLORATION", "unit": "", "kind": "continuous", "minimum": -1, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "EFFECT", "name": "EFFECT", "unit": "", "kind": "continuous", "minimum": -16, "maximum": 4, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK", "name": "FEEDBACK", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "PINGPONG", "name": "PINGPONG", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE", "name": "RELEASE", "unit": "", "kind": "continuous", "minimum": 0.05, "maximum": 2, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "TIME", "name": "TIME", "unit": "ms", "kind": "continuous", "minimum": 1, "maximum": 2000, "default": 500, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo",
+      "name": "GxEcho-Stereo",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_echo.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "mode", "name": "Mode", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": ["linear", "pingpong"]},
+        {"symbol": "level_r", "name": "R Level", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 30, "logarithmic": false, "choices": []},
+        {"symbol": "timt_r", "name": "R Time", "unit": "ms", "kind": "continuous", "minimum": 1, "maximum": 2000, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "level_l", "name": "L Level", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 30, "logarithmic": false, "choices": []},
+        {"symbol": "timt_l", "name": "L Time", "unit": "ms", "kind": "continuous", "minimum": 1, "maximum": 2000, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "lfo", "name": "LFO", "unit": "", "kind": "continuous", "minimum": 0.2, "maximum": 5, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "link", "name": "Link (L+R)", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_expander#_expander",
+      "name": "GxExpander",
+      "category": "Dynamics",
+      "description": "Expander",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Expander; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_expander.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "RATIO", "name": "RATIO", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 20, "default": 2, "logarithmic": false, "choices": []},
+        {"symbol": "KNEE", "name": "KNEE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 20, "default": 3, "logarithmic": false, "choices": []},
+        {"symbol": "THRESHOLD", "name": "THRESHOLD", "unit": "", "kind": "continuous", "minimum": -96, "maximum": 10, "default": -40, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE", "name": "RELEASE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK", "name": "ATTACK", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.001, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_flanger#_flanger",
+      "name": "GxFlanger",
+      "category": "Modulation",
+      "description": "Flanger",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Flanger; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_flanger.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "depth", "name": "DEPTH", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 5, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "width", "name": "WIDTH", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "freq", "name": "FREQ", "unit": "Hz", "kind": "continuous", "minimum": 0.05, "maximum": 10, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "feedback", "name": "FEEDBACK", "unit": "", "kind": "continuous", "minimum": -0.99, "maximum": 0.99, "default": -0.707, "logarithmic": false, "choices": []},
+        {"symbol": "dry_wet", "name": "WET", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "mix", "name": "MIX", "unit": "", "kind": "continuous", "minimum": -1, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fumaster_#_fumaster_",
+      "name": "GxFuzzMaster",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_fumaster.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "TONE", "name": "TONE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY", "name": "WET DRY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzz_#fuzz_",
+      "name": "GxFuzz",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_fuzz.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "INPUT", "name": "INPUT", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "OUTPUT", "name": "OUTPUT", "unit": "", "kind": "continuous", "minimum": 50, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "DRIVE", "name": "DRIVE", "unit": "", "kind": "continuous", "minimum": -3, "maximum": 100, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "TONE", "name": "TONE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzzface_#_fuzzface_",
+      "name": "GxFuzzFaceJH-2",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_fuzzface.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "FUZZ", "name": "FUZZ", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "LEVEL", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzzfacefm_#_fuzzfacefm_",
+      "name": "GxFuzzFaceFullerMod",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_fuzzfacefm.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "DRIVE", "name": "DRIVE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "FUZZ", "name": "FUZZ", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.99, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "INPUT", "name": "INPUT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "LEVEL", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_gcb_95_#_gcb_95_",
+      "name": "GxCrybabyGCB95",
+      "category": "Filter",
+      "description": "Filter",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Filter; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_gcb_95.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 4, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "HOTPOTZ", "name": "WAH", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_graphiceq_#_graphiceq_",
+      "name": "GxGraphicEQ",
+      "category": "Filter",
+      "description": "Equaliser",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Equaliser; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_graphiceq.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "G10", "name": "G10", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G11", "name": "G11", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G1", "name": "G1", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G2", "name": "G2", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G3", "name": "G3", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G4", "name": "G4", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G5", "name": "G5", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G6", "name": "G6", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G7", "name": "G7", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G8", "name": "G8", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "G9", "name": "G9", "unit": "", "kind": "continuous", "minimum": -30, "maximum": 20, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hfb_#_hfb_",
+      "name": "GxHighFrequencyBrightener",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_hfb.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "INTENSITY", "name": "INTENSITY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_",
+      "name": "GxHogsFoot",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_hogsfoot.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY", "name": "WET DRY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_",
+      "name": "GxHornet",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_hornet.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "FUZZ", "name": "FUZZ", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "SUSTAIN", "name": "SUSTAIN", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_#_jcm800pre_",
+      "name": "GxJCM800pre",
+      "category": "Amp",
+      "description": "Simulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Simulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_jcm800pre.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "P6v", "name": "Pre Amp", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Middle", "name": "Middle", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Bass", "name": "Bass", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Treble", "name": "Treble", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY", "name": "Presence", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN", "name": "Master Volume", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_st#_jcm800pre_st",
+      "name": "GxJCM800pre ST",
+      "category": "Amp",
+      "description": "Simulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Simulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_jcm800pre_st.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "P6v", "name": "Pre Amp", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Middle", "name": "Middle", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Bass", "name": "Bass", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Treble", "name": "Treble", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY", "name": "Presence", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN", "name": "Master Volume", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_",
+      "name": "Gxlivelooper",
+      "category": "Utility",
+      "description": "Utility",
+      "color": "#93a4b5",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Utility; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_livelooper.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "clip1", "name": "Clip1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "clip2", "name": "Clip2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "clip3", "name": "Clip3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "clip4", "name": "Clip4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "clips1", "name": "Clips1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "clips2", "name": "Clips2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "clips3", "name": "Clips3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "clips4", "name": "Clips4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "speed1", "name": "Speed1", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "speed2", "name": "Speed2", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "speed3", "name": "Speed3", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "speed4", "name": "Speed4", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 12, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "level1", "name": "Level1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "level2", "name": "Level2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "level3", "name": "Level3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "level4", "name": "Level4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "mix", "name": "Mix", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 150, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "play1", "name": "Play1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "play2", "name": "Play2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "play3", "name": "Play3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "play4", "name": "Play4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rplay1", "name": "Rplay1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rplay2", "name": "Rplay2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rplay3", "name": "Rplay3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rplay4", "name": "Rplay4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rec1", "name": "Rec1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rec2", "name": "Rec2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rec3", "name": "Rec3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "rec4", "name": "Rec4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reset1", "name": "Reset1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reset2", "name": "Reset2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reset3", "name": "Reset3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reset4", "name": "Reset4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_",
+      "name": "GxMultiBandCompressor",
+      "category": "Dynamics",
+      "description": "Compressor",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Compressor; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_mbcompressor.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "MODE1", "name": "MODE1", "unit": "", "kind": "integer", "minimum": 1, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "MODE2", "name": "MODE2", "unit": "", "kind": "integer", "minimum": 1, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "MODE3", "name": "MODE3", "unit": "", "kind": "integer", "minimum": 1, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "MODE4", "name": "MODE4", "unit": "", "kind": "integer", "minimum": 1, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "MODE5", "name": "MODE5", "unit": "", "kind": "integer", "minimum": 1, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUP1", "name": "MAKEUP1", "unit": "", "kind": "continuous", "minimum": -50, "maximum": 50, "default": 13, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUP2", "name": "MAKEUP2", "unit": "", "kind": "continuous", "minimum": -50, "maximum": 50, "default": 13, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUP3", "name": "MAKEUP3", "unit": "", "kind": "continuous", "minimum": -50, "maximum": 50, "default": 13, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUP4", "name": "MAKEUP4", "unit": "", "kind": "continuous", "minimum": -50, "maximum": 50, "default": 13, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUP5", "name": "MAKEUP5", "unit": "", "kind": "continuous", "minimum": -50, "maximum": 50, "default": 13, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUPTHRESHOLD1", "name": "MAKEUPTHRESHOLD1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 2, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUPTHRESHOLD2", "name": "MAKEUPTHRESHOLD2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 2, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUPTHRESHOLD3", "name": "MAKEUPTHRESHOLD3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 2, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUPTHRESHOLD4", "name": "MAKEUPTHRESHOLD4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 2, "logarithmic": false, "choices": []},
+        {"symbol": "MAKEUPTHRESHOLD5", "name": "MAKEUPTHRESHOLD5", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 2, "logarithmic": false, "choices": []},
+        {"symbol": "RATIO1", "name": "RATIO1", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 13, "logarithmic": false, "choices": []},
+        {"symbol": "RATIO2", "name": "RATIO2", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 10, "logarithmic": false, "choices": []},
+        {"symbol": "RATIO3", "name": "RATIO3", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 4, "logarithmic": false, "choices": []},
+        {"symbol": "RATIO4", "name": "RATIO4", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 8, "logarithmic": false, "choices": []},
+        {"symbol": "RATIO5", "name": "RATIO5", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 11, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK1", "name": "ATTACK1", "unit": "", "kind": "continuous", "minimum": 0.001, "maximum": 1, "default": 0.012, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK2", "name": "ATTACK2", "unit": "", "kind": "continuous", "minimum": 0.001, "maximum": 1, "default": 0.012, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK3", "name": "ATTACK3", "unit": "", "kind": "continuous", "minimum": 0.001, "maximum": 1, "default": 0.012, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK4", "name": "ATTACK4", "unit": "", "kind": "continuous", "minimum": 0.001, "maximum": 1, "default": 0.012, "logarithmic": false, "choices": []},
+        {"symbol": "ATTACK5", "name": "ATTACK5", "unit": "", "kind": "continuous", "minimum": 0.001, "maximum": 1, "default": 0.012, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE1", "name": "RELEASE1", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 10, "default": 1.25, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE2", "name": "RELEASE2", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 10, "default": 1.25, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE3", "name": "RELEASE3", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 10, "default": 1.25, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE4", "name": "RELEASE4", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 10, "default": 1.25, "logarithmic": false, "choices": []},
+        {"symbol": "RELEASE5", "name": "RELEASE5", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 10, "default": 1.25, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B1_B2", "name": "LOW SHELF", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B2_B3", "name": "CROSSOVER B2 B3", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 210, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B3_B4", "name": "CROSSOVER B3 B4", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 1700, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B4_B5", "name": "CROSSOVER B4 B5", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 5000, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_",
+      "name": "GxMultiBandDelay",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_mbdelay.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "DELAY1", "name": "DELAY1", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 30, "logarithmic": false, "choices": []},
+        {"symbol": "DELAY2", "name": "DELAY2", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 60, "logarithmic": false, "choices": []},
+        {"symbol": "DELAY3", "name": "DELAY3", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 90, "logarithmic": false, "choices": []},
+        {"symbol": "DELAY4", "name": "DELAY4", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 120, "logarithmic": false, "choices": []},
+        {"symbol": "DELAY5", "name": "DELAY5", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 150, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK1", "name": "FEEDBACK1", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK2", "name": "FEEDBACK2", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK3", "name": "FEEDBACK3", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK4", "name": "FEEDBACK4", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "FEEDBACK5", "name": "FEEDBACK5", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN1", "name": "GAIN1", "unit": "", "kind": "continuous", "minimum": -40, "maximum": 2, "default": -10, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN2", "name": "GAIN2", "unit": "", "kind": "continuous", "minimum": -40, "maximum": 2, "default": -5, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN3", "name": "GAIN3", "unit": "", "kind": "continuous", "minimum": -40, "maximum": 2, "default": -2, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN4", "name": "GAIN4", "unit": "", "kind": "continuous", "minimum": -40, "maximum": 2, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN5", "name": "GAIN5", "unit": "", "kind": "continuous", "minimum": -40, "maximum": 2, "default": -10, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B1_B2", "name": "LOW SHELF", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 80, "logarithmic": true, "choices": []},
+        {"symbol": "CROSSOVER_B2_B3", "name": "CROSSOVER B2 B3", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 210, "logarithmic": true, "choices": []},
+        {"symbol": "CROSSOVER_B3_B4", "name": "CROSSOVER B3 B4", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 1700, "logarithmic": true, "choices": []},
+        {"symbol": "CROSSOVER_B4_B5", "name": "CROSSOVER B4 B5", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 5000, "logarithmic": true, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_",
+      "name": "GxMultiBandDistortion",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_mbdistortion.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "DRIVE1", "name": "DRIVE1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "DRIVE2", "name": "DRIVE2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.25, "logarithmic": false, "choices": []},
+        {"symbol": "DRIVE3", "name": "DRIVE3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.65, "logarithmic": false, "choices": []},
+        {"symbol": "DRIVE4", "name": "DRIVE4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.25, "logarithmic": false, "choices": []},
+        {"symbol": "DRIVE5", "name": "DRIVE5", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "GAIN", "name": "GAIN", "unit": "", "kind": "continuous", "minimum": -40, "maximum": 4, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "OFFSET1", "name": "OFFSET1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.5, "default": 0.17, "logarithmic": false, "choices": []},
+        {"symbol": "OFFSET2", "name": "OFFSET2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.5, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "OFFSET3", "name": "OFFSET3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.5, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "OFFSET4", "name": "OFFSET4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.5, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "OFFSET5", "name": "OFFSET5", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 0.5, "default": 0.17, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B1_B2", "name": "LOW SHELF", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B2_B3", "name": "CROSSOVER B2 B3", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 210, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B3_B4", "name": "CROSSOVER B3 B4", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 1700, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B4_B5", "name": "CROSSOVER B4 B5", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 5000, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbecho_#_mbecho_",
+      "name": "GxMultiBandEcho",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_mbecho.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "PERCENT1", "name": "PERCENT1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 10, "logarithmic": false, "choices": []},
+        {"symbol": "PERCENT2", "name": "PERCENT2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 30, "logarithmic": false, "choices": []},
+        {"symbol": "PERCENT3", "name": "PERCENT3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 45, "logarithmic": false, "choices": []},
+        {"symbol": "PERCENT4", "name": "PERCENT4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "PERCENT5", "name": "PERCENT5", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "TIME1", "name": "TIME1", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 30, "logarithmic": false, "choices": []},
+        {"symbol": "TIME2", "name": "TIME2", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 60, "logarithmic": false, "choices": []},
+        {"symbol": "TIME3", "name": "TIME3", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 120, "logarithmic": false, "choices": []},
+        {"symbol": "TIME4", "name": "TIME4", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 150, "logarithmic": false, "choices": []},
+        {"symbol": "TIME5", "name": "TIME5", "unit": "", "kind": "continuous", "minimum": 24, "maximum": 360, "default": 240, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B1_B2", "name": "LOW SHELF", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B2_B3", "name": "CROSSOVER B2 B3", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 210, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B3_B4", "name": "CROSSOVER B3 B4", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 1700, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B4_B5", "name": "CROSSOVER B4 B5", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 5000, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_",
+      "name": "GxMultiBandReverb",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_mbreverb.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "ROOMSIZE1", "name": "ROOMSIZE1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ROOMSIZE2", "name": "ROOMSIZE2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ROOMSIZE3", "name": "ROOMSIZE3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ROOMSIZE4", "name": "ROOMSIZE4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ROOMSIZE5", "name": "ROOMSIZE5", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B1_B2", "name": "CROSSOVER B1 B2", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B2_B3", "name": "CROSSOVER B2 B3", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 210, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B3_B4", "name": "CROSSOVER B3 B4", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 1700, "logarithmic": false, "choices": []},
+        {"symbol": "CROSSOVER_B4_B5", "name": "CROSSOVER B4 B5", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 20000, "default": 5000, "logarithmic": false, "choices": []},
+        {"symbol": "DAMP1", "name": "DAMP1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "DAMP2", "name": "DAMP2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "DAMP3", "name": "DAMP3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "DAMP4", "name": "DAMP4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "DAMP5", "name": "DAMP5", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY1", "name": "WET DRY1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY2", "name": "WET DRY2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY3", "name": "WET DRY3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY4", "name": "WET DRY4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY5", "name": "WET DRY5", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_",
+      "name": "GxMole",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_mole.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "BOOST", "name": "BOOST", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY", "name": "WET DRY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_muff_#_muff_",
+      "name": "GxMuff",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_muff.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "TONE", "name": "TONE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_oc_2_#_oc_2_",
+      "name": "GxOC-2",
+      "category": "Pitch",
+      "description": "Pitch Shifter",
+      "color": "#bfa1ed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Pitch Shifter; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_oc_2.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "DIRECT", "name": "DIRECT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "OCTAVE1", "name": "OCTAVE1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "OCTAVE2", "name": "OCTAVE2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser",
+      "name": "GxPhaser",
+      "category": "Modulation",
+      "description": "Phaser",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Phaser; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_phaser.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "dry_wet", "name": "Dry/Wet", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "level", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": -60, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "speed", "name": "SPEED", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_rangem_#_rangem_",
+      "name": "GxRangemaster",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_rangem.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "BOOST", "name": "BOOST", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "WET_DRY", "name": "WET DRY", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump",
+      "name": "GxRedeye Big Chump",
+      "category": "Utility",
+      "description": "Amplifier",
+      "color": "#93a4b5",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Amplifier; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_redeye.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "Gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Tone", "name": "Tone", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Volume", "name": "Volume", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Feedback", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Vibe", "name": "Vibe", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Speed", "name": "Speed", "unit": "", "kind": "continuous", "minimum": 0.1, "maximum": 10, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "Intensity", "name": "Intensity", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Sinewave", "name": "Sinewave", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#chump",
+      "name": "GxRedeye Chump",
+      "category": "Utility",
+      "description": "Amplifier",
+      "color": "#93a4b5",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Amplifier; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_redeye.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "Gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Tone", "name": "Tone", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Volume", "name": "Volume", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Feedback", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Vibe", "name": "Vibe", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Speed", "name": "Speed", "unit": "", "kind": "continuous", "minimum": 0.1, "maximum": 10, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "Intensity", "name": "Intensity", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Sinewave", "name": "Sinewave", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump",
+      "name": "GxRedeye Vibro Chump",
+      "category": "Utility",
+      "description": "Amplifier",
+      "color": "#93a4b5",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Amplifier; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_redeye.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "Gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Tone", "name": "Tone", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "Volume", "name": "Volume", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Feedback", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Vibe", "name": "Vibe", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Speed", "name": "Speed", "unit": "", "kind": "continuous", "minimum": 0.1, "maximum": 10, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "Intensity", "name": "Intensity", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Sinewave", "name": "Sinewave", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo",
+      "name": "GxReverb-Stereo",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_reverb.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "dry_wet", "name": "Dry/Wet", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "lfo", "name": "LFO", "unit": "", "kind": "continuous", "minimum": 0.2, "maximum": 5, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "roomsize", "name": "Roomsize", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "damp", "name": "Damp", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.2, "logarithmic": false, "choices": []},
+        {"symbol": "mode", "name": "Mode", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": ["linear", "pingpong"]}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_",
+      "name": "Gxroom_simulator",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_room_simulator.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "EFFECT", "name": "EFFECT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "PREDELAYMS", "name": "PREDELAYMS", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 200, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "RT", "name": "RT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.3, "logarithmic": false, "choices": []},
+        {"symbol": "ROOMSIZE", "name": "ROOMSIZE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "DRYWET", "name": "DRYWET", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_",
+      "name": "GxScreamingBird",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_scream.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "SCREAM", "name": "SCREAM", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_",
+      "name": "Gxshimmizita",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_shimmizita.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "ModSource", "name": "ModSource", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "ModDepth", "name": "ModDepth", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "Mix", "name": "Mix", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "EnvTime", "name": "EnvTime", "unit": "", "kind": "continuous", "minimum": 0.1, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "FreqLow", "name": "FreqLow", "unit": "", "kind": "continuous", "minimum": 50, "maximum": 1000, "default": 200, "logarithmic": false, "choices": []},
+        {"symbol": "FreqHigh", "name": "FreqHigh", "unit": "", "kind": "continuous", "minimum": 1500, "maximum": 23520, "default": 6000, "logarithmic": false, "choices": []},
+        {"symbol": "Mode", "name": "Mode", "unit": "", "kind": "continuous", "minimum": -3, "maximum": 3, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "PitchMix", "name": "PitchMix", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "PitchShift", "name": "PitchShift", "unit": "", "kind": "continuous", "minimum": -6, "maximum": 6, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "LFOSpeed", "name": "LFOSpeed", "unit": "", "kind": "continuous", "minimum": 0.1, "maximum": 10, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "DecayLow", "name": "DecayLow", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 8, "default": 3, "logarithmic": false, "choices": []},
+        {"symbol": "DecayHigh", "name": "DecayHigh", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 8, "default": 2, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre",
+      "name": "GxAlembic",
+      "category": "Amp",
+      "description": "Simulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Simulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_studiopre.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "bright", "name": "Bright", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "volume", "name": "Volume", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 20, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "bass", "name": "Bass", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "middle", "name": "Middle", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "treble", "name": "Treble", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre_st#studiopre_st",
+      "name": "Gx Studio Preamp Stereo",
+      "category": "Amp",
+      "description": "Simulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Simulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_studiopre_st.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "bright_l", "name": "Bright L", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "volume_l", "name": "Volume L", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 20, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "bass_l", "name": "Bass L", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "middle_l", "name": "Middle L", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "treble_l", "name": "Treble L", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "bright_r", "name": "Bright R", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "volume_r", "name": "Volume R", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 20, "default": 5, "logarithmic": false, "choices": []},
+        {"symbol": "bass_r", "name": "Bass R", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "middle_r", "name": "Middle R", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "treble_r", "name": "Treble R", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_",
+      "name": "GxSustainer",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_susta.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "SUSTAIN", "name": "SUSTAIN", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "VOLUME", "name": "VOLUME", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_",
+      "name": "Gxswitched_tremolo",
+      "category": "Modulation",
+      "description": "Modulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Modulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_switched_tremolo.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "DEPTH", "name": "DEPTH", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "FREQ0", "name": "FREQ0", "unit": "", "kind": "continuous", "minimum": 0.25, "maximum": 15, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "FREQ1", "name": "FREQ1", "unit": "", "kind": "continuous", "minimum": 0.25, "maximum": 15, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "FREQ2", "name": "FREQ2", "unit": "", "kind": "continuous", "minimum": 0.25, "maximum": 15, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "FREQ3", "name": "FREQ3", "unit": "", "kind": "continuous", "minimum": 0.25, "maximum": 15, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "STEPS", "name": "STEPS", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 4, "default": 4, "logarithmic": false, "choices": []},
+        {"symbol": "SWITCHFREQ", "name": "SWITCHFREQ", "unit": "", "kind": "continuous", "minimum": 0.25, "maximum": 5, "default": 1, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah",
+      "name": "GxSwitchlessWah",
+      "category": "Filter",
+      "description": "Filter",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Filter; author Guitarix team; bundle file:///opt/peepo/lib/lv2/GxSwitchlessWah.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "fslider1_", "name": "Wah", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "faslider0_", "name": "ATTACK", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 1, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "faslider1_", "name": "RELEASE", "unit": "", "kind": "continuous", "minimum": 0.01, "maximum": 1, "default": 0.1, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_tremolo#_tremolo",
+      "name": "GxTremolo",
+      "category": "Modulation",
+      "description": "Modulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Modulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_tremolo.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "dry_wet", "name": "Dry/Wet", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "mode", "name": "Mode", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": ["triangle", "sine"]},
+        {"symbol": "depth", "name": "Depth", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "freq", "name": "Freq", "unit": "Hz", "kind": "continuous", "minimum": 0.1, "maximum": 50, "default": 5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo",
+      "name": "GxZita_rev1-Stereo",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_zita_rev1.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "in1", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"},
+        {"symbol": "out1", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "level", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": -70, "maximum": 40, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "EQ2_FREQ", "name": "EQ2 FREQ", "unit": "", "kind": "continuous", "minimum": 160, "maximum": 10000, "default": 1500, "logarithmic": true, "choices": []},
+        {"symbol": "EQ1_LEVEL", "name": "EQ1 LEVEL", "unit": "", "kind": "continuous", "minimum": -15, "maximum": 15, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "EQ1_FREQ", "name": "EQ1 FREQ", "unit": "", "kind": "continuous", "minimum": 40, "maximum": 2500, "default": 315, "logarithmic": true, "choices": []},
+        {"symbol": "IN_DELAY", "name": "IN DELAY", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 100, "default": 60, "logarithmic": false, "choices": []},
+        {"symbol": "LOW_RT60", "name": "LOW RT60", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 8, "default": 3, "logarithmic": true, "choices": []},
+        {"symbol": "LF_X", "name": "LF X", "unit": "", "kind": "continuous", "minimum": 50, "maximum": 1000, "default": 200, "logarithmic": true, "choices": []},
+        {"symbol": "HF_DAMPING", "name": "HF DAMPING", "unit": "", "kind": "continuous", "minimum": 1500, "maximum": 23520, "default": 6000, "logarithmic": true, "choices": []},
+        {"symbol": "MID_RT60", "name": "MID RT60", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 8, "default": 2, "logarithmic": true, "choices": []},
+        {"symbol": "DRY_WET_MIX", "name": "DRY WET MIX", "unit": "", "kind": "continuous", "minimum": -1, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "EQ2_LEVEL", "name": "EQ2 LEVEL", "unit": "", "kind": "continuous", "minimum": -15, "maximum": 15, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#autowah",
+      "name": "GxAutoWah",
+      "category": "Filter",
+      "description": "Filter",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Filter; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxwah.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": []
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#wah",
+      "name": "GxWah",
+      "category": "Filter",
+      "description": "Filter",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Filter; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxwah.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "fslider1_", "name": "Wah", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxbooster#booster",
+      "name": "GxBooster",
+      "category": "Filter",
+      "description": "Equaliser",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Equaliser; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxbooster.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "fslider0_", "name": "H Level", "unit": "", "kind": "continuous", "minimum": 0.5, "maximum": 20, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "fslider1_", "name": "B Level", "unit": "", "kind": "continuous", "minimum": 0.5, "maximum": 20, "default": 1, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxechocat#echocat",
+      "name": "GxEchoCat",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxechocat.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "input_gain", "name": "Input Gain", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "swell", "name": "Swell", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "sustain", "name": "Sustain", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "outputgain", "name": "OutputGain", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "head1", "name": "Head 1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "head2", "name": "Head 2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "head3", "name": "Head 3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtilttone#tilttone",
+      "name": "GxTiltTone",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxtilttone.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "drive", "name": "Drive", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "tone", "name": "Tone", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxts9#ts9sim",
+      "name": "GxTubeScreamer",
+      "category": "Drive",
+      "description": "Distortion",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Distortion; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxts9.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "fslider0_", "name": "Level", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 4, "default": -16, "logarithmic": false, "choices": []},
+        {"symbol": "fslider1_", "name": "Tone", "unit": "", "kind": "continuous", "minimum": 100, "maximum": 1000, "default": 400, "logarithmic": false, "choices": []},
+        {"symbol": "fslider2_", "name": "Drive", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay",
+      "name": "GxTubeDelay",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxtubedelay.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "fslider0_", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -40, "maximum": 16, "default": -40, "logarithmic": false, "choices": []},
+        {"symbol": "fslider1_", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "fslider2_", "name": "Delay", "unit": "", "kind": "continuous", "minimum": 0.1, "maximum": 5000, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "fslider3_", "name": "Level", "unit": "", "kind": "continuous", "minimum": -60, "maximum": 0, "default": -60, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo",
+      "name": "GxTubeTremelo",
+      "category": "Modulation",
+      "description": "Modulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Modulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxtubetremelo.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "sinewave", "name": "SineWave", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "depth", "name": "Depth", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "speed", "name": "Speed", "unit": "", "kind": "continuous", "minimum": 0.1, "maximum": 14, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -12, "maximum": 22, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato",
+      "name": "GxTubeVibrato",
+      "category": "Modulation",
+      "description": "Modulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Modulator; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gxtubevibrato.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "sinewave", "name": "SineWave", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "depth", "name": "Depth", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "speed", "name": "Speed", "unit": "Hz", "kind": "continuous", "minimum": 0.1, "maximum": 14, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -12, "maximum": 22, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "https://github.com/michaelwillis/dragonfly-reverb",
+      "name": "Dragonfly Hall Reverb",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Michael Willis and Rob vd Berg; bundle file:///opt/peepo/lib/lv2/DragonflyHallReverb.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "lv2_audio_in_1", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
+        {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"},
+        {"symbol": "lv2_events_in", "direction": "input", "type": "midi"},
+        {"symbol": "lv2_events_out", "direction": "output", "type": "midi"}
+      ],
+      "parameters": [
+        {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "early_level", "name": "Early Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 10, "logarithmic": false, "choices": []},
+        {"symbol": "late_level", "name": "Late Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "size", "name": "Size", "unit": "m", "kind": "continuous", "minimum": 10, "maximum": 60, "default": 24, "logarithmic": false, "choices": []},
+        {"symbol": "width", "name": "Width", "unit": "%", "kind": "continuous", "minimum": 50, "maximum": 150, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "delay", "name": "Predelay", "unit": "ms", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 4, "logarithmic": false, "choices": []},
+        {"symbol": "diffuse", "name": "Diffuse", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 90, "logarithmic": false, "choices": []},
+        {"symbol": "low_cut", "name": "Low Cut", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 200, "default": 4, "logarithmic": false, "choices": []},
+        {"symbol": "low_xo", "name": "Low Cross", "unit": "Hz", "kind": "continuous", "minimum": 200, "maximum": 1200, "default": 500, "logarithmic": false, "choices": []},
+        {"symbol": "low_mult", "name": "Low Mult", "unit": "X", "kind": "continuous", "minimum": 0.5, "maximum": 2.5, "default": 1.29999995232, "logarithmic": false, "choices": []},
+        {"symbol": "high_cut", "name": "High Cut", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 7600, "logarithmic": false, "choices": []},
+        {"symbol": "high_xo", "name": "High Cross", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 5500, "logarithmic": false, "choices": []},
+        {"symbol": "high_mult", "name": "High Mult", "unit": "X", "kind": "continuous", "minimum": 0.20000000298, "maximum": 1.20000004768, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "spin", "name": "Spin", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 10, "default": 3.29999995232, "logarithmic": false, "choices": []},
+        {"symbol": "wander", "name": "Wander", "unit": "ms", "kind": "continuous", "minimum": 0, "maximum": 40, "default": 15, "logarithmic": false, "choices": []},
+        {"symbol": "decay", "name": "Decay", "unit": "s", "kind": "continuous", "minimum": 0.10000000149, "maximum": 10, "default": 1.29999995232, "logarithmic": false, "choices": []},
+        {"symbol": "early_send", "name": "Early Send", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "modulation", "name": "Modulation", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 15, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "urn:dragonfly:early",
+      "name": "Dragonfly Early Reflections",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Michael Willis; bundle file:///opt/peepo/lib/lv2/DragonflyEarlyReflections.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "lv2_audio_in_1", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
+        {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "early_level", "name": "Wet Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "program", "name": "Program", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 7, "default": 2, "logarithmic": false, "choices": ["Abrupt Echo", "Backstage Pass", "Concert Venue", "Damaged Goods", "Elevator Pitch", "Floor Thirteen", "Garage Band", "Home Studio"]},
+        {"symbol": "size", "name": "Size", "unit": "m", "kind": "continuous", "minimum": 10, "maximum": 60, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "width", "name": "Width", "unit": "%", "kind": "continuous", "minimum": 50, "maximum": 150, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "low_cut", "name": "Low Cut", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 200, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "high_cut", "name": "High Cut", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 10000, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "urn:dragonfly:plate",
+      "name": "Dragonfly Plate Reverb",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Michael Willis; bundle file:///opt/peepo/lib/lv2/DragonflyPlateReverb.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "lv2_audio_in_1", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
+        {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"},
+        {"symbol": "lv2_events_in", "direction": "input", "type": "midi"},
+        {"symbol": "lv2_events_out", "direction": "output", "type": "midi"}
+      ],
+      "parameters": [
+        {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "early_level", "name": "Wet Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "algorithm", "name": "Algorithm", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 2, "default": 1, "logarithmic": false, "choices": ["Simple", "Nested", "Tank"]},
+        {"symbol": "width", "name": "Width", "unit": "%", "kind": "continuous", "minimum": 50, "maximum": 150, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "predelay", "name": "Predelay", "unit": "ms", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "decay", "name": "Decay", "unit": "s", "kind": "continuous", "minimum": 0.10000000149, "maximum": 10, "default": 0.40000000596, "logarithmic": false, "choices": []},
+        {"symbol": "low_cut", "name": "Low Cut", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 200, "default": 200, "logarithmic": false, "choices": []},
+        {"symbol": "high_cut", "name": "High Cut", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 16000, "logarithmic": false, "choices": []},
+        {"symbol": "early_damp", "name": "Dampen", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 13000, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
+      "uri": "urn:dragonfly:room",
+      "name": "Dragonfly Room Reverb",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; author Michael Willis; bundle file:///opt/peepo/lib/lv2/DragonflyRoomReverb.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "lv2_audio_in_1", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
+        {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
+        {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"},
+        {"symbol": "lv2_events_in", "direction": "input", "type": "midi"},
+        {"symbol": "lv2_events_out", "direction": "output", "type": "midi"}
+      ],
+      "parameters": [
+        {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},
+        {"symbol": "early_level", "name": "Early Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 10, "logarithmic": false, "choices": []},
+        {"symbol": "early_send", "name": "Early Send", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "late_level", "name": "Late Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
+        {"symbol": "size", "name": "Size", "unit": "m", "kind": "continuous", "minimum": 8, "maximum": 32, "default": 12, "logarithmic": false, "choices": []},
+        {"symbol": "width", "name": "Width", "unit": "%", "kind": "continuous", "minimum": 50, "maximum": 150, "default": 100, "logarithmic": false, "choices": []},
+        {"symbol": "predelay", "name": "Predelay", "unit": "ms", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 8, "logarithmic": false, "choices": []},
+        {"symbol": "decay", "name": "Decay", "unit": "s", "kind": "continuous", "minimum": 0.10000000149, "maximum": 10, "default": 0.40000000596, "logarithmic": false, "choices": []},
+        {"symbol": "diffuse", "name": "Diffuse", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 70, "logarithmic": false, "choices": []},
+        {"symbol": "spin", "name": "Spin", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 5, "default": 0.800000011921, "logarithmic": false, "choices": []},
+        {"symbol": "wander", "name": "Wander", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 40, "logarithmic": false, "choices": []},
+        {"symbol": "in_high_cut", "name": "High Cut", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 16000, "logarithmic": false, "choices": []},
+        {"symbol": "early_damp", "name": "Early Damp", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 10000, "logarithmic": false, "choices": []},
+        {"symbol": "late_damp", "name": "Late Damp", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 9400, "logarithmic": false, "choices": []},
+        {"symbol": "low_boost", "name": "Low Boost", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
+        {"symbol": "boost_freq", "name": "Boost Freq", "unit": "Hz", "kind": "continuous", "minimum": 50, "maximum": 1050, "default": 600, "logarithmic": false, "choices": []},
+        {"symbol": "in_low_cut", "name": "Low Cut", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 200, "default": 4, "logarithmic": false, "choices": []}
       ]
     }
   ]

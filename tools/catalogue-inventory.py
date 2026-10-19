@@ -17,6 +17,7 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "docs", "lv2-plugin-comparison-data.json")
 GX = os.path.join(ROOT, "config", "catalogue", "gxplugins.json")
+PATCHSTORAGE = os.path.join(ROOT, "config", "catalogue", "patchstorage.json")
 OUT = os.path.join(ROOT, "config", "catalogue", "inventory.txt")
 
 MDA = ["Ambience", "Bandisto", "BeatBox", "Combo", "DX10", "DeEss", "Degrade", "Delay", "Detune", "Dither", "DubDelay",
@@ -59,6 +60,10 @@ def main():
     lines.append("# Development: MDA effects (also packaged for MODEP) and the LV2 examples the tests use")
     lines += ["http://drobilla.net/plugins/mda/" + name for name in MDA if "http://drobilla.net/plugins/mda/" + name not in keys]
     lines += ["http://lv2plug.in/plugins/" + name for name in EXAMPLES]
+    lines += ["", "# Requested Patchstorage expansion: full Guitarix LV2 set and Dragonfly"]
+    existing = {line.split("  #", 1)[0] for line in lines if line and not line.startswith("#")}
+    expansion = json.load(open(PATCHSTORAGE, encoding="utf-8"))
+    lines += [uri for uri in sorted({p["uri"] for e in expansion["entries"] for p in e["plugins"]}) if uri not in existing]
     with open(OUT, "w", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
     count = sum(1 for line in lines if line and not line.startswith("#"))

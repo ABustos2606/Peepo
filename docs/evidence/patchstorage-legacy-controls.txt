@@ -1,0 +1,47 @@
+PASS  NAM <http://github.com/mikeoliphant/neural-amp-modeler-lv2> -- 4 connectors, 3 controls
+PASS  Axis Face <http://guitarix.sourceforge.net/plugins/gx_AxisFace_#_AxisFace_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Power amp (Cream) <http://guitarix.sourceforge.net/plugins/gx_CreamMachine_#_CreamMachine_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  DOP 250 <http://guitarix.sourceforge.net/plugins/gx_DOP250_#_DOP250_> -- 2 connectors, 2 controls; switched on through its own control
+PASS  Heathkit <http://guitarix.sourceforge.net/plugins/gx_Heathkit_#_Heathkit_> -- 2 connectors, 2 controls; switched on through its own control
+PASS  Knight Fuzz <http://guitarix.sourceforge.net/plugins/gx_KnightFuzz_#_KnightFuzz_> -- 2 connectors, 2 controls; switched on through its own control
+PASS  Micro Amp <http://guitarix.sourceforge.net/plugins/gx_MicroAmp_#_MicroAmp_> -- 2 connectors, 2 controls; switched on through its own control
+PASS  Sun Face <http://guitarix.sourceforge.net/plugins/gx_SunFace_#_SunFace_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Tube Distortion <http://guitarix.sourceforge.net/plugins/gx_TubeDistortion_#_TubeDistortion_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Bass amp (SVT) <http://guitarix.sourceforge.net/plugins/gx_ampegsvt_#_ampegsvt_> -- 2 connectors, 8 controls; switched on through its own control
+PASS  Baja Tube Driver <http://guitarix.sourceforge.net/plugins/gx_bajatubedriver_#_bajatubedriver_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Blue Amp <http://guitarix.sourceforge.net/plugins/gx_blueamp_#_blueamp_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Boob Tube <http://guitarix.sourceforge.net/plugins/gx_boobtube_#_boobtube_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  Bottle Rocket <http://guitarix.sourceforge.net/plugins/gx_bottlerocket_#_bottlerocket_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  Club Drive <http://guitarix.sourceforge.net/plugins/gx_clubdrive_#_clubdrive_> -- 2 connectors, 2 controls; switched on through its own control
+PASS  Epic <http://guitarix.sourceforge.net/plugins/gx_epic_#_epic_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  Eternity <http://guitarix.sourceforge.net/plugins/gx_eternity_#_eternity_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Guvnor <http://guitarix.sourceforge.net/plugins/gx_guvnor_#_guvnor_> -- 2 connectors, 5 controls
+PASS  Hot Box <http://guitarix.sourceforge.net/plugins/gx_hotbox_#_hotbox_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  Hyperion <http://guitarix.sourceforge.net/plugins/gx_hyperion_#_hyperion_> -- 2 connectors, 2 controls
+PASS  Liquid Drive <http://guitarix.sourceforge.net/plugins/gx_liquiddrive_#_liquiddrive_> -- 2 connectors, 2 controls; switched on through its own control
+PASS  Luna <http://guitarix.sourceforge.net/plugins/gx_luna_#_luna_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Maestro FZ-1B <http://guitarix.sourceforge.net/plugins/gx_maestro_fz1b_#_maestro_fz1b_> -- 2 connectors, 2 controls; switched on through its own control
+PASS  Maestro FZ-1S <http://guitarix.sourceforge.net/plugins/gx_maestro_fz1s_#_maestro_fz1s_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  Plexi <http://guitarix.sourceforge.net/plugins/gx_plexi_#_plexi_> -- 2 connectors, 6 controls; switched on through its own control
+PASS  Quack <http://guitarix.sourceforge.net/plugins/gx_quack_#_quack_> -- 2 connectors, 8 controls; switched on through its own control
+PASS  Saturator <http://guitarix.sourceforge.net/plugins/gx_saturate_#_saturate_> -- 2 connectors, 3 controls
+PASS  SD-1 <http://guitarix.sourceforge.net/plugins/gx_sd1sim_#_sd1sim_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  SD-2 Lead <http://guitarix.sourceforge.net/plugins/gx_sd2lead_#_sd2lead_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Super Fuzz <http://guitarix.sourceforge.net/plugins/gx_sfp_#_sfp_> -- 2 connectors, 5 controls
+PASS  Shaka Tube <http://guitarix.sourceforge.net/plugins/gx_shakatube_#_shakatube_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Sloopy Blue <http://guitarix.sourceforge.net/plugins/gx_sloopyblue_#_sloopyblue_> -- 2 connectors, 3 controls; switched on through its own control
+PASS  Slow gear <http://guitarix.sourceforge.net/plugins/gx_slowgear_#_slowgear_> -- 2 connectors, 4 controls
+PASS  Power amp (Supersonic) <http://guitarix.sourceforge.net/plugins/gx_supersonic_#_supersonic_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  Tim Ray <http://guitarix.sourceforge.net/plugins/gx_timray_#_timray_> -- 2 connectors, 5 controls; switched on through its own control
+PASS  Tone Machine <http://guitarix.sourceforge.net/plugins/gx_tonemachine_#_tonemachine_> -- 2 connectors, 4 controls
+PASS  Ultra Cab <http://guitarix.sourceforge.net/plugins/gx_ultracab_#_ultracab_> -- 4 connectors, 7 controls; switched on through its own control
+PASS  UVox 720k <http://guitarix.sourceforge.net/plugins/gx_uvox_#_uvox_> -- 2 connectors, 7 controls
+PASS  Valve Caster <http://guitarix.sourceforge.net/plugins/gx_valvecaster_#_valvecaster_> -- 2 connectors, 4 controls; switched on through its own control
+PASS  Vintage Fuzz Master <http://guitarix.sourceforge.net/plugins/gx_vfm_#_vfm_> -- 2 connectors, 3 controls
+PASS  Vox MKII <http://guitarix.sourceforge.net/plugins/gx_vmk2d_#_vmk2d_> -- 2 connectors, 10 controls
+PASS  Voodoo Fuzz <http://guitarix.sourceforge.net/plugins/gx_voodoo_#_voodoo_> -- 2 connectors, 4 controls
+PASS  VBass Pre Amp <http://guitarix.sourceforge.net/plugins/gx_voxbass_#_voxbass_> -- 2 connectors, 5 controls; switched on through its own control
+PASS  Suppa Tone Bender <http://guitarix.sourceforge.net/plugins/gx_vstb_#_vstb_> -- 2 connectors, 3 controls
+PASS  Tempo delay <http://polyeffects.com/lv2/digit_delay> -- 3 connectors, 8 controls
+PASS  Clouds <http://polyeffects.com/lv2/polyclouds#granular> -- 16 connectors, 12 controls; switched on through its own control
+SUMMARY 46 modules load and match, 0 do not, 0 withheld by the catalogue

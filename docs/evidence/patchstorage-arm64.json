@@ -1,0 +1,1159 @@
+{
+  "date": "2026-10-19",
+  "machine": "aarch64",
+  "sample_rate": 48000,
+  "block_size": 128,
+  "passed": 68,
+  "total": 68,
+  "entries": [
+    {
+      "uri": "http://faust-lv2.googlecode.com/Granulator",
+      "name": "Granulator",
+      "live": [
+        "PASS",
+        "4 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in0 -> audio out0, 0.0884 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored delay_length: set 4.015, read back 4.015",
+      "wet": {
+        "settings": {
+          "mix": 1,
+          "delay_length": 0.5,
+          "grain_density": 16
+        },
+        "channels": [
+          {
+            "port": "out0",
+            "finite": true,
+            "rms": 0.7554708455373502,
+            "passed": true
+          },
+          {
+            "port": "out1",
+            "finite": true,
+            "rms": 0.7311898634567924,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_amp#GUITARIX",
+      "name": "GxAmplifier-X",
+      "live": [
+        "PASS",
+        "4 connectors, 13 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0386 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored MasterGain: set -5.2, read back -5.2",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_amp_stereo#GUITARIX_ST",
+      "name": "GxAmplifier Stereo",
+      "live": [
+        "PASS",
+        "6 connectors, 13 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0013 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored MasterGain: set -5.2, read back -5.2",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_barkgraphiceq_#_barkgraphiceq_",
+      "name": "GxBarkGraphicEQ",
+      "live": [
+        "PASS",
+        "2 connectors, 25 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1768 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored G1: set -11.5, read back -11.5",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
+      "name": "GxCabinet",
+      "live": [
+        "PASS",
+        "4 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1446 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored CLevel: set 2.165, read back 2.165",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_chorus_stereo#_chorus_stereo",
+      "name": "GxChorus-Stereo",
+      "live": [
+        "PASS",
+        "4 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2203 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored level: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_",
+      "name": "GxWahwah",
+      "live": [
+        "PASS",
+        "2 connectors, 6 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.6486 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored WAH: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_compressor#_compressor",
+      "name": "GxCompressor",
+      "live": [
+        "PASS",
+        "2 connectors, 6 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1181 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored RATIO: set 8.03, read back 8.03",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_cstb_#_cstb_",
+      "name": "GxColorSoundTonebender",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0303 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored ATTACK: set 0.3515, read back 0.3515",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_delay_stereo#_delay_stereo",
+      "name": "GxDelay-Stereo",
+      "live": [
+        "PASS",
+        "4 connectors, 8 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1959 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored level_r: set -5.2, read back -5.2",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_detune_#_detune_",
+      "name": "Gxdetune",
+      "live": [
+        "PASS",
+        "2 connectors, 10 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1311 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DETUNE: set -0.065, read back -0.065",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_#_digital_delay_",
+      "name": "Gxdigital_delay",
+      "live": [
+        "PASS",
+        "2 connectors, 9 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2568 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BPM: set 148.3, read back 148.3",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_st_#_digital_delay_st_",
+      "name": "Gxdigital_delay_st",
+      "live": [
+        "PASS",
+        "4 connectors, 9 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2568 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BPM: set 148.3, read back 148.3",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_duck_delay_#_duck_delay_",
+      "name": "Gxduck_delay",
+      "live": [
+        "PASS",
+        "2 connectors, 6 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.3058 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored AMOUNT: set 20.72, read back 20.72",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_duck_delay_st_#_duck_delay_st_",
+      "name": "Gxduck_delay_st",
+      "live": [
+        "PASS",
+        "4 connectors, 9 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2438 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored AMOUNT: set 20.72, read back 20.72",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo",
+      "name": "GxEcho-Stereo",
+      "live": [
+        "PASS",
+        "4 connectors, 8 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2523 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored level_r: set 37, read back 37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_expander#_expander",
+      "name": "GxExpander",
+      "live": [
+        "PASS",
+        "2 connectors, 6 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1768 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored RATIO: set 8.03, read back 8.03",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_flanger#_flanger",
+      "name": "GxFlanger",
+      "live": [
+        "PASS",
+        "2 connectors, 7 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2260 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored depth: set 1.85, read back 1.85",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fumaster_#_fumaster_",
+      "name": "GxFuzzMaster",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2304 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored TONE: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzz_#fuzz_",
+      "name": "GxFuzz",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1505 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored INPUT: set -8.9, read back -8.9",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzzface_#_fuzzface_",
+      "name": "GxFuzzFaceJH-2",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1269 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored FUZZ: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzzfacefm_#_fuzzfacefm_",
+      "name": "GxFuzzFaceFullerMod",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0144 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_gcb_95_#_gcb_95_",
+      "name": "GxCrybabyGCB95",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0946 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored VOLUME: set -11.12, read back -11.12",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_graphiceq_#_graphiceq_",
+      "name": "GxGraphicEQ",
+      "live": [
+        "PASS",
+        "2 connectors, 12 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1768 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored G10: set -11.5, read back -11.5",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hfb_#_hfb_",
+      "name": "GxHighFrequencyBrightener",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2620 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored INTENSITY: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_",
+      "name": "GxHogsFoot",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 1.1017 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored VOLUME: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_",
+      "name": "GxHornet",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0983 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored FUZZ: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_#_jcm800pre_",
+      "name": "GxJCM800pre",
+      "live": [
+        "PASS",
+        "2 connectors, 7 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.8110 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored P6v: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_st#_jcm800pre_st",
+      "name": "GxJCM800pre ST",
+      "live": [
+        "PASS",
+        "4 connectors, 7 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.4679 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored P6v: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_",
+      "name": "Gxlivelooper",
+      "live": [
+        "PASS",
+        "2 connectors, 35 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1768 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored clip1: set 37, read back 37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_",
+      "name": "GxMultiBandCompressor",
+      "live": [
+        "PASS",
+        "2 connectors, 35 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.6272 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored MAKEUP1: set -13, read back -13",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_",
+      "name": "GxMultiBandDelay",
+      "live": [
+        "PASS",
+        "2 connectors, 20 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2047 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DELAY1: set 148.3, read back 148.3",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_",
+      "name": "GxMultiBandDistortion",
+      "live": [
+        "PASS",
+        "2 connectors, 16 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.7156 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DRIVE1: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbecho_#_mbecho_",
+      "name": "GxMultiBandEcho",
+      "live": [
+        "PASS",
+        "2 connectors, 15 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2324 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored PERCENT1: set 37, read back 37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_",
+      "name": "GxMultiBandReverb",
+      "live": [
+        "PASS",
+        "2 connectors, 20 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0946 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored ROOMSIZE1: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_",
+      "name": "GxMole",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 1.0905 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BOOST: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_muff_#_muff_",
+      "name": "GxMuff",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1669 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored TONE: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_oc_2_#_oc_2_",
+      "name": "GxOC-2",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.4332 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DIRECT: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser",
+      "name": "GxPhaser",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1314 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored dry_wet: set 37, read back 37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_rangem_#_rangem_",
+      "name": "GxRangemaster",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2246 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored BOOST: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump",
+      "name": "GxRedeye Big Chump",
+      "live": [
+        "PASS",
+        "2 connectors, 9 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1562 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored Gain: set -5.2, read back -5.2",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#chump",
+      "name": "GxRedeye Chump",
+      "live": [
+        "PASS",
+        "2 connectors, 9 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0634 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored Gain: set -5.2, read back -5.2",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump",
+      "name": "GxRedeye Vibro Chump",
+      "live": [
+        "PASS",
+        "2 connectors, 9 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0373 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored Gain: set -5.2, read back -5.2",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo",
+      "name": "GxReverb-Stereo",
+      "live": [
+        "PASS",
+        "4 connectors, 6 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0962 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored dry_wet: set 37, read back 37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_",
+      "name": "Gxroom_simulator",
+      "live": [
+        "PASS",
+        "2 connectors, 6 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1768 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored EFFECT: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_",
+      "name": "GxScreamingBird",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0633 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored SCREAM: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_",
+      "name": "Gxshimmizita",
+      "live": [
+        "PASS",
+        "4 connectors, 13 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2252 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored ModSource: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre",
+      "name": "GxAlembic",
+      "live": [
+        "PASS",
+        "2 connectors, 6 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2567 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored volume: set 7.4, read back 7.4",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre_st#studiopre_st",
+      "name": "Gx Studio Preamp Stereo",
+      "live": [
+        "PASS",
+        "4 connectors, 11 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2567 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored volume_l: set 7.4, read back 7.4",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_",
+      "name": "GxSustainer",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0794 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored SUSTAIN: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_",
+      "name": "Gxswitched_tremolo",
+      "live": [
+        "PASS",
+        "2 connectors, 8 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1082 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored DEPTH: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah",
+      "name": "GxSwitchlessWah",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1767 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored fslider1_: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_tremolo#_tremolo",
+      "name": "GxTremolo",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1522 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored dry_wet: set 37, read back 37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo",
+      "name": "GxZita_rev1-Stereo",
+      "live": [
+        "PASS",
+        "4 connectors, 12 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0866 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored level: set -29.3, read back -29.3",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#autowah",
+      "name": "GxAutoWah",
+      "live": [
+        "PASS",
+        "2 connectors, 1 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1094 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": null,
+      "restore": "no continuous control to change",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#wah",
+      "name": "GxWah",
+      "live": [
+        "PASS",
+        "2 connectors, 2 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1181 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored fslider1_: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxbooster#booster",
+      "name": "GxBooster",
+      "live": [
+        "PASS",
+        "2 connectors, 3 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.1791 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored fslider0_: set 7.715, read back 7.715",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxechocat#echocat",
+      "name": "GxEchoCat",
+      "live": [
+        "PASS",
+        "2 connectors, 8 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0622 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored input_gain: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtilttone#tilttone",
+      "name": "GxTiltTone",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0819 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored drive: set 7.4, read back 7.4",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxts9#ts9sim",
+      "name": "GxTubeScreamer",
+      "live": [
+        "PASS",
+        "2 connectors, 4 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0620 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored fslider0_: set -11.12, read back -11.12",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay",
+      "name": "GxTubeDelay",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.0197 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored fslider0_: set -19.28, read back -19.28",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo",
+      "name": "GxTubeTremelo",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.3511 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored depth: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato",
+      "name": "GxTubeVibrato",
+      "live": [
+        "PASS",
+        "2 connectors, 5 controls"
+      ],
+      "signal": "heard: audio in -> audio out, 0.2750 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored depth: set 0.37, read back 0.37",
+      "wet": null,
+      "passed": true
+    },
+    {
+      "uri": "https://ca9.eu/lv2/bolliedelayxt",
+      "name": "Bollie Delay XT",
+      "live": [
+        "PASS",
+        "4 connectors, 28 controls; switched on through its own control"
+      ],
+      "signal": "heard: audio IP_INPUT_CH1 -> audio OP_OUTPUT_CH1, 0.2198 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored CP_TEMPO_HOST: set 116.2, read back 116.2",
+      "wet": {
+        "settings": {
+          "CP_GAIN_DRY": -97,
+          "CP_GAIN_WET": 0
+        },
+        "channels": [
+          {
+            "port": "OP_OUTPUT_CH1",
+            "finite": true,
+            "rms": 0.2975223665490812,
+            "passed": true
+          },
+          {
+            "port": "OP_OUTPUT_CH2",
+            "finite": true,
+            "rms": 0.38023732952411776,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      "passed": true
+    },
+    {
+      "uri": "https://github.com/michaelwillis/dragonfly-reverb",
+      "name": "Dragonfly Hall Reverb",
+      "live": [
+        "PASS",
+        "6 connectors, 19 controls"
+      ],
+      "signal": "heard: audio lv2_audio_in_1 -> audio lv2_audio_out_1, 0.1462 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored dry_level: set 37, read back 37",
+      "wet": {
+        "settings": {
+          "dry_level": 0,
+          "early_level": 0,
+          "late_level": 100
+        },
+        "channels": [
+          {
+            "port": "lv2_audio_out_1",
+            "finite": true,
+            "rms": 0.0759349443761801,
+            "passed": true
+          },
+          {
+            "port": "lv2_audio_out_2",
+            "finite": true,
+            "rms": 0.36263659499491396,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      "passed": true
+    },
+    {
+      "uri": "urn:dragonfly:early",
+      "name": "Dragonfly Early Reflections",
+      "live": [
+        "PASS",
+        "4 connectors, 8 controls"
+      ],
+      "signal": "heard: audio lv2_audio_in_1 -> audio lv2_audio_out_1, 0.0661 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored dry_level: set 37, read back 37",
+      "wet": {
+        "settings": {
+          "dry_level": 0,
+          "early_level": 100
+        },
+        "channels": [
+          {
+            "port": "lv2_audio_out_1",
+            "finite": true,
+            "rms": 0.3804661535960557,
+            "passed": true
+          },
+          {
+            "port": "lv2_audio_out_2",
+            "finite": true,
+            "rms": 0.21335163416555847,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      "passed": true
+    },
+    {
+      "uri": "urn:dragonfly:plate",
+      "name": "Dragonfly Plate Reverb",
+      "live": [
+        "PASS",
+        "6 connectors, 10 controls"
+      ],
+      "signal": "heard: audio lv2_audio_in_1 -> audio lv2_audio_out_1, 0.1378 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored dry_level: set 37, read back 37",
+      "wet": {
+        "settings": {
+          "dry_level": 0,
+          "early_level": 100
+        },
+        "channels": [
+          {
+            "port": "lv2_audio_out_1",
+            "finite": true,
+            "rms": 0.047789723929124915,
+            "passed": true
+          },
+          {
+            "port": "lv2_audio_out_2",
+            "finite": true,
+            "rms": 0.08947244642965406,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      "passed": true
+    },
+    {
+      "uri": "urn:dragonfly:room",
+      "name": "Dragonfly Room Reverb",
+      "live": [
+        "PASS",
+        "6 connectors, 18 controls"
+      ],
+      "signal": "heard: audio lv2_audio_in_1 -> audio lv2_audio_out_1, 0.1525 RMS",
+      "signal_ok": true,
+      "finite": true,
+      "restore_ok": true,
+      "restore": "restored dry_level: set 37, read back 37",
+      "wet": {
+        "settings": {
+          "dry_level": 0,
+          "early_level": 0,
+          "late_level": 100
+        },
+        "channels": [
+          {
+            "port": "lv2_audio_out_1",
+            "finite": true,
+            "rms": 0.027401754801150462,
+            "passed": true
+          },
+          {
+            "port": "lv2_audio_out_2",
+            "finite": true,
+            "rms": 0.03538338944290055,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      "passed": true
+    }
+  ],
+  "control_recheck": true,
+  "manifest_sha256": "3d96578bb30aeaf91e3306219c51302ef8c75736adf8bf0089d5608488d60d46",
+  "server_module_path": "/var/tmp/peepo-expanded-engine-final/opt/peepo/lib/aarch64-linux-gnu/libingen_server.so",
+  "engine_server_sha256": "9ba064d7a035b3b6d85fc134cf3061d71538f335be25489f5cc0c734f6fbf371",
+  "plugin_tree_sha256": "45cc6c63dd389bfcd00ffa23ab6086386916a44a648293fa10b0798ba74918e5",
+  "legacy_controls_passed": true
+}

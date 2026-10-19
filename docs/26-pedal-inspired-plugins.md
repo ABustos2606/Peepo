@@ -75,8 +75,8 @@ What stays in Peepo:
 
 - [x] Get the Habit manual and confirm the controls and behaviours (summarised in Discipline's `docs/design.md`).
 - [x] Create the Discipline repository folder.
-- [ ] Publish the repository and choose its license.
-- [ ] Discipline milestones 1 to 3 (in Discipline's `docs/design.md`).
-- [ ] Add it to `config/catalogue/overlay.json`, with its ports laid out in the overlay format.
-- [ ] Build it in the WSL environment, then on the Pi, through a pinned build step in Peepo.
-- [ ] Measure xruns on the Pi with it in a typical patch.
+- [x] Publish the repository and choose its license.
+- [x] Discipline milestones 1 to 3 (in Discipline's `docs/design.md`).
+- [x] Add it to `config/catalogue/overlay.json`, with its ports laid out in the overlay format.
+- [x] Build it in the WSL environment, then on the Pi, through a pinned build step in Peepo.
+- [x] Measure xruns on the Pi with it in a typical patch.

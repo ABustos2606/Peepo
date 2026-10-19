@@ -216,6 +216,14 @@ DISCIPLINE_OPT="-O2"; [ "$(uname -m)" = aarch64 ] && DISCIPLINE_OPT="-O2 -mcpu=c
 third discipline https://github.com/ABustos2606/discipline.git 4f68f3b967f8fb92c4968554b44c131adfda3717 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
+# Requested MODEP/Patchstorage effects, including the remaining main Guitarix
+# LV2 collection. Artifacts, source rebuilds and metadata repairs are locked.
+if bash "$HERE/22-patchstorage.sh" >"$SRC/Patchstorage.log" 2>&1; then
+    record Patchstorage built "66 identities; pinned builds and Detune source rebuild"
+else
+    record Patchstorage FAILED "see $SRC/Patchstorage.log"
+fi
+
 echo "==== components"
 printf '%s\n' "${RESULTS[@]}"
 echo "==== packages"

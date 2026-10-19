@@ -1,8 +1,13 @@
 # Plugin catalogue: inventory, builds and compatibility records
 
 **Looking for the module names? See the [complete module list](33-module-list.md):
-all 291 selected identities, their touchscreen categories, descriptions,
+all 357 selected identities, their touchscreen categories, descriptions,
 connections and current availability.** This page records the build and test history.
+
+**19 October 2026:** [66 retained Patchstorage identities](35-patchstorage-expansion.md)
+are installed and tested on PC and Pi. Bollie Delay XT and Granulator were removed at the user’s request. The selected inventory contains 357
+identities, 335 installed and 282 ready to add. The historical snapshots below
+retain their original dates and counts.
 
 **18 October 2026:** all 43 GxPlugins are now built, tested on PC and Pi, and
 installed. The selected inventory has 291 identities. The original counts and

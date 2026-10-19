@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-19",
+  "installed_identities": 68,
+  "catalogue_identities": 337,
+  "graph_unchanged": true,
+  "jack_pid_unchanged": true,
+  "before_pids": {
+    "peepo-jack": "672",
+    "peepo-engine": "767",
+    "peepo-ui": "823"
+  },
+  "after_pids": {
+    "peepo-jack": "672",
+    "peepo-engine": "34317",
+    "peepo-ui": "34346"
+  },
+  "record": "/var/lib/peepo/patchstorage-update-mintm8tr",
+  "engine_sha256": {
+    "bin/ingen": "52c93177d5a0e3618e8c4878a3969f4d3ae1e7627ea0ae10c2c38e82e0d09920",
+    "lib/aarch64-linux-gnu/libingen_server.so": "9ba064d7a035b3b6d85fc134cf3061d71538f335be25489f5cc0c734f6fbf371",
+    "lib/aarch64-linux-gnu/libingen_jack.so": "c164b08120b9b60fb72c420ebb02cb79e2f87051701510df73f7d77cf41644d0",
+    "lib/aarch64-linux-gnu/libingen-0.so.0.5.1": "da73103065572f23a330f8620e2dcf43fe595f59b2d1bc23eb2f3ee8843c884a"
+  }
+}

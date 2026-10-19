@@ -6,6 +6,16 @@ commit `19df03e5e1be1a97bf3c60c66a0d3f830c0f35b9`. This adds 39 plugins to the
 four already installed. The existing SVT, SlowGear, CreamMachine and Supersonic
 revisions, URIs and display names are retained.
 
+**19 October update:** the [Patchstorage expansion](35-patchstorage-expansion.md)
+adds 62 more Guitarix identities from its main LV2 collection. Peepo now has
+105 Guitarix identities in total; the 43 recorded on this page are retained.
+
+**Scope:** this is the complete **GxPlugins.lv2 extra collection**, not every
+LV2 effect in the wider Guitarix project. The [main Guitarix repository](https://github.com/brummer10/guitarix)
+ships another set of LV2 effects, including delays, reverbs and modulation.
+Patchstorage publishes effects from both sets. Its additional Gx entries do
+not indicate a failed installation of this 43-plugin collection.
+
 [gxplugins.json](../config/catalogue/gxplugins.json) records each source URL,
 full commit, URI and bundle name. The other 39 revisions follow the collection's
 gitlinks. The manifest feeds the inventory generator and build script; the

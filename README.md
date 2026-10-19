@@ -2,9 +2,11 @@
 
 Modular effects instrument for Raspberry Pi 5, with a new touchscreen interface inspired by Poly Effects' Beebo.
 
-**Status, 18 October 2026:** The engine, touchscreen interface and Tascam audio path run on the Pi. The Pi catalogue contains **269 installed identities**, with **216 ready to add** after presentation restrictions; the selected inventory contains 291 identities in total. All **43 GxPlugins** are installed and passed PC and native Pi functional checks. Clouds has confirmed guitar listening and patch save/reload; an interface-only restart during playing caused no heard interruption or measured audio gap. NAM and IR effects have file selectors. The Windows editor, patch storage and simulated physical controls remain available; GPIO controls are not wired yet. See [Pi bring-up](docs/23-pi-bring-up.md), [GxPlugins results](docs/32-gxplugins.md) and [file handling](docs/29-parameters-files-tempo.md).
+**Status, 19 October 2026:** The engine, touchscreen interface and Tascam audio path run on the Pi. The Pi catalogue contains **335 installed identities**, with **282 ready to add** after presentation restrictions; the selected inventory contains 357 identities in total. The [Patchstorage expansion](docs/35-patchstorage-expansion.md) adds 66 tested effects: four Dragonfly reverbs and 62 more Guitarix identities, bringing the Guitarix total to 105. Clouds has confirmed guitar listening and patch save/reload; an interface-only restart during playing caused no heard interruption or measured audio gap. NAM and IR effects have file selectors. The Windows editor, patch storage and simulated physical controls remain available; GPIO controls are not wired yet. See [Pi bring-up](docs/23-pi-bring-up.md), [GxPlugins results](docs/32-gxplugins.md) and [file handling](docs/29-parameters-files-tempo.md).
 
-**[Complete module list: every module, category, description, connections and availability](docs/33-module-list.md).** Includes all 43 GxPlugins, disabled and hidden identities, and the selected modules not installed.
+**[Complete module list: every module, category, description, connections and availability](docs/33-module-list.md).** Includes all 105 Guitarix identities, the four Dragonfly reverbs, disabled and hidden identities, and the selected modules not installed.
+
+**[Patchstorage vs Peepo: all 386 LV2 entries, installed and missing](docs/34-patchstorage-peepo-comparison.md).** Checked 19 October 2026, with Pi64 download availability and bundle details.
 
 **Project folder:** `C:\Pedal PI`
 
@@ -59,7 +61,7 @@ Inside Debian under WSL2, as root: `bash tools/pi/build-arm64.sh` builds the eng
 
 | File | Contents |
 | --- | --- |
-| [Complete module list](docs/33-module-list.md) | All 291 selected identities, grouped by touchscreen category, with descriptions, connections and availability; 216 ready to add |
+| [Complete module list](docs/33-module-list.md) | All 357 selected identities, grouped by touchscreen category, with descriptions, connections and availability; 282 ready to add |
 | [All 43 GxPlugins](docs/32-gxplugins.md#all-43-gxplugins) | Every Gx effect by its Peepo name, category and description, plus build and native test results |
 | [Requirements](docs/01-requirements.md) | Agreed behaviour, hardware baseline, scope, and success criteria |
 | [Architecture](docs/02-architecture.md) | Audio engine, LVGL touchscreen application, controls, storage, and startup |

@@ -1,8 +1,8 @@
 # Complete module list
 
-**Updated 18 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
+**Updated 19 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
 
-**291 plugin identities:** 269 installed in the Pi export and 22 not installed. All **43 GxPlugins** are included.
+**357 plugin identities:** 335 installed in the Pi export and 22 not installed. All **43 GxPlugins** are included.
 
 The tables below list every identity once. IN and OUT are fixed patch endpoints, described separately.
 
@@ -10,7 +10,7 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Ready | 216 | Can be added to a patch. This does not imply a guitar listening test of every module. |
+| Ready | 282 | Can be added to a patch. This does not imply a guitar listening test of every module. |
 | Needs adaptation | 10 | Installed, but disabled in Add for the stated limitation. |
 | Unavailable | 40 | Present in the Pi export but unusable by the current host; see each reason. |
 | Hidden | 3 | Omitted from Add as a duplicate or redundant module; retained for saved patches. |
@@ -24,15 +24,15 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Category | Ready / listed |
 | --- | ---: |
-| [Drive](#drive) | 40 / 40 |
-| [Amp](#amp) | 12 / 12 |
-| [Cabinet](#cabinet) | 3 / 3 |
-| [Dynamics](#dynamics) | 10 / 10 |
-| [Filter](#filter) | 15 / 16 |
-| [Modulation](#modulation) | 28 / 28 |
-| [Pitch](#pitch) | 6 / 6 |
-| [Delay](#delay) | 6 / 8 |
-| [Reverb](#reverb) | 9 / 12 |
+| [Drive](#drive) | 55 / 55 |
+| [Amp](#amp) | 21 / 21 |
+| [Cabinet](#cabinet) | 4 / 4 |
+| [Dynamics](#dynamics) | 14 / 14 |
+| [Filter](#filter) | 23 / 24 |
+| [Modulation](#modulation) | 35 / 35 |
+| [Pitch](#pitch) | 8 / 8 |
+| [Delay](#delay) | 17 / 19 |
+| [Reverb](#reverb) | 18 / 21 |
 | [Texture](#texture) | 12 / 12 |
 | [Resonator](#resonator) | 2 / 2 |
 | [Sound source](#sound-source) | 5 / 11 |
@@ -59,6 +59,21 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Eternity (GxPlugins) | Low compression overdrive pedal. | audio 1 in / 1 out | Ready |
 | Gain | Changes signal level. Clean gain or attenuation from -90 dB to +24 dB. | audio 1 in / 1 out | Ready |
 | Guvnor (GxPlugins) | Based on the Marshall "The Guv'nor" Overdrive. | audio 1 in / 1 out | Ready |
+| Gx Booster | Raises the signal level. | audio 1 in / 1 out | Ready |
+| Gx ColorSound Tonebender | Tonebender-style fuzz distortion. | audio 1 in / 1 out | Ready |
+| Gx Fuzz | Guitarix fuzz distortion. | audio 1 in / 1 out | Ready |
+| Gx Fuzz Face Fuller | Fuzz Face-style distortion with the Fuller modification. | audio 1 in / 1 out | Ready |
+| Gx Fuzz Face JH-2 | Fuzz Face-style distortion, JH-2 variant. | audio 1 in / 1 out | Ready |
+| Gx Fuzz Master | Fuzz distortion with tone and output controls. | audio 1 in / 1 out | Ready |
+| Gx HF Brightener | Brightens the signal's upper frequencies. | audio 1 in / 1 out | Ready |
+| Gx Hogs Foot | Bass booster emphasizing low frequencies. | audio 1 in / 1 out | Ready |
+| Gx Hornet | Guitarix Hornet distortion effect. | audio 1 in / 1 out | Ready |
+| Gx Mole | Low-frequency booster for adding weight to the signal. | audio 1 in / 1 out | Ready |
+| Gx Muff | Muff-style fuzz distortion. | audio 1 in / 1 out | Ready |
+| Gx Multiband distortion | Applies distortion to separate frequency bands. | audio 1 in / 1 out | Ready |
+| Gx Rangemaster | Rangemaster-style treble booster. | audio 1 in / 1 out | Ready |
+| Gx Screaming Bird | Treble booster for bright, cutting tones. | audio 1 in / 1 out | Ready |
+| Gx Tube Screamer | Tube Screamer-style overdrive. | audio 1 in / 1 out | Ready |
 | Heathkit (GxPlugins) | Based on the Heathkit TA-28 distortion/booster/fuzz. | audio 1 in / 1 out | Ready |
 | Hot Box (GxPlugins) | Based on the Matchless Hot Box tube overdrive. | audio 1 in / 1 out | Ready |
 | Hyperion (GxPlugins) | Based on the Devi Ever FX Hyperion fuzz. | audio 1 in / 1 out | Ready |
@@ -94,6 +109,15 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Blue Amp (GxPlugins) | Single-ended amp inspired by late 1950s Fender Princeton and Champ designs. | audio 1 in / 1 out | Ready |
 | Combo | A conventional guitar amp and speaker simulation; no model file needed. | audio 2 in / 2 out | Ready |
 | Epic (GxPlugins) | Based on Valve Junior. | audio 1 in / 1 out | Ready |
+| Gx Alembic preamp | Studio preamp with tone controls. | audio 1 in / 1 out | Ready |
+| Gx Amplifier | Guitarix guitar amp with tone controls and cabinet processing. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Ready |
+| Gx Amplifier stereo | Stereo Guitarix amp with tone controls and cabinet processing. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
+| Gx JCM800 preamp | JCM800-style guitar preamp. | audio 1 in / 1 out | Ready |
+| Gx JCM800 preamp stereo | Stereo JCM800-style guitar preamp. | audio 2 in / 2 out | Ready |
+| Gx Redeye Big Chump | Big Chump variant of the Redeye guitar amp models. | audio 1 in / 1 out | Ready |
+| Gx Redeye Chump | Chump variant of the Redeye guitar amp models. | audio 1 in / 1 out | Ready |
+| Gx Redeye Vibro Chump | Vibro Chump variant of the Redeye guitar amp models. | audio 1 in / 1 out | Ready |
+| Gx Studio preamp stereo | Stereo studio preamp with tone controls. | audio 2 in / 2 out | Ready |
 | NAM | Amp model player. Loads models trained on real amps and pedals. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Ready |
 | Plexi (GxPlugins) | Plexi power amp simulation. | audio 1 in / 1 out | Ready |
 | Power amp (Cream) (GxPlugins) | Cream-coloured power amp emulation with bass and treble. | audio 1 in / 1 out | Ready |
@@ -110,6 +134,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Cab Mono | Mono cab sim. Loads a cabinet impulse response. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
 | Cab Mono => Stereo | Cab sim, mono in and stereo out. Loads a cabinet impulse response. | audio 1 in / 2 out; MIDI/events 1 in / 0 out | Ready |
 | Cab Stereo | Stereo cab sim. You normally do not want this. Requires stereo impulse responses. | audio 2 in / 2 out; MIDI/events 1 in / 0 out | Ready |
+| Gx Cabinet | Speaker cabinet simulator with a selection of built-in models. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Ready |
 
 ## Dynamics
 
@@ -119,6 +144,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Compressor stereo | Controls dynamics of a stereo signal. | audio 2 in / 2 out | Ready |
 | De-ess | Reduces harsh high-frequency peaks. | audio 2 in / 2 out | Ready |
 | Dynamics | Compressor, limiter and gate for controlling signal level. | audio 2 in / 2 out | Ready |
+| Gx Compressor | Controls signal dynamics with compression and output gain. | audio 1 in / 1 out | Ready |
+| Gx Expander | Expands dynamics to reduce quiet background sound. | audio 1 in / 1 out | Ready |
+| Gx Multiband compressor | Compresses separate frequency bands. | audio 1 in / 1 out | Ready |
+| Gx Sustainer | Controls level to extend sustain. | audio 1 in / 1 out | Ready |
 | Limiter | Limits loud peaks. | audio 2 in / 2 out | Ready |
 | Loudness | Changes perceived loudness with level-dependent filtering. | audio 2 in / 2 out | Ready |
 | MultiBand | Compresses low, middle and high frequency bands separately. | audio 2 in / 2 out | Ready |
@@ -131,6 +160,14 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
 | Diode ladder | A diode ladder low pass filter similar to the vintage Japanese designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
+| Gx Auto wah | Automatic wah filtering driven by the input signal. | audio 1 in / 1 out | Ready |
+| Gx Bark graphic EQ | Graphic equalizer with frequency bands spaced on the Bark scale. | audio 1 in / 1 out | Ready |
+| Gx Crybaby GCB95 | Crybaby-style wah filter with a sweep control. | audio 1 in / 1 out | Ready |
+| Gx Graphic EQ | Graphic equalizer with separate frequency-band gains. | audio 1 in / 1 out | Ready |
+| Gx Switchless wah | Wah filter with automatic switching. | audio 1 in / 1 out | Ready |
+| Gx Tilt tone | Tilts the balance between low and high frequencies. | audio 1 in / 1 out | Ready |
+| Gx Wah | Wah filter with a manual sweep control. | audio 1 in / 1 out | Ready |
+| Gx Wahwah | Wah filter with a sweep control. | audio 1 in / 1 out | Ready |
 | Korg 35 high-pass | A high pass filter similar to the vintage Japanese designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
 | Korg 35 low-pass | A low pass filter similar to the vintage Japanese designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
 | Moog half ladder | A low pass filter inspired by vintage American designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
@@ -155,6 +192,13 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Chorus (CV) | 8 voice multi-dimensional chorus with CV for the LFO. | audio 1 in / 2 out; CV 1 in / 0 out | Ready |
 | Flanger | Flanger with internal LFO. | audio 1 in / 1 out | Ready |
 | Flanger (CV) | Flanger with CV for the LFO. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
+| Gx Chorus stereo | Stereo chorus with rate and depth controls. | audio 2 in / 2 out | Ready |
+| Gx Flanger | Sweeping comb-filter modulation with rate and depth controls. | audio 1 in / 1 out | Ready |
+| Gx Phaser | Sweeping phase-shift effect. | audio 1 in / 1 out | Ready |
+| Gx Switched tremolo | Switched tremolo for pronounced rhythmic level changes. | audio 1 in / 1 out | Ready |
+| Gx Tremolo | Rhythmic volume modulation. | audio 1 in / 1 out | Ready |
+| Gx Tube tremolo | Tube-style rhythmic volume modulation. | audio 1 in / 1 out | Ready |
+| Gx Tube vibrato | Tube-style pitch modulation. | audio 1 in / 1 out | Ready |
 | Harmonic tremolo | Harmonic tremolo with internal LFO. | audio 1 in / 1 out | Ready |
 | Harmonic tremolo (CV) | Harmonic tremolo with CV for the LFO. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
 | Leslie | Rotating speaker simulation. | audio 2 in / 2 out | Ready |
@@ -186,6 +230,8 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | --- | --- | --- | --- |
 | Clouds Stretch | A granular time stretching and pitch shifting module. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | Detune | Small pitch offsets for doubling and thickening. | audio 2 in / 2 out | Ready |
+| Gx Detune | Pitch detuning and octave effects with wet and dry levels. | audio 1 in / 1 out | Ready |
+| Gx OC-2 | Octave-down effect with separate octave and dry levels. | audio 1 in / 1 out | Ready |
 | Pitch Shifter | Changes the pitch of the incoming audio. | audio 1 in / 1 out | Ready |
 | RePsycho! | Audio-triggered pitch shifting and sample playback. | audio 2 in / 2 out | Ready |
 | Shepard | Shepard-tone processing for an endlessly rising or falling illusion. | audio 2 in / 2 out | Ready |
@@ -201,6 +247,17 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
 | Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready |
 | DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready |
+| Gx Delay stereo | Stereo delay with time, feedback and mix controls. | audio 2 in / 2 out | Ready |
+| Gx Digital delay | Mono digital delay with feedback and mix controls. | audio 1 in / 1 out | Ready |
+| Gx Digital delay stereo | Stereo digital delay with feedback and mix controls. | audio 2 in / 2 out | Ready |
+| Gx Duck delay | Mono delay that reduces the repeats while the input is playing. | audio 1 in / 1 out | Ready |
+| Gx Duck delay stereo | Stereo delay that reduces the repeats while the input is playing. | audio 2 in / 2 out | Ready |
+| Gx Echo Cat | Echo effect with controls for its repeat character. | audio 1 in / 1 out | Ready |
+| Gx Echo stereo | Stereo echo effect with feedback and level controls. | audio 2 in / 2 out | Ready |
+| Gx Live looper | Four loop tracks with recording, playback, reverse, speed and level controls. Captured audio is not promised to persist with a patch. | audio 1 in / 1 out | Ready |
+| Gx Multiband delay | Applies delay to separate frequency bands. | audio 1 in / 1 out | Ready |
+| Gx Multiband echo | Echo processing with separate frequency bands. | audio 1 in / 1 out | Ready |
+| Gx Tube delay | Tube-style delay effect. | audio 1 in / 1 out | Ready |
 | Stereo delay | Stereo echo with independent left/right delay times, feedback and filtering. | audio 2 in / 2 out | Ready |
 | Tempo delay | Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
 
@@ -209,6 +266,15 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
 | Ambience | Adds a small-room reverb around the input. | audio 2 in / 2 out | Ready |
+| Dragonfly Early Reflections | Early room reflections with size, width and filter controls. | audio 2 in / 2 out | Ready |
+| Dragonfly Hall | Hall reverb with early and late reflections, modulation, filters and decay controls. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
+| Dragonfly Plate | Plate reverb with selectable algorithms, damping and decay controls. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
+| Dragonfly Room | Room reverb with separate early and late levels, size, filters and decay controls. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
+| Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready |
+| Gx Reverb stereo | Stereo algorithmic reverb. | audio 2 in / 2 out | Ready |
+| Gx Room simulator | Room ambience simulator. | audio 1 in / 1 out | Ready |
+| Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready |
+| Gx Zita reverb stereo | Stereo Zita reverb. | audio 2 in / 2 out | Ready |
 | IR Convolver Mono | Mono convolution reverb or cab. Loads an impulse response file. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Needs adaptation: Does not load an impulse response in this engine: its worker reports an error (docs/29). |
 | IR Convolver Mono => Stereo | Convolution reverb, mono in and stereo out. Loads an impulse response file. | audio 1 in / 2 out; MIDI/events 1 in / 1 out | Needs adaptation: Does not load an impulse response in this engine: its worker reports an error (docs/29). |
 | IR Convolver Stereo | Stereo convolution reverb. Loads an impulse response file. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Needs adaptation: Does not load an impulse response in this engine: its worker reports an error (docs/29). |
@@ -423,7 +489,7 @@ These are reference identities, not available effects. The installed Foot switch
 
 ## Source and updates
 
-Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261018.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
+Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261019.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
 
 The older [compatibility matrix](evidence/compatibility-matrix.md) is a historical test record. [GxPlugins results](32-gxplugins.md) supplement it. Availability in this list follows the recorded Pi export and current overlay, not the historical PC matrix.
 
