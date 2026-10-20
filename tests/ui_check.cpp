@@ -948,13 +948,36 @@ int main(int argc, char** argv) {
             app.control({peepo::ControlEvent::Type::Turn, "enc2", 10}); step(app, 256);
             check(value("depth") > 0.5 && value("spare") == 0, "encoder 1 did not move on from Shape to Depth");
         }
+        // MIDI cables: a diamond jack under IN's audio, dragged to a MIDI
+        // module's diamond and on to OUT's. Audio never lands on a MIDI jack.
+        {
+            const std::string chord = "urn:peepo:test:chord";
+            peepo::register_definitions({{chord, "Chord", "Control", "Test MIDI module", 0xe3c770,
+                {{"midi_in", peepo::Direction::Input, 1, peepo::PortType::Midi}, {"midi_out", peepo::Direction::Output, 1, peepo::PortType::Midi},
+                 {"control", peepo::Direction::Input, 1, peepo::PortType::Atom}}, {}}});
+            peepo::SimulatedEngine sim;
+            peepo::Application app(sim); step(app);
+            sim.submit(peepo::AddModule{chord, 328, 276}); step(app, 256);
+            const auto id = app.graph().modules.back().id;
+            const auto cables = app.graph().connections.size();
+            // IN's third jack and the module's only input, both at their edge.
+            drag(app, 116, 72 + 132 + 46, 328, 72 + 276 + 28);
+            check(app.graph().connections.size() == cables + 1 && app.graph().connections.back() == peepo::Connection{1, id, "midi", "midi_in"},
+                  "dragging IN's MIDI jack to the module did not make a MIDI cable");
+            drag(app, 328 + peepo::module_width, 72 + 276 + 28, 664, 72 + 132 + 46);
+            check(app.graph().connections.size() == cables + 2 && app.graph().connections.back() == peepo::Connection{id, 2, "midi_out", "midi"},
+                  "dragging the module's MIDI output to OUT did not make a MIDI cable");
+            drag(app, 116, 72 + 132 + 9, 328, 72 + 276 + 28);
+            check(app.graph().connections.size() == cables + 2, "an audio cable landed on a MIDI jack");
+            capture(app, output / "70-midi-cables.bmp");
+        }
         // The patch tempo and a module's file. The footer's BPM opens the Tempo
         // page; steps, the TAP pad, encoder 1 and a tap-tempo footswitch set it,
         // and a module that follows it takes it. A model is chosen from the files.
         {
             const std::string uri = "urn:peepo:test:model-player";
             auto player = peepo::ModuleDefinition{uri, "Model player", "Amp", "Test module with a file and a tempo", 0xf0aa72,
-                {{"in", peepo::Direction::Input}, {"out", peepo::Direction::Output}, {"control", peepo::Direction::Input, 1, peepo::PortType::Midi}},
+                {{"in", peepo::Direction::Input}, {"out", peepo::Direction::Output}, {"control", peepo::Direction::Input, 1, peepo::PortType::Atom}},
                 {{"rate", "Rate", "BPM", peepo::ParameterKind::Continuous, 40, 240, 100}, {"level", "Level", "dB", peepo::ParameterKind::Continuous, -20, 20, 0}}};
             player.tempo_symbol = "rate";
             player.file = {"urn:peepo:test:model-player#model", "Model", "nam", {"nam"}};

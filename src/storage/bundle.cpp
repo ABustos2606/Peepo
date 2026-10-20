@@ -16,8 +16,9 @@ constexpr std::string_view xsd = "http://www.w3.org/2001/XMLSchema#";
 const std::string ingen_ns(ingen::uri::ingen), lv2_ns(ingen::uri::lv2), peepo_ns(ingen::uri::peepo);
 const std::string state_key = "http://lv2plug.in/ns/ext/state#state";
 // The graph's own audio ports stand for IN's outputs and OUT's inputs, as in the adapter.
-struct Endpoint { const char* symbol; InstanceId module; const char* port; };
-constexpr Endpoint endpoints[] = {{"in_l", 1, "out"}, {"in_r", 1, "out_r"}, {"out_l", 2, "in"}, {"out_r", 2, "in_r"}};
+struct Endpoint { const char* symbol; InstanceId module; const char* port; bool midi = false; };
+constexpr Endpoint endpoints[] = {{"in_l", 1, "out"}, {"in_r", 1, "out_r"}, {"out_l", 2, "in"}, {"out_r", 2, "in_r"},
+                                  {"midi_in", 1, "midi", true}, {"midi_out", 2, "midi", true}};
 
 std::optional<double> number(const Term& term) {
     if (term.kind != Term::Kind::Literal || !term.datatype.starts_with(xsd) || term.datatype == std::string(xsd) + "boolean" || term.datatype == std::string(xsd) + "string") return std::nullopt;
@@ -214,8 +215,9 @@ Graph bundle_graph(const Bundle& bundle) {
 std::string write_main_ttl(const Graph& graph) {
     std::string text = ingen::prefixes() + "\n";
     for (const auto& endpoint : endpoints)
-        text += iri(endpoint.symbol) + "\n\tlv2:symbol " + ingen::string_literal(endpoint.symbol) + " ;\n\ta lv2:AudioPort , lv2:" +
-                (endpoint.module == 1 ? "InputPort" : "OutputPort") + " .\n\n";
+        text += iri(endpoint.symbol) + "\n\tlv2:symbol " + ingen::string_literal(endpoint.symbol) + " ;\n\ta " +
+                (endpoint.midi ? "atom:AtomPort" : "lv2:AudioPort") + " , lv2:" + (endpoint.module == 1 ? "InputPort" : "OutputPort") +
+                (endpoint.midi ? " ;\n\tatom:bufferType atom:Sequence ;\n\tatom:supports midi:MidiEvent" : "") + " .\n\n";
     std::vector<std::string> blocks;
     for (const auto& m : graph.modules) {
         if (m.fixed) continue;

@@ -98,7 +98,16 @@ Agreed 13 October 2026 (D16 revised). Modulation sources such as envelopes, LFOs
 - Audio connects to audio and control to control. The engine itself would accept either into the other; the interface does not offer it.
 - Feedback loops are refused for control cables too.
 
-MIDI connections between modules remain deferred. A visual cable must always correspond to a valid engine connection; a refused connection shows a short reason.
+### MIDI cables
+
+Agreed 20 October 2026 (D16 revised again; [MIDI](39-midi.md)). The look was chosen from three sketches: side jacks in a colour of their own.
+
+- A MIDI connector is a **diamond on the side edges**, inputs on the left and outputs on the right, below the module's audio jacks. Diamonds and MIDI cables are teal (`0x2dd4bf`), a colour no module group uses.
+- **IN has a MIDI output** (every MIDI device, merged) and **OUT a MIDI input** (to every device), below their two audio jacks.
+- Drag from a MIDI output to a MIDI input, as for audio. MIDI never joins audio or control; the drop is refused with a reason. Holding two modules also offers their MIDI ports in the cable list.
+- A plugin's other atom ports, such as the one a Cabinet or NAM takes its file on, are not connectors.
+
+A visual cable must always correspond to a valid engine connection; a refused connection shows a short reason.
 
 ## Module page
 

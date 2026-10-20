@@ -101,11 +101,13 @@ It **never** edits `/boot/firmware/config.txt`. Ordinary installation reports co
 | --- | --- | --- |
 | `peepo-jack` | `jackd` with the driver and options of `peepo.conf` | On failure, without exhausting a start limit. Wants the engine, so automatic JACK recovery also starts its client again. |
 | `peepo-engine` | Ingen on `/run/peepo/ingen.sock`, no TCP | On failure. Bound to JACK; independent of the interface. |
-| `peepo-route` | Keeps the engine's IN and OUT wired to the ports named in `peepo.conf` | Always. It checks every two seconds, so new ports after any restart are wired again. |
+| `peepo-route` | Keeps the engine's IN and OUT wired to the ports named in `peepo.conf`, and every MIDI device both ways: its MIDI out to `ingen:midi_in`, `ingen:midi_out` and `peepo-midi:clock_out` to its MIDI in ([MIDI](39-midi.md)) | Always. It checks every two seconds, so new ports after any restart, and devices plugged in again, are wired again. |
+| `peepo-a2j` | `a2jmidid -e`: every ALSA hardware MIDI port (USB devices) as JACK MIDI ports, following hot-plugging | Always, after two seconds. Bound to JACK. |
+| `peepo-midi` | MIDI clock out at the patch tempo on `peepo-midi:clock_out`; a second engine client | Always, after one second. Bound to JACK; independent of the interface, so the clock goes on while it restarts. |
 | `peepo-ui` | The interface on DRM/KMS with the touch screen and controls | Always, after one second. It only *wants* the engine: either can restart without the other, and it reconnects by itself. |
 | `peepo.target` | All of the above | `systemctl enable peepo.target` starts the instrument at boot. |
 
-**Accounts and limits.** All run as `peepo`, with real-time limits granted to JACK and the engine (`LimitRTPRIO`, `LimitMEMLOCK`). The CPU governor, IRQ priorities and the rest of P10's readiness and boot-time work are not done.
+**Accounts and limits.** All run as `peepo`, with real-time limits granted to JACK, the engine, `peepo-a2j` and `peepo-midi` (`LimitRTPRIO`, `LimitMEMLOCK`). The CPU governor, IRQ priorities and the rest of P10's readiness and boot-time work are not done.
 
 **Direct boot verified on the Pi, 14 October 2026.** The target is now enabled with `multi-user.target` as default and desktop/MODEP/automatic-console competitors masked. A software reboot restored Clouds and all four Tascam connections; the user confirmed the display and touch. Deliberate JACK failure recovered both audio services and the saved patch while the UI stayed running. Repeated cold boots, physical offline startup and the rest of Phase 10 remain open. [Boot record and recovery](24-instrument-boot.md).
 

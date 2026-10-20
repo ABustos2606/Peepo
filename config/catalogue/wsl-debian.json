@@ -1,6 +1,6 @@
 {
   "format": "peepo-catalogue",
-  "version": 1,
+  "version": 2,
   "provenance": {
     "tool": "peepo_catalogue_export",
     "lilv": "0.24.26",
@@ -2142,8 +2142,8 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 24, "default": 0, "logarithmic": false, "choices": []}
@@ -2163,8 +2163,8 @@
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Gain", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 24, "default": 0, "logarithmic": false, "choices": []}
@@ -2185,8 +2185,8 @@
         {"symbol": "in_2", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 24, "default": 0, "logarithmic": false, "choices": []}
@@ -2251,8 +2251,8 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Gain", "unit": "dB", "kind": "continuous", "minimum": -18, "maximum": 18, "default": 0, "logarithmic": false, "choices": []},
@@ -2304,8 +2304,8 @@
         {"symbol": "inR", "direction": "input", "type": "audio"},
         {"symbol": "outL", "direction": "output", "type": "audio"},
         {"symbol": "outR", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Gain", "unit": "dB", "kind": "continuous", "minimum": -18, "maximum": 18, "default": 0, "logarithmic": false, "choices": []},
@@ -3077,7 +3077,7 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
+        {"symbol": "control", "direction": "input", "type": "atom"},
         {"symbol": "sysex", "direction": "output", "type": "midi"}
       ],
       "parameters": [
@@ -3098,7 +3098,7 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
+        {"symbol": "control", "direction": "input", "type": "atom"},
         {"symbol": "sysex", "direction": "output", "type": "midi"}
       ],
       "parameters": [
@@ -3119,7 +3119,7 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
+        {"symbol": "control", "direction": "input", "type": "atom"},
         {"symbol": "sysex", "direction": "output", "type": "midi"}
       ],
       "parameters": [
@@ -3140,8 +3140,8 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "buffered", "name": "Buffered/Latent Convolution", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 1, "logarithmic": false, "choices": []},
@@ -3163,8 +3163,8 @@
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "buffered", "name": "Buffered/Latent Convolution", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 1, "logarithmic": false, "choices": []},
@@ -3187,8 +3187,8 @@
         {"symbol": "in_2", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "buffered", "name": "Buffered/Latent Convolution", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 1, "logarithmic": false, "choices": []},
@@ -3209,8 +3209,8 @@
       "ports": [
         {"symbol": "input", "direction": "input", "type": "audio"},
         {"symbol": "output", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "input_level", "name": "Input Lvl", "unit": "dB", "kind": "continuous", "minimum": -20, "maximum": 20, "default": 0, "logarithmic": false, "choices": []},
@@ -3398,7 +3398,7 @@
       "enable": "",
       "ports": [
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"}
       ],
       "parameters": []
     },
@@ -3430,8 +3430,8 @@
       "origin": "class Utility; bundle file:///usr/lib/lv2/eg-params.lv2/",
       "enable": "",
       "ports": [
-        {"symbol": "in", "direction": "input", "type": "midi"},
-        {"symbol": "out", "direction": "output", "type": "midi"}
+        {"symbol": "in", "direction": "input", "type": "atom"},
+        {"symbol": "out", "direction": "output", "type": "atom"}
       ],
       "parameters": []
     },
@@ -3448,8 +3448,8 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": []
     },
@@ -3468,8 +3468,8 @@
         {"symbol": "in1", "direction": "input", "type": "audio"},
         {"symbol": "out0", "direction": "output", "type": "audio"},
         {"symbol": "out1", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": []
     },
@@ -4587,7 +4587,7 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -40, "maximum": 24, "default": 0, "logarithmic": false, "choices": []}
@@ -4607,7 +4607,7 @@
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -40, "maximum": 24, "default": 0, "logarithmic": false, "choices": []}
@@ -4628,7 +4628,7 @@
         {"symbol": "in_2", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -40, "maximum": 24, "default": 0, "logarithmic": false, "choices": []}
@@ -4647,7 +4647,7 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -40, "maximum": 4, "default": 0, "logarithmic": false, "choices": []}
@@ -4667,7 +4667,7 @@
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -40, "maximum": 4, "default": 0, "logarithmic": false, "choices": []}
@@ -4688,7 +4688,7 @@
         {"symbol": "in_2", "direction": "input", "type": "audio"},
         {"symbol": "out_1", "direction": "output", "type": "audio"},
         {"symbol": "out_2", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "gain", "name": "Output Gain", "unit": "dB", "kind": "continuous", "minimum": -40, "maximum": 4, "default": 0, "logarithmic": false, "choices": []}
@@ -6362,8 +6362,8 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "MasterGain", "name": "MasterGain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": -15, "logarithmic": false, "choices": []},
@@ -6395,8 +6395,8 @@
         {"symbol": "in1", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
         {"symbol": "out1", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "MasterGain", "name": "MasterGain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 20, "default": -15, "logarithmic": false, "choices": []},
@@ -6467,8 +6467,8 @@
       "ports": [
         {"symbol": "in", "direction": "input", "type": "audio"},
         {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "control", "direction": "input", "type": "midi"},
-        {"symbol": "notify", "direction": "output", "type": "midi"}
+        {"symbol": "control", "direction": "input", "type": "atom"},
+        {"symbol": "notify", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "CLevel", "name": "Cabinet", "unit": "", "kind": "continuous", "minimum": 0.5, "maximum": 5, "default": 1, "logarithmic": false, "choices": []},
@@ -7759,8 +7759,8 @@
         {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
         {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
         {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"},
-        {"symbol": "lv2_events_in", "direction": "input", "type": "midi"},
-        {"symbol": "lv2_events_out", "direction": "output", "type": "midi"}
+        {"symbol": "lv2_events_in", "direction": "input", "type": "atom"},
+        {"symbol": "lv2_events_out", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},
@@ -7798,8 +7798,8 @@
         {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
         {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
         {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"},
-        {"symbol": "lv2_events_in", "direction": "input", "type": "midi"},
-        {"symbol": "lv2_events_out", "direction": "output", "type": "midi"}
+        {"symbol": "lv2_events_in", "direction": "input", "type": "atom"},
+        {"symbol": "lv2_events_out", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},
@@ -7828,8 +7828,8 @@
         {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
         {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
         {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"},
-        {"symbol": "lv2_events_in", "direction": "input", "type": "midi"},
-        {"symbol": "lv2_events_out", "direction": "output", "type": "midi"}
+        {"symbol": "lv2_events_in", "direction": "input", "type": "atom"},
+        {"symbol": "lv2_events_out", "direction": "output", "type": "atom"}
       ],
       "parameters": [
         {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},

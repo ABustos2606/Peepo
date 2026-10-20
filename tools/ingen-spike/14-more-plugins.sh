@@ -220,6 +220,11 @@ third discipline https://github.com/ABustos2606/discipline.git 4f68f3b967f8fb92c
 third loo-pi https://github.com/ABustos2606/loo-pi.git 45c301f80c1ec63edeb99a45ae0998f01ac424fd "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
+# --- Aura: private stereo micro-looper and effects sharing one clock.
+# Requires access to the private source repository; no license is granted.
+third aura https://github.com/ABustos2606/aura.git e4ed6a87c99d9e78156c45b5768e8a91faf52091 "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix
 # LV2 collection. Artifacts, source rebuilds and metadata repairs are locked.
 if bash "$HERE/22-patchstorage.sh" >"$SRC/Patchstorage.log" 2>&1; then

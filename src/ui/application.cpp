@@ -18,6 +18,8 @@ namespace {
 // state, the one action that matters on a page.
 constexpr std::uint32_t background = 0x000000, surface = 0x0f0f0f, border = 0x262626, rim = 0x3f3f3f, pressed_fill = 0x1c1c1c;
 constexpr std::uint32_t text = 0xffffff, muted = 0x9ca3af, faint = 0x737373, accent = 0x4ade80, warning = 0xfb923c, cable_ink = 0x7dd3fc;
+// MIDI jacks (diamonds) and cables: a colour no module group uses.
+constexpr std::uint32_t midi_ink = 0x2dd4bf;
 lv_color_t color(std::uint32_t c) { return lv_color_hex(c); }
 void sample_cable(lv_obj_t* line, std::array<lv_point_precise_t, 20>& points, double ax, double ay, double bx, double by, bool cv) {
     const double k = std::max(40.0, std::abs(cv ? by - ay : bx - ax) * 0.5);
@@ -139,7 +141,7 @@ std::vector<const Port*> connectable_ports(const Module& from, const Module& to,
     if (output_symbol.empty()) {
         for (const auto& out : module_ports(from)) {
             if (out.direction != Direction::Output) continue;
-            if (out.type != PortType::Cv && (cv_only || out.type != PortType::Audio)) continue;
+            if (out.type != PortType::Cv && (cv_only || (out.type != PortType::Audio && out.type != PortType::Midi))) continue;
             const bool has_target = std::any_of(module_ports(to).begin(), module_ports(to).end(), [&](const Port& in) {
                 return in.direction == Direction::Input && in.type == out.type;
             });
@@ -156,11 +158,18 @@ std::vector<const Port*> connectable_ports(const Module& from, const Module& to,
     }
     return found;
 }
+// Audio and MIDI connectors share the side edges, inputs left, outputs right,
+// in the plugin's own order (audio first, as the catalogue lists them).
+bool side_port(const Port& p) { return p.type == PortType::Audio || p.type == PortType::Midi; }
+const Port* port_of(const Module& m, const std::string& symbol, Direction direction) {
+    for (const auto& p : module_ports(m)) if (p.symbol == symbol && p.direction == direction) return &p;
+    return nullptr;
+}
 struct Jack { int centre, height; };
 std::optional<Jack> jack(const Module& m, const std::string& symbol, Direction direction, unsigned channel = 0) {
     int count = 0, index = -1;
     for (const auto& p : module_ports(m)) {
-        if (p.type != PortType::Audio || p.direction != direction) continue;
+        if (!side_port(p) || p.direction != direction) continue;
         if (p.symbol == symbol && channel < p.channels) index = count + static_cast<int>(channel);
         count += static_cast<int>(p.channels);
     }
@@ -584,7 +593,8 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 message(cable_cv_ ? "Control cable from " + m->name + ". Drop it on the square connector under another module."
                                   : "Cable from " + m->name + " / " + b.symbol + ". Drop it on an input jack.");
                 preview_ = lv_line_create(canvas_); lv_obj_remove_flag(preview_, LV_OBJ_FLAG_CLICKABLE);
-                lv_obj_set_style_line_color(preview_, color(cable_cv_ ? control_ink : accent), 0);
+                const auto* source = port_of(*m, b.symbol, Direction::Output);
+                lv_obj_set_style_line_color(preview_, color(cable_cv_ ? control_ink : source && source->type == PortType::Midi ? midi_ink : accent), 0);
                 lv_obj_set_style_line_width(preview_, 2, 0);
                 if (cable_cv_) preview_points_[0] = {static_cast<lv_value_precise_t>(m->x + module_width / 2 - pan_x_), static_cast<lv_value_precise_t>(m->y - pan_y_)};
                 else preview_points_[0] = {static_cast<lv_value_precise_t>(m->x + module_width - pan_x_), static_cast<lv_value_precise_t>(m->y + (from ? from->centre : module_height / 2) - pan_y_)};
@@ -1025,7 +1035,7 @@ void Application::load_stored(const std::string& id, bool allow_missing, bool gu
             [this, id, guarded] { navigate(Page::Patches); load_stored(id, true, guarded); });
         return;
     }
-    Command command = LoadPatch{patch->location, blocks, patch->id};
+    Command command = LoadPatch{patch->location, blocks, patch->id, patch->bundle.tempo};
     load_note_ = patch->issue;
     if (!patch->missing_files.empty()) {
         std::string files;
@@ -1289,14 +1299,14 @@ void Application::patch_view(lv_obj_t* parent) {
         const auto routing = expand_connection(graph_, edge);
         // Draw every channel: stereo to stereo is two lines, mono to stereo
         // fans out to both connectors, stereo to mono lands on one.
-        unsigned out_channels = 1, in_channels = 1; bool cv = false;
+        unsigned out_channels = 1, in_channels = 1; bool cv = false, midi = false;
         if (const auto* source = find_module(graph_, edge.from)) for (const auto& p : module_ports(*source))
-            if (p.symbol == edge.output && p.direction == Direction::Output) { out_channels = p.channels; cv = p.type == PortType::Cv; }
+            if (p.symbol == edge.output && p.direction == Direction::Output) { out_channels = p.channels; cv = p.type == PortType::Cv; midi = p.type == PortType::Midi; }
         if (const auto* sink = find_module(graph_, edge.to)) for (const auto& p : module_ports(*sink))
             if (p.symbol == edge.input && p.direction == Direction::Input) in_channels = p.channels;
         for (unsigned channel = 0; channel < std::max(out_channels, in_channels); ++channel) {
         auto* line = lv_line_create(parent);
-        lv_obj_set_style_line_color(line, color(selected || !routing.error.empty() ? warning : cv ? control_ink : cable_ink), 0);
+        lv_obj_set_style_line_color(line, color(selected || !routing.error.empty() ? warning : cv ? control_ink : midi ? midi_ink : cable_ink), 0);
         lv_obj_set_style_line_width(line, selected ? 4 : 2, 0);
         lv_obj_add_flag(line, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(line, LV_OBJ_FLAG_ADV_HITTEST);
@@ -1349,17 +1359,22 @@ void Application::patch_view(lv_obj_t* parent) {
         bind(card, Action::Module, m.id);
         module_widgets_[m.id] = card;
         for (const auto& port : ports) {
-            if (port.type != PortType::Audio) continue;
-            const bool output = port.direction == Direction::Output;
+            if (!side_port(port)) continue;
+            const bool output = port.direction == Direction::Output, midi = port.type == PortType::Midi;
             for (unsigned channel = 0; channel < port.channels; ++channel) {
             auto* hit = lv_obj_create(card); lv_obj_remove_style_all(hit);
             const auto place = *jack(m, port.symbol, port.direction, channel);
             lv_obj_set_size(hit, 44, place.height); lv_obj_set_pos(hit, output ? module_width - 22 : -22, place.centre - place.height / 2);
             lv_obj_remove_flag(hit, LV_OBJ_FLAG_SCROLLABLE);
             lv_obj_add_flag(hit, LV_OBJ_FLAG_PRESS_LOCK);
-            auto* dot = panel(hit, 15, place.height / 2 - 7, 14, 14, background);
-            lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
-            lv_obj_set_style_border_width(dot, 3, 0); lv_obj_set_style_border_color(dot, color(ink), 0);
+            // Audio is a round jack in the module's colour; MIDI a diamond in its own.
+            auto* dot = panel(hit, midi ? 16 : 15, place.height / 2 - (midi ? 6 : 7), midi ? 12 : 14, midi ? 12 : 14, background);
+            lv_obj_set_style_radius(dot, midi ? 2 : LV_RADIUS_CIRCLE, 0);
+            if (midi) {
+                lv_obj_set_style_transform_pivot_x(dot, 6, 0); lv_obj_set_style_transform_pivot_y(dot, 6, 0);
+                lv_obj_set_style_transform_rotation(dot, 450, 0);
+            }
+            lv_obj_set_style_border_width(dot, 3, 0); lv_obj_set_style_border_color(dot, color(midi ? midi_ink : ink), 0);
             lv_obj_remove_flag(dot, LV_OBJ_FLAG_CLICKABLE);
             // The connector's channel rides above the direction bit.
             bind(hit, Action::Port, m.id, port.symbol, (output ? 1 : 0) | static_cast<int>(channel << 3));
@@ -1404,7 +1419,8 @@ void Application::indicate_targets(bool active) {
         const auto& [id, symbol] = key;
         const auto* m = find_module(graph_, id); if (!m) continue;
         const bool valid = active && !cable_cv_ && validate_connection(graph_, {cable_source_, id, cable_port_, symbol}).empty();
-        lv_obj_set_style_border_color(jack, color(active ? (valid ? accent : border) : module_ink(*m)), 0);
+        const auto* port = port_of(*m, symbol, Direction::Input);
+        lv_obj_set_style_border_color(jack, color(active ? (valid ? accent : border) : port && port->type == PortType::Midi ? midi_ink : module_ink(*m)), 0);
         lv_obj_set_style_outline_color(jack, color(accent), 0);
         lv_obj_set_style_outline_width(jack, valid ? 4 : 0, 0);
         lv_obj_set_style_outline_opa(jack, LV_OPA_COVER, 0);
@@ -2370,7 +2386,7 @@ void Application::cv_connect(lv_obj_t* parent) {
     for (std::size_t i = cv_page_ * 8; i < std::min(ports.size(), cv_page_ * 8 + 8); ++i) {
         const auto slot = i - cv_page_ * 8;
         auto* choice = button(parent, ports[i]->symbol, 24 + static_cast<int>(slot % 2) * 384, 64 + static_cast<int>(slot / 2) * 68, 368, Action::CvChoice, 0, ports[i]->symbol);
-        lv_obj_set_style_border_color(choice, color(ports[i]->type == PortType::Cv ? control_ink : cable_ink), 0);
+        lv_obj_set_style_border_color(choice, color(ports[i]->type == PortType::Cv ? control_ink : ports[i]->type == PortType::Midi ? midi_ink : cable_ink), 0);
     }
 }
 void Application::connect_modules(InstanceId from_id, InstanceId to_id) {

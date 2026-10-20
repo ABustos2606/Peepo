@@ -25,7 +25,10 @@ struct Parameter {
     std::vector<std::string> choices;
 };
 enum class Direction { Input, Output };
-enum class PortType { Audio, Control, Midi, Cv };
+// Midi is an LV2 atom port that supports midi:MidiEvent, a MIDI connector.
+// Atom is any other atom port, such as one a plugin takes its file on: it
+// carries messages, not MIDI, and is never cabled.
+enum class PortType { Audio, Control, Midi, Cv, Atom };
 struct Port {
     std::string symbol;
     Direction direction;

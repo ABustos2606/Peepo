@@ -159,6 +159,14 @@ void bundles() {
         for (std::size_t i = 0; i < m.parameters.size(); ++i) check(r->parameters[i].value == m.parameters[i].value, "round trip lost a value");
     }
     for (const auto& c : demo.connections) check(std::find(back.connections.begin(), back.connections.end(), c) != back.connections.end(), "round trip lost a cable");
+    // MIDI IN to MIDI OUT is saved on the graph's own MIDI ports, typed for the engine.
+    auto thru = demo;
+    thru.connections.push_back({1, 2, "midi", "midi"});
+    const auto thru_text = write_main_ttl(thru);
+    Bundle with_midi;
+    check(thru_text.find("<midi_in>\n\tlv2:symbol \"midi_in\" ;\n\ta atom:AtomPort , lv2:InputPort ;\n\tatom:bufferType atom:Sequence ;\n\tatom:supports midi:MidiEvent") != std::string::npos &&
+          thru_text.find("ingen:tail <midi_in> ;\n\t\tingen:head <midi_out>") != std::string::npos, "MIDI endpoints or cable not written");
+    check(read_bundle(thru_text, with_midi).empty() && bundle_graph(with_midi).connections.back() == Connection{1, 2, "midi", "midi"}, "MIDI cable lost in a round trip");
 
     // The patch tempo and a module's file come back; a bundle from before
     // tempo was saved plays at the default one.

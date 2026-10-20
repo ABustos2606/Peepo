@@ -57,7 +57,7 @@ struct Terms {
          enumeration = uri(std::string(lv2) + "enumeration"), sample_rate = uri(std::string(lv2) + "sampleRate"), designation = uri(std::string(lv2) + "designation"),
          enabled = uri(std::string(lv2) + "enabled"), free_wheeling = uri(std::string(lv2) + "freeWheeling"), logarithmic = uri(std::string(pprops) + "logarithmic"),
          not_on_gui = uri(std::string(pprops) + "notOnGUI"), trigger = uri(std::string(pprops) + "trigger"), unit = uri(std::string(units) + "unit"),
-         unit_symbol = uri(std::string(units) + "symbol");
+         unit_symbol = uri(std::string(units) + "symbol"), midi_event = uri("http://lv2plug.in/ns/ext/midi#MidiEvent");
 };
 std::string text_of(const LilvNode* node) { return node && lilv_node_as_string(node) ? lilv_node_as_string(node) : ""; }
 // The number as the plugin's metadata writes it. Lilv's own accessors return
@@ -155,7 +155,10 @@ Exported export_plugin(const Terms& terms, const LilvPlugin* plugin, double rate
         // right are separate ports and can be patched separately.
         if (is(terms.audio)) (input ? audio_in : audio_out).push_back({symbol, direction, 1, PortType::Audio, {}});
         else if (is(terms.cv)) others.push_back({symbol, direction, 1, PortType::Cv, {}});
-        else if (is(terms.atom)) others.push_back({symbol, direction, 1, PortType::Midi, {}});
+        // An atom port is a MIDI connector only when it takes MIDI; a file
+        // input carries messages and is never cabled.
+        else if (is(terms.atom))
+            others.push_back({symbol, direction, 1, lilv_port_supports_event(plugin, port, terms.midi_event.get()) ? PortType::Midi : PortType::Atom, {}});
         else if (!is(terms.control)) { if (!has(terms.optional) && blocked.empty()) blocked = "Has a port of a type the engine does not handle: " + symbol; }
         else if (input) {
             const Nodes designations(lilv_port_get_value(plugin, port, terms.designation.get()));
@@ -208,14 +211,16 @@ Exported export_plugin(const Terms& terms, const LilvPlugin* plugin, double rate
             d.parameters.push_back(std::move(parameter));
         }
     }
-    const bool patchable = !audio_in.empty() || !audio_out.empty() || std::any_of(others.begin(), others.end(), [](const Port& p) { return p.type == PortType::Cv; });
+    auto has_type = [&](PortType type) { return std::any_of(others.begin(), others.end(), [&](const Port& p) { return p.type == type; }); };
+    const bool sounding = !audio_in.empty() || !audio_out.empty() || has_type(PortType::Cv), midi = has_type(PortType::Midi);
     d.ports = std::move(audio_in);
     d.ports.insert(d.ports.end(), audio_out.begin(), audio_out.end());
     d.ports.insert(d.ports.end(), others.begin(), others.end());
-    if (blocked.empty() && !patchable) blocked = "This module has no audio or control connectors to patch.";
+    if (blocked.empty() && !sounding && !midi) blocked = "This module has no audio, control or MIDI connectors to patch.";
     if (!blocked.empty()) { d.availability = Availability::Unavailable; d.availability_reason = tidy(blocked, 500); }
-    // Loadable, but silent: cables carry audio and control, not notes yet.
-    else if (instrument) { d.availability = Availability::Untested; d.availability_reason = "Played by MIDI notes, which cannot be routed yet."; }
+    // Played by notes, or working on MIDI alone: offered once checked with a controller.
+    else if (instrument) { d.availability = Availability::Untested; d.availability_reason = "Played by MIDI notes; not yet checked with a MIDI controller."; }
+    else if (!sounding) { d.availability = Availability::Untested; d.availability_reason = "Works on MIDI only; not yet checked with a MIDI controller."; }
     return out;
 }
 }

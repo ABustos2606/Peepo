@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 [Unit]
 Description=Peepo instrument
-Wants=peepo-jack.service peepo-engine.service peepo-route.service peepo-ui.service
+Wants=peepo-jack.service peepo-engine.service peepo-route.service peepo-a2j.service peepo-midi.service peepo-ui.service
 
 [Install]
 WantedBy=multi-user.target

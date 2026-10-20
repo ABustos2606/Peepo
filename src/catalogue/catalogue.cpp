@@ -14,7 +14,7 @@ namespace {
 using json::Value;
 constexpr std::size_t max_file_bytes = std::size_t{16} << 20;
 constexpr const char* kinds[] = {"continuous", "integer", "toggle", "enumeration"};
-constexpr const char* types[] = {"audio", "control", "midi", "cv"};
+constexpr const char* types[] = {"audio", "control", "midi", "cv", "atom"};
 constexpr const char* availabilities[] = {"available", "untested", "unavailable"};
 template <std::size_t N> int index_of(const char* const (&names)[N], std::string_view name) {
     for (std::size_t i = 0; i < N; ++i) if (name == names[i]) return static_cast<int>(i);
@@ -194,6 +194,9 @@ std::string read_catalogue(std::string_view text, CatalogueDocument& out) {
     Value root;
     if (auto issue = json::parse(text, root); !issue.empty()) return "catalogue is not valid JSON: " + issue;
     if (auto issue = header(root, "peepo-catalogue"); !issue.empty()) return issue;
+    // Version 1 called every atom port "midi", file inputs included. Which of
+    // them take MIDI is unknown, so none becomes a MIDI connector.
+    const bool atoms_unsorted = root.get("version")->number < 2;
     CatalogueDocument document;
     if (const auto* provenance = root.get("provenance"); provenance && provenance->kind == Value::Kind::Object)
         for (const auto& [key, value] : provenance->members) if (value.kind == Value::Kind::String) document.provenance.emplace_back(key, value.text);
@@ -236,6 +239,7 @@ std::string read_catalogue(std::string_view text, CatalogueDocument& out) {
             if (direction && direction->text != "input" && direction->text != "output") return port.where + ": direction must be input or output";
             made.direction = direction && direction->text == "input" ? Direction::Input : Direction::Output;
             made.type = static_cast<PortType>(port.choice("type", types));
+            if (atoms_unsorted && made.type == PortType::Midi) made.type = PortType::Atom;
             if (!port.issue.empty()) return port.issue;
             if (!symbol(made.symbol) || !symbols.insert(made.symbol).second) return port.where + ": symbol is invalid or repeated";
             d.ports.push_back(std::move(made));
@@ -391,7 +395,7 @@ std::string apply_catalogue_overlay(std::string_view text, std::vector<ModuleDef
         // The file is shown before the parameter groups and is sent on the
         // plugin's atom input.
         if (!d.file.property.empty()) {
-            if (std::none_of(d.ports.begin(), d.ports.end(), [](const Port& p) { return p.type == PortType::Midi && p.direction == Direction::Input; }))
+            if (std::none_of(d.ports.begin(), d.ports.end(), [](const Port& p) { return (p.type == PortType::Atom || p.type == PortType::Midi) && p.direction == Direction::Input; }))
                 return d.uri + ": it reads a file but has no input for messages";
         }
         // Groups are headings of shown controls, none in two groups.

@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# The audio server. Restarting it restarts the engine too (its client).
+# The audio server. Restarting it restarts the engine and the MIDI services
+# too (its clients).
 [Unit]
 Description=Peepo audio server (JACK)
 PartOf=peepo.target
-Wants=peepo-engine.service
+Wants=peepo-engine.service peepo-a2j.service peepo-midi.service
 # Keep retrying if the USB interface is absent or arrives after boot.
 StartLimitIntervalSec=0
 

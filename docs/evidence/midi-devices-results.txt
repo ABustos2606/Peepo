@@ -1,0 +1,57 @@
+P12.2 MIDI devices through USB, 20-21 October 2026, on the Pi 5 (Debian 12, Tascam
+on hw:CODEC at 48 kHz / 128 x 3), package peepo-arm64-20261020-ed2a020-dirty
+plus the unit fix below. No physical MIDI device was plugged in: the kernel's
+virtual MIDI card (snd-virmidi) stands in for one.
+
+Command, on the Pi as root:  bash /opt/peepo/check-midi.sh   (from the next package; run from /tmp here)
+
+PASS  peepo-jack is running
+PASS  peepo-engine is running
+PASS  peepo-route is running
+PASS  peepo-a2j is running
+PASS  peepo-midi is running
+PASS  the engine has its MIDI endpoints
+PASS  first plugged in: wired both ways in 1.8 s -- a2j:Virtual Raw MIDI 3-0 [28] (capture): VirMIDI 3-0 -> ingen:midi_in; ingen:midi_out, peepo-midi:clock_out -> a2j:Virtual Raw MIDI 3-0 [28] (playback): VirMIDI 3-0
+PASS  a note played on the device arrives in JACK on its port to ingen:midi_in
+PASS  the clock goes out through ALSA, as to a device -- 53 clock messages in 1 s
+PASS  unplugged: its ports are gone
+PASS  plugged in again: wired both ways in 1.3 s -- a2j:Virtual Raw MIDI 3-0 [28] (capture): VirMIDI 3-0 -> ingen:midi_in; ingen:midi_out, peepo-midi:clock_out -> a2j:Virtual Raw MIDI 3-0 [28] (playback): VirMIDI 3-0
+FAIL  3 xruns during the check -- late:  1 client = ingen was not finished; throttled=0x50005 (0x50005: undervoltage, throttled)
+      | connected a2j:Virtual Raw MIDI 3-0 [28] (capture): VirMIDI 3-0 -> ingen:midi_in
+      | connected ingen:midi_out -> a2j:Virtual Raw MIDI 3-0 [28] (playback): VirMIDI 3-0
+      | connected peepo-midi:clock_out -> a2j:Virtual Raw MIDI 3-0 [28] (playback): VirMIDI 3-0
+      | connected a2j:Virtual Raw MIDI 3-0 [28] (capture): VirMIDI 3-0 -> ingen:midi_in
+      | connected ingen:midi_out -> a2j:Virtual Raw MIDI 3-0 [28] (playback): VirMIDI 3-0
+      | connected peepo-midi:clock_out -> a2j:Virtual Raw MIDI 3-0 [28] (playback): VirMIDI 3-0
+SUMMARY 1 failed
+
+The xruns are not MIDI's: "client = ingen was not finished" about every 30 s,
+the same as before the install (44 to 57 xrun lines an hour in the two hours
+before it, with no MIDI service running), with the Pi undervolted and
+throttled (vcgencmd get_throttled = 0x50005). "No xruns with a MIDI device on
+the bus" cannot be judged until the power supply is replaced.
+
+The virtual card is a stand-in with two limits, so the check works around
+them: it cannot be unloaded while a2jmidid holds it (the check stops
+peepo-a2j around the unload), and it does not hand sequencer events to a raw
+reader (amidi saw no clock; the clock is checked through ALSA's Midi Through
+instead: peepo-midi:clock_out -> a2j Midi Through (playback) -> ALSA -> a2j
+Midi Through (capture), 53 clock messages in 1 s at 128 BPM). A note written
+into the card arrived in JACK on its a2j port, wired to ingen:midi_in.
+
+Found on the Pi and fixed: after install the two new units failed with
+"Dependency failed": bound to JACK, they were stopped when JACK restarted and
+nothing started them again. peepo-jack.service now Wants peepo-a2j and
+peepo-midi, as it already Wants the engine. A deliberate
+"systemctl restart peepo-jack" then brought back every unit, the MIDI ports and
+the wiring by themselves; the UI restored the startup patch (Clouds guitar, no
+tempo of its own: 120 BPM) and peepo-midi followed it.
+
+Seen, not changed: that JACK restart's first attempt failed with "The playback
+device hw:CODEC is already in use"; PipeWire and WirePlumber run in the patch
+user's session (started by SSH logins) and took the interface in the gap. JACK
+retried two seconds later and got it.
+
+Still to do: a real device (OBNE Dark Star, TE KO-2, Roland Aira, Korg Volca):
+bash check-midi.sh --device NAME, unplugging and plugging it when asked; and
+the xrun check after the power supply is replaced.

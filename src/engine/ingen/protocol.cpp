@@ -106,7 +106,7 @@ const char* status_text(int status) {
 std::string prefixes() {
     std::string text;
     for (const auto& [prefix, space] : std::initializer_list<std::pair<std::string_view, std::string_view>>{
-             {"atom", uri::atom}, {"ingen", uri::ingen}, {"lv2", uri::lv2}, {"patch", uri::patch}, {"peepo", uri::peepo}, {"xsd", xsd}})
+             {"atom", uri::atom}, {"ingen", uri::ingen}, {"lv2", uri::lv2}, {"midi", uri::midi}, {"patch", uri::patch}, {"peepo", uri::peepo}, {"xsd", xsd}})
         text += "@prefix " + std::string(prefix) + ": <" + std::string(space) + "> .\n";
     return text;
 }

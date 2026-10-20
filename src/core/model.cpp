@@ -13,10 +13,12 @@
 namespace peepo {
 const std::vector<ModuleDefinition>& demo_catalogue() {
     static const std::vector<ModuleDefinition> catalogue = {
+        // Beside the audio, IN brings every MIDI device's messages, merged,
+        // and OUT sends to them.
         {"urn:peepo:demo:input", "IN", "Endpoint", "Audio input", 0x93a4b5,
-         {{"out", Direction::Output}, {"out_r", Direction::Output}}, {}},
+         {{"out", Direction::Output}, {"out_r", Direction::Output}, {"midi", Direction::Output, 1, PortType::Midi}}, {}},
         {"urn:peepo:demo:output", "OUT", "Endpoint", "Audio output", 0x93a4b5,
-         {{"in", Direction::Input}, {"in_r", Direction::Input}}, {}},
+         {{"in", Direction::Input}, {"in_r", Direction::Input}, {"midi", Direction::Input, 1, PortType::Midi}}, {}},
         {"urn:peepo:demo:drive", "Drive", "Drive", "Warm saturation and tone", 0xf0aa72,
          {{"in", Direction::Input}, {"in_r", Direction::Input}, {"out", Direction::Output}, {"out_r", Direction::Output}},
          {{"drive", "Drive", "%", ParameterKind::Continuous, 0, 100, 32},
@@ -283,10 +285,11 @@ std::string validate_connection(const Graph& g, const Connection& c, bool retain
     };
     const auto* a = port(*from, c.output, Direction::Output); const auto* b = port(*to, c.input, Direction::Input);
     if (!a || !b) return "Connect an output to an input";
-    // Audio joins audio and control joins control. The engine would also mix
-    // the two; the interface keeps them apart until that is a deliberate feature.
-    if (a->type != b->type) return "Audio and control connectors cannot be joined";
-    if (a->type != PortType::Audio && a->type != PortType::Cv) return "Only audio and control cables are supported";
+    // Audio joins audio, control joins control and MIDI joins MIDI. The engine
+    // would also mix audio and control; the interface keeps them apart until
+    // that is a deliberate feature.
+    if (a->type != b->type) return "Audio, control and MIDI connectors cannot be joined to each other";
+    if (a->type != PortType::Audio && a->type != PortType::Cv && a->type != PortType::Midi) return "Only audio, control and MIDI cables are supported";
     if (a->channels < 1 || a->channels > 2 || b->channels < 1 || b->channels > 2) return "Only mono and stereo ports are supported";
     for (const auto* p : {a, b}) if (!p->channel_symbols.empty()) {
         if (p->channel_symbols.size() != p->channels) return "Channel symbols do not match channel count";

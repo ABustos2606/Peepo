@@ -171,6 +171,25 @@ int main() {
         check(!validate_connection(real, {6, 8, "l_out", "trig_input"}).empty(), "audio output accepted by a control input");
         real.connections.push_back({8, 6, "out1", "position"});
         check(validate_graph(real).empty() && expand_connection(real, {8, 6, "out1", "position"}).connections.size() == 1, "control cable is not one engine connection");
+        // MIDI cables join MIDI connectors: IN's merged devices, modules, OUT.
+        // A message input, such as a file port, is not a connector at all.
+        register_definitions({{"urn:test:chord", "Chord", "MIDI", "Notes to chords", 0x93a4b5,
+                               {{"midi_in", Direction::Input, 1, PortType::Midi}, {"midi_out", Direction::Output, 1, PortType::Midi},
+                                {"files", Direction::Input, 1, PortType::Atom}, {"notify", Direction::Output, 1, PortType::Atom}}, {}}});
+        const auto* chord = definition("urn:test:chord");
+        real.modules.push_back({9, chord->uri, chord->name, 456, 264, false, false, {}, chord->ports});
+        real.modules.push_back({10, chord->uri, chord->name, 600, 264, false, false, {}, chord->ports});
+        check(validate_graph(real).empty() && validate_connection(real, {1, 9, "midi", "midi_in"}).empty() && validate_connection(real, {9, 2, "midi_out", "midi"}).empty(),
+              "MIDI could not go from IN through a module to OUT");
+        check(validate_connection(real, {1, 2, "midi", "midi"}).empty(), "MIDI IN could not go straight to MIDI OUT");
+        check(!validate_connection(real, {1, 9, "out", "midi_in"}).empty() && !validate_connection(real, {9, 6, "midi_out", "l_in"}).empty() &&
+              !validate_connection(real, {9, 8, "midi_out", "trig_input"}).empty() && !validate_connection(real, {1, 2, "midi", "in"}).empty(),
+              "MIDI joined to audio or control");
+        check(!validate_connection(real, {1, 9, "midi", "files"}).empty() && !validate_connection(real, {9, 10, "notify", "files"}).empty(), "a message port was cabled");
+        real.connections.push_back({9, 10, "midi_out", "midi_in"});
+        check(!validate_connection(real, {9, 10, "midi_out", "midi_in"}).empty(), "duplicate MIDI cable accepted");
+        check(!validate_connection(real, {10, 9, "midi_out", "midi_in"}).empty(), "MIDI feedback cycle accepted");
+        check(expand_connection(real, {9, 10, "midi_out", "midi_in"}).connections.size() == 1, "MIDI cable is not one engine connection");
         engine.submit(AddModule{fold->uri, 24, 24}); check(engine.advance(100)[0].accepted, "reference module could not be added");
         // A time in beats names its note and steps from one note value to the next.
         check(note_name(0.75) == "1/8 dot" && note_name(1.0 / 3) == "1/8 trip" && note_name(0.6).empty(), "note names");

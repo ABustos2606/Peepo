@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# MIDI devices as JACK MIDI ports: a2jmidid exports every ALSA hardware MIDI
+# port (USB devices, later the enclosure's jacks) and follows them as they
+# are plugged in and out. peepo-route wires them to the engine.
+[Unit]
+Description=Peepo MIDI devices (a2jmidid)
+PartOf=peepo.target
+BindsTo=peepo-jack.service
+After=peepo-jack.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=peepo
+EnvironmentFile=/etc/peepo/peepo.conf
+ExecStart=/usr/bin/a2jmidid -e
+LimitRTPRIO=95
+LimitMEMLOCK=infinity
+Restart=always
+RestartSec=2

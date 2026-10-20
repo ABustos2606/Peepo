@@ -1,20 +1,43 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Peepo contributors
-# Keep the engine's IN and OUT wired to the audio interface. The engine's ports
-# exist once the interface has connected to it, and are new after the engine
-# or JACK restarts, so this keeps watching: every two seconds, any connection
-# that is missing is made. Connections that exist are left alone.
+# Keep the engine's IN and OUT wired to the audio interface, and to every MIDI
+# device. The engine's ports exist once a client has connected to it, and are
+# new after the engine or JACK restarts; MIDI devices come and go. So this
+# keeps watching: every two seconds, any connection that is missing is made.
+# Connections that exist are left alone.
+#
+# MIDI (P12.2): every device's MIDI output feeds the engine's MIDI IN (merged),
+# and the engine's MIDI OUT and peepo-midi's clock go to every device's MIDI
+# input. Devices are the JACK MIDI ports a2jmidid exports, found by direction,
+# not by name, so any class-compliant device is wired; ALSA's own Midi Through
+# is not a device.
 set -u
+# JACK is read three times a pass, not once per connection: each jack_lsp is
+# a client of its own.
+ports="" links="" kinds=""
 connect() {
-    if jack_lsp -c "$1" 2>/dev/null | grep -qx "   $2"; then return; fi
-    jack_lsp 2>/dev/null | grep -qx "$1" && jack_lsp 2>/dev/null | grep -qx "$2" || return
+    printf '%s\n' "$links" | awk -v a="$1" -v b="   $2" '$0 == a { inside = 1; next } /^[^ ]/ { inside = 0 } inside && $0 == b { found = 1 } END { exit !found }' && return
+    printf '%s\n' "$ports" | grep -qxF "$1" && printf '%s\n' "$ports" | grep -qxF "$2" || return
     jack_connect "$1" "$2" 2>/dev/null && echo "connected $1 -> $2"
 }
+# MIDI device ports whose JACK direction is $1 (output: a device's MIDI out).
+devices() {
+    printf '%s\n' "$kinds" | awk -v want="$1" '
+        /^[^ \t]/ { name = $0; direction = ""; next }
+        /properties:/ { direction = ($0 ~ /output/) ? "output" : "input"; next }
+        /midi/ { if (name ~ /^a2j:/ && name !~ /Midi Through/ && direction == want) print name }'
+}
 while true; do
+    ports=$(jack_lsp 2>/dev/null); links=$(jack_lsp -c 2>/dev/null); kinds=$(jack_lsp -p -t 2>/dev/null)
     connect "${AUDIO_IN_LEFT:-system:capture_1}" ingen:in_l
     connect "${AUDIO_IN_RIGHT:-system:capture_2}" ingen:in_r
     connect ingen:out_l "${AUDIO_OUT_LEFT:-system:playback_1}"
     connect ingen:out_r "${AUDIO_OUT_RIGHT:-system:playback_2}"
+    devices output | while IFS= read -r port; do connect "$port" ingen:midi_in; done
+    devices input | while IFS= read -r port; do
+        connect ingen:midi_out "$port"
+        connect peepo-midi:clock_out "$port"
+    done
     sleep 2
 done

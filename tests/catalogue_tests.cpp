@@ -65,7 +65,7 @@ void round_trip() {
         return message;
     };
     refused(replaced(text, "\"peepo-catalogue\"", "\"something-else\""), "foreign file accepted");
-    refused(replaced(text, "\"version\": 1", "\"version\": 2"), "newer file accepted");
+    refused(replaced(text, "\"version\": 2", "\"version\": 3"), "newer file accepted");
     refused(replaced(text, "\"default\": 32", "\"default\": 320"), "default outside its range accepted");
     refused(replaced(text, "\"symbol\": \"drive\"", "\"symbol\": \"drive> ; x\""), "unusable symbol accepted");
     refused(replaced(text, "\"symbol\": \"drive\"", "\"symbol\": \"in\""), "control sharing a connector's symbol accepted");
@@ -75,6 +75,18 @@ void round_trip() {
     refused(replaced(text, "\"minimum\": 0,", "\"minimum\": \"0\","), "mistyped number accepted");
     check(refused(replaced(text, "\"name\": \"Drive\",", ""), "module without a name accepted").find("urn:peepo:demo:drive") != std::string::npos, "fault not attributed to its module");
     refused(text.substr(0, text.size() / 2), "truncated file accepted");
+
+    // A MIDI connector and a file input survive the file as themselves. A
+    // version 1 file called both "midi", so neither becomes a connector.
+    CatalogueDocument atoms;
+    atoms.modules.push_back({"urn:test:midi", "Chord", "MIDI", "Notes to chords", 0x93a4b5,
+                             {{"in", Direction::Input, 1, PortType::Midi}, {"out", Direction::Output, 1, PortType::Midi}, {"files", Direction::Input, 1, PortType::Atom}}, {}});
+    const auto atom_text = write_catalogue(atoms);
+    check(read_catalogue(atom_text, read).empty() && read.modules[0].ports[0].type == PortType::Midi && read.modules[0].ports[2].type == PortType::Atom,
+          "MIDI and message ports changed in the file");
+    const auto old = replaced(replaced(atom_text, "\"version\": 2", "\"version\": 1"), "\"type\": \"atom\"", "\"type\": \"midi\"");
+    check(read_catalogue(old, read).empty() && std::all_of(read.modules[0].ports.begin(), read.modules[0].ports.end(), [](const Port& p) { return p.type == PortType::Atom; }),
+          "a version 1 atom port became a MIDI connector");
 }
 void overlay() {
     CatalogueDocument document;
@@ -196,7 +208,7 @@ void fixture(const std::string& folder) {
     for (const auto& d : offered) {
         if (d.uri == "http://lv2plug.in/plugins/eg-amp") amp = &d;
         bool patchable = false;
-        for (const auto& port : d.ports) patchable = patchable || port.type == PortType::Audio || port.type == PortType::Cv;
+        for (const auto& port : d.ports) patchable = patchable || port.type == PortType::Audio || port.type == PortType::Cv || port.type == PortType::Midi;
         check(d.availability != Availability::Available || patchable, "an entry with nothing to patch is offered");
         check(d.availability == Availability::Available || !d.availability_reason.empty(), "a withheld entry gives no reason");
     }

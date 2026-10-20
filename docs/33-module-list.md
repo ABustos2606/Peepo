@@ -2,7 +2,7 @@
 
 **Updated 19 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
 
-**350 plugin identities:** 328 installed in the Pi export and 22 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
+**351 plugin identities:** 329 installed in the Pi export and 22 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
 
 **Removed effects:** Bollie Delay XT and Faust Granulator have been removed from Peepo and this inventory. The Granulator - Mono and Granulator - Stereo entries below are separate AVW plugins. [Removal details](35-patchstorage-expansion.md).
 
@@ -14,7 +14,7 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Ready | 272 | Can be added to a patch. This does not imply a guitar listening test of every module. |
+| Ready | 273 | Can be added to a patch. This does not imply a guitar listening test of every module. |
 | Needs adaptation | 7 | Installed, but disabled in Add for the stated limitation. |
 | Unavailable | 40 | Present in the Pi export but unusable by the current host; see each reason. |
 | Hidden | 9 | Omitted from Add as a duplicate or redundant module; retained for saved patches. |
@@ -35,7 +35,7 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 | [Filter](#filter) | 23 / 24 |
 | [Modulation](#modulation) | 35 / 35 |
 | [Pitch](#pitch) | 8 / 8 |
-| [Delay](#delay) | 16 / 18 |
+| [Delay](#delay) | 17 / 19 |
 | [Reverb](#reverb) | 9 / 9 |
 | [Texture](#texture) | 12 / 12 |
 | [Resonator](#resonator) | 2 / 2 |
@@ -247,6 +247,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | --- | --- | --- | --- |
 | Bitcrushed delay | Flexible delay module with bitcrushed repeats. | audio 1 in / 1 out; CV 6 in / 0 out | Needs adaptation: Has crashed the engine; see docs/22-plugin-catalogue.md. |
 | CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
+| Aura | Always-listening micro-looper and reverb, delay or sampler sharing one clock. Private source; Pi listening and xrun record pending. | audio 2 in / 2 out; CV 6 in / 0 out | Ready |
 | Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready |
 | DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready |
 | Gx Delay stereo | Stereo delay with time, feedback and mix controls. | audio 2 in / 2 out | Ready |

@@ -96,6 +96,87 @@ int main(int argc, char** argv) {
         std::cout << "SUMMARY " << (failures ? std::to_string(failures) + " failed" : std::string("engine restart survived")) << std::endl;
         return failures ? 1 : 0;
     }
+    // For the MIDI clock check: set the tempo as the Tempo page or a tap does;
+    // save a patch at one tempo and load it later; or only stay connected, as
+    // an interface does, until killed.
+    const std::string mode = argc > 3 ? argv[3] : "";
+    if (mode == "--set-tempo" && argc > 4) return a->ok(SetTempo{std::stod(argv[4])}, "set the tempo to " + std::string(argv[4]) + " BPM") ? 0 : 1;
+    if (mode == "--wait") { for (;;) a->pump(1000); }
+    if (mode == "--save-tempo-patch" || mode == "--load-tempo-patch") {
+        const std::filesystem::path root = std::filesystem::temp_directory_path() / "peepo-live-patches" / "tempo";
+        if (mode == "--save-tempo-patch" && argc > 5) {
+            std::error_code cleared;
+            std::filesystem::remove_all(root, cleared);
+            PatchStore store(root);
+            if (!check(store.open().empty(), "patch store opens")) return 1;
+            a->ok(SetTempo{std::stod(argv[4])}, "the patch to load has its own tempo");
+            const auto id = store.new_id();
+            std::string issue;
+            auto staging = store.stage(id, issue);
+            check(a->result(SaveGraph{SaveScope::Persistent, true, staging->location, id}).accepted && store.publish(*staging).empty(), "save it");
+            a->ok(SetTempo{std::stod(argv[5])}, "then play another tempo");
+            return failures ? 1 : 0;
+        }
+        PatchStore store(root);
+        if (!check(store.open().empty() && !store.list().empty(), "the saved patch is there")) return 1;
+        const auto stored = store.list().front();
+        const auto event = a->result(LoadPatch{stored.location, saved_blocks(stored.bundle), stored.id, stored.bundle.tempo});
+        return check(event.accepted, "load it", event.message) ? 0 : 1;
+    }
+    if (argc > 3 && std::string(argv[3]) == "--midi") {
+        // MIDI IN -> x42 MIDI Transpose (+12) -> MIDI OUT, saved and loaded
+        // again, then left for a JACK MIDI probe to play through.
+        const std::string transpose = "http://gareus.org/oss/lv2/midifilter#miditranspose";
+        auto* known = const_cast<ModuleDefinition*>(definition(transpose));
+        if (!check(known, "the catalogue lists x42 MIDI Transpose")) return 1;
+        check(std::count_if(known->ports.begin(), known->ports.end(), [](const Port& p) { return p.type == PortType::Midi; }) == 2,
+              "the export calls its two atom ports MIDI connectors");
+        // Not offered until it is heard with a controller; this check is that hearing.
+        known->availability = Availability::Available;
+        check(validate_graph(a->graph()).empty() && a->engine.state() == EngineState::Ready, "the engine took the MIDI endpoints");
+        a->ok(NewPatch{"MIDI check"}, "new patch");
+        auto event = a->result(AddModule{transpose, 184, 132});
+        const auto shift = a->graph().modules.back();
+        check(event.accepted && shift.uri == transpose, "add MIDI Transpose", event.message);
+        const auto midi_ports = std::count_if(shift.ports.begin(), shift.ports.end(), [](const Port& p) { return p.type == PortType::Midi; });
+        check(midi_ports == 2, "the engine's description of it has two MIDI connectors", std::to_string(midi_ports));
+        a->ok(SetParameter{shift.id, "transpose", 12}, "transpose up an octave");
+        a->ok(Connect{{1, shift.id, "midi", "midiin"}}, "cable MIDI IN to it");
+        a->ok(Connect{{shift.id, 2, "midiout", "midi"}}, "cable it to MIDI OUT");
+        check(!a->result(Connect{{1, shift.id, "out", "midiin"}}).accepted && !a->result(Connect{{shift.id, 2, "midiout", "in"}}).accepted, "audio and MIDI are not joined");
+        check(has_cable(a->graph(), {1, shift.id, "midi", "midiin"}) && has_cable(a->graph(), {shift.id, 2, "midiout", "midi"}), "MIDI cables read back from the engine");
+        const char* folder = std::getenv("PEEPO_PATCHES");
+        const std::filesystem::path root = (folder ? std::filesystem::path(folder) : std::filesystem::temp_directory_path() / "peepo-live-patches") / "midi";
+        std::error_code cleared;
+        std::filesystem::remove_all(root, cleared);
+#ifdef _WIN32
+        PatchStore store(root, wsl_path(root));
+#else
+        PatchStore store(root);
+#endif
+        check(store.open().empty(), "patch store opens", root.string());
+        const auto id = store.new_id();
+        std::string issue;
+        auto staging = store.stage(id, issue);
+        event = a->result(SaveGraph{SaveScope::Persistent, true, staging->location, id});
+        check(event.accepted && store.publish(*staging).empty(), "the engine saves the patch with its MIDI cables", event.message);
+        const auto stored = store.find(id);
+        check(stored && stored->bundle.arcs.size() == a->graph().connections.size(), "the stored patch lists its MIDI cables",
+              stored ? std::to_string(stored->bundle.arcs.size()) + " cables" : "missing");
+        a->ok(NewPatch{"Empty"}, "replace it with an empty patch");
+        check(!has_cable(a->graph(), {1, 2, "midi", "midi"}) && a->graph().modules.size() == 2, "the empty patch has no MIDI cable");
+        event = a->result(LoadPatch{stored->location, saved_blocks(stored->bundle), id});
+        const auto* back = find_module(a->graph(), shift.id);
+        const auto value = back ? std::find_if(back->parameters.begin(), back->parameters.end(), [](const Parameter& p) { return p.symbol == "transpose"; }) : std::vector<Parameter>::const_iterator{};
+        check(event.accepted && back && value != back->parameters.end() && value->value == 12 && has_cable(a->graph(), {1, shift.id, "midi", "midiin"}) &&
+              has_cable(a->graph(), {shift.id, 2, "midiout", "midi"}), "the patch loads with its MIDI cables and value", event.message);
+        // A second client, as a restarted interface would be, reads the same.
+        Client b(address);
+        b.engine.connect();
+        check(b.ready() && has_cable(b.graph(), {1, shift.id, "midi", "midiin"}) && has_cable(b.graph(), {shift.id, 2, "midiout", "midi"}), "a second client reads the MIDI cables");
+        std::cout << "SUMMARY " << (failures ? std::to_string(failures) + " failed" : std::string("MIDI cable checks passed")) << std::endl;
+        return failures ? 1 : 0;
+    }
 
     a->ok(NewPatch{"Live check"}, "new patch replaces what the engine held");
     check(a->graph().modules.size() == 2 && a->graph().connections.size() == 2 && a->graph().name == "Live check", "new patch is IN wired to OUT on both sides");

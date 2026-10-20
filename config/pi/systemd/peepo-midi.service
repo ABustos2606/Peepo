@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The instrument's own MIDI: clock out at the patch tempo. Independent of the
+# interface, so the clock keeps going while the interface restarts; it follows
+# the engine, and reconnects by itself when the engine restarts.
+[Unit]
+Description=Peepo MIDI clock
+PartOf=peepo.target
+BindsTo=peepo-jack.service
+After=peepo-jack.service peepo-engine.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=peepo
+EnvironmentFile=/etc/peepo/peepo.conf
+ExecStart=/opt/peepo/bin/peepo-midi --engine unix:///run/peepo/ingen.sock
+LimitRTPRIO=95
+LimitMEMLOCK=infinity
+Restart=always
+RestartSec=1

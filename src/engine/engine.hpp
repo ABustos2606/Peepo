@@ -61,6 +61,10 @@ struct LoadPatch {
     // The stored identity, given to the loaded graph even when the bundle
     // lacks it (a bundle stripped of its project properties).
     std::string patch_id;
+    // The bundle's tempo, set before the engine reads it so the tempo goes
+    // straight from the old patch's to the new one's (MIDI clock followers
+    // hear no other); empty for a bundle without one, which plays the default.
+    std::optional<double> tempo;
 };
 // Pin a physical control, replacing whatever it had in this patch; saved with
 // it. With `add`, a bypass joins the modules the control already switches.

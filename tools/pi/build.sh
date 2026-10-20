@@ -36,7 +36,7 @@ step "interface"
 # Libraries built into the prefix (lilv on Debian 12) come before the system's.
 export PKG_CONFIG_PATH="$(find "$PREFIX" -name pkgconfig -type d 2>/dev/null | paste -sd:)"
 # DRM/KMS and the framebuffer for the Pi's screen; no desktop window.
-apt-get install -y -qq --no-install-recommends cmake ninja-build g++ git pkg-config libdrm-dev liblilv-dev ca-certificates >/dev/null
+apt-get install -y -qq --no-install-recommends cmake ninja-build g++ git pkg-config libdrm-dev liblilv-dev libjack-jackd2-dev ca-certificates >/dev/null
 cmake -S "$REPO" -B "$BUILD" -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="$PREFIX" -DPEEPO_WITH_SDL=OFF -DBUILD_TESTING=ON >/dev/null
 cmake --build "$BUILD"
 [ -x "$BUILD/peepo" ] || { echo "the interface did not build"; exit 1; }
@@ -72,7 +72,7 @@ rm -rf "$STAGE"; mkdir -p "$STAGE/peepo/root/opt"
 tar -C /opt --exclude=peepo/src --exclude=peepo/build -cf - peepo | tar -C "$STAGE/peepo/root/opt" -xf -
 cp -r "$REPO/config/pi" "$STAGE/peepo/config"
 cp "$REPO/tools/pi/install.sh" "$REPO/tools/pi/instrument-boot.sh" "$REPO/tools/pi/splash.sh" "$REPO/tools/pi/slim-boot.sh" "$REPO/tools/pi/check-services.sh" "$REPO/tools/pi/export-catalogue.sh" \
-    "$REPO/tools/pi/check-ui-restart.sh" "$REPO/tools/pi/check-ui-crash.sh" "$REPO/tools/pi/monitor-ui-restart.py" "$REPO/tools/pi/check-effect.sh" "$REPO/tools/pi/measure-effect.py" "$REPO/tools/pi/check-output-level.sh" "$STAGE/peepo/"
+    "$REPO/tools/pi/check-ui-restart.sh" "$REPO/tools/pi/check-ui-crash.sh" "$REPO/tools/pi/monitor-ui-restart.py" "$REPO/tools/pi/check-effect.sh" "$REPO/tools/pi/measure-effect.py" "$REPO/tools/pi/check-output-level.sh" "$REPO/tools/pi/check-midi.sh" "$STAGE/peepo/"
 cp -r "$REPO/licenses" "$REPO/LICENSE" "$REPO/THIRD_PARTY_NOTICES.md" "$STAGE/peepo/"
 echo "$VERSION $ARCH $(date -u +%Y-%m-%dT%H:%MZ)" > "$STAGE/peepo/VERSION"
 OUT="$REPO/build/pi"

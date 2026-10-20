@@ -15,7 +15,7 @@
 set -euo pipefail
 HERE="$(dirname "$(readlink -f "$0")")"
 PREFIX=/opt/peepo
-UNITS="peepo.target peepo-jack.service peepo-engine.service peepo-route.service peepo-ui.service"
+UNITS="peepo.target peepo-jack.service peepo-engine.service peepo-route.service peepo-a2j.service peepo-midi.service peepo-ui.service"
 dry=0; enable=0; start=0; instrument=0; action=install
 for arg in "$@"; do
     case $arg in
@@ -58,7 +58,7 @@ machine_arch=$(dpkg --print-architecture)
 echo "Installing Peepo $(cat "$HERE/VERSION")"
 
 # What the programs need from the distribution (they were built against these).
-DEPENDS="jackd2 liblilv-0-0 libserd-0-0 libsord-0-0 libsratom-0-0 libsuil-0-0 libsigc++-2.0-0v5 libjack-jackd2-0 libdrm2 mda-lv2 lv2-examples x42-plugins setbfree blop-lv2 fomp calf-plugins libzita-convolver4 libzita-resampler1 libsndfile1 libsamplerate0 libfftw3-single3 libcairo2 libx11-6 libxext6 libxrandr2 libxcursor1"
+DEPENDS="jackd2 a2jmidid liblilv-0-0 libserd-0-0 libsord-0-0 libsratom-0-0 libsuil-0-0 libsigc++-2.0-0v5 libjack-jackd2-0 libdrm2 mda-lv2 lv2-examples x42-plugins setbfree blop-lv2 fomp calf-plugins libzita-convolver4 libzita-resampler1 libsndfile1 libsamplerate0 libfftw3-single3 libcairo2 libx11-6 libxext6 libxrandr2 libxcursor1"
 if apt-cache show jack-example-tools >/dev/null 2>&1; then DEPENDS="$DEPENDS jack-example-tools"; fi
 run env DEBIAN_FRONTEND=noninteractive apt-get install -y -q --no-install-recommends $DEPENDS
 

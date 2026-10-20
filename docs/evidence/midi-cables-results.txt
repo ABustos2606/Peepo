@@ -1,0 +1,51 @@
+P12.4 MIDI cables, 20 October 2026, WSL2 Debian 12 (JACK dummy driver, 48 kHz / 128),
+the project's Ingen in /opt/peepo, x42-midifilter from Debian.
+
+Command, as root inside Debian:  bash tools/ingen-spike/23-midi.sh
+Catalogue: config/catalogue/wsl-debian.json, version 2 (atom ports retyped: see below).
+
+PASS  connect, read the graph and create the audio endpoints -- unix:///tmp/peepo-ingen.sock
+PASS  the catalogue lists x42 MIDI Transpose
+PASS  the export calls its two atom ports MIDI connectors
+PASS  the engine took the MIDI endpoints
+PASS  new patch
+PASS  add MIDI Transpose
+PASS  the engine's description of it has two MIDI connectors -- 2
+PASS  transpose up an octave
+PASS  cable MIDI IN to it
+PASS  cable it to MIDI OUT
+PASS  audio and MIDI are not joined
+PASS  MIDI cables read back from the engine
+PASS  patch store opens -- /tmp/peepo-live-patches/midi
+PASS  the engine saves the patch with its MIDI cables -- Saved MIDI check.
+PASS  the stored patch lists its MIDI cables -- 4 cables
+PASS  replace it with an empty patch
+PASS  the empty patch has no MIDI cable
+PASS  the patch loads with its MIDI cables and value -- Loaded MIDI check.
+PASS  a second client reads the MIDI cables
+SUMMARY MIDI cable checks passed
+PASS  the engine's MIDI endpoints are JACK MIDI ports -- ingen:control (midi), ingen:in_l (audio), ingen:in_r (audio), ingen:midi_in (midi), ingen:midi_out (midi), ingen:notify (midi), ingen:out_l (audio), ingen:out_r (audio)
+PASS  90 3c 64 into MIDI IN comes out of MIDI OUT as 90 48 64 -- saw ['90 48 64']
+PASS  80 3c 00 into MIDI IN comes out of MIDI OUT as 80 48 00 -- saw ['80 48 00']
+
+No MIDI device was connected: the patch with MIDI cables loads and plays
+without one (the JACK MIDI client above stands in for a device).
+
+Regression, same day: bash tools/ingen-spike/07-adapter.sh
+SUMMARY all adapter checks passed (Unix socket and TCP)
+PASS  the patch the adapter built is what is heard -- left through the amp at +6.02 dB 0.5000 (expected 0.5000), right direct 0.2500 (expected 0.2500); JACK ports ingen:control, ingen:in_l, ingen:in_r, ingen:midi_in, ingen:midi_out, ingen:notify, ingen:out_l, ingen:out_r
+SUMMARY engine restart survived
+
+Windows: all seven CTest suites pass (domain, adapter, catalogue, storage, UI
+workflows with screenshot 70-midi-cables.bmp, controls, driver smoke).
+
+The WSL fixture was brought to catalogue version 2 without a full re-export:
+a fresh export in this WSL lacked 109 of its 326 entries (no NAM folder on the
+LV2 path, inventory edits), so only the atom ports' types were changed. 46
+became "atom" (file, parameter and notify ports: fil4, zeroconvolv, convoLV2,
+polyconvo, NAM, gx_amp, gx_cabinet, Dragonfly, eg-scope, eg-metro, tuna's
+control); the rest stay "midi": the x42 MIDI filters, MDA DX10/EPiano/JX10/
+Piano, Calf Vinyl, eg-fifths, eg-midigate, tuna's sysex, Digit Delay's MIDI in,
+and from upstream TTL (absent here) Poly's CV to MIDI CC, CV to MIDI Note,
+Strum and MIDI clock in. The availability reasons of the MIDI-only entries are
+still version 1's until the next full export.

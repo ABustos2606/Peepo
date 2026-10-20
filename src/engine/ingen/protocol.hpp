@@ -17,6 +17,7 @@ inline constexpr std::string_view ingen = "http://drobilla.net/ns/ingen#";
 inline constexpr std::string_view lv2 = "http://lv2plug.in/ns/lv2core#";
 inline constexpr std::string_view patch = "http://lv2plug.in/ns/ext/patch#";
 inline constexpr std::string_view atom = "http://lv2plug.in/ns/ext/atom#";
+inline constexpr std::string_view midi = "http://lv2plug.in/ns/ext/midi#";
 inline constexpr std::string_view peepo = "urn:peepo:ns#";
 inline constexpr std::string_view rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 }

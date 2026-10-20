@@ -52,6 +52,8 @@ struct FakeEngine {
     // Write paths relative to <ingen:/>, as the engine does when built with serd 0.30 (Debian 12).
     bool relative = false;
     int mute = 0, requests = 0, label = 0;
+    // Every tempo the graph was given, in order.
+    std::vector<double> tempos;
     // Saved bundles by file URI: the objects under ingen:/main and the cables.
     std::map<std::string, std::pair<std::map<std::string, Properties>, std::vector<std::pair<std::string, std::string>>>> files;
 
@@ -165,7 +167,7 @@ struct FakeEngine {
                     // Two responses for one request, as recorded.
                     all = describe(m.sequence, m.subject) + response(m.sequence, 0, m.subject) + put(m.sequence, m.subject, objects.at(m.subject));
                 }
-            } else if (objects.contains(m.subject) || has(m.body, rdf_type, full(uri::lv2, "AudioPort"))) {
+            } else if (objects.contains(m.subject) || has(m.body, rdf_type, full(uri::lv2, "AudioPort")) || has(m.body, rdf_type, full(uri::atom, "AtomPort"))) {
                 merge(objects[m.subject], m.body);
                 all = put(m.sequence, m.subject, m.body);
             } else status = 4;
@@ -176,6 +178,7 @@ struct FakeEngine {
             else {
                 // A graph property set without a context is accepted and never described again.
                 if (m.subject != "ingen:/main" || m.context == full(uri::ingen, "internalContext")) merge(objects[m.subject], {{m.property, m.value}});
+                if (m.subject == "ingen:/main" && m.property == full(uri::peepo, "tempo")) tempos.push_back(m.value.number);
                 // Told to everyone except the client that asked.
                 others = node("\ta patch:Set ;\n\tpatch:sequenceNumber \"" + std::to_string(m.sequence) + "\"^^xsd:int ;\n\tpatch:subject <" + m.subject +
                               "> ;\n\tpatch:property " + key(m.property) + " ;\n\tpatch:value " + term(m.value));
@@ -373,6 +376,13 @@ void adapter() {
     check(engine.state() == EngineState::Ready && !events.empty() && events.back().state == EngineState::Ready && events.back().snapshot, "did not become ready");
     check(std::count_if(events.begin(), events.end(), [](const EngineEvent& e) { return e.request && !e.accepted; }) == 1 && rig.graph().name == "Untitled", "edit sent while connecting");
     for (const char* port : {"in_l", "in_r", "out_l", "out_r"}) check(fake.objects.contains(std::string("ingen:/main/") + port), "audio endpoint not created");
+    // The MIDI endpoints are sequences of MIDI events, which Ingen turns into JACK MIDI ports.
+    for (const char* port : {"midi_in", "midi_out"}) {
+        const auto found = fake.objects.find(std::string("ingen:/main/") + port);
+        check(found != fake.objects.end() && has(found->second, rdf_type, full(uri::atom, "AtomPort")) &&
+              has(found->second, full(uri::atom, "supports"), "http://lv2plug.in/ns/ext/midi#MidiEvent") &&
+              has(found->second, rdf_type, full(uri::lv2, port == std::string("midi_in") ? "InputPort" : "OutputPort")), "MIDI endpoint not created");
+    }
     check(rig.graph().modules.size() == 2 && rig.graph().connections.empty() && validate_graph(rig.graph()).empty(), "empty engine graph misread");
     const auto caps = engine.capabilities();
     check(!caps.simulation && caps.audio_processing && caps.session_save && caps.persistent_save && caps.plugin_state, "capabilities misstated");
@@ -523,7 +533,7 @@ void adapter() {
     // atom input and is named on the block for every client; the tempo is a
     // graph property, given to the module that follows it, inside its range.
     {
-        ModuleDefinition own{filed, "Filed", "Amp", "", 0x93a4b5, {{"in", Direction::Input}, {"out", Direction::Output}, {"control", Direction::Input, 1, PortType::Midi}},
+        ModuleDefinition own{filed, "Filed", "Amp", "", 0x93a4b5, {{"in", Direction::Input}, {"out", Direction::Output}, {"control", Direction::Input, 1, PortType::Atom}},
                              {{"gain", "Rate", "BPM", ParameterKind::Continuous, 40, 240, 100}}};
         own.file = {"urn:test:filed#model", "Model", "nam", {"nam"}};
         own.tempo_symbol = "gain";
@@ -562,7 +572,7 @@ void adapter() {
           !rig.result(SaveGraph{SaveScope::Persistent, true, "file:///with%20space/x.ingen", "p-one"}).accepted &&
           !rig.result(SaveGraph{SaveScope::Persistent, true, "file:///patches/x.ingen", "Not an id"}).accepted, "unsafe save location or identity accepted");
     check(rig.result(NewPatch{"Blank"}).accepted && rig.graph().modules.size() == 2 && rig.graph().connections.size() == 2 && rig.graph().dirty && rig.graph().name == "Blank", "new patch wrong");
-    check(fake.arcs.size() == 2 && std::none_of(fake.objects.begin(), fake.objects.end(), [](const auto& o) { return o.first.starts_with("ingen:/main/m"); }), "engine kept old blocks");
+    check(fake.arcs.size() == 2 && std::none_of(fake.objects.begin(), fake.objects.end(), [](const auto& o) { return o.first.starts_with("ingen:/main/m") && !o.first.starts_with("ingen:/main/midi_"); }), "engine kept old blocks");
     check(rig.result(LoadSession{}).accepted && !rig.graph().dirty, "session restore failed");
     check(rig.graph().name == saved.name && rig.graph().connections.size() == saved.connections.size() && rig.graph().modules.size() == saved.modules.size(), "restored graph differs");
     for (const auto& m : saved.modules) {
@@ -600,7 +610,10 @@ void adapter() {
     check(rig.result(NewPatch{"Elsewhere"}).accepted && rig.graph().patch_id.empty() && rig.graph().modules.size() == 2, "new patch kept the identity or modules");
     std::vector<SavedBlock> blocks;
     for (const auto& m : saved.modules) if (!m.fixed) blocks.push_back({"m" + std::to_string(m.id), m.uri, m.name});
-    outcome = rig.result(LoadPatch{first_bundle, blocks});
+    fake.tempos.clear();
+    outcome = rig.result(LoadPatch{first_bundle, blocks, {}, 96});
+    // The bundle's tempo is set before the bundle is read, never the default between.
+    check(!fake.tempos.empty() && std::all_of(fake.tempos.begin(), fake.tempos.end(), [](double t) { return t == 96; }), "a load passed through another tempo");
     check(outcome.accepted && outcome.message.find("Loaded " + saved.name) == 0 && outcome.message.find("did not restore") == std::string::npos, "load failed or misreported");
     check(rig.graph().patch_id == "p-one" && !rig.graph().dirty && rig.graph().name == saved.name && rig.graph().modules.size() == saved.modules.size() &&
           rig.graph().connections.size() == saved.connections.size() && find_module(rig.graph(), 3)->parameters[0].value == 3, "loaded graph differs from the saved one");
@@ -894,11 +907,46 @@ void looper_monitor() {
     for(std::size_t i=0;i<looper_outputs;++i) check(!subscribed(i),"looper subscription leaked on leaving page");
     engine.disconnect();check(!engine.looper_status(3)[0] && !engine.looper_command(3,5,0,true),"disconnected looper still active");
 }
+void midi_cables() {
+    using namespace peepo;
+    using namespace peepo::ingen;
+    // An atom port is a MIDI connector when the engine says it supports MIDI
+    // events; any other, such as a file input, is a message port.
+    const std::string path = "ingen:/main/m3", plugin = "urn:test:chord", midi_event = "http://lv2plug.in/ns/ext/midi#MidiEvent";
+    register_definitions({{plugin, "Chord", "MIDI", "Notes to chords", 0x93a4b5,
+                           {{"midi_in", Direction::Input, 1, PortType::Midi}, {"midi_out", Direction::Output, 1, PortType::Midi}, {"control", Direction::Input, 1, PortType::Atom}}, {}}});
+    FakeEngine fake;
+    fake.plugins.insert(plugin);
+    fake.objects[path] = {{rdf_type, iri_value(full(uri::ingen, "Block"))}, {full(uri::lv2, "prototype"), iri_value(plugin)}};
+    auto atom_port = [&](const char* symbol, int index, const char* direction, const char* supports) {
+        fake.objects[path + "/" + symbol] = {{full(uri::lv2, "index"), number_value(index)}, {rdf_type, iri_value(full(uri::atom, "AtomPort"))},
+                                             {rdf_type, iri_value(full(uri::lv2, direction))}, {full(uri::atom, "supports"), iri_value(supports)}};
+    };
+    atom_port("midi_in", 0, "InputPort", midi_event.c_str());
+    atom_port("midi_out", 1, "OutputPort", midi_event.c_str());
+    atom_port("control", 2, "InputPort", full(uri::patch, "Message").c_str());
+    Rig rig(fake);
+    auto& engine = *rig.engine;
+    engine.connect(); rig.settle();
+    const auto* chord = find_module(rig.graph(), 3);
+    check(chord && chord->ports.size() == 3 && chord->ports[0].type == PortType::Midi && chord->ports[1].type == PortType::Midi && chord->ports[2].type == PortType::Atom,
+          "MIDI and message ports not told apart");
+    // IN's merged MIDI through the module to OUT, on the engine's own MIDI ports.
+    check(rig.result(Connect{{1, 3, "midi", "midi_in"}}).accepted && rig.result(Connect{{3, 2, "midi_out", "midi"}}).accepted, "MIDI cable refused");
+    check(std::find(fake.arcs.begin(), fake.arcs.end(), std::pair<std::string, std::string>{"ingen:/main/midi_in", path + "/midi_in"}) != fake.arcs.end() &&
+          std::find(fake.arcs.begin(), fake.arcs.end(), std::pair<std::string, std::string>{path + "/midi_out", "ingen:/main/midi_out"}) != fake.arcs.end(),
+          "MIDI cable did not reach the engine's MIDI ports");
+    check(rig.graph().connections.size() == 2 && rig.graph().connections[0].from == 1 && rig.graph().connections[0].output == "midi", "MIDI cable not read back");
+    const auto before = fake.requests;
+    check(!rig.result(Connect{{1, 3, "midi", "control"}}).accepted && !rig.result(Connect{{1, 3, "out", "midi_in"}}).accepted && fake.requests == before,
+          "a MIDI cable to a message port or an audio cable to MIDI reached the engine");
+}
 int main() {
     try {
         turtle_and_protocol();
         adapter();
         relative_paths();
+        midi_cables();
         tuner_monitor();
         euclidean_monitor();
         looper_monitor();

@@ -11,7 +11,8 @@
 // needs no LV2 binaries. Presentation choices live in a separate overlay the
 // project owns, and survive a new export.
 namespace peepo {
-inline constexpr int catalogue_version = 1;
+// 2: an atom port is "midi" only when it takes MIDI, "atom" otherwise.
+inline constexpr int catalogue_version = 2;
 struct CatalogueDocument {
     std::vector<ModuleDefinition> modules;
     // What produced the file and from where, as the exporter recorded it.

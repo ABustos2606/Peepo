@@ -1,0 +1,58 @@
+P12.3 MIDI clock out, 20 October 2026, WSL2 Debian 12 (JACK dummy driver, 48 kHz / 128),
+the project's Ingen in /opt/peepo, peepo-midi and the adapter built from the working tree.
+
+Command, as root inside Debian:  bash tools/ingen-spike/24-clock.sh
+A Python JACK client (clockprobe) records every message on peepo-midi:clock_out
+with its frame; the tempo is changed through the engine by peepo_ingen_live, as
+the interface does (SetTempo for the Tempo page and taps, LoadPatch for a patch).
+
+MIDI clock intervals, drift, tempo changes, Start and Stop passed.
+PASS  Start once, with the first clock message -- fa f8 f8 f8
+PASS  Start is sent once
+PASS  the engine plays at 120 BPM
+PASS  120 BPM: clock every 1000.00 frames (120 BPM) -- 85 intervals, 1000 to 1000 frames
+PASS  set the tempo to 30 BPM, as the Tempo page or a tap does
+PASS  tempo change: 120 to 30 BPM from one clock message to the next -- 5 old intervals, then 19 new
+PASS  30 BPM: clock every 4000.00 frames (30 BPM) -- 20 intervals, 4000 to 4000 frames
+PASS  set the tempo to 300 BPM, as the Tempo page or a tap does
+PASS  tempo change: 30 to 300 BPM from one clock message to the next -- 2 old intervals, then 209 new
+PASS  300 BPM: clock every 400.00 frames (300 BPM) -- 213 intervals, 400 to 400 frames
+PASS  set the tempo to 120 BPM, as the Tempo page or a tap does
+PASS  tempo change: 300 to 120 BPM from one clock message to the next -- 14 old intervals, then 85 new
+PASS  120 BPM: clock every 1000.00 frames (120 BPM) -- 84 intervals, 1000 to 1000 frames
+PASS  save a patch at 87 BPM, then play 100 BPM
+PASS  100 BPM: clock every 1200.00 frames (100 BPM) -- 70 intervals, 1200 to 1200 frames
+PASS  load the patch saved at 87 BPM
+PASS  patch change: 100 to 87 BPM from one clock message to the next -- 4 old intervals, then 70 new
+PASS  87 BPM: clock every 1379.31 frames (87 BPM) -- 68 intervals, 1379 to 1380 frames
+PASS  while three interfaces connect and are killed: clock every 1379.31 frames (87 BPM) -- 90 intervals, 1379 to 1380 frames
+PASS  no gap or burst in the whole run -- 1083 intervals, 400 to 4000 frames
+PASS  stopping peepo-midi sends Stop last -- exit 0, last fc
+       | peepo-midi: peepo-midi:clock_out at 48000 Hz; engine unix:///tmp/peepo-ingen.sock
+       | peepo-midi: clock at 120 BPM
+       | peepo-midi: clock at 30 BPM
+       | peepo-midi: clock at 300 BPM
+       | peepo-midi: clock at 120 BPM
+       | peepo-midi: clock at 87 BPM
+       | peepo-midi: clock at 100 BPM
+       | peepo-midi: clock at 87 BPM
+       | peepo-midi: stopped
+INFO  the probe's own xruns: 26; intervals left out around them: 203 (counted once per check)
+SUMMARY MIDI clock checks passed
+
+Intervals are exact: 1000 frames at 120 BPM, 4000 at 30, 400 at 300, 1200 at
+100; 1379 or 1380 at 87 (1379.31). Each change takes effect from the next
+clock message: old intervals, then only new ones, nothing in between.
+
+Found and fixed during the run: loading a patch first set the default tempo
+(120), then the bundle set its own, so peepo-midi briefly took 120 between the
+old patch and the new one (seen in its log on the first run). LoadPatch now
+carries the bundle's tempo and the adapter sets that one before the engine
+reads the bundle; the second run's log goes 100 -> 87 directly.
+
+The probe, Python under WSL, itself misses periods ("JackEngine::XRun: client
+= clockprobe was not finished" in jackd's log, 18 on an earlier run, none for
+peepo-midi or ingen). An earlier run without the exclusion showed an interval
+of 0 and one of exactly two intervals at those moments. The probe now records
+its own xruns and leaves out intervals within 0.1 s of one (203 of about 1300
+here). Measuring on the Pi, against devices, is still to do.

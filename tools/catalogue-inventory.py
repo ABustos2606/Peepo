@@ -28,7 +28,8 @@ MDA = ["Ambience", "Bandisto", "BeatBox", "Combo", "DX10", "DeEss", "Degrade", "
 # Peepo's own plugins: plugins/ of this repository, and Discipline and Loo-pi from their own.
 PEEPO = ["urn:peepo:lv2:footswitch",
          "https://github.com/ABustos2606/discipline#discipline", "https://github.com/ABustos2606/discipline#return",
-         "https://github.com/ABustos2606/loo-pi#loopi"]
+         "https://github.com/ABustos2606/loo-pi#loopi",
+         "https://github.com/ABustos2606/aura#aura"]
 EXAMPLES = ["eg-amp", "eg-fifths", "eg-metro", "eg-midigate", "eg-params", "eg-scope#Mono", "eg-scope#Stereo"]
 
 

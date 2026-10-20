@@ -1,10 +1,10 @@
 # MIDI: devices, cables between modules, clock and learn
 
-**Planned 20 October 2026.** Nothing is built yet. This plan covers all of Beebo's MIDI ([Beebo manual gaps](30-beebo-manual-gaps.md#7-midi), item 7), not only tempo out:
+**Planned 20 October 2026.** MIDI cables (P12.4) are built and checked on the PC; the rest is not built yet. This plan covers all of Beebo's MIDI ([Beebo manual gaps](30-beebo-manual-gaps.md#7-midi), item 7), not only tempo out:
 
 1. **MIDI in and out** on the Pi: USB devices first, then 3.5 mm TRS jacks.
 2. **MIDI inside the patch:** MIDI cables between modules on the canvas, MIDI IN and MIDI OUT connectors, and the MIDI modules the catalogue already lists. This revises D16, which deferred MIDI cables ([decisions](07-source-audit-and-decisions.md)).
-3. **Instrument-wide MIDI:** clock out (the first target is a Boss SL-2), clock in, program change selecting the set list, and MIDI learn on any control.
+3. **Instrument-wide MIDI:** clock out to any device that follows MIDI clock, clock in, program change selecting the set list, and MIDI learn on any control.
 
 ## 1. MIDI in and out on the Pi
 
@@ -17,17 +17,17 @@ The Pi 5 has four USB-A ports (two USB 3, two USB 2). The Tascam US-100 takes on
 | A MIDI foot controller with USB (e.g. a Morningstar) | program changes, CCs, tap tempo into Peepo |
 | A USB keyboard or pad controller | notes for the instruments and MIDI to CV; CCs for MIDI learn |
 | A pedal with a USB-MIDI port | MIDI both ways over one cable, no adapter |
-| A USB-MIDI interface (e.g. Roland UM-ONE: one DIN in, one DIN out) | any DIN or TRS device: a drum machine's clock in, Peepo's clock out to the SL-2 |
+| A USB-MIDI interface (e.g. Roland UM-ONE: one DIN in, one DIN out) | any DIN or TRS device: a drum machine's clock in, Peepo's clock out to a pedal |
 
 Limits:
 
 - **Host to host does not work.** A computer is also a host, so a computer cannot be plugged into the Pi's USB-A ports. Between them, use a USB-MIDI interface on each side. The Pi 5's USB-C port can act as a USB-MIDI device (Linux's MIDI gadget), but that port is also the power input, and a computer cannot supply the Pi 5's power. Not planned.
-- **The SL-2's own USB port** is for BOSS Tone Studio. Whether it also shows up as a USB-MIDI device is to be tried: plug it in and run `aconnect -l`. If it does, the SL-2 needs no MIDI cable at all.
+- **A device's own USB port** may or may not be USB-MIDI (some are only for an editor or firmware). Plug it in and run `aconnect -l`; if it shows up, it needs no MIDI cable at all.
 - **The Tascam shares the bus.** MIDI uses very little bandwidth, but the audio interface must never be disturbed. Check for xruns with a MIDI device plugged in, and if needed put it on the other USB controller.
 
 ### 3.5 mm TRS jacks on the Pi's UART: the enclosure's own MIDI
 
-GPIO 14 (TX) and 15 (RX) are already kept free for this ([wiring proposal](18-physical-controls.md#wiring-proposal-p71--proposed-to-verify-on-the-pi)). Both jacks are 3.5 mm TRS, **Type A** (tip = MIDI pin 5, ring = pin 4, sleeve = pin 2). Adapter cables reach DIN devices; Boss's BCC-1-3535 goes straight to the SL-2.
+GPIO 14 (TX) and 15 (RX) are already kept free for this ([wiring proposal](18-physical-controls.md#wiring-proposal-p71--proposed-to-verify-on-the-pi)). Both jacks are 3.5 mm TRS, **Type A** (tip = MIDI pin 5, ring = pin 4, sleeve = pin 2). Adapter cables reach DIN devices and Type B devices; a TRS-to-TRS cable goes straight to Type A ones. A sync-only 3.5 mm jack (as on the Volcas) is not MIDI and is not covered.
 
 **MIDI OUT (GPIO 14):**
 
@@ -110,23 +110,20 @@ A service of its own, separate from the interface, which can restart while audio
 - **Clock out.** 24 clock messages (`F8`) per beat at the patch tempo (`peepo:tempo`, 30 to 300 BPM, [patch tempo](29-parameters-files-tempo.md#patch-tempo)), placed at the exact frame inside each JACK period. It follows a tap, the Tempo page and patch changes. Peepo has no transport, so it sends **Start** once when the clock begins, and the Tempo page gets a **Restart** button (Stop, then Start) to line up another pedal's pattern by hand.
 - **Clock in.** Settings → MIDI chooses the tempo source: the patch, or incoming clock. With incoming clock, the patch tempo follows it, so every module with a BPM control follows too. Peepo then stops sending its own clock, to avoid a loop.
 - **Program change** selects a set-list entry: entry number = program number ([set list](30-beebo-manual-gaps.md#6-set-list), item 6). Until the set list exists, it selects a stored patch in order. The channel is set in Settings → MIDI.
-- **CC per patch.** A patch can carry a short list of CC messages (channel, number, value) sent when it loads, for example an SL-2 pattern per patch. Saved as graph properties, like the tempo. Inside a patch, the same can be done live with CV to MIDI CC cabled to MIDI OUT.
+- **CC per patch.** A patch can carry a short list of CC messages (channel, number, value) sent when it loads, for example a pattern or preset per patch on a pedal or drum machine. Saved as graph properties, like the tempo. Inside a patch, the same can be done live with CV to MIDI CC cabled to MIDI OUT.
 
 **MIDI learn** is the engine's, not `peepo-midi`'s (section 2). On a module page: hold a bar, choose **MIDI learn**, move a knob on the controller. The bar then shows its CC, and **Forget** removes it. Bindings are port properties, so they are saved with the patch.
 
-## The first target: Boss SL-2
+## Devices
 
-What the shop listings give (Boss's own manual still to read): a **MIDI IN** on a 3.5 mm TRS mini jack, no MIDI out or thru; it follows **MIDI clock** and takes **CC** messages. Boss's cables: BMIDI-5-35 (5-pin DIN to 3.5 mm), BCC-1-3535 (3.5 mm to 3.5 mm). It also has a 1/4" CTL/EXP jack and a USB port for BOSS Tone Studio.
+Peepo is for any class-compliant MIDI device, through USB or the TRS jacks, not for one model. The user's own devices serve as test candidates: an OBNE Dark Star, a Teenage Engineering KO-2, Roland Aira units, several Korg Volcas and a Boss SL-2. They differ where it matters:
 
-Its first route is a UM-ONE on a USB port and a BMIDI-5-35; later Peepo's own TRS jack and a BCC-1-3535.
+- MIDI in on 5-pin DIN, 3.5 mm TRS (Type A or B) or 3.5 mm sync-only, or USB-MIDI;
+- whether clock sync has to be switched on, and on which channel they listen;
+- what they do with Start, Stop and Continue, and when the clock stops;
+- their CC maps (for CC per patch).
 
-To check in the SL-2 manual (step P12.1):
-
-- [ ] the TRS pinout: expected **Type A**;
-- [ ] the MIDI channel and how to set it; whether clock sync must be enabled on the pedal;
-- [ ] what it does with Start, Stop and Continue, and when the clock stops;
-- [ ] its CC map (pattern, effect level and so on);
-- [ ] whether its USB port is also USB-MIDI.
+Step P12.1 records these per device as they are tried, so the clock, Start/Stop and the TRS wiring are checked against several followers rather than one.
 
 ## Steps
 
@@ -134,10 +131,10 @@ These are Phase 12 of the [implementation plan](10-technical-implementation-plan
 
 USB devices first, since they need no soldering; the canvas and modules next, since that is most of Beebo's MIDI; the jacks when the enclosure is built.
 
-- [ ] **P12.1 — SL-2:** the checks above.
-- [ ] **P12.2 — MIDI on the Pi through USB:** `a2jmidid` as a service; a UM-ONE and a USB controller appear as JACK MIDI ports and come back after unplugging; `peepo-route` wires them. Check for xruns with a device plugged in.
-- [ ] **P12.3 — Clock out (`peepo-midi`):** on the PC under WSL2 first (JACK's dummy driver, a virtual MIDI port), then on the Pi to the SL-2. Tests: interval at 30, 120 and 300 BPM; a tempo change from the next clock message; a patch change carrying its tempo; the clock continuing while the interface restarts. Measure the intervals with a second interface or a logic analyser.
-- [ ] **P12.4 — MIDI cables (PC):** split the port type; the MIDI cable and its rules; MIDI IN and MIDI OUT connectors; `midi_in` / `midi_out` on the engine; saving and loading. Tests as for the audio and control cables, plus file-message ports staying hidden. Record the revision of D16.
+- [ ] **P12.1 — Devices:** the checks in [Devices](#devices), for each device tried.
+- [ ] **P12.2 — MIDI on the Pi through USB:** `a2jmidid` as a service; USB MIDI devices appear as JACK MIDI ports and come back after unplugging; `peepo-route` wires them. Check for xruns with a device plugged in. *Built and checked on the Pi with a virtual device, 20-21 October 2026* ([record](evidence/midi-devices-results.txt), `tools/pi/check-midi.sh`): `peepo-a2j.service` runs `a2jmidid -e`; `peepo-route` wires every device's MIDI out to `ingen:midi_in` and `ingen:midi_out` and `peepo-midi:clock_out` to every device's MIDI in, by port direction, not name (ALSA's Midi Through excluded). A virtual card was wired both ways within 2 s, a note from it reached JACK, the clock went out through ALSA, and it was wired again after a replug; a JACK restart brought every MIDI service and connection back. Still to do: a real device (`check-midi.sh --device NAME`), and the xrun check, which waits for the power supply: the engine's xruns under undervoltage were there before MIDI.
+- [ ] **P12.3 — Clock out (`peepo-midi`):** on the PC under WSL2 first (JACK's dummy driver, a virtual MIDI port), then on the Pi to devices that follow MIDI clock. Tests: interval at 30, 120 and 300 BPM; a tempo change from the next clock message; a patch change carrying its tempo; the clock continuing while the interface restarts. Measure the intervals with a second interface or a logic analyser. *PC half done 20 October 2026 ([record](evidence/midi-clock-results.txt), `tools/ingen-spike/24-clock.sh`):* `src/midi/clock.hpp` (unit-tested in CTest `midi_clock`, also on Windows) and the Linux service `peepo-midi` (JACK port `peepo-midi:clock_out`, unit `peepo-midi.service` in `peepo.target`). The clock begins once the engine has said the tempo, with Start; Stop when the service stops. In WSL: exact intervals at 30, 120, 300, 100 and 87 BPM; every change from the next clock message; a patch load goes straight from the old tempo to the new (a load used to pass through 120 BPM; fixed); no gap while interfaces connect and are killed. Still to do: on the Pi, wired to devices once P12.2 routes MIDI, measured there and checked by ear on the user's clock followers.
+- [x] **P12.4 — MIDI cables (PC):** split the port type; the MIDI cable and its rules; MIDI IN and MIDI OUT connectors; `midi_in` / `midi_out` on the engine; saving and loading. Tests as for the audio and control cables, plus file-message ports staying hidden. Record the revision of D16. *Done 20 October 2026 on the PC and in WSL ([record](evidence/midi-cables-results.txt)):* `PortType::Atom` for message ports; catalogue format version 2; IN's MIDI output and OUT's MIDI input are the engine's `midi_in` / `midi_out`; MIDI jacks are teal diamonds on the side edges ([interface](03-interface-and-controls.md#midi-cables)). A note played into `ingen:midi_in` came out of `ingen:midi_out` an octave up through x42 MIDI Transpose, cabled, saved and loaded by the adapter. D16 revised. On the Pi: MIDI connectors show once the catalogue there is version 2, which the next package install exports (`install.sh` runs `peepo-export-catalogue`); IN and OUT now have three jacks per side, so their touch bands want a finger check.
 - [ ] **P12.5 — The MIDI modules:** rerun the compatibility checks with MIDI cables (`15-compat.sh`); build x42 MIDI clock and midimsg; mark the MIDI filters and the MDA instruments ready once they play from a controller on the Pi.
 - [ ] **P12.6 — Settings → MIDI:** devices in and out, clock out on or off, Start on begin, tempo source, program-change channel; the Tempo page's Restart.
 - [ ] **P12.7 — MIDI learn:** wire the engine's `control` port; learn and forget on the module page; the binding shown on the bar; saved and reloaded.
@@ -153,7 +150,4 @@ USB devices first, since they need no soldering; the canvas and modules next, si
 
 ## Sources
 
-- [Boss SL-2 at Full Compass](https://www.fullcompass.com/prod/615699-boss-sl-2-bss-compact-slicer-effect-pedal) (specifications: MIDI IN jack, CTL/EXP jack, cables)
-- [Boss SL-2 at Promenade Music](https://www.promenademusic.co.uk/boss-sl2-slicer-pedal)
-- [Boss SL-2 at Flipside Music](https://flipside-music.com/products/boss-sl-2-slicer)
 - Ingen: `reference/upstream/ingen/src/server/Engine.cpp` (control bindings on the root graph's first port), `ControlBindings.cpp`, `mix.cpp` (merging event sequences)

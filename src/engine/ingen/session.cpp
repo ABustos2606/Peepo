@@ -12,10 +12,12 @@
 namespace peepo::ingen {
 namespace {
 const std::string main_path = "ingen:/main";
-// The graph's own audio ports stand for the fixed IN and OUT modules. Seen from
-// inside the graph an engine input is a source, so it is one of IN's outputs.
-struct Endpoint { const char* symbol; InstanceId module; const char* port; };
-constexpr Endpoint endpoints[] = {{"in_l", 1, "out"}, {"in_r", 1, "out_r"}, {"out_l", 2, "in"}, {"out_r", 2, "in_r"}};
+// The graph's own audio and MIDI ports stand for the fixed IN and OUT modules.
+// Seen from inside the graph an engine input is a source, so it is one of IN's
+// outputs. The graph's first two ports, control and notify, are Ingen's own.
+struct Endpoint { const char* symbol; InstanceId module; const char* port; bool midi = false; };
+constexpr Endpoint endpoints[] = {{"in_l", 1, "out"}, {"in_r", 1, "out_r"}, {"out_l", 2, "in"}, {"out_r", 2, "in_r"},
+                                  {"midi_in", 1, "midi", true}, {"midi_out", 2, "midi", true}};
 std::string iri(std::string_view space, std::string_view local) { return std::string(space) + std::string(local); }
 const std::string type = std::string(uri::rdf_type);
 const std::string block_type = iri(uri::ingen, "Block"), arc_type = iri(uri::ingen, "Arc");
@@ -61,9 +63,11 @@ bool file_path(const std::string& path) {
     if (path.empty() || path[0] != '/' || path.size() > 1024 || path.find("/../") != std::string::npos) return false;
     return std::none_of(path.begin(), path.end(), [](char c) { return static_cast<unsigned char>(c) < 0x20 || c == 0x7f; });
 }
-// The control port a plugin takes patch messages on: its atom input.
+// The control port a plugin takes patch messages on: its atom input, one
+// that is not for MIDI when it has both.
 std::string message_port(const ModuleDefinition& d) {
-    for (const auto& p : d.ports) if (p.type == PortType::Midi && p.direction == Direction::Input) return p.symbol;
+    for (const auto kind : {PortType::Atom, PortType::Midi})
+        for (const auto& p : d.ports) if (p.type == kind && p.direction == Direction::Input) return p.symbol;
     return {};
 }
 std::string block(const std::string& plugin, const std::string& name, int x, int y, bool bypassed) {
@@ -467,13 +471,17 @@ void Session::ensure_endpoints() {
         const auto path = child(main_path, endpoint.symbol);
         const bool input = endpoint.module == 1;
         const auto existing = objects_.find(path);
+        const std::string direction = input ? "a lv2:InputPort" : "a lv2:OutputPort";
         if (existing == objects_.end()) {
             if (!creating) creating = &begin(0, Purpose::Endpoints);
             const auto number = sequence();
-            send(*creating, put(number, path, input ? "a lv2:InputPort , lv2:AudioPort" : "a lv2:OutputPort , lv2:AudioPort"), number);
-        } else if (!has(existing->second, type, iri(uri::lv2, "AudioPort")) || !has(existing->second, type, iri(uri::lv2, input ? "InputPort" : "OutputPort"))) {
+            // A MIDI endpoint is a sequence of MIDI events; Ingen gives it a JACK MIDI port.
+            send(*creating, put(number, path, endpoint.midi ? direction + " , atom:AtomPort ;\n\t\tatom:bufferType atom:Sequence ;\n\t\tatom:supports midi:MidiEvent"
+                                                            : direction + " , lv2:AudioPort"), number);
+        } else if (!has(existing->second, type, endpoint.midi ? iri(uri::atom, "AtomPort") : iri(uri::lv2, "AudioPort")) ||
+                   !has(existing->second, type, iri(uri::lv2, input ? "InputPort" : "OutputPort"))) {
             state_ = EngineState::Error;
-            emit(0, false, std::string("Engine port ") + endpoint.symbol + " is not the expected audio endpoint");
+            emit(0, false, std::string("Engine port ") + endpoint.symbol + (endpoint.midi ? " is not the expected MIDI endpoint" : " is not the expected audio endpoint"));
             return;
         }
     }
@@ -563,7 +571,8 @@ void Session::rebuild() {
             const auto direction = input ? Direction::Input : Direction::Output;
             if (is(uri::lv2, "AudioPort")) m.ports.push_back({port.symbol, direction, 1, PortType::Audio, {}});
             else if (is(uri::lv2, "CVPort")) m.ports.push_back({port.symbol, direction, 1, PortType::Cv, {}});
-            else if (is(uri::atom, "AtomPort")) m.ports.push_back({port.symbol, direction, 1, PortType::Midi, {}});
+            else if (is(uri::atom, "AtomPort"))
+                m.ports.push_back({port.symbol, direction, 1, has(*port.properties, iri(uri::atom, "supports"), iri(uri::midi, "MidiEvent")) ? PortType::Midi : PortType::Atom, {}});
             else if (input && is(uri::lv2, "ControlPort")) {
                 // Ranges, units and names come from the catalogue: the engine
                 // sends only the current value, and does not check it.
@@ -911,8 +920,10 @@ std::string Session::plan(const Command& command, Transaction& to) {
             // read, must not leave the emptied graph claiming the previous patch's.
             identify(to, "");
             name_patch(to, "");
-            // A bundle from before tempo was saved plays at the default one.
-            set_tempo(to, default_tempo);
+            // The bundle's own tempo, which it then sets again; one from before
+            // tempo was saved plays at the default.
+            const auto tempo = c.tempo.value_or(default_tempo);
+            set_tempo(to, std::isfinite(tempo) ? std::clamp(tempo, minimum_tempo, maximum_tempo) : default_tempo);
             const auto number = sequence();
             send(to, copy(number, c.location, main_path), number);
             to.next = Transaction::Next::Loaded;
