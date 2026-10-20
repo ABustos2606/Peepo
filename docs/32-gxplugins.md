@@ -7,8 +7,9 @@ four already installed. The existing SVT, SlowGear, CreamMachine and Supersonic
 revisions, URIs and display names are retained.
 
 **19 October update:** the [Patchstorage expansion](35-patchstorage-expansion.md)
-adds 62 more Guitarix identities from its main LV2 collection. Peepo now has
-105 Guitarix identities in total; the 43 recorded on this page are retained.
+originally added 62 more Guitarix identities from its main LV2 collection.
+The [first catalogue purge](36-catalogue-purge.md) retires four of those; Peepo
+now selects 101 Guitarix identities in total. The 43 recorded on this page are retained.
 
 **Scope:** this is the complete **GxPlugins.lv2 extra collection**, not every
 LV2 effect in the wider Guitarix project. The [main Guitarix repository](https://github.com/brummer10/guitarix)
@@ -36,10 +37,10 @@ These are the names shown in Peepo. All 43 are installed and ready to add; see t
 | Plexi | Amp | Plexi power amp simulation. |
 | Power amp (Cream) | Amp | Cream-coloured power amp emulation with bass and treble. |
 | Power amp (Supersonic) | Amp | Vintage American power amp emulation. |
-| Ultra Cab | Amp | Cabinet simulator pedal. |
 | UVox 720k | Amp | Based on Univox 720k keyboard amp from 1978. |
 | VBass Pre Amp | Amp | Simulation of the 1984 Vox Venue Bass 100 Pre Amp section. |
 | Vox MKII | Amp | Based on Vox MKII solid state preamp of the late 60s. |
+| Ultra Cab (built-in) | Cabinet | Cabinet simulator pedal with built-in processing. No impulse response file needed. |
 | Axis Face | Drive | Based on the Axis Face Silicon fuzz. |
 | Baja Tube Driver | Drive | Based on the BaJaTubeDriver. |
 | Boob Tube | Drive | Based on the Boob Tube. |

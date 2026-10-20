@@ -31,6 +31,17 @@ Value editors:
 
 ## Model and IR files (P8.3)
 
+**19 October curation:** new patches use Poly's **Cabinet** and **IR Reverb**
+families, each with Mono, Mono to Stereo and Stereo entries. The alternate
+LV2 Convolution and x42 IR Convolver entries are hidden for older patches.
+The historical implementation table below includes those legacy identities.
+Cabinet uses the short-IR configuration; IR Reverb uses the longer-IR configuration.
+The stereo variant accepts mono or stereo IRs for independent left/right
+processing. Four-channel IRs add the cross-channel paths, ordered LL, LR, RL, RR.
+The two built-in cabinet simulators remain explicitly labelled as built-in
+and do not need IR files. See [catalogue purge](36-catalogue-purge.md).
+
+
 A plugin's file is an LV2 `patch:writable` parameter with an `atom:Path` range. The overlay names it for each module (`"file": {"property", "label", "folder", "extensions"}`):
 
 | Module | Property | Folder |

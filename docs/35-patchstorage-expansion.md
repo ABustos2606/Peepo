@@ -1,17 +1,17 @@
 # Guitarix and Dragonfly expansion
 
-**19 October 2026.** The retained expansion contains four Dragonfly reverbs
-and every Gx publication previously marked missing in the Patchstorage comparison.
-The 63 publications provide **66 plugin identities**, including **62 additional
-Guitarix identities**. With the existing 43 GxPlugins, Peepo has **105 Guitarix identities**.
+**19 October 2026, after the [first catalogue purge](36-catalogue-purge.md).**
+The retained expansion contains three Dragonfly reverbs and 58 additional Guitarix
+identities: **61 plugin identities from 58 publications**. With the existing 43
+GxPlugins, Peepo selects **101 Guitarix identities**.
 
-**Bollie Delay XT and Granulator were removed at the user’s request** after
-listening revealed problems. Both bundles are outside the active LV2 path,
-and neither is selected by the instrument, Windows editor or future builds.
-The selected inventory now contains **357 identities: 335 installed and 282 ready**.
-The current **Clouds guitar** patch and its controls were unchanged; the engine
-and JACK kept running while only the interface restarted.
-See the [removal record](evidence/patchstorage-removal.json).
+Bollie Delay XT and Faust Granulator were removed earlier after listening revealed
+problems ([earlier removal](evidence/patchstorage-removal.json)). The first purge also
+retires Gx Live looper, Ambience, MVerb, Gx Reverb stereo, Gx Room simulator,
+Gx Zita reverb stereo and Dragonfly Early Reflections. The current selection has
+**350 identities, 328 in the Pi export and 272 ready to add**. The current patch
+was unchanged and the engine and JACK kept running; only the UI restarted.
+See the [purge record](evidence/catalogue-purge-20261019.json).
 
 ## Sources and repeatable installation
 
@@ -34,7 +34,7 @@ for these effects, so its new patches target the instrument's controls. PC
 audio builds are tested independently; some build versions expose different
 controls despite sharing an LV2 identity.
 
-The four Dragonfly modules are under Reverb, and the new Guitarix names start
+The three retained Dragonfly modules are under Reverb, and the new Guitarix names start
 with **Gx** to distinguish them from existing effects.
 
 ## Integration fixes
@@ -67,7 +67,7 @@ with **Gx** to distinguish them from existing effects.
 These records describe the original 68-plugin installation, including the two
 subsequently removed effects. Automated checks did not establish satisfactory
 listening behavior for those effects. Current selection and installer checks
-cover the retained 66 identities.
+cover the currently selected identities.
 
 The isolated check runs a separately named JACK dummy server and Ingen at
 48 kHz and 128 frames. The original run checked all 68 identities through Peepo's adapter:
@@ -103,7 +103,7 @@ Results: [PC, 68/68](evidence/patchstorage-amd64.json),
 [Pi, 68/68 plus repeated controls](evidence/patchstorage-arm64.json),
 [46 legacy controls/adapter checks](evidence/patchstorage-legacy-controls.txt),
 [installation and graph preservation](evidence/patchstorage-install.json),
-and [current Pi catalogue after removal](evidence/catalogue-pi-20261019.json).
+and [current Pi catalogue after purge](evidence/catalogue-pi-20261019-purged.json).
 All seven Windows CTest suites passed.
 
 Recovery files are retained at

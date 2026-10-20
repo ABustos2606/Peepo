@@ -2,7 +2,11 @@
 
 **Updated 19 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
 
-**357 plugin identities:** 335 installed in the Pi export and 22 not installed. All **43 GxPlugins** are included.
+**350 plugin identities:** 328 installed in the Pi export and 22 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
+
+**Removed effects:** Bollie Delay XT and Faust Granulator have been removed from Peepo and this inventory. The Granulator - Mono and Granulator - Stereo entries below are separate AVW plugins. [Removal details](35-patchstorage-expansion.md).
+
+**First catalogue purge:** Gx Live looper, Ambience, MVerb, Gx Reverb stereo, Gx Room simulator, Gx Zita reverb stereo and Dragonfly Early Reflections are retired. IR effects now use the Cabinet and IR Reverb families; alternate convolution identities are hidden for older patches. [Purge details](36-catalogue-purge.md).
 
 The tables below list every identity once. IN and OUT are fixed patch endpoints, described separately.
 
@@ -10,13 +14,13 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Ready | 282 | Can be added to a patch. This does not imply a guitar listening test of every module. |
-| Needs adaptation | 10 | Installed, but disabled in Add for the stated limitation. |
+| Ready | 272 | Can be added to a patch. This does not imply a guitar listening test of every module. |
+| Needs adaptation | 7 | Installed, but disabled in Add for the stated limitation. |
 | Unavailable | 40 | Present in the Pi export but unusable by the current host; see each reason. |
-| Hidden | 3 | Omitted from Add as a duplicate or redundant module; retained for saved patches. |
+| Hidden | 9 | Omitted from Add as a duplicate or redundant module; retained for saved patches. |
 | Not installed | 22 | Selected reference identity without an installed implementation. |
 
-**File-based effects:** NAM, Cabinet, IR reverb and LV2 Convolution have file selectors. They need a model or impulse response to process as intended; x42 IR Convolver remains disabled. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).
+**File-based effects:** NAM, Cabinet and IR Reverb have file selectors. Each IR family offers Mono, Mono to Stereo and Stereo configurations. Stereo accepts mono/stereo IRs for separate left/right processing; a four-channel IR adds cross-channel responses. Alternate convolvers remain hidden for older patches. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).
 
 **Reading connections:** counts are plugin connectors before Peepo's mono/stereo routing. CV connectors carry modulation. MIDI/events includes LV2 event/message ports, including file-selection messages; it does not imply implemented musical MIDI routing.
 
@@ -25,14 +29,14 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 | Category | Ready / listed |
 | --- | ---: |
 | [Drive](#drive) | 55 / 55 |
-| [Amp](#amp) | 21 / 21 |
-| [Cabinet](#cabinet) | 4 / 4 |
+| [Amp](#amp) | 20 / 20 |
+| [Cabinet](#cabinet) | 5 / 5 |
 | [Dynamics](#dynamics) | 14 / 14 |
 | [Filter](#filter) | 23 / 24 |
 | [Modulation](#modulation) | 35 / 35 |
 | [Pitch](#pitch) | 8 / 8 |
-| [Delay](#delay) | 17 / 19 |
-| [Reverb](#reverb) | 18 / 21 |
+| [Delay](#delay) | 16 / 18 |
+| [Reverb](#reverb) | 9 / 9 |
 | [Texture](#texture) | 12 / 12 |
 | [Resonator](#resonator) | 2 / 2 |
 | [Sound source](#sound-source) | 5 / 11 |
@@ -122,7 +126,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Plexi (GxPlugins) | Plexi power amp simulation. | audio 1 in / 1 out | Ready |
 | Power amp (Cream) (GxPlugins) | Cream-coloured power amp emulation with bass and treble. | audio 1 in / 1 out | Ready |
 | Power amp (Supersonic) (GxPlugins) | Vintage American power amp emulation. | audio 1 in / 1 out | Ready |
-| Ultra Cab (GxPlugins) | Cabinet simulator pedal. | audio 2 in / 2 out | Ready |
 | UVox 720k (GxPlugins) | Based on Univox 720k keyboard amp from 1978. | audio 1 in / 1 out | Ready |
 | VBass Pre Amp (GxPlugins) | Simulation of the 1984 Vox Venue Bass 100 Pre Amp section. | audio 1 in / 1 out | Ready |
 | Vox MKII (GxPlugins) | Based on Vox MKII solid state preamp of the late 60s. | audio 1 in / 1 out | Ready |
@@ -131,10 +134,11 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
-| Cab Mono | Mono cab sim. Loads a cabinet impulse response. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
-| Cab Mono => Stereo | Cab sim, mono in and stereo out. Loads a cabinet impulse response. | audio 1 in / 2 out; MIDI/events 1 in / 0 out | Ready |
-| Cab Stereo | Stereo cab sim. You normally do not want this. Requires stereo impulse responses. | audio 2 in / 2 out; MIDI/events 1 in / 0 out | Ready |
-| Gx Cabinet | Speaker cabinet simulator with a selection of built-in models. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Ready |
+| Cabinet - Mono | Cabinet from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
+| Cabinet - Mono to Stereo | Cabinet from an impulse response file. Mono input and stereo output; use a stereo IR. | audio 1 in / 2 out; MIDI/events 1 in / 0 out | Ready |
+| Cabinet - Stereo | Cabinet from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses. | audio 2 in / 2 out; MIDI/events 1 in / 0 out | Ready |
+| Gx Cabinet (built-in) | Cabinet simulator with built-in speaker models. No impulse response file needed. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Ready |
+| Ultra Cab (built-in) (GxPlugins) | Cabinet simulator pedal with built-in processing. No impulse response file needed. | audio 2 in / 2 out | Ready |
 
 ## Dynamics
 
@@ -213,10 +217,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | ThruZero | Through-zero flanging. | audio 2 in / 2 out | Ready |
 | Twist Binaural Doppler Panner | Binaural panner, allows positioning in 3D. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Twist Bitmangler | Brutal bitmangler. Warning, can get very loud. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Chebyschev | Chebyshev wave folder for bright, harmonically rich distortion. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Chebyshev | Chebyshev wave folder for bright, harmonically rich distortion. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Twist Comparator | Combines two signals by comparing them, for harsh digital tones. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Twist Delay | A delay where speed and length interact with quality. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist frequency shifter | Shifts every frequency by the same amount, for clangorous and barber-pole effects. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Frequency Shifter | Shifts every frequency by the same amount, for clangorous and barber-pole effects. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Twist Meta | A powerful cross modulation module which applies an algorithm to the two inputs. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Twist Vocoder | Vocoder: shapes the carrier with the spectrum of the modulator. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Twist Wavefolder | Wave folder for complex, buzzy overtones. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
@@ -228,10 +232,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
-| Clouds Stretch | A granular time stretching and pitch shifting module. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | Detune | Small pitch offsets for doubling and thickening. | audio 2 in / 2 out | Ready |
 | Gx Detune | Pitch detuning and octave effects with wet and dry levels. | audio 1 in / 1 out | Ready |
 | Gx OC-2 | Octave-down effect with separate octave and dry levels. | audio 1 in / 1 out | Ready |
+| Mist Stretch | A granular time stretching and pitch shifting module. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | Pitch Shifter | Changes the pitch of the incoming audio. | audio 1 in / 1 out | Ready |
 | RePsycho! | Audio-triggered pitch shifting and sample playback. | audio 2 in / 2 out | Ready |
 | Shepard | Shepard-tone processing for an endlessly rising or falling illusion. | audio 2 in / 2 out | Ready |
@@ -242,8 +246,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
 | Bitcrushed delay | Flexible delay module with bitcrushed repeats. | audio 1 in / 1 out; CV 6 in / 0 out | Needs adaptation: Has crashed the engine; see docs/22-plugin-catalogue.md. |
-| Clouds Beat Repeat | Clocked beat repeat: loops and slices recent audio, with pitch and feedback. | audio 2 in / 2 out; CV 12 in / 0 out | Needs adaptation: Most controls do nothing in this port: its beat-repeat settings are never set (see docs/20-clouds.md). |
-| Clouds Looper | Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
 | Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready |
 | DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready |
@@ -254,10 +256,11 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Gx Duck delay stereo | Stereo delay that reduces the repeats while the input is playing. | audio 2 in / 2 out | Ready |
 | Gx Echo Cat | Echo effect with controls for its repeat character. | audio 1 in / 1 out | Ready |
 | Gx Echo stereo | Stereo echo effect with feedback and level controls. | audio 2 in / 2 out | Ready |
-| Gx Live looper | Four loop tracks with recording, playback, reverse, speed and level controls. Captured audio is not promised to persist with a patch. | audio 1 in / 1 out | Ready |
 | Gx Multiband delay | Applies delay to separate frequency bands. | audio 1 in / 1 out | Ready |
 | Gx Multiband echo | Echo processing with separate frequency bands. | audio 1 in / 1 out | Ready |
 | Gx Tube delay | Tube-style delay effect. | audio 1 in / 1 out | Ready |
+| Mist Beat Repeat | Clocked beat repeat: loops and slices recent audio, with pitch and feedback. | audio 2 in / 2 out; CV 12 in / 0 out | Needs adaptation: Most controls do nothing in this port: its beat-repeat settings are never set (see docs/20-clouds.md, the Mist modules). |
+| Mist Looper | Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | Stereo delay | Stereo echo with independent left/right delay times, feedback and filtering. | audio 2 in / 2 out | Ready |
 | Tempo delay | Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
 
@@ -265,27 +268,15 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
-| Ambience | Adds a small-room reverb around the input. | audio 2 in / 2 out | Ready |
-| Dragonfly Early Reflections | Early room reflections with size, width and filter controls. | audio 2 in / 2 out | Ready |
 | Dragonfly Hall | Hall reverb with early and late reflections, modulation, filters and decay controls. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
 | Dragonfly Plate | Plate reverb with selectable algorithms, damping and decay controls. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
 | Dragonfly Room | Room reverb with separate early and late levels, size, filters and decay controls. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
 | Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready |
-| Gx Reverb stereo | Stereo algorithmic reverb. | audio 2 in / 2 out | Ready |
-| Gx Room simulator | Room ambience simulator. | audio 1 in / 1 out | Ready |
 | Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready |
-| Gx Zita reverb stereo | Stereo Zita reverb. | audio 2 in / 2 out | Ready |
-| IR Convolver Mono | Mono convolution reverb or cab. Loads an impulse response file. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Needs adaptation: Does not load an impulse response in this engine: its worker reports an error (docs/29). |
-| IR Convolver Mono => Stereo | Convolution reverb, mono in and stereo out. Loads an impulse response file. | audio 1 in / 2 out; MIDI/events 1 in / 1 out | Needs adaptation: Does not load an impulse response in this engine: its worker reports an error (docs/29). |
-| IR Convolver Stereo | Stereo convolution reverb. Loads an impulse response file. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Needs adaptation: Does not load an impulse response in this engine: its worker reports an error (docs/29). |
-| IR reverb mono | Mono convolution based reverb. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
-| IR reverb mono to stereo | Convolution reverb, mono in and stereo out. | audio 1 in / 2 out; MIDI/events 1 in / 0 out | Ready |
-| IR reverb stereo | Stereo convolution reverb. | audio 2 in / 2 out; MIDI/events 1 in / 0 out | Ready |
-| LV2 Convolution Mono | Mono convolution reverb. Loads an impulse response file. | audio 1 in / 1 out; MIDI/events 1 in / 1 out | Ready |
-| LV2 Convolution Mono=>Stereo | Convolution reverb, mono in and stereo out. Loads an impulse response file. | audio 1 in / 2 out; MIDI/events 1 in / 1 out | Ready |
-| LV2 Convolution Stereo | Stereo convolution reverb. Loads an impulse response file. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
-| MVerb | Studio-style stereo algorithmic reverb with room size and damping. | audio 2 in / 2 out | Ready |
-| Oliverb | A special effects reverb with pitch-shifted, modulated tails. Hold sustains the tail. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
+| IR Reverb - Mono | IR Reverb from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
+| IR Reverb - Mono to Stereo | IR Reverb from an impulse response file. Mono input and stereo output; use a stereo IR. | audio 1 in / 2 out; MIDI/events 1 in / 0 out | Ready |
+| IR Reverb - Stereo | IR Reverb from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses. | audio 2 in / 2 out; MIDI/events 1 in / 0 out | Ready |
+| Mist Oliverb | A special effects reverb with pitch-shifted, modulated tails. Hold sustains the tail. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 
 ## Texture
 
@@ -295,10 +286,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Beat Repeater - Stereo | Stereo beat repeater: repeats a slice of the last beat while the gate is high. | audio 2 in / 2 out; CV 1 in / 0 out | Ready |
 | Beat Slicer - Mono | Records a few beats and plays back slices of them while the gate is high, optionally reversed. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
 | Beat Slicer - Stereo | Stereo beat slicer: plays back slices of the last few beats while the gate is high. | audio 2 in / 2 out; CV 1 in / 0 out | Ready |
-| Clouds | Granular texture from the live input. Freeze holds the buffer. Blend mixes in the clean input: all of it up to the middle, none at the top. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
-| Clouds Spectral | Spectral processor that blurs, freezes and reshapes the input in the frequency domain. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | Granulator - Mono | Chops the input into short overlapping grains for smeared, cloud-like textures. | audio 1 in / 1 out | Ready |
 | Granulator - Stereo | Stereo granulator: chops the input into overlapping grains for cloud-like textures. | audio 2 in / 2 out | Ready |
+| Mist | Granular texture from the live input. Freeze holds the buffer. Blend mixes in the clean input: all of it up to the middle, none at the top. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
+| Mist Spectral | Spectral processor that blurs, freezes and reshapes the input in the frequency domain. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | Power cut | Simulates turning off a turntable: the sound slows down and stops. | audio 1 in / 1 out | Ready |
 | Reverse (Reflector) | Reverse effect. Try a short fragment length for a weird tremolo. | audio 1 in / 1 out | Ready |
 | Stuck (freeze) | Holds what you are playing when the control level is active, creating a drone. | audio 1 in / 1 out | Ready |
@@ -308,8 +299,8 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
-| Resonator | Resonator simulating multiple vibrating structures: strings, modes and more. | audio 1 in / 2 out; CV 7 in / 0 out | Ready |
-| Resonestor | Dual voice, four part resonator played by the input. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
+| Bell Resonator | Resonator simulating multiple vibrating structures: strings, modes and more. | audio 1 in / 2 out; CV 7 in / 0 out | Ready |
+| Mist Resonestor | Dual voice, four part resonator played by the input. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 
 ## Sound source
 
@@ -321,11 +312,11 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | JX10 | Polyphonic analog-style synthesizer. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Needs adaptation: Played by MIDI notes, which cannot be routed yet. |
 | Noise2 - Audio | Noise source: white, random or pink noise as audio. | audio 0 in / 1 out | Ready |
 | Piano | Acoustic piano instrument. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Needs adaptation: Played by MIDI notes, which cannot be routed yet. |
-| Plaits | A powerful multi-model oscillator voice. | audio 0 in / 2 out; CV 8 in / 0 out | Ready |
 | TestTone | Generates test tones for checking a patch. | audio 2 in / 2 out | Ready |
 | Tracker | Pitch-tracking oscillator played by incoming audio. | audio 2 in / 2 out | Ready |
 | vco2_audio | Oscillator with several wave shapes, tuned by a pitch control signal. | No patchable connectors | Unavailable: This module has no audio or control connectors to patch. |
 | vco2_cv | Oscillator with several wave shapes that sends a control signal. | No patchable connectors | Unavailable: This module has no audio or control connectors to patch. |
+| Weave Oscillator | A powerful multi-model oscillator voice. | audio 0 in / 2 out; CV 8 in / 0 out | Ready |
 
 ## Control
 
@@ -341,14 +332,15 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Clock divider | Outputs a trigger every n triggers. | CV 1 in / 1 out | Ready |
 | CV Source | Four fixed control voltages, each with coarse and fine knobs. | CV 0 in / 4 out | Ready |
 | CV to trigger | A Schmitt trigger that converts a control signal to on and off triggers. | CV 1 in / 1 out | Ready |
+| Dice Random Sampler | Powerful repeatable randomness source: random gates and control signals. | CV 9 in / 7 out | Ready |
 | Envelope | ADSR envelope generator with delay and hold stages. Takes in a gate. | CV 2 in / 2 out | Ready |
 | Envelope follower | Tracks an input signal and converts it into a control signal. | audio 1 in / 1 out; CV 0 in / 1 out | Ready |
 | Euclidean | A euclidean sequencer with 4 tracks. Connect a trigger to go to the next step. | CV 3 in / 8 out | Ready |
+| Flow Envelope | A powerful envelope and LFO generator with four related outputs. | CV 8 in / 4 out | Ready |
 | Foot switch | A stomp as a control signal: On value while it is down, Off value otherwise. Latching flips it on each press instead. | CV 0 in / 1 out | Ready |
-| Grids | Drum trigger explorer for kick, snare and hi-hat. Expects a 4 ppq clock if using external clock. | CV 10 in / 6 out | Ready |
+| Lattice Drum Sequencer | Drum trigger explorer for kick, snare and hi-hat. Expects a 4 ppq clock if using external clock. | CV 10 in / 6 out | Ready |
 | LFO - Freq | Low frequency oscillator with several wave shapes, set by rate. Sends a control signal. | CV 1 in / 1 out | Ready |
 | LFO - Tempo | Low frequency oscillator synced to a tempo, with several wave shapes. Sends a control signal. | CV 1 in / 1 out | Ready |
-| Marbles | Powerful repeatable randomness source: random gates and control signals. | CV 9 in / 7 out | Ready |
 | MIDI clock in | Follows incoming MIDI clock: tempo, start and pulse outputs. | CV 0 in / 3 out; MIDI/events 1 in / 0 out | Ready |
 | Noise2 - CV | Random control signal: noise or stepped random values at a set rate. | CV 0 in / 1 out | Ready |
 | Percussive Envelope | Short attack decay envelope for plucks and hits. Takes in a gate. | CV 1 in / 2 out | Ready |
@@ -357,7 +349,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Retriggerable DAHDSR Envelope | A delay attack hold decay sustain release envelope generator. Can be retriggered. | CV 2 in / 1 out | Ready |
 | Sample&Hold | Samples a control value when a trigger arrives and holds it until the next one. | CV 2 in / 2 out | Ready |
 | Strum | MIDI and volt per octave controller based on strumming. | CV 0 in / 2 out; MIDI/events 0 in / 1 out | Ready |
-| Tides | A powerful envelope and LFO generator with four related outputs. | CV 8 in / 4 out | Ready |
 | Toggle | Toggles the output value on every trigger. | CV 1 in / 1 out | Ready |
 | Trigger to gate | Takes in a trigger and outputs a gate with a length related to the tempo. | CV 2 in / 1 out | Ready |
 
@@ -448,6 +439,12 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Module | Category | Why it is hidden | Plugin identity |
 | --- | --- | --- | --- |
 | Boost | Drive | Redundant clean boost; use Gain. | `http://polyeffects.com/lv2/basic_modular#boost` |
+| IR Convolver Mono | Reverb | Legacy convolution identity; use Cabinet or IR Reverb for new patches. | `http://gareus.org/oss/lv2/zeroconvolv#CfgMono` |
+| IR Convolver Mono => Stereo | Reverb | Legacy convolution identity; use Cabinet or IR Reverb for new patches. | `http://gareus.org/oss/lv2/zeroconvolv#CfgMonoToStereo` |
+| IR Convolver Stereo | Reverb | Legacy convolution identity; use Cabinet or IR Reverb for new patches. | `http://gareus.org/oss/lv2/zeroconvolv#CfgStereo` |
+| LV2 Convolution Mono | Reverb | Legacy convolution identity; use Cabinet or IR Reverb for new patches. | `http://gareus.org/oss/lv2/convoLV2#Mono` |
+| LV2 Convolution Mono=>Stereo | Reverb | Legacy convolution identity; use Cabinet or IR Reverb for new patches. | `http://gareus.org/oss/lv2/convoLV2#MonoToStereo` |
+| LV2 Convolution Stereo | Reverb | Legacy convolution identity; use Cabinet or IR Reverb for new patches. | `http://gareus.org/oss/lv2/convoLV2#Stereo` |
 | Tuner | Utility | Duplicate tuner; use Tuner. | `http://gareus.org/oss/lv2/tuna#one` |
 | Tuner | Utility | Duplicate tuner; use Tuner. | `http://gareus.org/oss/lv2/tuna#two` |
 
@@ -489,7 +486,7 @@ These are reference identities, not available effects. The installed Foot switch
 
 ## Source and updates
 
-Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261019.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
+Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261019-purged.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
 
 The older [compatibility matrix](evidence/compatibility-matrix.md) is a historical test record. [GxPlugins results](32-gxplugins.md) supplement it. Availability in this list follows the recorded Pi export and current overlay, not the historical PC matrix.
 

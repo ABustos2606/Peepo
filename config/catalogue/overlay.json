@@ -9,43 +9,42 @@
       {"symbol": "freeze_param", "kind": "toggle", "default": 0},
       {"symbol": "reverse_param", "kind": "toggle", "default": 0}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#granular", "name": "Clouds", "description": "Granular texture from the live input. Freeze holds the buffer. Blend mixes in the clean input: all of it up to the middle, none at the top.", "parameters": [
+    {"uri": "http://polyeffects.com/lv2/polyclouds#granular", "name": "Mist", "description": "Granular texture from the live input. Freeze holds the buffer. Blend mixes in the clean input: all of it up to the middle, none at the top.", "parameters": [
       {"symbol": "position_param"}, {"symbol": "size_param"}, {"symbol": "density_param"}, {"symbol": "texture_param"},
       {"symbol": "pitch_param"}, {"symbol": "blend_param"}, {"symbol": "output_param", "name": "Output"}, {"symbol": "freeze_param"}, {"symbol": "reverse_param"}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#stretch", "name": "Clouds Stretch", "category": "Pitch", "description": "A granular time stretching and pitch shifting module.", "parameters": [
+    {"uri": "http://polyeffects.com/lv2/polyclouds#stretch", "name": "Mist Stretch", "category": "Pitch", "description": "A granular time stretching and pitch shifting module.", "parameters": [
       {"symbol": "position_param"}, {"symbol": "size_param"}, {"symbol": "pitch_param"}, {"symbol": "blend_param"}, {"symbol": "output_param", "name": "Output"},
       {"symbol": "density_param", "name": "Diffusion"}, {"symbol": "texture_param", "name": "Filter"}, {"symbol": "freeze_param"}, {"symbol": "reverse_param"}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#looping_delay", "name": "Clouds Looper", "category": "Delay", "description": "Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer.", "parameters": [
+    {"uri": "http://polyeffects.com/lv2/polyclouds#looping_delay", "name": "Mist Looper", "category": "Delay", "description": "Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer.", "parameters": [
       {"symbol": "position_param", "name": "Tape length"}, {"symbol": "size_param", "name": "Pitch window"}, {"symbol": "pitch_param"}, {"symbol": "blend_param"}, {"symbol": "output_param", "name": "Output"},
       {"symbol": "density_param", "name": "Diffusion"}, {"symbol": "texture_param", "name": "Filter"}, {"symbol": "freeze_param", "name": "Loop"}, {"symbol": "reverse_param"}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#spectral", "name": "Clouds Spectral", "description": "Spectral processor that blurs, freezes and reshapes the input in the frequency domain.", "parameters": [
+    {"uri": "http://polyeffects.com/lv2/polyclouds#spectral", "name": "Mist Spectral", "description": "Spectral processor that blurs, freezes and reshapes the input in the frequency domain.", "parameters": [
       {"symbol": "position_param"}, {"symbol": "size_param", "name": "Warp"}, {"symbol": "density_param", "name": "Refresh"}, {"symbol": "texture_param", "name": "Quantize"},
       {"symbol": "pitch_param"}, {"symbol": "blend_param"}, {"symbol": "output_param", "name": "Output"}, {"symbol": "freeze_param"}, {"symbol": "reverse_param"}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#oliverb", "name": "Oliverb", "category": "Reverb", "description": "A special effects reverb with pitch-shifted, modulated tails. Hold sustains the tail.", "parameters": [
+    {"uri": "http://polyeffects.com/lv2/polyclouds#oliverb", "name": "Mist Oliverb", "category": "Reverb", "description": "A special effects reverb with pitch-shifted, modulated tails. Hold sustains the tail.", "parameters": [
       {"symbol": "position_param", "name": "Pre-delay"}, {"symbol": "size_param"}, {"symbol": "density_param", "name": "Decay"}, {"symbol": "texture_param", "name": "Damp"},
       {"symbol": "pitch_param"}, {"symbol": "blend_param"}, {"symbol": "output_param", "name": "Output"}, {"symbol": "freeze_param", "name": "Hold"}, {"symbol": "spread_param", "name": "Diffusion"},
       {"symbol": "feedback_param", "name": "Mod speed"}, {"symbol": "reverb_param", "name": "Mod amount"}, {"symbol": "reverse_param"}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#resonestor", "name": "Resonestor", "category": "Resonator", "description": "Dual voice, four part resonator played by the input.", "parameters": [
+    {"uri": "http://polyeffects.com/lv2/polyclouds#resonestor", "name": "Mist Resonestor", "category": "Resonator", "description": "Dual voice, four part resonator played by the input.", "parameters": [
       {"symbol": "position_param", "name": "Timbre"}, {"symbol": "size_param", "name": "Chord"}, {"symbol": "density_param", "name": "Decay"}, {"symbol": "texture_param", "name": "Filter"},
       {"symbol": "pitch_param"}, {"symbol": "feedback_param", "name": "Harmonics"}, {"symbol": "reverb_param", "name": "Scatter"}, {"symbol": "freeze_param", "name": "Switch voice"},
       {"symbol": "spread_param"}, {"symbol": "blend_param", "name": "Random mod"}, {"symbol": "output_param", "name": "Output"}, {"symbol": "reverse_param"}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#beat_repeat", "name": "Clouds Beat Repeat", "category": "Delay", "description": "Clocked beat repeat: loops and slices recent audio, with pitch and feedback."},
+    {"uri": "http://polyeffects.com/lv2/polyclouds#beat_repeat", "name": "Mist Beat Repeat", "category": "Delay", "description": "Clocked beat repeat: loops and slices recent audio, with pitch and feedback."},
     {"match": "polywarps", "category": "Modulation"},
     {"match": "polyplaits", "category": "Sound source"},
     {"match": "polyrings", "category": "Resonator"},
-    {"uri": "http://polyeffects.com/lv2/polyrings", "name": "Resonator", "description": "Resonator simulating multiple vibrating structures: strings, modes and more."},
-    {"uri": "http://polyeffects.com/lv2/polyplaits", "name": "Plaits", "description": "A powerful multi-model oscillator voice."},
-    {"uri": "http://polyeffects.com/lv2/polygrids", "name": "Grids", "category": "Control", "description": "Drum trigger explorer for kick, snare and hi-hat. Expects a 4 ppq clock if using external clock."},
-    {"uri": "http://polyeffects.com/lv2/polymarbles", "name": "Marbles", "category": "Control", "description": "Powerful repeatable randomness source: random gates and control signals."},
-    {"uri": "http://polyeffects.com/lv2/polytides", "name": "Tides", "category": "Control", "description": "A powerful envelope and LFO generator with four related outputs."},
+    {"uri": "http://polyeffects.com/lv2/polyrings", "name": "Bell Resonator", "description": "Resonator simulating multiple vibrating structures: strings, modes and more."},
+    {"uri": "http://polyeffects.com/lv2/polyplaits", "name": "Weave Oscillator", "description": "A powerful multi-model oscillator voice."},
+    {"uri": "http://polyeffects.com/lv2/polygrids", "name": "Lattice Drum Sequencer", "category": "Control", "description": "Drum trigger explorer for kick, snare and hi-hat. Expects a 4 ppq clock if using external clock."},
+    {"uri": "http://polyeffects.com/lv2/polymarbles", "name": "Dice Random Sampler", "category": "Control", "description": "Powerful repeatable randomness source: random gates and control signals."},
+    {"uri": "http://polyeffects.com/lv2/polytides", "name": "Flow Envelope", "category": "Control", "description": "A powerful envelope and LFO generator with four related outputs."},
     {"match": "drobilla.net/plugins/mda/", "strip_prefix": "MDA "},
-    {"uri": "http://drobilla.net/plugins/mda/Ambience", "category": "Reverb", "description": "Adds a small-room reverb around the input."},
     {"uri": "http://drobilla.net/plugins/mda/Bandisto", "category": "Drive", "description": "Distortion with separate low, middle and high bands."},
     {"uri": "http://drobilla.net/plugins/mda/BeatBox", "category": "Sound source", "description": "Triggers synthesized drum sounds from incoming audio."},
     {"uri": "http://drobilla.net/plugins/mda/Combo", "category": "Amp", "description": "A conventional guitar amp and speaker simulation; no model file needed."},
@@ -165,12 +164,12 @@
     {"uri": "http://polyeffects.com/lv2/polyconvo#CabMonoToStereo", "description": "Cab sim, mono in and stereo out. Loads a cabinet impulse response."},
     {"uri": "http://polyeffects.com/lv2/polyconvo#CabStereo", "description": "Stereo cab sim. You normally do not want this. Requires stereo impulse responses."},
     {"uri": "http://polyeffects.com/lv2/polywarps#bitcrusher", "description": "Brutal bitmangler. Warning, can get very loud."},
-    {"uri": "http://polyeffects.com/lv2/polywarps#chebyschev", "description": "Chebyshev wave folder for bright, harmonically rich distortion."},
+    {"uri": "http://polyeffects.com/lv2/polywarps#chebyschev", "name": "Twist Chebyshev", "description": "Chebyshev wave folder for bright, harmonically rich distortion."},
     {"uri": "http://polyeffects.com/lv2/polywarps#comparator", "description": "Combines two signals by comparing them, for harsh digital tones."},
     {"uri": "http://polyeffects.com/lv2/polywarps#delay", "description": "A delay where speed and length interact with quality."},
     {"uri": "http://polyeffects.com/lv2/polywarps#doppler", "description": "Binaural panner, allows positioning in 3D."},
     {"uri": "http://polyeffects.com/lv2/polywarps#fold", "description": "Wave folder for complex, buzzy overtones."},
-    {"uri": "http://polyeffects.com/lv2/polywarps#frequency_shifter", "description": "Shifts every frequency by the same amount, for clangorous and barber-pole effects."},
+    {"uri": "http://polyeffects.com/lv2/polywarps#frequency_shifter", "name": "Twist Frequency Shifter", "description": "Shifts every frequency by the same amount, for clangorous and barber-pole effects."},
     {"uri": "http://polyeffects.com/lv2/polywarps#meta", "description": "A powerful cross modulation module which applies an algorithm to the two inputs."},
     {"uri": "http://polyeffects.com/lv2/polywarps#vocoder", "description": "Vocoder: shapes the carrier with the spectrum of the modulator."},
     {"uri": "http://polyeffects.com/lv2/step_sequencer", "description": "16 step sequencer that takes in a trigger for next or previous."},
@@ -254,7 +253,6 @@
     {"uri": "http://drobilla.net/plugins/mda/Splitter", "description": "Splits the signal by frequency or level, to treat lows and highs or loud and quiet parts apart."},
     {"uri": "http://drobilla.net/plugins/mda/Stereo", "description": "Turns a mono signal into a wide stereo image with a short delay."},
     {"uri": "http://calf.sourceforge.net/plugins/Vinyl", "name": "Vinyl", "category": "Texture", "description": "Emulates dirty old lo-fi vinyl records: crackle, hum, wow and flutter."},
-    {"uri": "http://distrho.sf.net/plugins/MVerb", "category": "Reverb", "description": "Studio-style stereo algorithmic reverb with room size and damping."},
     {"match": "gareus.org/oss/lv2/b_whirl#", "category": "Modulation"},
     {"uri": "http://gareus.org/oss/lv2/b_whirl#simple", "name": "Rotary speaker", "description": "A rotating loudspeaker using physical modelling."},
     {"uri": "http://gareus.org/oss/lv2/b_whirl#extended", "name": "Rotary speaker (full)", "description": "A rotating loudspeaker using physical modelling. Same sound, more controls."},
@@ -362,7 +360,7 @@
     {"uri": "http://moddevices.com/plugins/tap/pitch", "category": "Pitch", "description": "Changes the pitch of the incoming audio."},
     {"uri": "http://moddevices.com/plugins/tap/sigmoid", "category": "Drive", "description": "Soft saturation and boost."},
     {"uri": "http://moddevices.com/plugins/mod-devel/mod-cv-meter", "description": "Simple CV meter that shows instant values with no smoothing."},
-    {"match": "polyclouds#beat_repeat", "availability": "untested", "reason": "Most controls do nothing in this port: its beat-repeat settings are never set (see docs/20-clouds.md)."},
+    {"match": "polyclouds#beat_repeat", "availability": "untested", "reason": "Most controls do nothing in this port: its beat-repeat settings are never set (see docs/20-clouds.md, the Mist modules)."},
     {"match": "polyeffects.com/lv2/polyconvo#", "file": {"property": "http://polyeffects.com/lv2/polyconvo#ir", "label": "Impulse response", "folder": "ir/reverb", "extensions": ["wav", "flac"]}},
     {"match": "polyeffects.com/lv2/polyconvo#Cab", "file": {"property": "http://polyeffects.com/lv2/polyconvo#ir", "label": "Cabinet", "folder": "ir/cab", "extensions": ["wav", "flac"]}},
     {"match": "gareus.org/oss/lv2/convoLV2#", "file": {"property": "http://gareus.org/oss/lv2/convoLV2#impulse", "label": "Impulse response", "folder": "ir/reverb", "extensions": ["wav", "flac"]}},
@@ -379,10 +377,8 @@
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/vcaexp_audio", "output": "outputLevel"},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/vcalin_audio", "output": "outputLevel"},
     {"uri": "http://calf.sourceforge.net/plugins/Vinyl", "output": "level_out"},
-    {"uri": "http://distrho.sf.net/plugins/MVerb", "output": "gain"},
     {"uri": "http://polyeffects.com/lv2/digit_delay", "output": "Amp_5"},
     {"uri": "http://drobilla.net/plugins/fomp/mvclpf1", "output": "out_gain"},
-    {"uri": "http://drobilla.net/plugins/mda/Ambience", "output": "output"},
     {"uri": "http://drobilla.net/plugins/mda/Combo", "output": "output"},
     {"uri": "http://drobilla.net/plugins/mda/Degrade", "output": "output"},
     {"uri": "http://drobilla.net/plugins/mda/Delay", "output": "output"},
@@ -478,7 +474,6 @@
       {"name": "X modes", "parameters": ["x_mode_param", "x_range_param", "x_deja_vu_param", "x_clock_source_internal"]},
       {"name": "Y voltages", "parameters": ["y_spread_param", "y_bias_param", "y_steps_param", "y_divider"]}
     ]},
-    {"uri": "urn:dragonfly:early", "name": "Dragonfly Early Reflections", "category": "Reverb", "description": "Early room reflections with size, width and filter controls."},
     {"uri": "https://github.com/michaelwillis/dragonfly-reverb", "name": "Dragonfly Hall", "category": "Reverb", "description": "Hall reverb with early and late reflections, modulation, filters and decay controls."},
     {"uri": "urn:dragonfly:plate", "name": "Dragonfly Plate", "category": "Reverb", "description": "Plate reverb with selectable algorithms, damping and decay controls."},
     {"uri": "urn:dragonfly:room", "name": "Dragonfly Room", "category": "Reverb", "description": "Room reverb with separate early and late levels, size, filters and decay controls."},
@@ -516,7 +511,6 @@
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_", "name": "Gx Hornet", "category": "Drive", "description": "Guitarix Hornet distortion effect."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_#_jcm800pre_", "name": "Gx JCM800 preamp", "category": "Amp", "description": "JCM800-style guitar preamp."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_jcm800pre_st#_jcm800pre_st", "name": "Gx JCM800 preamp stereo", "category": "Amp", "description": "Stereo JCM800-style guitar preamp."},
-    {"uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_", "name": "Gx Live looper", "category": "Delay", "description": "Four loop tracks with recording, playback, reverse, speed and level controls. Captured audio is not promised to persist with a patch."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_", "name": "Gx Mole", "category": "Drive", "description": "Low-frequency booster for adding weight to the signal."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_muff_#_muff_", "name": "Gx Muff", "category": "Drive", "description": "Muff-style fuzz distortion."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_", "name": "Gx Multiband compressor", "category": "Dynamics", "description": "Compresses separate frequency bands."},
@@ -527,8 +521,6 @@
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_oc_2_#_oc_2_", "name": "Gx OC-2", "category": "Pitch", "description": "Octave-down effect with separate octave and dry levels."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser", "name": "Gx Phaser", "category": "Modulation", "description": "Sweeping phase-shift effect."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_rangem_#_rangem_", "name": "Gx Rangemaster", "category": "Drive", "description": "Rangemaster-style treble booster."},
-    {"uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo", "name": "Gx Reverb stereo", "category": "Reverb", "description": "Stereo algorithmic reverb."},
-    {"uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_", "name": "Gx Room simulator", "category": "Reverb", "description": "Room ambience simulator."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_", "name": "Gx Screaming Bird", "category": "Drive", "description": "Treble booster for bright, cutting tones."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_", "name": "Gx Shimmizita", "category": "Reverb", "description": "Shimmer reverb combining pitch shifting and a reverb tail."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_", "name": "Gx Sustainer", "category": "Dynamics", "description": "Controls level to extend sustain."},
@@ -543,6 +535,22 @@
     {"uri": "http://guitarix.sourceforge.net/plugins/gxautowah#wah", "name": "Gx Wah", "category": "Filter", "description": "Wah filter with a manual sweep control."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gxautowah#autowah", "name": "Gx Auto wah", "category": "Filter", "description": "Automatic wah filtering driven by the input signal."},
     {"uri": "http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_", "name": "Gx Wahwah", "category": "Filter", "description": "Wah filter with a sweep control."},
-    {"uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo", "name": "Gx Zita reverb stereo", "category": "Reverb", "description": "Stereo Zita reverb."}
+    {"uri": "http://distrho.sf.net/plugins/MVerb", "hidden": true, "reason": "Retired from the curated catalogue; kept hidden if an older export still includes it."},
+    {"uri": "http://drobilla.net/plugins/mda/Ambience", "hidden": true, "reason": "Retired from the curated catalogue; kept hidden if an older export still includes it."},
+    {"uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_", "hidden": true, "reason": "Retired from the curated catalogue; kept hidden if an older export still includes it."},
+    {"uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo", "hidden": true, "reason": "Retired from the curated catalogue; kept hidden if an older export still includes it."},
+    {"uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_", "hidden": true, "reason": "Retired from the curated catalogue; kept hidden if an older export still includes it."},
+    {"uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo", "hidden": true, "reason": "Retired from the curated catalogue; kept hidden if an older export still includes it."},
+    {"uri": "urn:dragonfly:early", "hidden": true, "reason": "Retired from the curated catalogue; kept hidden if an older export still includes it."},
+    {"match": "http://gareus.org/oss/lv2/convoLV2#", "hidden": true, "reason": "Legacy convolution identity; use Cabinet or IR Reverb for new patches."},
+    {"match": "http://gareus.org/oss/lv2/zeroconvolv#", "hidden": true, "reason": "Legacy convolution identity; use Cabinet or IR Reverb for new patches."},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#CabMono", "name": "Cabinet - Mono", "category": "Cabinet", "description": "Cabinet from an impulse response file. Mono input and output; use a mono IR."},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#CabMonoToStereo", "name": "Cabinet - Mono to Stereo", "category": "Cabinet", "description": "Cabinet from an impulse response file. Mono input and stereo output; use a stereo IR."},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#CabStereo", "name": "Cabinet - Stereo", "category": "Cabinet", "description": "Cabinet from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses."},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#Mono", "name": "IR Reverb - Mono", "category": "Reverb", "description": "IR Reverb from an impulse response file. Mono input and output; use a mono IR."},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#MonoToStereo", "name": "IR Reverb - Mono to Stereo", "category": "Reverb", "description": "IR Reverb from an impulse response file. Mono input and stereo output; use a stereo IR."},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#Stereo", "name": "IR Reverb - Stereo", "category": "Reverb", "description": "IR Reverb from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses."},
+    {"uri": "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET", "name": "Gx Cabinet (built-in)", "category": "Cabinet", "description": "Cabinet simulator with built-in speaker models. No impulse response file needed."},
+    {"uri": "http://guitarix.sourceforge.net/plugins/gx_ultracab_#_ultracab_", "name": "Ultra Cab (built-in)", "category": "Cabinet", "description": "Cabinet simulator pedal with built-in processing. No impulse response file needed."}
   ]
 }

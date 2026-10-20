@@ -18,6 +18,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "docs", "lv2-plugin-comparison-data.json")
 GX = os.path.join(ROOT, "config", "catalogue", "gxplugins.json")
 PATCHSTORAGE = os.path.join(ROOT, "config", "catalogue", "patchstorage.json")
+RETIRED = os.path.join(ROOT, "config", "catalogue", "retired.json")
 OUT = os.path.join(ROOT, "config", "catalogue", "inventory.txt")
 
 MDA = ["Ambience", "Bandisto", "BeatBox", "Combo", "DX10", "DeEss", "Degrade", "Delay", "Detune", "Dither", "DubDelay",
@@ -32,6 +33,7 @@ EXAMPLES = ["eg-amp", "eg-fifths", "eg-metro", "eg-midigate", "eg-params", "eg-s
 
 def main():
     data = json.load(open(DATA))
+    retired = {p["uri"] for p in json.load(open(RETIRED, encoding="utf-8"))["modules"]}
     sources = {}
     for plugin in data["poly_plugins"]:
         sources[plugin["uri"]] = sorted({s["repo"] for s in plugin["sources"]})
@@ -64,6 +66,8 @@ def main():
     existing = {line.split("  #", 1)[0] for line in lines if line and not line.startswith("#")}
     expansion = json.load(open(PATCHSTORAGE, encoding="utf-8"))
     lines += [uri for uri in sorted({p["uri"] for e in expansion["entries"] for p in e["plugins"]}) if uri not in existing]
+    # Reference maps remain historical evidence; retirement is our selection.
+    lines = [line for line in lines if line.split("  #", 1)[0] not in retired]
     with open(OUT, "w", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
     count = sum(1 for line in lines if line and not line.startswith("#"))

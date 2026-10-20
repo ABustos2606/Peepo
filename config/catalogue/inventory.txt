@@ -149,7 +149,6 @@ http://gareus.org/oss/lv2/tuna#two
 
 # Beebo map only, no public Poly source
 http://calf.sourceforge.net/plugins/Vinyl  # Beebo: vinyl
-http://distrho.sf.net/plugins/MVerb  # Beebo: basic_reverb
 http://drobilla.net/plugins/blop/adsr  # Beebo: adsr
 http://drobilla.net/plugins/blop/dahdsr  # Beebo: dahdsr
 http://drobilla.net/plugins/blop/product  # Beebo: attenuverter
@@ -280,7 +279,6 @@ http://guitarix.sourceforge.net/plugins/gx_vmk2d_#_vmk2d_
 http://guitarix.sourceforge.net/plugins/gx_voodoo_#_voodoo_
 
 # Development: MDA effects (also packaged for MODEP) and the LV2 examples the tests use
-http://drobilla.net/plugins/mda/Ambience
 http://drobilla.net/plugins/mda/Bandisto
 http://drobilla.net/plugins/mda/BeatBox
 http://drobilla.net/plugins/mda/Combo
@@ -352,7 +350,6 @@ http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_
 http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_
 http://guitarix.sourceforge.net/plugins/gx_jcm800pre_#_jcm800pre_
 http://guitarix.sourceforge.net/plugins/gx_jcm800pre_st#_jcm800pre_st
-http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_
 http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_
 http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_
 http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_
@@ -366,8 +363,6 @@ http://guitarix.sourceforge.net/plugins/gx_rangem_#_rangem_
 http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump
 http://guitarix.sourceforge.net/plugins/gx_redeye#chump
 http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump
-http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo
-http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_
 http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_
 http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_
 http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre
@@ -376,7 +371,6 @@ http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_
 http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_
 http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah
 http://guitarix.sourceforge.net/plugins/gx_tremolo#_tremolo
-http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo
 http://guitarix.sourceforge.net/plugins/gxautowah#autowah
 http://guitarix.sourceforge.net/plugins/gxautowah#wah
 http://guitarix.sourceforge.net/plugins/gxbooster#booster
@@ -387,6 +381,5 @@ http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay
 http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo
 http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato
 https://github.com/michaelwillis/dragonfly-reverb
-urn:dragonfly:early
 urn:dragonfly:plate
 urn:dragonfly:room

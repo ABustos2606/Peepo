@@ -1,0 +1,49 @@
+{
+  "format": "peepo-retired-modules",
+  "version": 1,
+  "date": "2026-10-19",
+  "modules": [
+    {
+      "uri": "http://distrho.sf.net/plugins/MVerb",
+      "name": "MVerb",
+      "bundle": "lib/lv2/MVerb.lv2",
+      "reason": "First catalogue purge requested by the user."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/Ambience",
+      "name": "MDA Ambience",
+      "bundle": null,
+      "reason": "First catalogue purge requested by the user."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_",
+      "name": "Gxlivelooper",
+      "bundle": "lib/lv2/gx_livelooper.lv2",
+      "reason": "First catalogue purge requested by the user."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo",
+      "name": "GxReverb-Stereo",
+      "bundle": "lib/lv2/gx_reverb.lv2",
+      "reason": "First catalogue purge requested by the user."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_",
+      "name": "Gxroom_simulator",
+      "bundle": "lib/lv2/gx_room_simulator.lv2",
+      "reason": "First catalogue purge requested by the user."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo",
+      "name": "GxZita_rev1-Stereo",
+      "bundle": "lib/lv2/gx_zita_rev1.lv2",
+      "reason": "First catalogue purge requested by the user."
+    },
+    {
+      "uri": "urn:dragonfly:early",
+      "name": "Dragonfly Early Reflections",
+      "bundle": "lib/lv2/DragonflyEarlyReflections.lv2",
+      "reason": "First catalogue purge requested by the user."
+    }
+  ]
+}

@@ -21,7 +21,7 @@ const std::vector<ModuleDefinition>& demo_catalogue() {
          {{"drive", "Drive", "%", ParameterKind::Continuous, 0, 100, 32},
           {"tone", "Tone", "Hz", ParameterKind::Continuous, 200, 8000, 2400, true},
           {"level", "Level", "dB", ParameterKind::Continuous, -24, 12, -3}}},
-        {"urn:peepo:demo:clouds", "Clouds", "Texture", "Granular texture playground", 0xbfa1ed,
+        {"urn:peepo:demo:clouds", "Mist Demo", "Texture", "Granular texture playground", 0xbfa1ed,
          {{"in", Direction::Input}, {"in_r", Direction::Input}, {"out", Direction::Output}, {"out_r", Direction::Output}},
          {{"position", "Position", "%", ParameterKind::Continuous, 0, 100, 45},
           {"size", "Size", "ms", ParameterKind::Continuous, 10, 1000, 180, true},

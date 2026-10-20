@@ -57,6 +57,8 @@ def present(module, rules):
                 module[key] = rule[key]
         if "hidden" in rule:
             module["hidden"] = rule["hidden"]
+            if rule.get("reason"):
+                module["reason"] = rule["reason"]
         if "availability" in rule and RANK[rule["availability"]] > RANK[module["availability"]]:
             module["availability"] = rule["availability"]
             module["reason"] = rule.get("reason", "")
@@ -80,7 +82,7 @@ def connections(module):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--catalogue", type=Path, default=ROOT / "docs/evidence/catalogue-pi-20261019.json")
+    parser.add_argument("--catalogue", type=Path, default=ROOT / "docs/evidence/catalogue-pi-20261019-purged.json")
     parser.add_argument("--date", default="2026-10-19")
     args = parser.parse_args()
     recorded = date.fromisoformat(args.date).strftime("%d %B %Y").lstrip("0")
@@ -101,13 +103,19 @@ def main():
     gx_uris = {p["uri"] for p in gx}
     assert len(gx_uris) == 43 and gx_uris <= set(installed)
     assert all(state(installed[uri]) == "Ready" for uri in gx_uris)
+    expansion = read_json(ROOT / "config/catalogue/patchstorage.json")["entries"]
+    all_gx_uris = gx_uris | {p["uri"] for entry in expansion for p in entry["plugins"]
+                            if p["uri"].startswith("http://guitarix.sourceforge.net/plugins/")}
+    assert all(uri in installed and state(installed[uri]) == "Ready" for uri in all_gx_uris)
     technical = {p["uri"]: p for p in read_json(ROOT / "docs/evidence/compatibility.json")["entries"]}
     reference = read_json(ROOT / "docs/lv2-plugin-comparison-data.json")
     source_names = {p["uri"]: p["name"] for p in reference["poly_plugins"]}
     mappings = {p["uri"]: p for p in reference["beebo_mappings"]}
     snapshot = args.catalogue.resolve().relative_to(ROOT / "docs").as_posix()
     lines = ["# Complete module list", "", f"**Updated {recorded}.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.", "",
-             f"**{len(inventory)} plugin identities:** {len(installed)} installed in the Pi export and {len(missing)} not installed. All **43 GxPlugins** are included.", "",
+             f"**{len(inventory)} plugin identities:** {len(installed)} installed in the Pi export and {len(missing)} not installed. All **{len(all_gx_uris)} selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.", "",
+             "**Removed effects:** Bollie Delay XT and Faust Granulator have been removed from Peepo and this inventory. The Granulator - Mono and Granulator - Stereo entries below are separate AVW plugins. [Removal details](35-patchstorage-expansion.md).", "",
+             "**First catalogue purge:** Gx Live looper, Ambience, MVerb, Gx Reverb stereo, Gx Room simulator, Gx Zita reverb stereo and Dragonfly Early Reflections are retired. IR effects now use the Cabinet and IR Reverb families; alternate convolution identities are hidden for older patches. [Purge details](36-catalogue-purge.md).", "",
              "The tables below list every identity once. IN and OUT are fixed patch endpoints, described separately.", "",
              "## Availability", "", "| Status | Count | Meaning |", "| --- | ---: | --- |",
              f"| Ready | {counts['Ready']} | Can be added to a patch. This does not imply a guitar listening test of every module. |",
@@ -115,7 +123,7 @@ def main():
              f"| Unavailable | {counts['Unavailable']} | Present in the Pi export but unusable by the current host; see each reason. |",
              f"| Hidden | {len(hidden)} | Omitted from Add as a duplicate or redundant module; retained for saved patches. |",
              f"| Not installed | {len(missing)} | Selected reference identity without an installed implementation. |", "",
-             "**File-based effects:** NAM, Cabinet, IR reverb and LV2 Convolution have file selectors. They need a model or impulse response to process as intended; x42 IR Convolver remains disabled. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).", "",
+             "**File-based effects:** NAM, Cabinet and IR Reverb have file selectors. Each IR family offers Mono, Mono to Stereo and Stereo configurations. Stereo accepts mono/stereo IRs for separate left/right processing; a four-channel IR adds cross-channel responses. Alternate convolvers remain hidden for older patches. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).", "",
              "**Reading connections:** counts are plugin connectors before Peepo's mono/stereo routing. CV connectors carry modulation. MIDI/events includes LV2 event/message ports, including file-selection messages; it does not imply implemented musical MIDI routing.", "",
              "## Browse by category", "", "| Category | Ready / listed |", "| --- | ---: |"]
     categories = [c for c in CATEGORIES if any(m["category"] == c for m in visible)]
@@ -139,7 +147,7 @@ def main():
     lines += ["## Hidden identities", "", "| Module | Category | Why it is hidden | Plugin identity |", "| --- | --- | --- | --- |"]
     for module in hidden:
         listed_uris.append(module["uri"])
-        reason = "Duplicate tuner; use Tuner." if "tuna#" in module["uri"] else "Redundant clean boost; use Gain."
+        reason = module.get("reason") or ("Duplicate tuner; use Tuner." if "tuna#" in module["uri"] else "Redundant clean boost; use Gain.")
         lines.append("| " + " | ".join(map(cell, (module["name"], module["category"], reason, "`"+module["uri"]+"`"))) + " |")
     lines += ["", "## Not installed", "", "These are reference identities, not available effects. The installed Foot switch, mixers and other modules can cover some use cases without implementing the original identity.", "",
               "| Reference module | Reason / reference description | Plugin identity |", "| --- | --- | --- |"]

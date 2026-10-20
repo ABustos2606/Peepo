@@ -6,6 +6,8 @@ Every current Patchstorage LV2 entry is listed below. Peepo status uses the reco
 
 Blokas documents Patchstorage as MODEP’s plugin cloud since MODEP 1.12. These are plugins available to install through MODEP, not a claim that every plugin is preinstalled or tested in Peepo. [Blokas MODEP](https://blokas.io/modep/); [Patchstorage platform](https://patchstorage.com/platform/lv2-plugins/).
 
+**Historical comparison:** the table below predates the [first catalogue purge](36-catalogue-purge.md). Use the [complete module list](33-module-list.md) for current selection and availability.
+
 ## Summary
 
 | Patchstorage entries | Count | Meaning |

@@ -1046,34 +1046,6 @@
       ]
     },
     {
-      "uri": "http://distrho.sf.net/plugins/MVerb",
-      "name": "MVerb",
-      "category": "Reverb",
-      "description": "Reverb by Martin Eastwood, falkTX",
-      "color": "#81c9b8",
-      "availability": "available",
-      "reason": "",
-      "origin": "class Reverb; bundle file:///opt/peepo/lib/lv2/MVerb.lv2/",
-      "enable": "",
-      "ports": [
-        {"symbol": "lv2_audio_in_1", "direction": "input", "type": "audio"},
-        {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
-        {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
-        {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"}
-      ],
-      "parameters": [
-        {"symbol": "damping", "name": "Damping", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "density", "name": "Density", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "bandwidth", "name": "Bandwidth", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "decay", "name": "Decay", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "predelay", "name": "Predelay", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "size", "name": "Size", "unit": "%", "kind": "continuous", "minimum": 5, "maximum": 100, "default": 75, "logarithmic": false, "choices": []},
-        {"symbol": "gain", "name": "Gain", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
-        {"symbol": "mix", "name": "Mix", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "earlymix", "name": "Early/Late Mix", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []}
-      ]
-    },
-    {
       "uri": "http://drobilla.net/plugins/blop/adsr",
       "name": "ADSR Envelope",
       "category": "Dynamics",
@@ -1159,29 +1131,6 @@
         {"symbol": "res", "name": "Resonance", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.25, "logarithmic": false, "choices": []},
         {"symbol": "res_gain", "name": "Resonance gain", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 1, "logarithmic": false, "choices": []},
         {"symbol": "out_gain", "name": "Output gain", "unit": "dB", "kind": "continuous", "minimum": -15, "maximum": 15, "default": 0, "logarithmic": false, "choices": []}
-      ]
-    },
-    {
-      "uri": "http://drobilla.net/plugins/mda/Ambience",
-      "name": "MDA Ambience",
-      "category": "Reverb",
-      "description": "Reverb by David Robillard",
-      "color": "#81c9b8",
-      "availability": "available",
-      "reason": "",
-      "origin": "class Reverb; bundle file:///usr/lib/lv2/mda.lv2/",
-      "enable": "",
-      "ports": [
-        {"symbol": "left_in", "direction": "input", "type": "audio"},
-        {"symbol": "right_in", "direction": "input", "type": "audio"},
-        {"symbol": "left_out", "direction": "output", "type": "audio"},
-        {"symbol": "right_out", "direction": "output", "type": "audio"}
-      ],
-      "parameters": [
-        {"symbol": "size", "name": "Size", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.7, "logarithmic": false, "choices": []},
-        {"symbol": "hf_damp", "name": "HF Damp", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.7, "logarithmic": false, "choices": []},
-        {"symbol": "mix", "name": "Mix", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.9, "logarithmic": false, "choices": []},
-        {"symbol": "output", "name": "Output", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
       ]
     },
     {
@@ -7074,57 +7023,6 @@
       ]
     },
     {
-      "uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_",
-      "name": "Gxlivelooper",
-      "category": "Utility",
-      "description": "Utility",
-      "color": "#93a4b5",
-      "availability": "available",
-      "reason": "",
-      "origin": "class Utility; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_livelooper.lv2/",
-      "enable": "",
-      "ports": [
-        {"symbol": "in", "direction": "input", "type": "audio"},
-        {"symbol": "out", "direction": "output", "type": "audio"}
-      ],
-      "parameters": [
-        {"symbol": "clip1", "name": "Clip1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
-        {"symbol": "clip2", "name": "Clip2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
-        {"symbol": "clip3", "name": "Clip3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
-        {"symbol": "clip4", "name": "Clip4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 100, "logarithmic": false, "choices": []},
-        {"symbol": "clips1", "name": "Clips1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "clips2", "name": "Clips2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "clips3", "name": "Clips3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "clips4", "name": "Clips4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "speed1", "name": "Speed1", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "speed2", "name": "Speed2", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "speed3", "name": "Speed3", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "speed4", "name": "Speed4", "unit": "", "kind": "continuous", "minimum": -0.9, "maximum": 0.9, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "gain", "name": "Gain", "unit": "", "kind": "continuous", "minimum": -20, "maximum": 12, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "level1", "name": "Level1", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "level2", "name": "Level2", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "level3", "name": "Level3", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "level4", "name": "Level4", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "mix", "name": "Mix", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 150, "default": 100, "logarithmic": false, "choices": []},
-        {"symbol": "play1", "name": "Play1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "play2", "name": "Play2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "play3", "name": "Play3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "play4", "name": "Play4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rplay1", "name": "Rplay1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rplay2", "name": "Rplay2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rplay3", "name": "Rplay3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rplay4", "name": "Rplay4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rec1", "name": "Rec1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rec2", "name": "Rec2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rec3", "name": "Rec3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "rec4", "name": "Rec4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reset1", "name": "Reset1", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reset2", "name": "Reset2", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reset3", "name": "Reset3", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reset4", "name": "Reset4", "unit": "", "kind": "integer", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
-      ]
-    },
-    {
       "uri": "http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_",
       "name": "GxMultiBandCompressor",
       "category": "Dynamics",
@@ -7483,52 +7381,6 @@
       ]
     },
     {
-      "uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo",
-      "name": "GxReverb-Stereo",
-      "category": "Reverb",
-      "description": "Reverb",
-      "color": "#81c9b8",
-      "availability": "available",
-      "reason": "",
-      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_reverb.lv2/",
-      "enable": "",
-      "ports": [
-        {"symbol": "in", "direction": "input", "type": "audio"},
-        {"symbol": "in1", "direction": "input", "type": "audio"},
-        {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "out1", "direction": "output", "type": "audio"}
-      ],
-      "parameters": [
-        {"symbol": "dry_wet", "name": "Dry/Wet", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "lfo", "name": "LFO", "unit": "", "kind": "continuous", "minimum": 0.2, "maximum": 5, "default": 0.2, "logarithmic": false, "choices": []},
-        {"symbol": "roomsize", "name": "Roomsize", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
-        {"symbol": "damp", "name": "Damp", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.2, "logarithmic": false, "choices": []},
-        {"symbol": "mode", "name": "Mode", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": ["linear", "pingpong"]}
-      ]
-    },
-    {
-      "uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_",
-      "name": "Gxroom_simulator",
-      "category": "Reverb",
-      "description": "Reverb",
-      "color": "#81c9b8",
-      "availability": "available",
-      "reason": "",
-      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_room_simulator.lv2/",
-      "enable": "",
-      "ports": [
-        {"symbol": "in", "direction": "input", "type": "audio"},
-        {"symbol": "out", "direction": "output", "type": "audio"}
-      ],
-      "parameters": [
-        {"symbol": "EFFECT", "name": "EFFECT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "PREDELAYMS", "name": "PREDELAYMS", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 200, "default": 20, "logarithmic": false, "choices": []},
-        {"symbol": "RT", "name": "RT", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.3, "logarithmic": false, "choices": []},
-        {"symbol": "ROOMSIZE", "name": "ROOMSIZE", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 3, "default": 1, "logarithmic": false, "choices": []},
-        {"symbol": "DRYWET", "name": "DRYWET", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []}
-      ]
-    },
-    {
       "uri": "http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_",
       "name": "GxScreamingBird",
       "category": "Drive",
@@ -7710,36 +7562,6 @@
         {"symbol": "mode", "name": "Mode", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": ["triangle", "sine"]},
         {"symbol": "depth", "name": "Depth", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
         {"symbol": "freq", "name": "Freq", "unit": "Hz", "kind": "continuous", "minimum": 0.1, "maximum": 50, "default": 5, "logarithmic": false, "choices": []}
-      ]
-    },
-    {
-      "uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo",
-      "name": "GxZita_rev1-Stereo",
-      "category": "Reverb",
-      "description": "Reverb",
-      "color": "#81c9b8",
-      "availability": "available",
-      "reason": "",
-      "origin": "class Reverb; author Guitarix team; bundle file:///opt/peepo/lib/lv2/gx_zita_rev1.lv2/",
-      "enable": "",
-      "ports": [
-        {"symbol": "in", "direction": "input", "type": "audio"},
-        {"symbol": "in1", "direction": "input", "type": "audio"},
-        {"symbol": "out", "direction": "output", "type": "audio"},
-        {"symbol": "out1", "direction": "output", "type": "audio"}
-      ],
-      "parameters": [
-        {"symbol": "level", "name": "LEVEL", "unit": "", "kind": "continuous", "minimum": -70, "maximum": 40, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "EQ2_FREQ", "name": "EQ2 FREQ", "unit": "", "kind": "continuous", "minimum": 160, "maximum": 10000, "default": 1500, "logarithmic": true, "choices": []},
-        {"symbol": "EQ1_LEVEL", "name": "EQ1 LEVEL", "unit": "", "kind": "continuous", "minimum": -15, "maximum": 15, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "EQ1_FREQ", "name": "EQ1 FREQ", "unit": "", "kind": "continuous", "minimum": 40, "maximum": 2500, "default": 315, "logarithmic": true, "choices": []},
-        {"symbol": "IN_DELAY", "name": "IN DELAY", "unit": "", "kind": "continuous", "minimum": 20, "maximum": 100, "default": 60, "logarithmic": false, "choices": []},
-        {"symbol": "LOW_RT60", "name": "LOW RT60", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 8, "default": 3, "logarithmic": true, "choices": []},
-        {"symbol": "LF_X", "name": "LF X", "unit": "", "kind": "continuous", "minimum": 50, "maximum": 1000, "default": 200, "logarithmic": true, "choices": []},
-        {"symbol": "HF_DAMPING", "name": "HF DAMPING", "unit": "", "kind": "continuous", "minimum": 1500, "maximum": 23520, "default": 6000, "logarithmic": true, "choices": []},
-        {"symbol": "MID_RT60", "name": "MID RT60", "unit": "", "kind": "continuous", "minimum": 1, "maximum": 8, "default": 2, "logarithmic": true, "choices": []},
-        {"symbol": "DRY_WET_MIX", "name": "DRY WET MIX", "unit": "", "kind": "continuous", "minimum": -1, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "EQ2_LEVEL", "name": "EQ2 LEVEL", "unit": "", "kind": "continuous", "minimum": -15, "maximum": 15, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
     {
@@ -7959,32 +7781,6 @@
         {"symbol": "decay", "name": "Decay", "unit": "s", "kind": "continuous", "minimum": 0.10000000149, "maximum": 10, "default": 1.29999995232, "logarithmic": false, "choices": []},
         {"symbol": "early_send", "name": "Early Send", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
         {"symbol": "modulation", "name": "Modulation", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 15, "logarithmic": false, "choices": []}
-      ]
-    },
-    {
-      "uri": "urn:dragonfly:early",
-      "name": "Dragonfly Early Reflections",
-      "category": "Reverb",
-      "description": "Reverb",
-      "color": "#81c9b8",
-      "availability": "available",
-      "reason": "",
-      "origin": "class Reverb; author Michael Willis; bundle file:///opt/peepo/lib/lv2/DragonflyEarlyReflections.lv2/",
-      "enable": "",
-      "ports": [
-        {"symbol": "lv2_audio_in_1", "direction": "input", "type": "audio"},
-        {"symbol": "lv2_audio_in_2", "direction": "input", "type": "audio"},
-        {"symbol": "lv2_audio_out_1", "direction": "output", "type": "audio"},
-        {"symbol": "lv2_audio_out_2", "direction": "output", "type": "audio"}
-      ],
-      "parameters": [
-        {"symbol": "dry_level", "name": "Dry Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 80, "logarithmic": false, "choices": []},
-        {"symbol": "early_level", "name": "Wet Level", "unit": "%", "kind": "continuous", "minimum": 0, "maximum": 100, "default": 20, "logarithmic": false, "choices": []},
-        {"symbol": "program", "name": "Program", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 7, "default": 2, "logarithmic": false, "choices": ["Abrupt Echo", "Backstage Pass", "Concert Venue", "Damaged Goods", "Elevator Pitch", "Floor Thirteen", "Garage Band", "Home Studio"]},
-        {"symbol": "size", "name": "Size", "unit": "m", "kind": "continuous", "minimum": 10, "maximum": 60, "default": 20, "logarithmic": false, "choices": []},
-        {"symbol": "width", "name": "Width", "unit": "%", "kind": "continuous", "minimum": 50, "maximum": 150, "default": 100, "logarithmic": false, "choices": []},
-        {"symbol": "low_cut", "name": "Low Cut", "unit": "Hz", "kind": "continuous", "minimum": 0, "maximum": 200, "default": 50, "logarithmic": false, "choices": []},
-        {"symbol": "high_cut", "name": "High Cut", "unit": "Hz", "kind": "continuous", "minimum": 1000, "maximum": 16000, "default": 10000, "logarithmic": false, "choices": []}
       ]
     },
     {

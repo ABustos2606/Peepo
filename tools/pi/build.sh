@@ -49,12 +49,16 @@ if [ $skip_tests = 0 ]; then
 fi
 
 step "catalogue"
+# Reused prefixes can still hold retired plugins, even with --skip-engine.
+# Move only dedicated bundles; shared Debian bundles remain intact.
+python3 "$REPO/tools/prune-retired-bundles.py" --prefix "$PREFIX" --backup "$PREFIX/build/retired-bundles"
 # The modules this build of the engine can load, exported here so the Pi
 # offers exactly these; the project's overlay goes beside it.
 mkdir -p "$PREFIX/share/peepo"
 cp "$REPO/config/catalogue/inventory.txt" "$PREFIX/share/peepo/catalogue-inventory.txt"
 bash "$REPO/tools/pi/export-catalogue.sh"
 cp "$REPO/config/catalogue/overlay.json" "$PREFIX/share/peepo/catalogue-overlay.json"
+cp "$REPO/config/catalogue/retired.json" "$PREFIX/share/peepo/catalogue-retired.json"
 echo "$(grep -c '"uri"' "$PREFIX/share/peepo/catalogue.json") plugins exported"
 
 step "package"

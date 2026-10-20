@@ -196,7 +196,7 @@ third tap-lv2 https://github.com/moddevices/tap-lv2.git cab6e0dfb2ce20e4ad34b067
     make -j"$JOBS" NOOPT="$TAP_NOOPT" INSTALL_PATH="$LV2DIR" install
 third stone-phaser https://github.com/jpcima/stone-phaser.git f057ea5c1e368d6cd937f4e359a9514ac72fe902 "DPF, with its Cairo UI" bash -c dpf_ui
 third ykchorus https://github.com/SpotlightKid/ykchorus.git ee0e362f8ef30b55a440715e4da3bfb3dad6a30f "DPF, no UI" bash -c dpf
-third MVerb https://github.com/DISTRHO/MVerb.git 5ae9f571642822bbc6b9d2e113e3fb0aada36f93 "DPF, no UI" bash -c dpf
+# MVerb was retired from the curated instrument; do not build it again.
 third infamousPlugins https://github.com/ssj71/infamousPlugins.git 8c0e11ecac624e014caba00e5cf4fb0ca2faa806 "cmake (no NTK, so no UIs)" \
     bash -c 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX='"$PREFIX"' -DLIBDIR=lib && cmake --build build -j'"$JOBS"' && cmake --install build'
 # Full GxPlugins collection, including the four Beebo modules at their
@@ -219,7 +219,7 @@ third discipline https://github.com/ABustos2606/discipline.git 4f68f3b967f8fb92c
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix
 # LV2 collection. Artifacts, source rebuilds and metadata repairs are locked.
 if bash "$HERE/22-patchstorage.sh" >"$SRC/Patchstorage.log" 2>&1; then
-    record Patchstorage built "66 identities; pinned builds and Detune source rebuild"
+    record Patchstorage built "selected identities; pinned builds and Detune source rebuild"
 else
     record Patchstorage FAILED "see $SRC/Patchstorage.log"
 fi

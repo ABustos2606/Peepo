@@ -214,7 +214,7 @@ void fixture(const std::string& folder) {
     // that matter first, and Peepo's Output level beside Blend.
     const ModuleDefinition* shown = nullptr;
     for (const auto& d : offered) if (d.uri == "http://polyeffects.com/lv2/polyclouds#granular") shown = &d;
-    check(shown && shown->name == "Clouds" && shown->parameters.size() == 12 && shown->enable_symbol == "enabled", "Clouds overlay not applied");
+    check(shown && shown->name == "Mist" && shown->parameters.size() == 12 && shown->enable_symbol == "enabled", "Clouds overlay not applied");
     const char* order[] = {"position_param", "size_param", "density_param", "texture_param", "pitch_param", "blend_param", "output_param", "freeze_param", "reverse_param"};
     for (std::size_t i = 0; i < std::size(order); ++i) check(shown->parameters[i].symbol == order[i], "Clouds controls not in the overlay's order");
     for (const auto& p : shown->parameters) {

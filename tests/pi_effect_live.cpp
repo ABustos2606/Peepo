@@ -93,7 +93,7 @@ int main(int argc, char** argv) try {
     if (mode == "test-graph") {
         const bool granular = argc > 2 && std::string(argv[2]) == "clouds";
         const auto& uri = granular ? clouds : overdrive;
-        const std::string name = granular ? "Clouds" : "Overdrive";
+        const std::string name = granular ? "Mist" : "Overdrive";
         auto graph = empty_graph(name + " gain test");
         graph.connections.clear();
         client.command(LoadGraph{graph}, "load an empty test graph");

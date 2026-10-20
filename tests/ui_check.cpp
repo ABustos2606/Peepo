@@ -210,8 +210,8 @@ int main(int argc, char** argv) {
             drag(app, 116, 218, 184, 218);
             check(app.graph().connections.size() == 8, "reconnect cable failed");
             click(app, 398, 244);
-            // All six of Clouds' controls on one page: no pages to turn.
-            for (const char* name : {"POSITION", "SIZE", "MIX", "FREEZE", "DENSITY", "PITCH"}) check(exact_label(app.screen(), name) != nullptr, "a Clouds control is not on its page");
+            // All six of Mist Demo's controls on one page: no pages to turn.
+            for (const char* name : {"POSITION", "SIZE", "MIX", "FREEZE", "DENSITY", "PITCH"}) check(exact_label(app.screen(), name) != nullptr, "a Mist Demo control is not on its page");
             check(bar_value(app, "FREEZE") == "OFF", "a switch does not say it is off");
             tap_bar(app, "FREEZE");
             check(peepo::find_module(app.graph(), 4)->parameters[3].value == 1 && bar_value(app, "FREEZE") == "ON", "tapping the freeze switch failed");
@@ -237,11 +237,11 @@ int main(int argc, char** argv) {
             check(peepo::find_module(app.graph(), 3)->y == 24, "module drag failed to snap");
             check(app.page() == peepo::Page::Patch, "drag accidentally opened parameters");
             click(app, 490, 36); check(app.page() == peepo::Page::Browser, "browser navigation failed");
-            check(text_label(app.screen(), "ALL // ") != nullptr && exact_label(app.screen(), "CLOUDS") != nullptr, "browser did not open on every group");
+            check(text_label(app.screen(), "ALL // ") != nullptr && exact_label(app.screen(), "MIST DEMO") != nullptr, "browser did not open on every group");
             check(text_label(app.screen(), "BPM") == nullptr, "browser kept the status bar");
             capture(app, output / "03-browser.bmp");
             tap(app, "TIME");
-            check(text_label(app.screen(), "Room, hall") != nullptr && exact_label(app.screen(), "CLOUDS") == nullptr, "group filter did not apply");
+            check(text_label(app.screen(), "Room, hall") != nullptr && exact_label(app.screen(), "MIST DEMO") == nullptr, "group filter did not apply");
             check(text_label(app.screen(), "TIME // 2 MODULES") != nullptr, "status does not count the group");
             tap(app, "REVERB"); check(app.page() == peepo::Page::Browser && app.graph().modules.size() == 5, "first tap on a card added it");
             capture(app, output / "03-browser-group.bmp");
@@ -332,7 +332,7 @@ int main(int argc, char** argv) {
             engine.submit(peepo::LoadGraph{dense}); step(app, 256);
             check(app.graph().name == "Dense patch" && app.graph().modules.size() == 15, "backend graph replacement was not displayed");
             capture(app, output / "15-dense-canvas.bmp");
-            add_module(app, "TEXTURE", "CLOUDS");
+            add_module(app, "TEXTURE", "MIST DEMO");
             check(app.graph().modules.size() == 16 && app.graph().modules.back().x > 672, "full viewport prevented adding beyond it");
             capture(app, output / "13-larger-canvas.bmp");
             click(app, 66, 112);
@@ -422,11 +422,11 @@ int main(int argc, char** argv) {
             engine.submit(peepo::LoadGraph{peepo::demo_graph()}); step(app, 256);
             click(app, 396, 244);
             slide(app, "DENSITY", 0.5);
-            check(peepo::find_module(app.graph(), 4)->parameters[4].value > 70, "Clouds density did not update");
+            check(peepo::find_module(app.graph(), 4)->parameters[4].value > 70, "Mist Demo density did not update");
             tap_bar(app, "FREEZE");
-            check(peepo::find_module(app.graph(), 4)->parameters[3].value == 1, "Clouds freeze failed");
+            check(peepo::find_module(app.graph(), 4)->parameters[3].value == 1, "Mist Demo freeze failed");
             slide(app, "MIX", 0.5);
-            check(peepo::find_module(app.graph(), 4)->parameters[2].value > 70, "Clouds mix failed");
+            check(peepo::find_module(app.graph(), 4)->parameters[2].value > 70, "Mist Demo mix failed");
             click(app, 70, 456); click(app, 564, 244);
             engine.reject_next(); tap_bar(app, "MODE");
             check(peepo::find_module(app.graph(), 5)->parameters[3].value == 0 && !app.pending() && bar_value(app, "MODE") == "CLEAN", "a rejected mode left optimistic state");
@@ -714,11 +714,11 @@ int main(int argc, char** argv) {
             turn("enc2", 3); press("enc2"); release("enc2");
             check(app.page() == peepo::Page::Settings, "encoder 2 did not step to and push Settings on the patch");
             click(app, 70, 456);
-            // Stomps are assigned on the Controls page: stomp 1 toggles Clouds freeze.
+            // Stomps are assigned on the Controls page: stomp 1 toggles Mist Demo freeze.
             click(app, 707, 36); tap(app, "CONTROLS");
             check(app.page() == peepo::Page::Controls && text_label(app.screen(), "Moves through the page"), "Controls page did not open");
             click(app, 618, 204); check(app.page() == peepo::Page::AssignPicker, "Assign did not open the picker");
-            click(app, 592, 160); check(text_label(app.screen(), "BYPASS") != nullptr, "picking Clouds did not list its controls");
+            click(app, 592, 160); check(text_label(app.screen(), "BYPASS") != nullptr, "picking Mist Demo did not list its controls");
             click(app, 208, 296);
             check(app.page() == peepo::Page::Controls && app.graph().assignments.size() == 1 && app.graph().assignments[0].parameter == "freeze", "stomp 1 not assigned to freeze");
             press("stomp1"); release("stomp1");
@@ -1057,18 +1057,18 @@ int main(int argc, char** argv) {
             check(app.graph().assignments.size() == 2 && app.graph().assignments[1].module == 4, "a second module did not join the stomp");
             click(app, 70, 456);
             check(app.page() == peepo::Page::Patch && exact_label(app.screen(), "1") != nullptr, "the patch does not number the stomp on its modules");
-            // Clouds starts bypassed, so each press swaps which of the two plays.
+            // Mist Demo starts bypassed, so each press swaps which of the two plays.
             sim.submit(peepo::SetBypass{4, true}); step(app, 256);
             capture(app, output / "56-stomp-badges.bmp");
             press("stomp1");
-            check(app.message().find("Drive bypassed, Clouds on") != std::string::npos, "the stomp did not say what it switched");
+            check(app.message().find("Drive bypassed, Mist Demo on") != std::string::npos, "the stomp did not say what it switched");
             release("stomp1");
-            check(bypassed(3) && !bypassed(4), "the stomp did not swap Drive and Clouds");
+            check(bypassed(3) && !bypassed(4), "the stomp did not swap Drive and Mist Demo");
             press("stomp1"); release("stomp1");
             check(!bypassed(3) && bypassed(4), "the stomp did not swap them back");
             // Settings > Controls names both, and Edit explains the swap.
             click(app, 707, 36); tap(app, "CONTROLS");
-            check(text_label(app.screen(), "Drive, Clouds / bypass") != nullptr, "Controls does not list both modules of the stomp");
+            check(text_label(app.screen(), "Drive, Mist Demo / bypass") != nullptr, "Controls does not list both modules of the stomp");
             click(app, 70, 456); click(app, 70, 456);
             // Pressing it again on a module's actions takes that module off.
             hold(app, 236, 244); press("stomp1"); release("stomp1");

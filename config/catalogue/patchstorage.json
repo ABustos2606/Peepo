@@ -2,52 +2,8 @@
   "format": "peepo-patchstorage-plugins",
   "version": 1,
   "recorded_date": "2026-10-19",
-  "scope": "Four Dragonfly reverbs and all missing Gx publications",
+  "scope": "Three Dragonfly reverbs and selected Guitarix publications after the first catalogue purge",
   "entries": [
-    {
-      "id": 165904,
-      "title": "Dragonfly Early Reflections",
-      "url": "https://patchstorage.com/dragonfly-early-reflections/",
-      "revision": "4.6",
-      "source_url": "https://github.com/michaelwillis/dragonfly-reverb/tree/master/plugins/dragonfly-early-reflections",
-      "license": {
-        "id": 4178,
-        "name": "GNU General Public License v3.0",
-        "slug": "gpl-3-0",
-        "custom_license_text": ""
-      },
-      "advertised_uris": [
-        "urn:dragonfly:early"
-      ],
-      "archives": {
-        "linux-amd64": {
-          "url": "https://patchstorage.com/api/beta/patches/165904/files/165901/download/",
-          "filename": "DragonflyEarlyReflections-6422578ed42cb.lv2.tar.gz",
-          "sha256": "836366c1418abde7b5eb7498900eeef160880b13b997f1be62638d705312e501",
-          "bundles": [
-            "DragonflyEarlyReflections.lv2"
-          ]
-        },
-        "rpi-aarch64": {
-          "url": "https://patchstorage.com/api/beta/patches/165904/files/165903/download/",
-          "filename": "DragonflyEarlyReflections-64225795ac782.lv2.tar.gz",
-          "sha256": "ced3a031847b09e51260dbb5266fe6290acf4e888321c8c77254ebff21211fb8",
-          "bundles": [
-            "DragonflyEarlyReflections.lv2"
-          ]
-        }
-      },
-      "plugins": [
-        {
-          "uri": "urn:dragonfly:early",
-          "name": "Dragonfly Early Reflections",
-          "bundle": "DragonflyEarlyReflections.lv2",
-          "raw_name": "Dragonfly Early Reflections",
-          "category": "Reverb",
-          "description": "Early room reflections with size, width and filter controls."
-        }
-      ]
-    },
     {
       "id": 165909,
       "title": "Dragonfly Hall Reverb",
@@ -554,11 +510,11 @@
       "plugins": [
         {
           "uri": "http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET",
-          "name": "Gx Cabinet",
+          "name": "Gx Cabinet (built-in)",
           "bundle": "gx_cabinet.lv2",
           "raw_name": "GxCabinet",
           "category": "Cabinet",
-          "description": "Speaker cabinet simulator with a selection of built-in models."
+          "description": "Cabinet simulator with built-in speaker models. No impulse response file needed."
         }
       ]
     },
@@ -1637,50 +1593,6 @@
       ]
     },
     {
-      "id": 163682,
-      "title": "Gxlivelooper",
-      "url": "https://patchstorage.com/gxlivelooper/",
-      "revision": "28.3",
-      "source_url": "https://github.com/moddevices/guitarix",
-      "license": {
-        "id": 4197,
-        "name": "ISC",
-        "slug": "isc",
-        "custom_license_text": ""
-      },
-      "advertised_uris": [
-        "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_"
-      ],
-      "archives": {
-        "rpi-aarch64": {
-          "url": "https://patchstorage.com/api/beta/patches/163682/files/163681/download/",
-          "filename": "gx_livelooper-63ef741c1f278.lv2.tar.gz",
-          "sha256": "ae739c753ab602fad81a77c7747e9b6ce5324519b1b3bd0a6277007dbb905825",
-          "bundles": [
-            "gx_livelooper.lv2"
-          ]
-        }
-      },
-      "package_targets": {
-        "linux-amd64": {
-          "package": "guitarix-debian-amd64",
-          "bundles": [
-            "gx_livelooper.lv2"
-          ]
-        }
-      },
-      "plugins": [
-        {
-          "uri": "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_",
-          "name": "Gx Live looper",
-          "bundle": "gx_livelooper.lv2",
-          "raw_name": "Gxlivelooper",
-          "category": "Delay",
-          "description": "Four loop tracks with recording, playback, reverse, speed and level controls. Captured audio is not promised to persist with a patch."
-        }
-      ]
-    },
-    {
       "id": 165002,
       "title": "GxMole",
       "url": "https://patchstorage.com/gxmole/",
@@ -2117,94 +2029,6 @@
           "raw_name": "GxRangemaster",
           "category": "Drive",
           "description": "Rangemaster-style treble booster."
-        }
-      ]
-    },
-    {
-      "id": 163724,
-      "title": "GxReverb-Stereo",
-      "url": "https://patchstorage.com/gxreverb-stereo/",
-      "revision": "28.3",
-      "source_url": "https://github.com/moddevices/guitarix",
-      "license": {
-        "id": 4197,
-        "name": "ISC",
-        "slug": "isc",
-        "custom_license_text": ""
-      },
-      "advertised_uris": [
-        "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo"
-      ],
-      "archives": {
-        "linux-amd64": {
-          "url": "https://patchstorage.com/api/beta/patches/163724/files/163721/download/",
-          "filename": "gx_reverb-63ef743161f11.lv2.tar.gz",
-          "sha256": "ca869d3276862cbf022237637ba111fa29679747ae0409beec53c4866b5d967e",
-          "bundles": [
-            "gx_reverb.lv2"
-          ]
-        },
-        "rpi-aarch64": {
-          "url": "https://patchstorage.com/api/beta/patches/163724/files/163723/download/",
-          "filename": "gx_reverb-63ef743237418.lv2.tar.gz",
-          "sha256": "294ea2ccd5938e4a3ca43cced45342f3a3237e2d75d0f286fab7f7b59d568a12",
-          "bundles": [
-            "gx_reverb.lv2"
-          ]
-        }
-      },
-      "plugins": [
-        {
-          "uri": "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo",
-          "name": "Gx Reverb stereo",
-          "bundle": "gx_reverb.lv2",
-          "raw_name": "GxReverb-Stereo",
-          "category": "Reverb",
-          "description": "Stereo algorithmic reverb."
-        }
-      ]
-    },
-    {
-      "id": 163729,
-      "title": "Gxroom_simulator",
-      "url": "https://patchstorage.com/gxroom_simulator/",
-      "revision": "28.3",
-      "source_url": "https://github.com/moddevices/guitarix",
-      "license": {
-        "id": 4197,
-        "name": "ISC",
-        "slug": "isc",
-        "custom_license_text": ""
-      },
-      "advertised_uris": [
-        "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_"
-      ],
-      "archives": {
-        "linux-amd64": {
-          "url": "https://patchstorage.com/api/beta/patches/163729/files/163726/download/",
-          "filename": "gx_room_simulator-63ef7433edad1.lv2.tar.gz",
-          "sha256": "44965a9be59607381cb8bdb9c8472dde23697e36e3748309e36482699b989c77",
-          "bundles": [
-            "gx_room_simulator.lv2"
-          ]
-        },
-        "rpi-aarch64": {
-          "url": "https://patchstorage.com/api/beta/patches/163729/files/163728/download/",
-          "filename": "gx_room_simulator-63ef7434c5cd2.lv2.tar.gz",
-          "sha256": "7e3d6c26344aa3e28a7f30546479f85382dc75c2b1eb6f1b09717da4853d56d9",
-          "bundles": [
-            "gx_room_simulator.lv2"
-          ]
-        }
-      },
-      "plugins": [
-        {
-          "uri": "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_",
-          "name": "Gx Room simulator",
-          "bundle": "gx_room_simulator.lv2",
-          "raw_name": "Gxroom_simulator",
-          "category": "Reverb",
-          "description": "Room ambience simulator."
         }
       ]
     },
@@ -2794,50 +2618,6 @@
           "raw_name": "GxWahwah",
           "category": "Filter",
           "description": "Wah filter with a sweep control."
-        }
-      ]
-    },
-    {
-      "id": 163770,
-      "title": "GxZita_rev1-Stereo",
-      "url": "https://patchstorage.com/gxzita_rev1-stereo/",
-      "revision": "28.3",
-      "source_url": "https://github.com/moddevices/guitarix",
-      "license": {
-        "id": 4197,
-        "name": "ISC",
-        "slug": "isc",
-        "custom_license_text": ""
-      },
-      "advertised_uris": [
-        "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo"
-      ],
-      "archives": {
-        "rpi-aarch64": {
-          "url": "https://patchstorage.com/api/beta/patches/163770/files/163769/download/",
-          "filename": "gx_zita_rev1-63ef744a2e471.lv2.tar.gz",
-          "sha256": "82928c860740bb7ee3ad2e42aa96f10158cc1187277c9d00e7202fb558756dea",
-          "bundles": [
-            "gx_zita_rev1.lv2"
-          ]
-        }
-      },
-      "package_targets": {
-        "linux-amd64": {
-          "package": "guitarix-debian-amd64",
-          "bundles": [
-            "gx_zita_rev1.lv2"
-          ]
-        }
-      },
-      "plugins": [
-        {
-          "uri": "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo",
-          "name": "Gx Zita reverb stereo",
-          "bundle": "gx_zita_rev1.lv2",
-          "raw_name": "GxZita_rev1-Stereo",
-          "category": "Reverb",
-          "description": "Stereo Zita reverb."
         }
       ]
     }

@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-10-19T17:44:21.569383+00:00",
+  "removed_uris": [
+    "http://distrho.sf.net/plugins/MVerb",
+    "http://drobilla.net/plugins/mda/Ambience",
+    "http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_",
+    "http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo",
+    "http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_",
+    "http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo",
+    "urn:dragonfly:early"
+  ],
+  "removed_standalone_bundles": [],
+  "shared_mda_bundle_unchanged": true,
+  "installed_before": 328,
+  "installed_after": 328,
+  "ready_to_add": 272,
+  "hidden": 9,
+  "ir_families": [
+    "Cabinet - Mono",
+    "Cabinet - Mono to Stereo",
+    "Cabinet - Stereo",
+    "IR Reverb - Mono",
+    "IR Reverb - Mono to Stereo",
+    "IR Reverb - Stereo"
+  ],
+  "current_patch_unchanged": true,
+  "engine_and_jack_pids": {
+    "peepo-engine": "41642",
+    "peepo-jack": "672"
+  },
+  "ui_active": true,
+  "backup": "/var/lib/peepo/catalogue-purge-4slrowc5"
+}

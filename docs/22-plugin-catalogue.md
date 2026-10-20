@@ -1,13 +1,16 @@
 # Plugin catalogue: inventory, builds and compatibility records
 
 **Looking for the module names? See the [complete module list](33-module-list.md):
-all 357 selected identities, their touchscreen categories, descriptions,
+all 350 selected identities, their touchscreen categories, descriptions,
 connections and current availability.** This page records the build and test history.
 
-**19 October 2026:** [66 retained Patchstorage identities](35-patchstorage-expansion.md)
-are installed and tested on PC and Pi. Bollie Delay XT and Granulator were removed at the user’s request. The selected inventory contains 357
-identities, 335 installed and 282 ready to add. The historical snapshots below
-retain their original dates and counts.
+**19 October 2026, after the [first catalogue purge](36-catalogue-purge.md):**
+The selected inventory contains **350 identities, 328 in the Pi export and 272 ready to add**.
+The expansion retains 61 identities: three Dragonfly reverbs and 58 Guitarix identities.
+Seven effects were retired. Cabinet and IR Reverb are the selected convolution families;
+the alternate convolution identities remain hidden for older patches. Historical snapshots
+below retain their original dates and counts. Retirement exclusions live in
+`config/catalogue/retired.json` and are applied by the inventory generator.
 
 **18 October 2026:** all 43 GxPlugins are now built, tested on PC and Pi, and
 installed. The selected inventory has 291 identities. The original counts and
@@ -131,7 +134,7 @@ The overlay (`config/catalogue/overlay.json`) now presents the whole offered cat
 - **Categories.** Every module has one, so the browser's groups mean something. Before, 147 exports fell under "Utility".
   - A new **Control** category, in yellow, collects envelopes, LFOs, sequencers, clocks, logic and random sources.
   - **Cabinet** (already in the browser's order) collects the cabinet convolvers.
-- **Names.** Makers' prefixes are stripped (AMS, TAP, Gx, "the infamous"). Raw symbols such as `harm_trem_ext` become "Harmonic tremolo (CV)". Mutable modules use their module names (Plaits, Grids, Marbles, Tides).
+- **Names.** Makers' prefixes are stripped (AMS, TAP, Gx, "the infamous"). Raw symbols such as `harm_trem_ext` become "Harmonic tremolo (CV)". Modules ported from Emilie Gillet's eurorack code use Peepo's own family names (Mist, Twist, Weave, Bell, Dice, Lattice, Flow), not the original module names ([module names](37-module-names.md)).
 - **Withheld with a reason:**
   - the convolvers and NAM, until a file can be chosen;
   - Clouds' beat repeat;
