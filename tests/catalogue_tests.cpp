@@ -159,7 +159,7 @@ void overlay() {
     check(freeze.kind == ParameterKind::Enumeration && freeze.choices == std::vector<std::string>{"Live", "Held"} && format_value([&] { auto p = freeze; p.value = 1; return p; }()) == "Held",
           "named values not shown as choices");
 
-    // Named groups: up to four shown controls each, none twice; the general
+    // Named groups: any number of shown controls, none twice; the general
     // Output can be grouped; a rule matching several modules skips what one lacks.
     const auto groups = [&](const std::string& selector, const std::string& list) { return header + "{" + selector + R"(, "groups": [)" + list + "]}]}"; };
     const auto uri = R"("uri": ")" + granular + R"(")";
@@ -171,8 +171,12 @@ void overlay() {
     auto matched = document.modules;
     check(apply_catalogue_overlay(groups(R"("match": "polyclouds#")", R"({"name": "Grains", "parameters": ["position_param", "not_in_every_mode"]})"), matched).empty() &&
           find(matched)->groups.size() == 1 && find(matched)->groups[0].symbols.size() == 1, "a matching rule did not skip a missing control");
-    for (const char* bad : {R"({"name": "Five", "parameters": ["position_param", "size_param", "density_param", "texture_param", "pitch_param"]})",
-                            R"({"name": "Twice", "parameters": ["position_param"]}, {"name": "Again", "parameters": ["position_param"]})",
+    auto six_controls = document.modules;
+    check(apply_catalogue_overlay(groups(uri, R"({"name": "Main", "parameters": ["position_param", "size_param", "density_param", "texture_param", "pitch_param", "blend_param"]})"), six_controls).empty(),
+          "a six-control heading was rejected by an obsolete page limit");
+    check(find(six_controls)->groups.size() == 1 && find(six_controls)->groups[0].symbols.size() == 6,
+          "six controls must stay together under one heading");
+    for (const char* bad : {R"({"name": "Twice", "parameters": ["position_param"]}, {"name": "Again", "parameters": ["position_param"]})",
                             R"({"name": "Gone", "parameters": ["no_such_control"]})",
                             R"({"name": "", "parameters": ["position_param"]})",
                             R"({"name": "Bad", "parameters": [3]})"}) {

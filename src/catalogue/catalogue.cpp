@@ -388,17 +388,15 @@ std::string apply_catalogue_overlay(std::string_view text, std::vector<ModuleDef
                 it->maximum < minimum_tempo || it->minimum > maximum_tempo)
                 return d.uri + ": its tempo control " + d.tempo_symbol + " is not a shown BPM control";
         }
-        // The file takes the first tile of the first page, and is sent on the
+        // The file is shown before the parameter groups and is sent on the
         // plugin's atom input.
         if (!d.file.property.empty()) {
             if (std::none_of(d.ports.begin(), d.ports.end(), [](const Port& p) { return p.type == PortType::Midi && p.direction == Direction::Input; }))
                 return d.uri + ": it reads a file but has no input for messages";
-            if (!d.groups.empty() && d.groups.front().symbols.size() > 3) return d.uri + ": its first group must leave a tile for the " + d.file.label;
         }
-        // Each group: up to four shown controls, none in two groups.
+        // Groups are headings of shown controls, none in two groups.
         std::set<std::string> grouped;
         for (const auto& g : d.groups) {
-            if (g.symbols.size() > 4) return d.uri + ": group " + g.name + " has more than four controls";
             for (const auto& s : g.symbols) {
                 if (std::none_of(d.parameters.begin(), d.parameters.end(), [&](const Parameter& p) { return p.symbol == s; }))
                     return d.uri + ": group " + g.name + " names " + s + ", which is not one of its shown controls";
