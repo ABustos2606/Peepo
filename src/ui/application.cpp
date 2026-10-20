@@ -90,7 +90,7 @@ std::string metric_text(std::optional<double> reading, bool cpu) {
     if (cpu) value << '%';
     return value.str();
 }
-enum class ModuleLayout { Generic, Tuner, Euclidean };
+enum class ModuleLayout { Generic, Tuner, Euclidean, Looper };
 struct EuclideanTrackStyle { std::uint32_t bright, fill, ring_dim; int radius; };
 constexpr std::array<EuclideanTrackStyle, euclidean_tracks> euclidean_styles = {{
     {0x38bdf8, 0x143a52, 0x1c3d52, 124},
@@ -122,6 +122,7 @@ ModuleLayout module_layout(const Module& m) {
     }
     if (tuner_uri(m.uri) && std::any_of(m.parameters.begin(), m.parameters.end(), [](const Parameter& p) { return p.symbol == "tuning"; })) return ModuleLayout::Tuner;
     if (euclidean_uri(m.uri) && has_euclidean_controls(m)) return ModuleLayout::Euclidean;
+    if (looper_uri(m.uri)) return ModuleLayout::Looper;
     return ModuleLayout::Generic;
 }
 // Vertical placement of one connector on its edge of the square. Every audio
@@ -290,9 +291,10 @@ std::string Application::engine_banner() const {
     default: return "Engine error" + reason + ". Edits are paused.";
     }
 }
-Application::~Application() { engine_.watch_tuner(std::nullopt); engine_.watch_euclidean(std::nullopt); if (screen_) lv_obj_delete(screen_); }
+Application::~Application() { release_looper(); engine_.watch_looper(std::nullopt); engine_.watch_tuner(std::nullopt); engine_.watch_euclidean(std::nullopt); if (screen_) lv_obj_delete(screen_); }
 void Application::message(std::string value) {
     message_ = std::move(value);
+    message_ms_ = clock_ms_;
     if (footer_) lv_label_set_text(footer_, message_.c_str());
 }
 void Application::navigate(Page page) {
@@ -414,8 +416,10 @@ void Application::tick(unsigned ms) {
     const auto layout = shown ? module_layout(*shown) : ModuleLayout::Generic;
     engine_.watch_tuner(shown && layout == ModuleLayout::Tuner ? std::optional<InstanceId>{shown->id} : std::nullopt);
     engine_.watch_euclidean(shown && layout == ModuleLayout::Euclidean ? std::optional<InstanceId>{shown->id} : std::nullopt);
+    engine_.watch_looper(shown && layout == ModuleLayout::Looper ? std::optional<InstanceId>{shown->id} : std::nullopt);
     update_tuner();
     update_euclidean();
+    update_looper();
 }
 void Application::update_metrics() {
     if (!tempo_value_ || !cpu_value_) return;
@@ -684,6 +688,30 @@ void Application::handle(Binding& b, lv_event_t* e) {
         }
         return;
     }
+    if (b.action == Action::LooperCommand) {
+        if (looper_binding_) {
+            // Binding: the command is picked for the next stomp, not played.
+            if (code == LV_EVENT_PRESSED) {
+                looper_bind_command_ = b.number;
+                looper_bind_target_ = b.symbol == "quick" ? 0 : looper_target_;
+                message("Press a stomp to send " + looper_command_name(b.number) + " to the " + looper_target_name(looper_bind_target_) + ".");
+                rebuild_ = true;
+            }
+            return;
+        }
+        if (code == LV_EVENT_PRESSED && !looper_pressed_.contains(target)) {
+            // Pin SELECTED at press time so a later selection change still
+            // releases the loop that received the original press.
+            const int aim = b.symbol == "quick" ? looper_selected_ + 1 : looper_target_ == 0 ? looper_selected_ + 1 : looper_target_;
+            if (engine_.looper_command(b.id, b.number, aim, true)) looper_pressed_[target] = {b.id, b.number, aim};
+        } else if (code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
+            if (const auto held = looper_pressed_.find(target); held != looper_pressed_.end()) {
+                engine_.looper_command(held->second.id, held->second.command, held->second.target, false);
+                looper_pressed_.erase(held);
+            }
+        }
+        return;
+    }
     if (b.action == Action::Parameter) {
         const auto* m = find_module(graph_, b.id); if (!m) return;
         const auto it = std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == b.symbol; });
@@ -757,6 +785,21 @@ void Application::handle(Binding& b, lv_event_t* e) {
     }
     if (code != LV_EVENT_CLICKED) return;
     switch (b.action) {
+    case Action::LooperSection: looper_section_ = b.number; looper_binding_ = false; parameter_focus_ = 0; parameter_scroll_ = 0; rebuild_ = true; break;
+    case Action::LooperBind:
+        looper_binding_ = !looper_binding_; looper_bind_command_ = -1; rebuild_ = true;
+        message(looper_binding_ ? "Pick Act on, tap a command, then press a stomp. Pressing it again on the same command unbinds it." : "Binding done.");
+        break;
+    case Action::LooperTarget: {
+        const auto* m = find_module(graph_, b.id);
+        const int count = m ? std::clamp(int(parameter(*m, "loops").value), 1, 8) : 1;
+        looper_target_ = (looper_target_ + 1) % (count + 2); rebuild_ = true; break;
+    }
+    case Action::LooperSelect: looper_selected_ = b.number; submit(SetParameter{b.id, "selected", double(b.number)}); break;
+    case Action::LooperCount: {
+        if (const auto* m = find_module(graph_, b.id)) submit(SetParameter{b.id, "loops", std::clamp(parameter(*m, "loops").value + b.number, 1.0, 8.0)});
+        break;
+    }
     case Action::Navigate: navigate(static_cast<Page>(b.number)); break;
     case Action::Add: add_module(b.symbol); break;
     case Action::Duplicate:
@@ -1047,6 +1090,7 @@ void Application::rebuild() {
     bindings_.clear(); module_widgets_.clear(); input_jacks_.clear(); cv_inputs_.clear(); dots_.clear(); cables_.clear(); canvas_ = nullptr; footer_ = nullptr;
     tempo_value_ = cpu_value_ = network_value_ = nullptr;
     tuner_note_ = tuner_detail_ = tuner_status_ = tuner_needle_ = nullptr;
+    release_looper(); looper_cards_ = {}; looper_commands_.clear();
     euclidean_status_ = nullptr;
     euclidean_rings_ = {}; euclidean_halos_ = {}; euclidean_dots_ = {}; euclidean_step_labels_ = {}; euclidean_tiles_ = {};
     const bool patch = page_ == Page::Patch, ready = engine_.state() == EngineState::Ready;
@@ -1149,6 +1193,14 @@ void Application::rebuild() {
         lv_obj_set_size(pills, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
         lv_obj_set_flex_flow(pills, LV_FLEX_FLOW_ROW); lv_obj_set_style_pad_column(pills, 8, 0);
         lv_obj_remove_flag(pills, LV_OBJ_FLAG_CLICKABLE);
+        if (looper_uri(m->uri)) {
+            constexpr const char* sections[]{"Commands", "Levels", "Rate", "Global"};
+            constexpr int widths[]{104, 80, 64, 80};
+            for (int s = 0; s < 4; ++s) {
+                auto* tab = pill(button(pills, sections[s], 0, 0, widths[s], Action::LooperSection, m->id, {}, s));
+                if (looper_section_ == s) primary(tab);
+            }
+        }
         auto* power = pill(button(pills, m->bypassed ? "Bypassed" : "On", 0, 0, 0, Action::Bypass, m->id));
         lv_obj_set_width(power, LV_SIZE_CONTENT); lv_obj_set_style_pad_hor(power, 22, 0);
         if (m->bypassed) lv_obj_set_style_text_color(lv_obj_get_child(power, 0), color(muted), 0);
@@ -1560,6 +1612,7 @@ void Application::parameters(lv_obj_t* parent) {
         euclidean_view(parent, *m);
         return;
     }
+    if (layout == ModuleLayout::Looper) { looper_view(parent, *m); return; }
     const bool tuner = layout == ModuleLayout::Tuner;
     const int top = tuner ? 220 : 0;
     if (tuner) tuner_meter(parent);
@@ -1641,6 +1694,159 @@ void Application::update_tuner() {
     if (note != lv_label_get_text(tuner_note_)) lv_label_set_text(tuner_note_, note.c_str());
     if (detail != lv_label_get_text(tuner_detail_)) lv_label_set_text(tuner_detail_, detail.c_str());
     if (status != lv_label_get_text(tuner_status_)) lv_label_set_text(tuner_status_, status.c_str());
+}
+void Application::release_looper() {
+    for (const auto& [widget, held] : looper_pressed_) engine_.looper_command(held.id, held.command, held.target, false);
+    looper_pressed_.clear();
+}
+void Application::looper_view(lv_obj_t* parent, const Module& m) {
+    const int count = std::clamp(int(parameter(m, "loops").value), 1, 8);
+    const auto live_selection = engine_.looper_status(m.id)[48];
+    looper_selected_ = std::clamp(int(live_selection.value_or(parameter(m, "selected").value)), 1, count);
+    looper_target_ = std::clamp(looper_target_, 0, count + 1);
+    // The stomps bound to a command for a target, as on the patch: a white dot
+    // holding each stomp's number.
+    // Drawn last, over the buttons, at the top right corner of each.
+    struct Badge { int x, y, id, target; };
+    std::vector<Badge> badges;
+    const auto badge = [&](const Badge& at) {
+        std::string digits;
+        for (const auto& a : graph_.assignments)
+            if (a.module == m.id && is_stomp(a.control) && looper_assignment_command(a) == at.id && looper_assignment_target(a) == at.target && assignment_target(graph_, a))
+                digits += (digits.empty() ? "" : " ") + a.control.substr(5);
+        if (digits.empty()) return;
+        const int width = 20 + 14 * static_cast<int>(std::count(digits.begin(), digits.end(), ' '));
+        auto* dot = panel(parent, at.x - width + 6, at.y - 8, width, 20, text);
+        lv_obj_set_style_radius(dot, 10, 0); lv_obj_set_style_border_width(dot, 0, 0);
+        lv_obj_remove_flag(dot, LV_OBJ_FLAG_CLICKABLE);
+        auto* number = label(dot, digits, 0, 1, width, background, &peepo_mono_14);
+        lv_obj_set_style_text_align(number, LV_TEXT_ALIGN_CENTER, 0);
+    };
+    const auto command = [&](lv_obj_t* where, const char* name, int x, int y, int width, int id, bool quick = false) {
+        auto* b = button(where, name, x, y, width, Action::LooperCommand, m.id, quick ? "quick" : "", id);
+        lv_obj_set_size(b, width, 40);
+        if (!looper_command_supported(id) || engine_.state() != EngineState::Ready) lv_obj_add_state(b, LV_STATE_DISABLED);
+        // While binding, the command picked for the next stomp is lit.
+        if (looper_binding_ && looper_bind_command_ == id && !quick) lv_obj_set_style_border_color(b, color(accent), 0);
+        if (where == parent) badges.push_back({x + width, y, id, quick ? 0 : looper_target_});
+        looper_commands_.push_back(b);
+        return b;
+    };
+    // The settings of one section, as bars and switches.
+    const auto bars = [&](const std::vector<std::pair<std::string, const char*>>& symbols) {
+        auto* list = lv_obj_create(parent); lv_obj_remove_style_all(list);
+        lv_obj_set_pos(list, 0, 4); lv_obj_set_size(list, 800, 166);
+        lv_obj_set_flex_flow(list, LV_FLEX_FLOW_ROW_WRAP);
+        lv_obj_set_style_pad_hor(list, 20, 0); lv_obj_set_style_pad_row(list, 8, 0); lv_obj_set_style_pad_column(list, 16, 0);
+        lv_obj_set_scroll_dir(list, LV_DIR_VER); parameter_list_ = list;
+        for (const auto& [symbol, name] : symbols) {
+            const auto found = std::find_if(m.parameters.begin(), m.parameters.end(), [&](const Parameter& p) { return p.symbol == symbol; });
+            if (found == m.parameters.end()) continue;
+            auto shown = *found;
+            if (name) shown.name = name;
+            parameter_bar(list, m, shown);
+            if (auto* group = lv_group_get_default()) lv_group_add_obj(group, bars_.back().widget);
+        }
+        return list;
+    };
+    const auto prefix = "l" + std::to_string(looper_selected_) + "_";
+    if (looper_section_ == 0) {
+        const auto aim = looper_target_ == 0 ? std::string("SELECTED") : looper_target_ == 1 ? std::string("ALL") : "LOOP " + std::to_string(looper_target_ - 1);
+        auto* target = button(parent, "ACT ON: " + aim, 14, 4, 250, Action::LooperTarget, m.id); lv_obj_set_height(target, 40);
+        command(parent, "PREV", 282, 4, 100, 65);
+        command(parent, "NEXT", 390, 4, 100, 64);
+        auto* bind = button(parent, looper_binding_ ? "BINDING" : "BIND", 508, 4, 130, Action::LooperBind, m.id); lv_obj_set_height(bind, 40);
+        if (looper_binding_) primary(bind);
+        auto* remove = button(parent, "- LOOP", 658, 4, 128, Action::LooperCount, m.id, {}, -1); lv_obj_set_height(remove, 40);
+        if (count == 1) lv_obj_add_state(remove, LV_STATE_DISABLED);
+        constexpr const char* names[]{"RECORD", "OVERDUB", "MULTIPLY", "INSERT", "REPLACE", "SUBST", "REVERSE", "MUTE",
+            "UNDO", "REDO", "TRIGGER", "ONCE", "PAUSE", "SOLO", "DELAY", "CLEAR"};
+        constexpr int ids[]{5,6,7,8,2,16,3,9,0,1,15,14,21,24,10,17};
+        for (int i = 0; i < 16; ++i) command(parent, names[i], 14 + (i % 8) * 97, 60 + (i / 8) * 50, 92, ids[i]);
+    } else if (looper_section_ == 1) {
+        bars({{prefix+"level", "Loop level"}, {prefix+"in_gain", "Input gain"}, {prefix+"thresh", "Rec threshold"}, {prefix+"feedback", "Feedback"},
+              {prefix+"play_fb", nullptr}, {prefix+"sync", nullptr}, {prefix+"play_sync", nullptr}});
+    } else if (looper_section_ == 2) {
+        // Plain speed: pitch follows it, as on tape.
+        command(bars({{prefix+"rate", "Rate"}}), "REVERSE", 0, 0, 180, 3, true);
+    } else {
+        auto* list = bars({{"dry_level", nullptr}, {"quantize", nullptr}, {"round", nullptr}, {"mute_quant", nullptr}, {"dub_quant", nullptr},
+                           {"repl_quant", nullptr}, {"sync_to", nullptr}, {"rel_sync", nullptr}, {"eighths", nullptr}, {"fade", nullptr},
+                           {"safety_fb", nullptr}, {"loop_secs", nullptr}});
+        command(list, "PREV LOOP", 0, 0, 180, 65);
+        command(list, "NEXT LOOP", 0, 0, 180, 64);
+        auto* remove = button(list, "REMOVE LOOP", 0, 0, 180, Action::LooperCount, m.id, {}, -1); lv_obj_set_height(remove, 40);
+        if (count == 1) lv_obj_add_state(remove, LV_STATE_DISABLED);
+    }
+    auto* row = lv_obj_create(parent); lv_obj_remove_style_all(row);
+    lv_obj_set_pos(row, 14, 182); lv_obj_set_size(row, 772, 116);
+    lv_obj_set_scroll_dir(row, LV_DIR_HOR); lv_obj_set_scrollbar_mode(row, LV_SCROLLBAR_MODE_ACTIVE);
+    for (int n = 0; n < count; ++n) {
+        auto& c = looper_cards_[std::size_t(n)];
+        c.card = button(row, "", n * 194, 0, 180, Action::LooperSelect, m.id, {}, n + 1);
+        lv_obj_set_height(c.card, 110); lv_obj_delete(lv_obj_get_child(c.card, 0));
+        label(c.card, "LOOP " + std::to_string(n + 1), 12, 8, 156, text, &peepo_bold_14);
+        c.time = label(c.card, "--", 12, 30, 156, muted, &peepo_mono_14);
+        c.cycle = label(c.card, "", 12, 49, 156, faint, &peepo_mono_14);
+        c.state = label(c.card, "WAITING", 12, 70, 156, muted, &peepo_bold_14);
+        c.bar = panel(c.card, 12, 96, 0, 4, muted); lv_obj_set_style_border_width(c.bar, 0, 0);
+        for (auto* child : {c.time, c.cycle, c.state, c.bar}) lv_obj_remove_flag(child, LV_OBJ_FLAG_CLICKABLE);
+    }
+    constexpr const char* quick[]{"REC/DUB", "OVERDUB", "PLAY", "PAUSE", "UNDO", "CLEAR"};
+    constexpr int ids[]{33,6,15,21,0,17};
+    for (int n = 0; n < 6; ++n) {
+        auto* b = command(parent, quick[n], 14 + n * 108, 312, 100, ids[n], true);
+        if (n == 0) primary(b);
+    }
+    auto* add = button(parent, "+ LOOP", 670, 312, 116, Action::LooperCount, m.id, {}, 1); lv_obj_set_height(add, 40);
+    if (count == 8) lv_obj_add_state(add, LV_STATE_DISABLED);
+    for (const auto& at : badges) badge(at);
+    update_looper();
+}
+void Application::update_looper() {
+    if (!looper_cards_[0].card) return;
+    const auto* m = find_module(graph_, selected_); if (!m) return;
+    const auto live = engine_.looper_status(m->id);
+    const int count = std::clamp(int(parameter(*m, "loops").value), 1, 8);
+    const int selected = live[48] ? std::clamp(int(*live[48]), 1, count) : looper_selected_;
+    if (selected != looper_selected_) {
+        looper_selected_ = selected;
+        // Reflect navigation events into the saved setting. Plugins cannot
+        // write their input controls; without this, tapping the old input
+        // value after Next would produce no control edge in Ingen.
+        if (parameter(*m, "selected").value != selected) submit(SetParameter{m->id, "selected", double(selected)});
+        if (looper_section_ == 1 || looper_section_ == 2) rebuild_ = true;
+    }
+    const auto time = [](double v) { std::ostringstream s; s << std::fixed << std::setprecision(2) << v; return s.str(); };
+    for (int n = 0; n < count; ++n) {
+        const auto& c = looper_cards_[std::size_t(n)]; if (!c.card) continue;
+        const auto base = std::size_t(n) * 6;
+        const int state = live[base] ? int(*live[base]) : -1;
+        const bool waiting = live[base + 2].value_or(0) > .5;
+        const auto ink = waiting ? warning : state == 2 ? 0xf87171 : state == 5 ? warning : state == 4 ? module_ink(*m) : muted;
+        const auto name = live[base] ? looper_state(state) : engine_.state() != EngineState::Ready ? "OFFLINE" : "WAITING";
+        if (name != std::string(lv_label_get_text(c.state))) lv_label_set_text(c.state, name);
+        lv_obj_set_style_text_color(c.state, color(ink), 0);
+        lv_obj_set_style_opa(c.state, waiting && (clock_ms_ / 300) % 2 ? LV_OPA_40 : LV_OPA_COVER, 0);
+        lv_obj_set_style_border_color(c.card, color(n + 1 == selected ? text : border), 0);
+        lv_obj_set_style_border_width(c.card, n + 1 == selected ? 2 : 1, 0);
+        const double length = live[base + 3].value_or(0), pos = live[base + 5].value_or(0), cycle = live[base + 4].value_or(0);
+        const auto position = length > 0 ? time(pos) + " / " + time(length) + " s" : "--";
+        lv_label_set_text(c.time, position.c_str());
+        const auto cy = cycle > 0 && std::abs(cycle - length) > .001 ? "CYCLE " + time(cycle) + " s" : std::string();
+        lv_label_set_text(c.cycle, cy.c_str());
+        lv_obj_set_style_bg_color(c.bar, color(ink), 0);
+        lv_obj_set_width(c.bar, length > 0 ? int(std::clamp(pos / length, 0.0, 1.0) * 156) : 0);
+    }
+    if (footer_ && (message_.empty() || clock_ms_ - message_ms_ >= 4000)) {
+        const auto state = live[std::size_t(selected - 1) * 6];
+        // The sync source: none, the tempo or a loop (Sync to).
+        const auto sync_to = std::find_if(m->parameters.begin(), m->parameters.end(), [](const Parameter& p) { return p.symbol == "sync_to"; });
+        const int to = sync_to == m->parameters.end() ? 0 : int(std::lround(sync_to->value));
+        const auto sync = to <= 0 ? std::string("FREE") : to == 1 ? std::string("SYNC TEMPO") : "SYNC LOOP " + std::to_string(to - 1);
+        const auto status = "LOOP " + std::to_string(selected) + " // " + (state ? looper_state(int(*state)) : "WAITING") + " // " + sync;
+        lv_label_set_text(footer_, status.c_str());
+    }
 }
 void Application::euclidean_view(lv_obj_t* parent, const Module& m) {
     auto* viz = panel(parent, 20, 10, 340, 340);
@@ -2376,6 +2582,24 @@ void Application::encoder(const Gesture& g) {
     }
     switch (page_) {
     case Page::Parameters:
+        if (const auto* m = find_module(graph_, selected_); m && looper_uri(m->uri)) {
+            auto* group = lv_group_get_default();
+            auto* focused = group ? lv_group_get_focused(group) : nullptr;
+            if (turn && first) break; // Ordinary group order includes header, bars, cards and commands.
+            if (turn && focused) {
+                const auto bar = std::find_if(bars_.begin(), bars_.end(), [&](const Bar& b) { return b.widget == focused; });
+                if (bar != bars_.end()) turn_parameter(bar->id, bar->symbol, g, nullptr);
+                else if (std::any_of(looper_cards_.begin(), looper_cards_.end(), [&](const LooperCard& c) { return c.card == focused; })) {
+                    looper_selected_ = std::clamp(looper_selected_ + g.steps, 1, int(parameter(*m, "loops").value));
+                    submit(SetParameter{m->id, "selected", double(looper_selected_)});
+                }
+            } else if (tap && focused && !lv_obj_has_state(focused, LV_STATE_DISABLED)) {
+                lv_obj_send_event(focused, LV_EVENT_PRESSED, nullptr);
+                lv_obj_send_event(focused, LV_EVENT_RELEASED, nullptr);
+                lv_obj_send_event(focused, LV_EVENT_CLICKED, nullptr);
+            }
+            return;
+        }
         if (bars_.empty()) return;
         if (turn && first && !adjusting_) focus_parameter(static_cast<std::size_t>(std::max(0, static_cast<int>(parameter_focus_) + g.steps)));
         else if (turn && bars_[parameter_focus_].file) message("Push to choose a file.");
@@ -2431,9 +2655,21 @@ void Application::stomp(const Gesture& g) {
     const bool pressed = g.kind == Gesture::Kind::Press;
     // A module's actions are open, as after holding it on the patch: the stomp is being assigned.
     if (page_ == Page::ModuleActions) { if (pressed) quick_assign(g.control); return; }
+    // Binding on the Loo-pi page: the stomp is being bound, and does not play.
+    if (looper_binding_ && page_ == Page::Parameters) {
+        if (const auto* m = find_module(graph_, selected_); m && looper_uri(m->uri)) { if (pressed) looper_bind(g.control); return; }
+    }
     // Footswitch modules hear the stomp as well as whatever it is assigned.
     std::vector<std::string> said;
     const bool listened = drive_footswitches(g.control, pressed, said);
+    // A held Loo-pi command is released where it was pressed.
+    if (!pressed) {
+        if (const auto held = looper_stomps_.find(g.control); held != looper_stomps_.end()) {
+            engine_.looper_command(held->second.id, held->second.command, held->second.target, false);
+            looper_stomps_.erase(held);
+            return;
+        }
+    }
     if (const auto bypasses = bypass_assignments(graph_, g.control); !bypasses.empty()) {
         // Each module flips, so two set opposite ways swap places.
         if (pressed)
@@ -2446,6 +2682,21 @@ void Application::stomp(const Gesture& g) {
     if (const auto* pin = pinned(g.control)) {
         const auto* m = assignment_target(graph_, *pin);
         if (!m) { if (pressed) message(name + " is pinned to a module that is gone. Settings > Controls repairs it."); return; }
+        if (pin->action == ControlAction::Looper) {
+            // Press and release, as a held footswitch, so long presses work.
+            // With the page open the selected loop is fixed at the press;
+            // otherwise Loo-pi's own selection (target 0) is used.
+            if (!pressed) return;
+            const int command = *looper_assignment_command(*pin);
+            int target = looper_assignment_target(*pin);
+            if (const auto live = engine_.looper_status(m->id)[48]; target == 0 && live && command != 64 && command != 65) target = int(*live) + 1;
+            if (engine_.looper_command(m->id, command, target, true)) {
+                looper_stomps_[g.control] = {m->id, command, target};
+                said.insert(said.begin(), m->name + " / " + looper_command_name(command) + ", " + looper_target_name(target));
+            } else said.insert(said.begin(), m->name + " is not ready for commands");
+            message(name + ": " + joined_names(said));
+            return;
+        }
         // Switch actions go straight to the engine: never coalesced with turns.
         const auto* p = assignment_parameter(graph_, *pin);
         const auto value = switched_value(*p, p->value, *pin, pressed);
@@ -2487,6 +2738,28 @@ void Application::quick_assign(const std::string& control) {
     submit(Assign{a, true});
     message(name + " now switches " + m->name + (others.empty() ? "" : " with " + joined_names(others)) +
             (replaces ? ", instead of what it controlled" : "") + ". Press it again here to undo.");
+}
+void Application::looper_bind(const std::string& control) {
+    const auto name = control_label(control);
+    const auto* m = find_module(graph_, selected_);
+    if (!m) return;
+    if (looper_bind_command_ < 0) { message("Tap a command first, then press " + name + "."); return; }
+    const auto what = looper_command_name(looper_bind_command_) + " to the " + looper_target_name(looper_bind_target_);
+    // Pressing it again on the same command and target unbinds it.
+    if (const auto* held = pinned(control); held && held->module == m->id && looper_assignment_command(*held) == looper_bind_command_ &&
+        looper_assignment_target(*held) == looper_bind_target_) {
+        submit(Unassign{control});
+        message(name + " no longer sends " + what + ".");
+        return;
+    }
+    const bool replaces = pinned(control) != nullptr;
+    Assignment a;
+    a.control = control; a.module = m->id; a.action = ControlAction::Looper; a.mode = SwitchMode::Momentary;
+    a.parameter = std::to_string(looper_bind_command_);
+    a.minimum = a.maximum = looper_bind_target_;
+    submit(Assign{a});
+    message(name + " now sends " + what + (replaces ? ", instead of what it did" : "") + ". Press it again to unbind.");
+    rebuild_ = true;
 }
 bool Application::drive_footswitches(const std::string& control, bool pressed, std::vector<std::string>& said) {
     bool listened = false;
@@ -2537,6 +2810,8 @@ std::string Application::assignment_text(const std::string& control) const {
     if (const auto* a = pinned(control)) {
         const auto* m = assignment_target(graph_, *a);
         if (!m) return "Orphaned: its module is gone or changed. Edit to clear it.";
+        if (a->action == ControlAction::Looper)
+            return m->name + " / " + looper_command_name(*looper_assignment_command(*a)) + ", " + looper_target_name(looper_assignment_target(*a));
         const auto* p = assignment_parameter(graph_, *a);
         auto low = *p, high = *p; low.value = a->minimum; high.value = a->maximum;
         std::string summary = m->name + " / " + p->name;
@@ -2613,6 +2888,10 @@ void Application::assignment_detail(lv_obj_t* parent) {
     const auto* p = assignment_parameter(graph_, *a);
     if (orphaned(id)) {
         label(parent, "Its module was removed, or now holds a different plugin, so it is never applied.\nClear it, then assign the control again.", 24, 64, 752, muted);
+        return;
+    }
+    if (a->action == ControlAction::Looper) {
+        label(parent, "Held: the command is pressed. Released: it is let go, so a long press\nworks as on the page. To change it, bind it again on the Loo-pi page.", 24, 64, 752, muted);
         return;
     }
     if (!p) {

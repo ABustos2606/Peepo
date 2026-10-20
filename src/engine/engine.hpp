@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Peepo contributors
 #pragma once
 #include "core/euclidean.hpp"
+#include "core/looper.hpp"
 #include "core/model.hpp"
 #include <optional>
 #include <variant>
@@ -92,6 +93,9 @@ public:
     virtual std::optional<double> tuner_frequency(InstanceId) const { return {}; }
     virtual void watch_euclidean(std::optional<InstanceId>) {}
     virtual EuclideanSteps euclidean_steps(InstanceId) const { return {}; }
+    virtual void watch_looper(std::optional<InstanceId>) {}
+    virtual LooperStatus looper_status(InstanceId) const { return {}; }
+    virtual bool looper_command(InstanceId, int, int, bool) { return false; }
     // Optional development controls; real adapters keep these unsupported.
     virtual bool simulate_state(EngineState) { return false; }
     virtual bool simulate_rejection() { return false; }

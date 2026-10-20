@@ -3,6 +3,7 @@
 #pragma once
 #include <cstdint>
 #include <deque>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -102,8 +103,10 @@ struct Connection {
     bool operator==(const Connection&) const = default;
 };
 // A physical control pinned to something in this patch: an encoder to a
-// parameter, a stomp switch to a parameter or to a module's software bypass.
-enum class ControlAction { Parameter, Bypass };
+// parameter, a stomp switch to a parameter, to a module's software bypass or
+// to a Loo-pi command. A Loo-pi command keeps its command number in
+// `parameter` and its target (core/looper.hpp) in `minimum` and `maximum`.
+enum class ControlAction { Parameter, Bypass, Looper };
 // How a stomp switch drives a parameter: flip it on each press, or hold the
 // top of the range only while pressed.
 enum class SwitchMode { Toggle, Momentary };
@@ -180,6 +183,10 @@ bool valid_control_id(const std::string&);
 // is gone, holds another plugin, or lacks the parameter.
 const Module* assignment_target(const Graph&, const Assignment&);
 const Parameter* assignment_parameter(const Graph&, const Assignment&);
+// A Loo-pi command assignment's command number, when it names one Loo-pi
+// accepts and a valid target; empty otherwise.
+std::optional<int> looper_assignment_command(const Assignment&);
+inline int looper_assignment_target(const Assignment& a) { return static_cast<int>(a.minimum); }
 // An assignment as one engine property value, naming its block by symbol (m3).
 std::string encode_assignment(const Assignment&, const std::string& block);
 // Back again; the module is left 0 and the block symbol returned through `block`.

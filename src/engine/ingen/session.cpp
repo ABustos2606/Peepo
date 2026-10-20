@@ -99,6 +99,7 @@ void Session::closed(std::string reason, bool retrying) {
     transactions_.clear(); sequences_.clear(); outgoing_.clear(); buffer_.clear(); expected_copies_.clear();
     depth_ = 0; cpu_.reset(); fault_.reset(); sent_modified_.reset();
     tuner_.reset(); tuner_port_.clear(); tuner_frequency_.reset();
+    looper_.reset(); looper_ports_ = {}; looper_status_ = {};
     euclidean_.reset(); euclidean_ports_ = {}; euclidean_steps_ = {}; euclidean_age_ = 0;
     emit(0, true, std::move(reason));
 }
@@ -173,6 +174,13 @@ void Session::handle(const Message& message) {
     }
 }
 void Session::merge(const std::string& path, const Properties& properties) {
+    // Atom commands are transient events, not editable/saved control values.
+    if (properties.size() == 1 && properties.front().first == value_key && symbol_of(path) == "commands") {
+        for (const auto& [id, block_path] : paths_) {
+            const auto* module = find_module(graph_, id);
+            if (block_path == parent_of(path) && module && looper_uri(module->uri)) return;
+        }
+    }
     auto& object = objects_[path];
     const bool output_value = properties.size() == 1 && properties.front().first == value_key &&
         has(object, type, iri(uri::lv2, "OutputPort")) && has(object, type, iri(uri::lv2, "ControlPort"));
@@ -199,6 +207,12 @@ void Session::merge(const std::string& path, const Properties& properties) {
                     euclidean_steps_[i].reset();
                 }
             }
+        }
+    }
+    for (std::size_t i = 0; i < looper_ports_.size(); ++i) {
+        if (!looper_ports_[i].empty() && path == looper_ports_[i]) {
+            monitored_output = true;
+            if (output_value) looper_status_[i] = finite(find(properties, value_key));
         }
     }
     // Output meters must not rebuild the graph or interrupt touch gestures.
@@ -273,6 +287,62 @@ void Session::watch_euclidean(std::optional<InstanceId> id) {
 }
 EuclideanSteps Session::euclidean_steps(InstanceId id) const {
     return state_ == EngineState::Ready && euclidean_ == id && euclidean_age_ < 750 ? euclidean_steps_ : EuclideanSteps{};
+}
+void Session::watch_looper(std::optional<InstanceId> id) {
+    std::array<std::string, looper_outputs> ports{};
+    if (id && state_ == EngineState::Ready) {
+        const auto* module = find_module(graph_, *id);
+        const auto path = paths_.find(*id);
+        // Bypass keeps the looper running, including its telemetry.
+        if (module && looper_uri(module->uri) && path != paths_.end()) {
+            // Ingen sends every subscribed output 25 times a second, changed or
+            // not (measured on the Pi): only the loops that exist are watched.
+            const auto loops = std::find_if(module->parameters.begin(), module->parameters.end(), [](const Parameter& p) { return p.symbol == "loops"; });
+            const auto count = loops == module->parameters.end() ? looper_loops : std::size_t(std::clamp(std::lround(loops->value), 1L, long(looper_loops)));
+            for (std::size_t i = 0; i < ports.size(); ++i) {
+                if (i < looper_loops * looper_fields && i / looper_fields >= count) continue;
+                const auto candidate = child(path->second, looper_symbol(i));
+                const auto found = objects_.find(candidate);
+                if (found != objects_.end() && has(found->second, type, iri(uri::lv2, "OutputPort")) &&
+                    has(found->second, type, iri(uri::lv2, "ControlPort"))) ports[i] = candidate;
+            }
+        }
+    }
+    if (ports == looper_ports_) return;
+    if (state_ == EngineState::Ready) {
+        auto& tx = begin(0, Purpose::Monitor);
+        for (const auto& port : looper_ports_) if (!port.empty() && objects_.contains(port)) {
+            const auto seq = sequence(); send(tx, set(seq, port, "ingen:broadcast", "false"), seq);
+        }
+        for (const auto& port : ports) if (!port.empty()) {
+            const auto seq = sequence(); send(tx, set(seq, port, "ingen:broadcast", "true"), seq);
+        }
+    }
+    // Adding or removing a loop keeps the values of the loops still watched.
+    if (looper_ != id) looper_status_ = {};
+    else for (std::size_t i = 0; i < ports.size(); ++i) if (ports[i] != looper_ports_[i]) looper_status_[i].reset();
+    looper_ports_ = ports; looper_ = id;
+}
+LooperStatus Session::looper_status(InstanceId id) const {
+    // Values are kept between broadcasts: a stable empty/muted loop is not stale.
+    const auto* module = find_module(graph_, id);
+    return state_ == EngineState::Ready && looper_ == id && module && looper_uri(module->uri) ? looper_status_ : LooperStatus{};
+}
+bool Session::looper_command(InstanceId id, int command, int target, bool press) {
+    const auto* module = find_module(graph_, id);
+    const auto path = paths_.find(id);
+    if (state_ != EngineState::Ready || !module || !looper_uri(module->uri) || path == paths_.end() ||
+        !looper_command_supported(command) || target < 0 || target > 9) return false;
+    const auto port = child(path->second, "commands");
+    const auto found = objects_.find(port);
+    if (found == objects_.end() || !has(found->second, type, iri(uri::lv2, "InputPort")) ||
+        !has(found->second, type, iri(uri::atom, "AtomPort"))) return false;
+    // Typed xsd:int is mapped to atom:Int by Ingen's Sratom reader.
+    auto& tx = begin(0, Purpose::Monitor);
+    const auto seq = sequence();
+    const auto value = target * 256 + command * 2 + int(press);
+    send(tx, set(seq, port, "ingen:value", "\"" + std::to_string(value) + "\"^^xsd:int"), seq);
+    return true;
 }
 void Session::erase(const std::string& path) {
     const auto prefix = path + "/";
@@ -387,7 +457,7 @@ void Session::finish(Transaction& done) {
         if (!ok && done.replaces) fault_ = std::string("Engine refused to describe its graph: ") + status_text(done.status);
         break;
     case Purpose::Monitor:
-        if (!ok) { tuner_frequency_.reset(); euclidean_steps_ = {}; }
+        if (!ok) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; }
         break;
     }
 }
@@ -960,7 +1030,7 @@ std::vector<EngineEvent> Session::advance(unsigned milliseconds) {
         auto node = transactions_.extract(id);
         for (const auto number : node.mapped().sequences) sequences_.erase(number);
         if (node.mapped().purpose == Purpose::Edit) { emit(node.mapped().request, false, "Engine did not answer in time"); resynchronize = true; }
-        else if (node.mapped().purpose == Purpose::Monitor) { tuner_frequency_.reset(); euclidean_steps_ = {}; }
+        else if (node.mapped().purpose == Purpose::Monitor) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; }
         else fault_ = "Engine did not answer while synchronizing";
     }
     // What a late edit did is unknown; read the graph again instead of guessing.

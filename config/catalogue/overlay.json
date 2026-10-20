@@ -2,6 +2,7 @@
   "format": "peepo-catalogue-overlay",
   "version": 1,
   "rules": [
+    {"uri": "https://github.com/ABustos2606/loo-pi#loopi", "name": "Loo-pi", "category": "Delay", "description": "Eight stereo loops: record, overdub, multiply, insert, reverse, half and double speed, sync to the tempo or a loop. Open its page for loop cards and commands.", "bypass": "port", "tempo": "bpm"},
     {"match": "polyeffects.com/lv2/", "strip_prefix": "Poly "},
     {"match": "polyclouds", "category": "Texture", "parameters": [
       {"symbol": "in_gain_param", "hidden": true},

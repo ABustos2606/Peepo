@@ -56,7 +56,7 @@ private:
                         ParallelDemo, CvChoice, CvPage,
                         SavePatch, LoadStored, DeleteStored, StartupStored, PatchPage, ConfirmAction, CancelAction,
                         AssignControl, EditControl, ClearControl, PickModule, PickTarget, PickerPage, InvertControl, SwitchModeChoice, RangeEnd, PowerOff,
-                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, FilePage, TempoStep, TempoSlider, Tap };
+                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, FilePage, TempoStep, TempoSlider, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind };
     struct Binding {
         Application* app;
         Action action;
@@ -100,6 +100,9 @@ private:
     void update_tuner();
     void euclidean_view(lv_obj_t*, const Module&);
     void update_euclidean();
+    void looper_view(lv_obj_t*, const Module&);
+    void update_looper();
+    void release_looper();
     void patches(lv_obj_t*);
     void settings(lv_obj_t*);
     void diagnostics(lv_obj_t*);
@@ -129,6 +132,9 @@ private:
     // A stomp pressed while a module's actions are open: it switches that
     // module's bypass from then on, beside any others, or no longer does.
     void quick_assign(const std::string& control);
+    // A stomp pressed while binding on the Loo-pi page: it sends the picked
+    // command to the picked target from then on, or no longer does.
+    void looper_bind(const std::string& control);
     // Give Footswitch modules listening to a stomp its press or release;
     // false when none listens. What changed is added to `said`.
     bool drive_footswitches(const std::string& control, bool pressed, std::vector<std::string>& said);
@@ -187,6 +193,9 @@ private:
     FileStore* files_ = nullptr;
     TapTempo tapper_;
     unsigned long long clock_ms_ = 0;
+    // When the last message was given: the Loo-pi page's status line waits
+    // a few seconds before replacing it.
+    unsigned long long message_ms_ = 0;
     // A tempo on its way to the engine, so steps build on it rather than on the last answer.
     std::optional<double> tempo_sent_;
     std::size_t file_page_ = 0;
@@ -238,6 +247,18 @@ private:
     lv_obj_t *screen_ = nullptr, *canvas_ = nullptr, *footer_ = nullptr;
     lv_obj_t *tempo_value_ = nullptr, *cpu_value_ = nullptr;
     lv_obj_t *tuner_note_ = nullptr, *tuner_detail_ = nullptr, *tuner_status_ = nullptr, *tuner_needle_ = nullptr;
+    int looper_section_ = 0, looper_target_ = 0, looper_selected_ = 1;
+    struct LooperPress { InstanceId id; int command, target; };
+    std::map<lv_obj_t*, LooperPress> looper_pressed_;
+    // Binding a stomp: on while BIND is lit; the command tapped, or -1.
+    bool looper_binding_ = false;
+    int looper_bind_command_ = -1, looper_bind_target_ = 0;
+    // Stomps holding a Loo-pi command down, so the release reaches the loop
+    // that got the press even if the selection changed in between.
+    std::map<std::string, LooperPress> looper_stomps_;
+    struct LooperCard { lv_obj_t *card = nullptr, *state = nullptr, *time = nullptr, *cycle = nullptr, *bar = nullptr; };
+    std::array<LooperCard, looper_loops> looper_cards_{};
+    std::vector<lv_obj_t*> looper_commands_;
     lv_obj_t* euclidean_status_ = nullptr;
     std::array<lv_obj_t*, euclidean_tracks> euclidean_rings_{};
     std::array<lv_obj_t*, euclidean_tracks> euclidean_halos_{};

@@ -1123,6 +1123,89 @@ int main(int argc, char** argv) {
         }
         // Drive the personalized Euclidean page with live step telemetry and 4-column track controls.
         {
+            struct LooperEngine : peepo::Engine {
+                peepo::SimulatedEngine backing; peepo::LooperStatus status{};
+                std::optional<peepo::InstanceId> watched;
+                struct Sent { int command,target; bool press; }; std::vector<Sent> sent;
+                peepo::RequestId submit(peepo::Command c) override { return backing.submit(std::move(c)); }
+                void connect() override { backing.connect(); } void disconnect() override { backing.disconnect(); }
+                std::vector<peepo::EngineEvent> advance(unsigned ms) override { return backing.advance(ms); }
+                peepo::EngineState state() const override { return backing.state(); }
+                const peepo::Graph& snapshot() const override { return backing.snapshot(); }
+                peepo::EngineCapabilities capabilities() const override { return {false,true,false,false,true}; }
+                void watch_looper(std::optional<peepo::InstanceId> id) override { watched=id; }
+                peepo::LooperStatus looper_status(peepo::InstanceId id) const override { return watched==id?status:peepo::LooperStatus{}; }
+                bool looper_command(peepo::InstanceId,int command,int target,bool press) override { sent.push_back({command,target,press});return true; }
+            } live;
+            peepo::ModuleDefinition d{"https://github.com/ABustos2606/loo-pi#loopi","Loo-pi","Delay","Eight stereo loops",0x7dd3fc,
+                {{"in_l",peepo::Direction::Input,1},{"out_l",peepo::Direction::Output,1}},
+                {{"loops","Loops","",peepo::ParameterKind::Integer,1,8,4},{"selected","Selected loop","",peepo::ParameterKind::Integer,1,8,1},
+                 {"dry_level","Dry level","",peepo::ParameterKind::Continuous,0,1,1},
+                 {"loop_secs","Loop memory","s",peepo::ParameterKind::Continuous,1,300,40}}};
+            for(int n=1;n<=8;++n) for(const auto& field:std::vector<std::pair<std::string,std::string>>{{"level","Loop level"},{"in_gain","Input gain"},{"thresh","Rec threshold"},{"feedback","Feedback"},{"play_fb","Play feedback"}})
+                d.parameters.push_back({"l"+std::to_string(n)+"_"+field.first,field.second,"",peepo::ParameterKind::Continuous,0,1,field.first=="thresh"?0.0:1.0});
+            for(int n=1;n<=8;++n) {
+                d.parameters.push_back({"l"+std::to_string(n)+"_sync","Sync","",peepo::ParameterKind::Toggle,0,1,1});
+                d.parameters.push_back({"l"+std::to_string(n)+"_rate","Rate","x",peepo::ParameterKind::Continuous,.25,4,1});
+            }
+            d.parameters.push_back({"quantize","Quantize","",peepo::ParameterKind::Integer,0,3,0});
+            d.parameters.push_back({"sync_to","Sync to","",peepo::ParameterKind::Integer,0,9,0});
+            d.parameters.push_back({"eighths","8ths/cycle","",peepo::ParameterKind::Integer,1,128,16});
+            peepo::register_definitions({d});
+            live.submit(peepo::LoadGraph{peepo::empty_graph("Loops")});live.advance(100);
+            live.submit(peepo::AddModule{d.uri,184,132});live.advance(100);
+            for(int n=0;n<4;++n) { live.status[n*6]=0; live.status[n*6+3]=0; } live.status[48]=1;
+            peepo::Application app(live);step(app);
+            const auto m=app.graph().modules.back();click(app,m.x+48,m.y+72+48);
+            check(app.page()==peepo::Page::Parameters && live.watched==m.id && exact_label(app.screen(),"REC/DUB") && exact_label(app.screen(),"LOOP 4"),"looper page or subscriptions missing");
+            capture(app,output/"60-looper-empty.bmp");
+            auto* original=exact_label(app.screen(),"LOOP 1");
+            live.status[0]=2;live.status[3]=2.5;live.status[4]=2.5;live.status[5]=1.25;step(app);
+            check(exact_label(app.screen(),"RECORDING") && exact_label(app.screen(),"LOOP 1")==original,"looper telemetry rebuilt page");
+            capture(app,output/"61-looper-recording.bmp");
+            tap(app,"REC/DUB");check(live.sent.size()==2 && live.sent[0].command==33 && live.sent[0].target==2 && live.sent[0].press && !live.sent[1].press,"quick command lost press/release or explicit selected target");
+            tap(app,"ACT ON: SELECTED");tap(app,"RECORD");check(live.sent.back().target==1 && !live.sent.back().press,"all-loop target not delivered");
+            live.status[0]=4;live.status[6]=5;live.status[9]=8;live.status[11]=2;live.status[12]=10;live.status[15]=6;live.status[17]=5;step(app);
+            capture(app,output/"62-looper-playing-muted.bmp");
+            live.status[2]=1;live.status[1]=5;step(app);capture(app,output/"63-looper-waiting.bmp");
+            tap_header(app,"LEVELS");check(exact_label(app.screen(),"LOOP LEVEL") && exact_label(app.screen(),"INPUT GAIN"),"looper Levels missing");
+            capture(app,output/"64-looper-levels.bmp");
+            slide(app,"LOOP LEVEL",-.25);check(std::find_if(peepo::find_module(app.graph(),m.id)->parameters.begin(),peepo::find_module(app.graph(),m.id)->parameters.end(),[](const peepo::Parameter& p){return p.symbol=="l1_level";})->value<1,"looper level bar not editable");
+            const auto value=[&](const std::string& symbol){ const auto& ps=peepo::find_module(app.graph(),m.id)->parameters;
+                return std::find_if(ps.begin(),ps.end(),[&](const peepo::Parameter& p){return p.symbol==symbol;})->value; };
+            tap_bar(app,"SYNC");check(value("l1_sync")==0,"looper Sync switch disabled");
+            // Milestone 3: Rate and Reverse; the global settings.
+            tap_header(app,"RATE");check(exact_label(app.screen(),"RATE") && exact_label(app.screen(),"REVERSE"),"looper Rate section missing");
+            capture(app,output/"65-looper-rate.bmp");
+            slide(app,"RATE",-.2);check(value("l1_rate")<1,"looper Rate bar not editable");
+            live.sent.clear();tap(app,"REVERSE");check(live.sent.size()==2 && live.sent[0].command==3 && live.sent[0].target==2,"Reverse not sent to the selected loop");
+            tap_header(app,"GLOBAL");check(exact_label(app.screen(),"QUANTIZE") && exact_label(app.screen(),"SYNC TO") && exact_label(app.screen(),"8THS/CYCLE"),"looper Global section missing");
+            capture(app,output/"66-looper-global.bmp");
+            // Every Beebo command is live now, Multiply among them.
+            tap_header(app,"COMMANDS");live.sent.clear();
+            tap(app,"MULTIPLY");check(live.sent.size()==2 && live.sent[0].command==7 && live.sent[0].press && !live.sent[1].press,"Multiply disabled or lost press/release");
+            // Binding a stomp: BIND, a command, then the stomp. It does not play while binding.
+            tap(app,"BIND");tap(app,"INSERT");live.sent.clear();
+            app.control({peepo::ControlEvent::Type::Press,"stomp2"});step(app,256);app.control({peepo::ControlEvent::Type::Release,"stomp2"});step(app);
+            check(live.sent.empty() && app.graph().assignments.size()==1 && app.graph().assignments[0].action==peepo::ControlAction::Looper &&
+                  peepo::looper_assignment_command(app.graph().assignments[0])==8 && peepo::looper_assignment_target(app.graph().assignments[0])==1,"stomp not bound to Insert on all loops");
+            { auto* dot=exact_label(app.screen(),"2"); auto* insert=exact_label(app.screen(),"INSERT");
+              lv_area_t d{},b{}; if(dot&&insert){lv_obj_get_coords(lv_obj_get_parent(dot),&d);lv_obj_get_coords(lv_obj_get_parent(insert),&b);}
+              check(dot && insert && d.x2>=b.x2 && d.x1<=b.x2 && d.y1<b.y1,"bound command has no stomp badge at its corner"); }
+            capture(app,output/"67-looper-bind.bmp");
+            tap(app,"BINDING");
+            app.control({peepo::ControlEvent::Type::Press,"stomp2"});step(app,256);
+            check(live.sent.size()==1 && live.sent[0].command==8 && live.sent[0].target==1 && live.sent[0].press,"bound stomp did not press Insert on all loops");
+            app.control({peepo::ControlEvent::Type::Release,"stomp2"});step(app);
+            check(live.sent.size()==2 && !live.sent[1].press && live.sent[1].target==1,"bound stomp did not release");
+            // Pressing it again on the same command unbinds it.
+            tap(app,"BIND");tap(app,"INSERT");
+            app.control({peepo::ControlEvent::Type::Press,"stomp2"});step(app,256);app.control({peepo::ControlEvent::Type::Release,"stomp2"});step(app);
+            check(app.graph().assignments.empty(),"second press on the same command did not unbind");
+            tap(app,"BINDING");
+            click(app,70,456);check(!live.watched,"looper monitoring remains after leaving page");
+        }
+        {
             struct EuclideanEngine : peepo::Engine {
                 peepo::SimulatedEngine backing;
                 peepo::EuclideanSteps steps{{2, 3, 8, 2}};

@@ -114,6 +114,13 @@ void assignments(const std::filesystem::path& root) {
           back.plugin == a.plugin && back.action == ControlAction::Parameter, "assignment did not survive encoding");
     check(!decode_assignment("enc2", "parameter|m4|x|mix|90|10|0|toggle", back, block) && !decode_assignment("Bad id", text, back, block) && !decode_assignment("enc2", "junk", back, block),
           "malformed assignment accepted");
+    // A Loo-pi command on a stomp: Multiply (7) to loop 2 (target 3), held.
+    Assignment command; command.control = "stomp2"; command.module = 5; command.action = ControlAction::Looper; command.mode = SwitchMode::Momentary;
+    command.parameter = "7"; command.minimum = command.maximum = 3; command.plugin = "https://github.com/ABustos2606/loo-pi#loopi";
+    check(decode_assignment("stomp2", encode_assignment(command, "m5"), back, block) && back.action == ControlAction::Looper &&
+          looper_assignment_command(back) == 7 && looper_assignment_target(back) == 3, "Loo-pi command did not survive encoding");
+    auto scratch = command; scratch.parameter = "4"; auto far = command; far.minimum = far.maximum = 10; auto word = command; word.parameter = "7x";
+    check(!looper_assignment_command(scratch) && !looper_assignment_command(far) && !looper_assignment_command(word), "unsupported Loo-pi command or target accepted");
 
     // Assignments are part of the patch: validated, replaced per control, and gone with their module.
     SimulatedEngine engine;

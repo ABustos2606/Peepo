@@ -29,6 +29,11 @@ public:
     std::optional<double> tuner_frequency(InstanceId id) const override { return session_.tuner_frequency(id); }
     void watch_euclidean(std::optional<InstanceId> id) override { session_.watch_euclidean(id); flush(); }
     EuclideanSteps euclidean_steps(InstanceId id) const override { return session_.euclidean_steps(id); }
+    void watch_looper(std::optional<InstanceId> id) override { session_.watch_looper(id); flush(); }
+    LooperStatus looper_status(InstanceId id) const override { return session_.looper_status(id); }
+    bool looper_command(InstanceId id, int command, int target, bool press) override {
+        const bool sent = session_.looper_command(id, command, target, press); flush(); return sent;
+    }
 private:
     void attempt();
     void lost(std::string reason);

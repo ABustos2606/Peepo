@@ -215,6 +215,10 @@ third mod-cv-plugins https://github.com/moddevices/mod-cv-plugins.git f0a6b39a5e
 DISCIPLINE_OPT="-O2"; [ "$(uname -m)" = aarch64 ] && DISCIPLINE_OPT="-O2 -mcpu=cortex-a76"
 third discipline https://github.com/ABustos2606/discipline.git 4f68f3b967f8fb92c4968554b44c131adfda3717 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+# --- Loo-pi (multi-loop looper on SooperLooper's core), the project's own.
+# Like Discipline it adds -fno-fast-math after OPT, so it gets the same flags.
+third loo-pi https://github.com/ABustos2606/loo-pi.git 45c301f80c1ec63edeb99a45ae0998f01ac424fd "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix
 # LV2 collection. Artifacts, source rebuilds and metadata repairs are locked.

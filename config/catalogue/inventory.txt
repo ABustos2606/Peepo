@@ -236,6 +236,7 @@ https://chrisarndt.de/plugins/ykchorus  # Beebo: chorus_j
 urn:peepo:lv2:footswitch
 https://github.com/ABustos2606/discipline#discipline
 https://github.com/ABustos2606/discipline#return
+https://github.com/ABustos2606/loo-pi#loopi
 
 # GxPlugins: full collection (source pins in config/catalogue/gxplugins.json)
 http://guitarix.sourceforge.net/plugins/gx_AxisFace_#_AxisFace_

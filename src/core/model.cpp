@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Peepo contributors
 #include "core/model.hpp"
+#include "core/looper.hpp"
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -177,7 +178,16 @@ const Module* assignment_target(const Graph& g, const Assignment& a) {
     if (!m || m->fixed || !module_available(*m) || (!a.plugin.empty() && a.plugin != m->uri)) return nullptr;
     if (a.action == ControlAction::Parameter &&
         std::none_of(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == a.parameter; })) return nullptr;
+    if (a.action == ControlAction::Looper && (!looper_uri(m->uri) || !looper_assignment_command(a))) return nullptr;
     return m;
+}
+std::optional<int> looper_assignment_command(const Assignment& a) {
+    int command = -1;
+    const auto end = a.parameter.data() + a.parameter.size();
+    const auto parsed = std::from_chars(a.parameter.data(), end, command);
+    if (a.action != ControlAction::Looper || parsed.ec != std::errc{} || parsed.ptr != end || !looper_command_supported(command) ||
+        a.minimum != a.maximum || a.minimum != std::round(a.minimum) || a.minimum < 0 || a.minimum > 9) return std::nullopt;
+    return command;
 }
 const Parameter* assignment_parameter(const Graph& g, const Assignment& a) {
     const auto* m = a.action == ControlAction::Parameter ? assignment_target(g, a) : nullptr;
@@ -194,7 +204,7 @@ std::string number_text(double value) {
 std::string encode_assignment(const Assignment& a, const std::string& block) {
     // action|block|plugin|parameter|minimum|maximum|inverted|mode. No field can
     // hold a '|': blocks and parameters are LV2 symbols, plugins safe IRIs.
-    return std::string(a.action == ControlAction::Bypass ? "bypass" : "parameter") + "|" + block + "|" + a.plugin + "|" + a.parameter + "|" +
+    return std::string(a.action == ControlAction::Bypass ? "bypass" : a.action == ControlAction::Looper ? "looper" : "parameter") + "|" + block + "|" + a.plugin + "|" + a.parameter + "|" +
            number_text(a.minimum) + "|" + number_text(a.maximum) + "|" + (a.inverted ? "1" : "0") + "|" + (a.mode == SwitchMode::Momentary ? "momentary" : "toggle");
 }
 bool decode_assignment(const std::string& control, const std::string& text, Assignment& a, std::string& block) {
@@ -213,6 +223,7 @@ bool decode_assignment(const std::string& control, const std::string& text, Assi
     a = {};
     a.control = control;
     if (fields[0] == "bypass") a.action = ControlAction::Bypass;
+    else if (fields[0] == "looper" && !fields[3].empty()) a.action = ControlAction::Looper;
     else if (fields[0] != "parameter" || fields[3].empty()) return false;
     block = fields[1];
     a.plugin = fields[2];

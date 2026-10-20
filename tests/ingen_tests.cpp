@@ -851,6 +851,49 @@ void euclidean_monitor() {
     engine.disconnect();
     check(!engine.euclidean_steps(3)[1], "offline euclidean retained a step");
 }
+void looper_monitor() {
+    using namespace peepo; using namespace peepo::ingen;
+    FakeEngine fake;
+    const std::string path = "ingen:/main/m3", plugin = "https://github.com/ABustos2606/loo-pi#loopi";
+    fake.plugins.insert(plugin);
+    register_definitions({{plugin, "Loo-pi", "Delay", "", 0x7dd3fc, {{"in_l", Direction::Input}, {"out_l", Direction::Output}},
+                           {{"loops", "Loops", "", ParameterKind::Integer, 1, 8, 1}}}});
+    fake.objects[path] = {{rdf_type, iri_value(full(uri::ingen, "Block"))}, {full(uri::lv2, "prototype"), iri_value(plugin)}};
+    for (std::size_t i=0;i<looper_outputs;++i)
+        fake.objects[path + "/" + looper_symbol(i)] = {{rdf_type, iri_value(full(uri::lv2,"OutputPort"))},
+            {rdf_type, iri_value(full(uri::lv2,"ControlPort"))}, {full(uri::ingen,"value"), number_value(0)}};
+    fake.objects[path+"/loops"] = {{full(uri::ingen, "value"), number_value(2)}, {rdf_type, iri_value(full(uri::lv2, "ControlPort"))}, {rdf_type, iri_value(full(uri::lv2, "InputPort"))}};
+    fake.objects[path+"/commands"] = {{rdf_type,iri_value(full(uri::lv2,"InputPort"))},{rdf_type,iri_value(full(uri::atom,"AtomPort"))}};
+    Rig rig(fake); auto& engine=*rig.engine; engine.connect(); rig.settle();
+    engine.watch_looper(3); check(rig.settle().empty(),"looper watch rebuilt graph");
+    // Ingen sends every subscribed output 25 times a second: only the two
+    // loops that exist, and the three global outputs, are watched.
+    const auto subscribed = [&](std::size_t i) {
+        const auto* flag=property(fake,path+"/"+looper_symbol(i),full(uri::ingen,"broadcast")); return flag && flag->boolean;
+    };
+    for(std::size_t i=0;i<looper_outputs;++i) check(subscribed(i) == (i < 12 || i >= 48),"looper outputs of absent loops subscribed, or existing ones not");
+    check(!engine.looper_status(3)[0],"initial description masquerades as live output");
+    rig.transport->deliver(fake.put(1,path+"/l1_state",{{full(uri::ingen,"value"),number_value(4)}}));
+    rig.transport->deliver(fake.put(1,path+"/l2_pos",{{full(uri::ingen,"value"),number_value(1.25)}}));
+    check(rig.settle().empty() && engine.looper_status(3)[0]==4 && engine.looper_status(3)[11]==1.25 && !rig.graph().dirty,"looper telemetry rebuilt or modified graph");
+    rig.transport->deliver(fake.put(1,path+"/l1_state",fake.objects.at(path+"/l1_state")));
+    rig.settle(); check(engine.looper_status(3)[0]==4,"Get overwrote current looper state");
+    engine.advance(800);rig.settle();check(engine.looper_status(3)[0]==4,"stable looper telemetry expired despite change-only broadcasts");
+    check(engine.looper_command(3,5,3,true),"looper command rejected"); rig.settle();
+    const auto* value=property(fake,path+"/commands",full(uri::ingen,"value"));
+    check(value && value->number==779,"looper atom Int press/target encoding");
+    check(engine.looper_command(3,5,3,false),"looper release rejected"); rig.settle();
+    value=property(fake,path+"/commands",full(uri::ingen,"value"));
+    check(value && value->number==778 && !rig.graph().dirty,"looper release encoding or saved graph changed");
+    check(!engine.looper_command(3,127,0,true) && !engine.looper_command(3,5,10,true) && !engine.looper_command(3,4,0,true),"invalid looper command accepted");
+    check(engine.looper_command(3,7,0,true),"Milestone 3 command (Multiply) rejected"); rig.settle();
+    // A third loop is watched as it arrives; the values already known stay.
+    check(rig.result(SetParameter{3, "loops", 3}).accepted, "loop count not set"); engine.watch_looper(3); rig.settle();
+    check(subscribed(12) && subscribed(17) && !subscribed(18) && engine.looper_status(3)[0]==4,"added loop not watched, or known values lost");
+    engine.watch_looper(std::nullopt);rig.settle();
+    for(std::size_t i=0;i<looper_outputs;++i) check(!subscribed(i),"looper subscription leaked on leaving page");
+    engine.disconnect();check(!engine.looper_status(3)[0] && !engine.looper_command(3,5,0,true),"disconnected looper still active");
+}
 int main() {
     try {
         turtle_and_protocol();
@@ -858,6 +901,7 @@ int main() {
         relative_paths();
         tuner_monitor();
         euclidean_monitor();
+        looper_monitor();
         std::cout << "Ingen protocol reading, command mapping, acknowledgment, second client, timeout, reconnect and restart passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

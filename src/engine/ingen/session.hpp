@@ -46,6 +46,9 @@ public:
     std::optional<double> tuner_frequency(InstanceId) const;
     void watch_euclidean(std::optional<InstanceId>);
     EuclideanSteps euclidean_steps(InstanceId) const;
+    void watch_looper(std::optional<InstanceId>);
+    LooperStatus looper_status(InstanceId) const;
+    bool looper_command(InstanceId, int command, int target, bool press);
 private:
     enum class Purpose { Edit, Sync, Endpoints, Refresh, Monitor };
     struct Local { std::string path, predicate; Value value; };
@@ -125,6 +128,9 @@ private:
     std::array<std::string, euclidean_tracks> euclidean_ports_{};
     EuclideanSteps euclidean_steps_{};
     unsigned euclidean_age_ = 0;
+    std::optional<InstanceId> looper_;
+    std::array<std::string, looper_outputs> looper_ports_{};
+    LooperStatus looper_status_{};
 
     // The engine's objects under ingen:/main, by path.
     std::map<std::string, Properties> objects_;
