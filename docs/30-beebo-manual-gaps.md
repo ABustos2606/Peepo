@@ -84,7 +84,7 @@ All deferred under D16 ([decisions](07-source-audit-and-decisions.md)):
 - MIDI clock in and out, and MIDI cables between modules;
 - about 35 MIDI modules: filters, chord, strum, arpeggio-like delays, CC and note conversion, note to CV.
 
-The hardware also needs a MIDI input; none is planned yet.
+The hardware also needs MIDI jacks. Planned since 20 October 2026, with MIDI cables and modules: [MIDI](39-midi.md).
 
 ### 8. USB import and export
 

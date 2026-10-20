@@ -33,6 +33,7 @@ Every phase has numbered tasks, a deliverable, and an exit check. A phase is com
 | 9 | Tested module catalogue and remaining interface workflows | PC and Pi | Phases 5–7; NAM results from Phase 8 for NAM entries |
 | 10 | Automatic startup, readiness and recovery | Pi | Working representative patch from Phases 5–7 |
 | 11 | Complete validation and reproducible release package | PC and Pi | Phases 0–10 for the selected release scope |
+| 12 | MIDI: devices, MIDI cables and modules, clock, program change and learn | PC and Pi, USB-MIDI devices, later the enclosure's jacks | Phases 4 and 5; the set list for program change; Phase 11 again for a release that includes it |
 
 Phases 1–2 do not wait for the Pi. Phase 3 must pass before building the full interface around assumed engine behaviour. NAM and catalogue expansion do not block the first Clouds instrument milestone. Work can proceed on independent tasks without completing every phase strictly in numeric order.
 
@@ -59,6 +60,7 @@ Phases 1–2 do not wait for the Pi. Phase 3 must pass before building the full 
 | 9 | All buildable selected families packaged; catalogue exported on Pi; PC compatibility matrix exists | Native per-entry compatibility, remaining presentation/screens and physical usability/load (P9.3–P9.6) |
 | 10 | Direct boot into saved Clouds verified by reboot and user touch confirmation; independent services, automatic JACK/engine recovery and native UI-crash recovery verified | Full readiness/error cases, offline/five cold boots, missing assets/plugins, shutdown/storage and wider recovery (P10.2–P10.7) |
 | 11 | Development package installed; current evidence linked to requirements below | Complete acceptance matrix, endurance/lifecycle, release provenance/source package and operation guide |
+| 12 | Planned 20 October 2026 ([MIDI](39-midi.md)); one merged MIDI IN decided; nothing built | All of P12.1–P12.11 |
 
 **User-directed execution, 14 October 2026:** direct instrument boot was prioritized and completed: enable Peepo at boot, mask the desktop/MODEP/automatic-console competitors, select saved Clouds, preserve the newer unsaved wendy patch, reboot, verify restoration/routing and confirm display/touch. Automatic JACK/engine recovery also passed. [Record](24-instrument-boot.md). Phase 10's full acceptance remains open. The remaining conventional-effect and touch workflow checks (P3.4, P4.7), Clouds-plus-conventional-effect persistence (P6.5), P6.4 listening and physical controls remain the subsequent work. The observed power/throttling issue must be resolved and rechecked before latency or sustained load budgets are accepted (P0.3, P0.7, P6.6). NAM and catalogue expansion remain separate work.
 
@@ -480,6 +482,28 @@ See [the plugin catalogue](22-plugin-catalogue.md) and [the compatibility matrix
 
 **Exit check:** agreed release requirements have evidence, installation can be reproduced, and all remaining limitations are visible. A compiler success or a screenshot is not release acceptance.
 
+## Phase 12 — MIDI
+
+**Purpose:** MIDI in and out on the instrument, MIDI cables between modules, and instrument-wide clock, program change and MIDI learn, as Beebo has them ([Beebo manual gaps](30-beebo-manual-gaps.md#7-midi), item 7). The design, hardware and wiring are in [MIDI](39-midi.md).
+
+**Status — 20 October 2026:** planned, nothing built. Decided: **one merged MIDI IN** on the canvas; every input device feeds it, and a patch tells devices apart by channel. MIDI cables revise D16, which deferred them; the decision log is updated at P12.4. Order: USB devices first (no soldering), then MIDI cables and modules, then learn, our own plugins and the enclosure's jacks.
+
+- [ ] **P12.1 — Boss SL-2 checks:** from its manual, the TRS MIDI pinout (Type A expected), MIDI channel, whether clock sync must be enabled, its response to Start/Stop/Continue and a stopped clock, and its CC map. Plug its USB port into the Pi and check whether it is also a USB-MIDI device (`aconnect -l`).
+- [ ] **P12.2 — MIDI devices through USB on the Pi:** `a2jmidid` as its own service, turning ALSA MIDI devices into JACK MIDI ports; `peepo-route` wires them. A USB-MIDI interface (e.g. UM-ONE) and a USB controller appear, and come back after unplugging. No xruns on the Tascam with a MIDI device on the bus.
+- [ ] **P12.3 — Clock out (`peepo-midi`):** a separate service, a JACK MIDI client and second engine client. 24 clock messages per beat at the patch tempo, placed at the exact frame; Start when the clock begins. On the PC under WSL2 first (dummy driver, virtual MIDI port), then on the Pi to the SL-2. Checks: intervals at 30, 120 and 300 BPM, measured with a second interface or a logic analyser; a tempo change from the next clock message; a patch change carrying its tempo; the clock continuing while the interface restarts.
+- [ ] **P12.4 — MIDI cables (PC):** split `PortType::Midi`, so only atom ports that support `midi:MidiEvent` become connectors and file-message ports (Cabinet, NAM) stay hidden; a MIDI cable type with its own colour, MIDI output to MIDI input only, the same duplicate and cycle rules; MIDI IN and MIDI OUT connectors; `midi_in` and `midi_out` on the engine's root graph; saved and loaded with the patch, and loaded without a device plugged in. Record the revision of D16.
+- [ ] **P12.5 — MIDI modules:** rerun the compatibility checks with MIDI cables; build x42 MIDI clock and midimsg's MIDI controller; the x42 MIDI filters and the MDA instruments offered once they play from a controller on the Pi; the Ready modules with MIDI ports (MIDI clock in, CV to MIDI CC and Note, Strum, MIDI Gate, Metronome) cabled on their MIDI side.
+- [ ] **P12.6 — Settings → MIDI:** devices on or off in each direction, clock out on or off, Start on begin, tempo source, program-change channel; stored instrument-wide beside the patches. The Tempo page gets **Restart** (Stop, then Start).
+- [ ] **P12.7 — MIDI learn:** wire Ingen's root `control` port, which its control bindings read; learn and forget on the module page; the CC shown on the bar; bindings saved with the patch as `midi:binding` port properties and restored.
+- [ ] **P12.8 — Program change and clock in (`peepo-midi`):** a program change selects a set-list entry (a stored patch in order until the set list exists); incoming clock as the tempo source, with Peepo's own clock out stopped meanwhile.
+- [ ] **P12.9 — Our own MIDI plugins:** MIDI to CV mono, then poly, then MIDI program change, each in its own repository under `C:\LV2-own-plugins`, GPL-2.0-or-later; Beebo's two looper MIDI modules with Loo-pi.
+- [ ] **P12.10 — The enclosure's TRS jacks:** MIDI OUT on GPIO 14 and MIDI IN on GPIO 15 as wired in [MIDI](39-midi.md); UART freed from the console; 31250 baud measured; `snd-serial-generic` (or a bridge in `peepo-midi` if Raspberry Pi's kernel lacks it); P12.2 and P12.3 repeated on the jacks.
+- [ ] **P12.11 — CC per patch:** a short list of CC messages on the patch, sent when it loads, and a page to edit it.
+
+**Deliverable:** MIDI devices usable over USB and the enclosure's jacks, MIDI cables and modules on the canvas, clock in and out, program change and MIDI learn, each with its record.
+
+**Exit check:** on the Pi, a USB controller plays an MDA instrument through a MIDI filter cabled on the canvas; a learned CC moves a control and survives a reload; a program change selects a patch; the SL-2 follows Peepo's tempo, a tap and a patch change, also while the interface restarts; and none of it causes xruns.
+
 ## Verification strategy and phase records
 
 Use focused automated tests for failure-prone shared logic: graph cycle/channel rules, parameter conversions, protocol parsing, event ordering/reconnect, metadata schemas, assignment pickup and coherent persistence. Use Windows interaction checks for actual view workflows. Use live Pi tests for audio/plugin behaviour, finger operation, GPIO/MIDI, device permissions and boot. Avoid tests that simply mirror widget construction or repeat already passed checks without a new change or unresolved issue.
@@ -508,6 +532,6 @@ Each phase record includes task IDs, date, source/build versions, hardware/audio
 
 **Established for current development:** Debian 12 bookworm arm64 on the existing Pi 5; the compatible isolated dependency build; LVGL/C++20 and the DRM/evdev backend; the Tascam US-100 at 48 kHz / 128 x 3; four owned push encoders and three momentary SPST stomps; and the selected NeuralAudio-based NAM candidate. The desktop editor is accepted and the first audible Clouds milestone is achieved. These are no longer implementation starting questions. See [the decision log](07-source-audit-and-decisions.md).
 
-**Still to decide or verify:** final audio/power hardware and numeric latency/boot/resource targets; actual encoder/stomp transport and wiring; the conventional effect in the combined milestone patch; release plugin scope and adaptation work; NAM models, IRs, quality policy and measured budgets; dedicated boot/readiness/shutdown and storage durability; final operation/release acceptance.
+**Still to decide or verify:** final audio/power hardware and numeric latency/boot/resource targets; actual encoder/stomp transport and wiring; the conventional effect in the combined milestone patch; release plugin scope and adaptation work; NAM models, IRs, quality policy and measured budgets; dedicated boot/readiness/shutdown and storage durability; final operation/release acceptance; MIDI's open points (5-pin DIN on the enclosure or not, whether instrument messages also reach the canvas's MIDI IN; [MIDI](39-midi.md#open-questions)).
 
 The active sequence is the **remaining Pi integration checks and saved combined Clouds patch**, followed by physical-control acceptance. Phase 1 debugger evidence is an independent outstanding item. Do not restart Phase 1 or treat completed Pi work as an unplanned side task. Future implementation work must update the owning numbered task, platform/evidence scope and remaining checks in this plan as well as its detailed record.
