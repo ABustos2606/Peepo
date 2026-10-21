@@ -56,7 +56,7 @@ private:
                         ParallelDemo, CvChoice, CvPage,
                         SavePatch, LoadStored, DeleteStored, StartupStored, PatchPage, ConfirmAction, CancelAction,
                         AssignControl, EditControl, ClearControl, PickModule, PickTarget, PickerPage, InvertControl, SwitchModeChoice, RangeEnd, PowerOff,
-                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, FilePage, TempoStep, TempoSlider, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind };
+                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, FilePage, TempoStep, TempoSlider, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind, ModulePage };
     struct Binding {
         Application* app;
         Action action;
@@ -79,7 +79,17 @@ private:
     void parameters(lv_obj_t*);
     // One parameter as a bar: its name, its value, and a fill as far as the
     // value goes. Drag it sideways to change it, tap it to flip or step it.
-    void parameter_bar(lv_obj_t*, const Module&, const Parameter&);
+    // Smaller bars leave room to scroll; a few-choice mode can show every
+    // choice as a segment that a drag or a tap picks.
+    void parameter_bar(lv_obj_t*, const Module&, const Parameter&, int width = 372, int height = 48, bool segmented = false);
+    // The module page's list of bars, right of the rail.
+    lv_obj_t* bar_list(lv_obj_t* parent, const Module&, int top);
+    // The rail left of a long list: a line and a ball where the list is
+    // scrolled to. Dragging along it scrolls the list.
+    void scroll_rail(lv_obj_t* parent, lv_obj_t* list, int top, int height, std::uint32_t ink);
+    // A page of its own on two tabs (Aura, Discipline): the main controls and
+    // stomps, or everything else. Returns the list it scrolls in.
+    lv_obj_t* pedal_view(lv_obj_t*, const Module&);
     void file_bar(lv_obj_t*, const Module&);
     // Move the encoder highlight on the module page, keeping it in view.
     void focus_parameter(std::size_t);
@@ -223,7 +233,8 @@ private:
     int parameter_scroll_ = 0;
     // A bar being dragged: the normalized value it started from, and whether it moved.
     double drag_origin_ = 0;
-    bool bar_moving_ = false, bar_dragged_ = false;
+    // A press that went up or down first is a scroll: the bar leaves it alone.
+    bool bar_moving_ = false, bar_dragged_ = false, bar_scrolling_ = false;
     // The module highlighted on the patch by encoder 1.
     InstanceId patch_focus_ = 0;
     // The control last used, highlighted on the Controls page; the one being assigned or edited.
@@ -248,6 +259,8 @@ private:
     lv_obj_t *tempo_value_ = nullptr, *cpu_value_ = nullptr;
     lv_obj_t *tuner_note_ = nullptr, *tuner_detail_ = nullptr, *tuner_status_ = nullptr, *tuner_needle_ = nullptr;
     int looper_section_ = 0, looper_target_ = 0, looper_selected_ = 1;
+    // The tab in view on a page with two: 0 the main controls, 1 the rest.
+    int pedal_page_ = 0;
     struct LooperPress { InstanceId id; int command, target; };
     std::map<lv_obj_t*, LooperPress> looper_pressed_;
     // Binding a stomp: on while BIND is lit; the command tapped, or -1.

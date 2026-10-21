@@ -90,6 +90,7 @@ Inside Debian under WSL2, as root: `bash tools/pi/build-arm64.sh` builds the eng
 | [Pi bring-up](docs/23-pi-bring-up.md) | The Pi as found, and the first sound through the Peepo engine and interface on it |
 | [Module page and two encoders](docs/31-module-page-and-two-encoders.md) | Every control as a bar, a dozen on one screen, set by dragging; two encoders (move, turn) instead of four |
 | [Beebo manual gaps](docs/30-beebo-manual-gaps.md) | Features in the Beebo manual that Peepo lacked: looper, set list, MIDI, USB import/export, effects loops; Beebo's Delay, the Foot switch module and assigning stomps from the patch are done |
+| [Module rail, Aura's and Discipline's pages](docs/40-module-rail-and-aura.md) | Smaller bars and a scroll rail so scrolling never sets a value; Aura and Discipline get two tabs: main controls and stomps, then everything else |
 | [MIDI](docs/39-midi.md) | Plan: MIDI in and out over USB and 3.5 mm TRS jacks, MIDI cables and the MIDI modules on the canvas, clock in and out, program change and MIDI learn |
 
 ## Retrieve the project and reference sources

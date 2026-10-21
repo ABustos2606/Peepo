@@ -205,8 +205,7 @@
      "bypass": "port", "tempo": "bpm", "parameters": [{"symbol": "size_beats", "unit": "beats"}], "groups": [
       {"name": "Knobs", "parameters": ["level", "repeats", "size", "routing"]},
       {"name": "Knobs 2", "parameters": ["modify", "spread", "scan", "modifier"]},
-      {"name": "Switches", "parameters": ["scan_mode", "collect", "latch", "memory_dry"]},
-      {"name": "Switches 2", "parameters": ["dry_kill", "always", "trails"]},
+      {"name": "Switches", "parameters": ["scan_mode", "collect", "latch", "memory_dry", "dry_kill", "always", "trails"]},
       {"name": "Stomps", "parameters": ["loop", "scan_hold", "clear"]},
       {"name": "Tempo and output", "parameters": ["sync", "size_beats", "bpm", "peepo_output"]},
       {"name": "Memory only", "parameters": ["wipe"]}

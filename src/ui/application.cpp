@@ -92,7 +92,30 @@ std::string metric_text(std::optional<double> reading, bool cpu) {
     if (cpu) value << '%';
     return value.str();
 }
-enum class ModuleLayout { Generic, Tuner, Euclidean, Looper };
+enum class ModuleLayout { Generic, Tuner, Euclidean, Looper, Pedal };
+// Modules with a page of their own on two tabs: the main controls first, two
+// to a row like every bar, and the stomps; the rest on the second tab under
+// the overlay's groups.
+struct PedalBar { const char* symbol; const char* name; bool segmented; };
+struct PedalLayout { std::vector<PedalBar> main; std::vector<const char*> stomps; };
+const PedalLayout* pedal_layout(const std::string& uri) {
+    static const PedalLayout aura{
+        {{"time", nullptr, false}, {"wet_modify", "Modify", false},
+         {"length", nullptr, false}, {"loop_modify", "Modify", false},
+         {"mix", nullptr, false}, {"clock", nullptr, false},
+         {"wet_mode", nullptr, true}, {"loop_mode", nullptr, true},
+         {"routing", nullptr, true}},
+        {"wet_on", "freeze", "loop_on", "overdub"}};
+    static const PedalLayout discipline{
+        {{"level", nullptr, false}, {"repeats", nullptr, false},
+         {"size", nullptr, false}, {"modify", nullptr, false},
+         {"spread", nullptr, false}, {"scan", nullptr, false},
+         {"modifier", nullptr, false}, {"routing", nullptr, true}},
+        {"loop", "scan_hold", "clear"}};
+    if (uri == "https://github.com/ABustos2606/aura#aura") return &aura;
+    if (uri == "https://github.com/ABustos2606/discipline#discipline") return &discipline;
+    return nullptr;
+}
 struct EuclideanTrackStyle { std::uint32_t bright, fill, ring_dim; int radius; };
 constexpr std::array<EuclideanTrackStyle, euclidean_tracks> euclidean_styles = {{
     {0x38bdf8, 0x143a52, 0x1c3d52, 124},
@@ -125,6 +148,7 @@ ModuleLayout module_layout(const Module& m) {
     if (tuner_uri(m.uri) && std::any_of(m.parameters.begin(), m.parameters.end(), [](const Parameter& p) { return p.symbol == "tuning"; })) return ModuleLayout::Tuner;
     if (euclidean_uri(m.uri) && has_euclidean_controls(m)) return ModuleLayout::Euclidean;
     if (looper_uri(m.uri)) return ModuleLayout::Looper;
+    if (pedal_layout(m.uri)) return ModuleLayout::Pedal;
     return ModuleLayout::Generic;
 }
 // Vertical placement of one connector on its edge of the square. Every audio
@@ -219,7 +243,8 @@ std::vector<ParameterSection> parameter_sections(const Module& m) {
 // Parameter bars: two columns of six in view, as on Beebo's module pages.
 constexpr int bar_width = 372, bar_height = 48;
 int bar_span(lv_obj_t* bar) {
-    const int w = lv_obj_get_width(bar);
+    // The width it was given: a new bar is painted before it is laid out.
+    const int w = lv_obj_get_style_width(bar, LV_PART_MAIN);
     return w > 0 ? w : bar_width;
 }
 // How far a bar is filled, and what it says.
@@ -232,12 +257,56 @@ std::string bar_text(const Parameter& p) {
     if (is_euclidean_toggle(p)) return p.value >= 0.5 ? "ON" : "OFF";
     return p.kind == ParameterKind::Enumeration ? upper(format_value(p)) : format_value(p);
 }
-// A bar's children: the fill, the name, the value.
+// The module page's smaller bars, with room around them to scroll.
+constexpr int compact_width = 300, compact_height = 40;
+// A segmented bar shows every choice of a mode, as the Mood's three-way toggles.
+bool segmented_bar(lv_obj_t* bar) { return lv_obj_has_flag(bar, LV_OBJ_FLAG_USER_1); }
+int segment_at(lv_obj_t* bar, const Parameter& p, int x) {
+    lv_area_t area; lv_obj_get_coords(bar, &area);
+    const int count = std::max<int>(1, static_cast<int>(p.choices.size()));
+    return std::clamp((x - area.x1) * count / std::max(1, bar_span(bar)), 0, count - 1);
+}
+// A bar's children: the fill, the name, the value; a segmented bar then has
+// one label per choice, the chosen one lit.
 void paint_bar(lv_obj_t* bar, const Parameter& p) {
-    lv_obj_set_width(lv_obj_get_child(bar, 0), static_cast<int>(std::round(bar_level(p) * bar_span(bar))));
+    if (segmented_bar(bar)) {
+        const int count = std::max<int>(1, static_cast<int>(p.choices.size()));
+        const int at = std::clamp(static_cast<int>(std::round(p.value)), 0, count - 1);
+        auto* fill = lv_obj_get_child(bar, 0);
+        lv_obj_set_x(fill, at * bar_span(bar) / count);
+        lv_obj_set_width(fill, (at + 1) * bar_span(bar) / count - at * bar_span(bar) / count);
+        for (int i = 0; i < count; ++i)
+            if (auto* choice = lv_obj_get_child(bar, 3 + i)) lv_obj_set_style_text_color(choice, color(i == at ? text : faint), 0);
+    } else lv_obj_set_width(lv_obj_get_child(bar, 0), static_cast<int>(std::round(bar_level(p) * bar_span(bar))));
     const auto shown = bar_text(p);
     auto* value = lv_obj_get_child(bar, 2);
     if (shown != lv_label_get_text(value)) lv_label_set_text(value, shown.c_str());
+}
+// The rail left of the module page's list, as on Beebo: a line, and a ball
+// where the list is scrolled to.
+constexpr int rail_width = 56, rail_ball = 14, rail_inset = 14;
+void place_rail_ball(lv_obj_t* rail, lv_obj_t* list) {
+    const int scrolled = lv_obj_get_scroll_y(list), rest = lv_obj_get_scroll_bottom(list);
+    const int travel = lv_obj_get_height(rail) - 2 * rail_inset - rail_ball;
+    const double share = scrolled + rest > 0 ? std::clamp(static_cast<double>(scrolled) / (scrolled + rest), 0.0, 1.0) : 0;
+    lv_obj_set_y(lv_obj_get_child(rail, 1), rail_inset + static_cast<int>(std::round(share * travel)));
+}
+void rail_followed(lv_event_t* e) {
+    place_rail_ball(static_cast<lv_obj_t*>(lv_event_get_user_data(e)), lv_event_get_target_obj(e));
+}
+// Touching the rail moves the list to that point; a drag along it scrolls.
+void rail_dragged(lv_event_t* e) {
+    const auto code = lv_event_get_code(e);
+    if (code != LV_EVENT_PRESSED && code != LV_EVENT_PRESSING) return;
+    auto* rail = lv_event_get_target_obj(e);
+    auto* list = static_cast<lv_obj_t*>(lv_event_get_user_data(e));
+    lv_point_t point{};
+    if (auto* indev = lv_indev_active()) lv_indev_get_point(indev, &point);
+    lv_area_t area; lv_obj_get_coords(rail, &area);
+    const int travel = std::max(1, lv_obj_get_height(rail) - 2 * rail_inset - rail_ball);
+    const double share = std::clamp(static_cast<double>(point.y - area.y1 - rail_inset - rail_ball / 2) / travel, 0.0, 1.0);
+    const int range = lv_obj_get_scroll_y(list) + lv_obj_get_scroll_bottom(list);
+    lv_obj_scroll_to_y(list, static_cast<int>(std::round(share * range)), LV_ANIM_OFF);
 }
 // The encoder highlight: white, or the module's colour while encoder 1 turns the value.
 void highlight(lv_obj_t* bar, bool focused, bool adjusting, std::uint32_t ink) {
@@ -728,8 +797,11 @@ void Application::handle(Binding& b, lv_event_t* e) {
         if (it == m->parameters.end()) return;
         lv_point_t point{};
         if (auto* indev = lv_indev_active()) lv_indev_get_point(indev, &point);
-        const bool slides = (it->kind == ParameterKind::Continuous || it->kind == ParameterKind::Integer) && !is_euclidean_toggle(*it);
+        const bool segments = segmented_bar(target);
+        const bool slides = segments || ((it->kind == ParameterKind::Continuous || it->kind == ParameterKind::Integer) && !is_euclidean_toggle(*it));
         const int span = bar_span(target);
+        // A segmented mode takes the choice under the finger.
+        const auto chosen = [&] { auto p = *it; p.value = segment_at(target, p, point.x); return p; };
         // Relative, as an encoder is: the value moves by how far the finger
         // goes, the whole width for the whole range, so touching never jumps it.
         const auto dragged = [&] {
@@ -739,7 +811,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
             return p;
         };
         if (code == LV_EVENT_PRESSED) {
-            press_ = point; bar_moving_ = bar_dragged_ = false;
+            press_ = point; bar_moving_ = bar_dragged_ = bar_scrolling_ = false;
             auto current = *it;
             if (stream_ && stream_->id == b.id && stream_->symbol == b.symbol) current.value = stream_->latest;
             drag_origin_ = normalized_value(current);
@@ -752,19 +824,31 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 }
         } else if (code == LV_EVENT_PRESSING && slides) {
             const int dx = point.x - press_.x, dy = point.y - press_.y;
-            if (!bar_moving_ && std::abs(dx) > 8 && std::abs(dx) > std::abs(dy)) {
-                bar_moving_ = bar_dragged_ = true;
-                // A sideways drag is the value's: the list must not scroll under it.
-                if (parameter_list_) lv_obj_remove_flag(parameter_list_, LV_OBJ_FLAG_SCROLLABLE);
+            // A finger going up or down is scrolling the page, even if it
+            // drifts sideways later: the bar never takes that press.
+            auto* indev = lv_indev_active();
+            if (!bar_moving_ && !bar_scrolling_) {
+                if (std::abs(dx) > 12 && std::abs(dx) > 2 * std::abs(dy) && !(indev && lv_indev_get_scroll_obj(indev))) {
+                    bar_moving_ = bar_dragged_ = true;
+                    // A sideways drag is the value's: the list must not scroll under it.
+                    if (parameter_list_) lv_obj_remove_flag(parameter_list_, LV_OBJ_FLAG_SCROLLABLE);
+                } else if (std::abs(dy) > 6 || (indev && lv_indev_get_scroll_obj(indev))) bar_scrolling_ = true;
             }
-            if (bar_moving_) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value); update_euclidean(); }
+            if (bar_moving_ && segments) paint_bar(target, chosen());
+            else if (bar_moving_) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value); update_euclidean(); }
         } else if (code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
             if (bar_moving_) {
                 // Release sends the final position.
-                if (code == LV_EVENT_RELEASED) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value); update_euclidean(); }
+                if (code == LV_EVENT_RELEASED && segments) {
+                    if (const auto p = chosen(); p.value != std::round(it->value)) submit(SetParameter{b.id, b.symbol, p.value});
+                    else paint_bar(target, *it);
+                } else if (code == LV_EVENT_RELEASED) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value); update_euclidean(); }
+                else if (segments) paint_bar(target, *it);
                 if (parameter_list_) lv_obj_add_flag(parameter_list_, LV_OBJ_FLAG_SCROLLABLE);
                 bar_moving_ = false;
             }
+        } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !bar_scrolling_ && segments) {
+            if (const auto p = chosen(); p.value != std::round(it->value)) submit(SetParameter{b.id, b.symbol, p.value});
         } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !slides) submit(SetParameter{b.id, b.symbol, stepped_choice(*it)});
         return;
     }
@@ -795,6 +879,9 @@ void Application::handle(Binding& b, lv_event_t* e) {
     }
     if (code != LV_EVENT_CLICKED) return;
     switch (b.action) {
+    case Action::ModulePage:
+        if (pedal_page_ != b.number) { pedal_page_ = b.number; parameter_focus_ = 0; parameter_scroll_ = 0; adjusting_ = false; rebuild_ = true; }
+        break;
     case Action::LooperSection: looper_section_ = b.number; looper_binding_ = false; parameter_focus_ = 0; parameter_scroll_ = 0; rebuild_ = true; break;
     case Action::LooperBind:
         looper_binding_ = !looper_binding_; looper_bind_command_ = -1; rebuild_ = true;
@@ -1629,37 +1716,137 @@ void Application::parameters(lv_obj_t* parent) {
         return;
     }
     if (layout == ModuleLayout::Looper) { looper_view(parent, *m); return; }
+    const auto ink = module_ink(*m);
     const bool tuner = layout == ModuleLayout::Tuner;
     const int top = tuner ? 220 : 0;
-    if (tuner) tuner_meter(parent);
-    auto* list = lv_obj_create(parent); lv_obj_remove_style_all(list);
-    lv_obj_set_pos(list, 0, top); lv_obj_set_size(list, 800, 360 - top);
-    lv_obj_set_style_pad_hor(list, 20, 0); lv_obj_set_style_pad_top(list, tuner ? 4 : 16, 0); lv_obj_set_style_pad_bottom(list, 16, 0);
-    lv_obj_set_flex_flow(list, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_style_pad_column(list, 16, 0); lv_obj_set_style_pad_row(list, 8, 0);
-    lv_obj_set_scroll_dir(list, LV_DIR_VER); lv_obj_set_scrollbar_mode(list, LV_SCROLLBAR_MODE_ACTIVE);
-    lv_obj_remove_flag(list, LV_OBJ_FLAG_CLICKABLE);
-    // A bypassed module's controls still work, but read as not playing.
-    if (m->bypassed) lv_obj_set_style_opa(list, LV_OPA_50, 0);
-    parameter_list_ = list;
-    const auto ink = module_ink(*m);
-    if (const auto* d = definition(m->uri); d && !d->file.property.empty()) file_bar(list, *m);
-    for (const auto& section : parameter_sections(*m)) {
-        if (!section.name.empty()) {
-            auto* heading = label(list, upper(section.name), 0, 0, 760, ink, &peepo_mono_14);
-            lv_obj_set_style_text_letter_space(heading, 2, 0);
+    lv_obj_t* list = nullptr;
+    if (layout == ModuleLayout::Pedal) list = pedal_view(parent, *m);
+    else {
+        if (tuner) tuner_meter(parent);
+        list = bar_list(parent, *m, top);
+        if (tuner) lv_obj_set_style_pad_top(list, 4, 0);
+        if (const auto* d = definition(m->uri); d && !d->file.property.empty()) file_bar(list, *m);
+        for (const auto& section : parameter_sections(*m)) {
+            if (!section.name.empty()) {
+                auto* heading = label(list, upper(section.name), 0, 0, 0, ink, &peepo_mono_14);
+                lv_obj_set_width(heading, LV_PCT(100)); lv_obj_set_style_text_letter_space(heading, 2, 0);
+            }
+            for (const auto* p : section.parameters) parameter_bar(list, *m, *p, compact_width, compact_height);
         }
-        for (const auto* p : section.parameters) parameter_bar(list, *m, *p);
+        if (bars_.empty()) { label(list, "This module has no controls.", 0, 0, 600, muted); return; }
     }
-    if (bars_.empty()) { label(list, "This module has no controls.", 0, 0, 760, muted); return; }
+    if (bars_.empty()) return;
     if (!focus_symbol_.empty()) {
         for (std::size_t i = 0; i < bars_.size(); ++i) if (bars_[i].symbol == focus_symbol_) parameter_focus_ = i;
         focus_symbol_.clear();
     }
     if (parameter_focus_ >= bars_.size()) { parameter_focus_ = bars_.size() - 1; adjusting_ = false; }
     highlight(bars_[parameter_focus_].widget, true, adjusting_, bar_ink(*m, bars_[parameter_focus_].symbol));
+    if (!list) return;
     lv_obj_update_layout(list);
     lv_obj_scroll_to_y(list, parameter_scroll_, LV_ANIM_OFF);
+    // A page with tabs has them at the top of the rail, so its line starts below them.
+    const int rail_top = layout == ModuleLayout::Pedal ? 112 : top;
+    scroll_rail(parent, list, rail_top, 360 - rail_top, ink);
+}
+lv_obj_t* Application::bar_list(lv_obj_t* parent, const Module& m, int top) {
+    // Two columns of bars, with room beside and between them to scroll by.
+    auto* list = lv_obj_create(parent); lv_obj_remove_style_all(list);
+    lv_obj_set_pos(list, rail_width, top); lv_obj_set_size(list, 800 - rail_width, 360 - top);
+    lv_obj_set_style_pad_left(list, 8, 0); lv_obj_set_style_pad_right(list, 800 - rail_width - 8 - 2 * compact_width - 40, 0);
+    lv_obj_set_style_pad_top(list, 16, 0); lv_obj_set_style_pad_bottom(list, 16, 0);
+    lv_obj_set_flex_flow(list, LV_FLEX_FLOW_ROW_WRAP);
+    lv_obj_set_style_pad_column(list, 40, 0); lv_obj_set_style_pad_row(list, 10, 0);
+    // Clickable, so a swipe in the gaps between bars scrolls it; the rail
+    // replaces its scrollbar.
+    lv_obj_set_scroll_dir(list, LV_DIR_VER); lv_obj_set_scrollbar_mode(list, LV_SCROLLBAR_MODE_OFF);
+    // A bypassed module's controls still work, but read as not playing.
+    if (m.bypassed) lv_obj_set_style_opa(list, LV_OPA_50, 0);
+    parameter_list_ = list;
+    return list;
+}
+void Application::scroll_rail(lv_obj_t* parent, lv_obj_t* list, int top, int height, std::uint32_t ink) {
+    auto* rail = lv_obj_create(parent); lv_obj_remove_style_all(rail);
+    lv_obj_set_pos(rail, 0, top); lv_obj_set_size(rail, rail_width, height);
+    lv_obj_remove_flag(rail, LV_OBJ_FLAG_SCROLLABLE); lv_obj_add_flag(rail, LV_OBJ_FLAG_PRESS_LOCK);
+    auto* line = panel(rail, rail_width / 2 - 1, rail_inset, 2, height - 2 * rail_inset, rim);
+    lv_obj_set_style_radius(line, 1, 0); lv_obj_set_style_border_width(line, 0, 0);
+    lv_obj_remove_flag(line, LV_OBJ_FLAG_CLICKABLE);
+    auto* ball = panel(rail, (rail_width - rail_ball) / 2, rail_inset, rail_ball, rail_ball, ink);
+    lv_obj_set_style_radius(ball, LV_RADIUS_CIRCLE, 0); lv_obj_set_style_border_width(ball, 0, 0);
+    lv_obj_remove_flag(ball, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(rail, rail_dragged, LV_EVENT_ALL, list);
+    lv_obj_add_event_cb(list, rail_followed, LV_EVENT_SCROLL, rail);
+    // Only a list longer than the screen has a rail.
+    lv_obj_update_layout(list);
+    if (lv_obj_get_scroll_y(list) + lv_obj_get_scroll_bottom(list) <= 0) lv_obj_add_flag(rail, LV_OBJ_FLAG_HIDDEN);
+    else place_rail_ball(rail, list);
+}
+lv_obj_t* Application::pedal_view(lv_obj_t* parent, const Module& m) {
+    const auto* layout = pedal_layout(m.uri);
+    const auto ink = module_ink(m);
+    const auto find = [&](const std::string& symbol) -> const Parameter* {
+        const auto it = std::find_if(m.parameters.begin(), m.parameters.end(), [&](const Parameter& p) { return p.symbol == symbol; });
+        return it == m.parameters.end() ? nullptr : &*it;
+    };
+    // The two tabs, at the top of the rail.
+    for (int page = 0; page < 2; ++page) {
+        auto* icon = button(parent, "", 6, 10 + page * 52, 44, Action::ModulePage, m.id, {}, page);
+        lv_obj_set_height(icon, 44); lv_obj_set_style_radius(icon, LV_RADIUS_CIRCLE, 0);
+        const bool shown = pedal_page_ == page;
+        if (shown) { lv_obj_set_style_bg_color(icon, color(module_fill(m)), 0); lv_obj_set_style_border_color(icon, color(ink), 0); }
+        const auto ink_of = shown ? text : muted;
+        const auto shape = [&](int x, int y, int w, int h, bool solid, int radius = 2) {
+            auto* o = panel(icon, x, y, w, h, ink_of);
+            lv_obj_remove_flag(o, LV_OBJ_FLAG_CLICKABLE); lv_obj_set_style_radius(o, radius, 0);
+            if (solid) lv_obj_set_style_border_width(o, 0, 0);
+            else { lv_obj_set_style_bg_opa(o, LV_OPA_TRANSP, 0); lv_obj_set_style_border_width(o, 2, 0); lv_obj_set_style_border_color(o, color(ink_of), 0); }
+            return o;
+        };
+        if (page == 0) {
+            // Three sliders, each with its handle somewhere along it.
+            for (int i = 0; i < 3; ++i) {
+                shape(10, 14 + i * 7, 24, 2, true);
+                shape(i == 1 ? 24 : i == 2 ? 16 : 12, 12 + i * 7, 4, 6, true);
+            }
+        } else {
+            // Two on/off switches, one on and one off.
+            shape(11, 11, 22, 10, false, 5); shape(24, 14, 6, 4, true, 2);
+            shape(11, 23, 22, 10, false, 5); shape(14, 26, 6, 4, true, 2);
+        }
+    }
+    auto* list = bar_list(parent, m, 0);
+    const auto heading = [&](const std::string& name) {
+        auto* h = label(list, upper(name), 0, 0, 0, ink, &peepo_mono_14);
+        lv_obj_set_width(h, LV_PCT(100)); lv_obj_set_style_text_letter_space(h, 2, 0);
+    };
+    std::vector<std::string> placed;
+    for (const auto& b : layout->main) placed.push_back(b.symbol);
+    for (const auto* s : layout->stomps) placed.push_back(s);
+    if (pedal_page_ == 0) {
+        for (const auto& b : layout->main)
+            if (const auto* p = find(b.symbol)) {
+                auto shown = *p;
+                if (b.name) shown.name = b.name;
+                parameter_bar(list, m, shown, compact_width, compact_height, b.segmented);
+            }
+        std::vector<const Parameter*> stomps;
+        for (const auto* s : layout->stomps) if (const auto* p = find(s)) stomps.push_back(p);
+        if (!stomps.empty()) heading("Stomps");
+        for (const auto* p : stomps) parameter_bar(list, m, *p, compact_width, compact_height);
+        return list;
+    }
+    // Everything else, under the overlay's groups; a mode of up to three
+    // choices shows them all.
+    for (const auto& s : parameter_sections(m)) {
+        std::vector<const Parameter*> rest;
+        for (const auto* p : s.parameters) if (std::find(placed.begin(), placed.end(), p->symbol) == placed.end()) rest.push_back(p);
+        if (rest.empty()) continue;
+        heading(s.name.empty() ? "More" : s.name);
+        for (const auto* p : rest)
+            parameter_bar(list, m, *p, compact_width, compact_height, p->kind == ParameterKind::Enumeration && p->choices.size() <= 3);
+    }
+    return list;
 }
 void Application::tuner_meter(lv_obj_t* parent) {
     auto* meter = panel(parent, 24, 12, 752, 200);
@@ -2055,11 +2242,12 @@ void Application::update_euclidean() {
         }
     }
 }
-void Application::parameter_bar(lv_obj_t* parent, const Module& m, const Parameter& p) {
-    auto* bar = panel(parent, 0, 0, bar_width, bar_height);
+void Application::parameter_bar(lv_obj_t* parent, const Module& m, const Parameter& p, int width, int height, bool segmented) {
+    segmented = segmented && p.kind == ParameterKind::Enumeration && p.choices.size() >= 2;
+    auto* bar = panel(parent, 0, 0, width, height);
     lv_obj_set_style_radius(bar, 10, 0); lv_obj_set_style_clip_corner(bar, true, 0);
     lv_obj_add_flag(bar, LV_OBJ_FLAG_PRESS_LOCK);
-    auto* fill = panel(bar, 0, 0, 0, bar_height, module_fill(m));
+    auto* fill = panel(bar, 0, 0, 0, height, module_fill(m));
     lv_obj_set_style_radius(fill, 0, 0); lv_obj_set_style_border_width(fill, 0, 0);
     lv_obj_remove_flag(fill, LV_OBJ_FLAG_CLICKABLE);
     // Under the name: the same time in milliseconds at the module's own tempo,
@@ -2075,27 +2263,46 @@ void Application::parameter_bar(lv_obj_t* parent, const Module& m, const Paramet
     for (const auto& a : graph_.assignments)
         if (a.module == m.id && a.action == ControlAction::Parameter && a.parameter == p.symbol && assignment_target(graph_, a))
             caption += (caption.empty() ? "" : "  ") + std::string(is_encoder(a.control) ? "E" : "S") + a.control.substr(is_encoder(a.control) ? 3 : 5);
-    auto* name = label(bar, upper(p.name), 16, caption.empty() ? 15 : 6, 200, text, &peepo_bold_14);
+    // The name takes the left half and more, the value the right.
+    const int name_width = width * 54 / 100, value_x = width * 2 / 5, inset = width < bar_width ? 12 : 16;
+    auto* name = label(bar, upper(p.name), inset, caption.empty() ? (height - 18) / 2 : height / 2 - 18, name_width, text, &peepo_bold_14);
     lv_obj_set_style_text_letter_space(name, 1, 0);
     lv_label_set_long_mode(name, LV_LABEL_LONG_DOT); lv_obj_set_height(name, 18);
-    auto* value = label(bar, "", 196, 13, 160, text, &peepo_bold_18);
+    auto* value = label(bar, "", value_x, (height - 22) / 2, width - value_x - inset, text, &peepo_bold_18);
     lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_RIGHT, 0);
     lv_label_set_long_mode(value, LV_LABEL_LONG_DOT); lv_obj_set_height(value, 22);
-    if (!caption.empty()) label(bar, caption, 16, 25, 200, muted, &peepo_mono_14);
+    if (!caption.empty() && !segmented) label(bar, caption, inset, height / 2 + 1, name_width, muted, &peepo_mono_14);
+    if (segmented) {
+        // Like the toggle on a pedal, the choices say what it is: no name, no value.
+        lv_obj_add_flag(bar, LV_OBJ_FLAG_USER_1);
+        lv_obj_add_flag(name, LV_OBJ_FLAG_HIDDEN); lv_obj_add_flag(value, LV_OBJ_FLAG_HIDDEN);
+        const int count = static_cast<int>(p.choices.size());
+        for (int i = 0; i < count; ++i) {
+            const int x = i * width / count, w = (i + 1) * width / count - x;
+            auto* choice = label(bar, upper(p.choices[static_cast<std::size_t>(i)]), x + 2, (height - 18) / 2, w - 4, faint, &peepo_bold_14);
+            lv_obj_set_style_text_align(choice, LV_TEXT_ALIGN_CENTER, 0);
+            lv_label_set_long_mode(choice, LV_LABEL_LONG_DOT); lv_obj_set_height(choice, 18);
+        }
+        // A thin line between neighbouring choices.
+        for (int i = 1; i < count; ++i) {
+            auto* line = panel(bar, i * width / count, 8, 1, height - 16, border);
+            lv_obj_set_style_border_width(line, 0, 0); lv_obj_remove_flag(line, LV_OBJ_FLAG_CLICKABLE);
+        }
+    }
     paint_bar(bar, p);
     bind(bar, Action::Parameter, m.id, p.symbol);
     bars_.push_back({m.id, p.symbol, bar});
 }
 void Application::file_bar(lv_obj_t* parent, const Module& m) {
     const auto& file = definition(m.uri)->file;
-    auto* bar = panel(parent, 0, 0, bar_width, bar_height);
+    auto* bar = panel(parent, 0, 0, compact_width, compact_height);
     lv_obj_set_style_radius(bar, 10, 0);
     // Children as on a parameter bar: an empty fill, the name, the value.
-    lv_obj_remove_flag(panel(bar, 0, 0, 0, bar_height), LV_OBJ_FLAG_CLICKABLE);
-    auto* name = label(bar, upper(file.label), 16, 15, 120, text, &peepo_bold_14);
+    lv_obj_remove_flag(panel(bar, 0, 0, 0, compact_height), LV_OBJ_FLAG_CLICKABLE);
+    auto* name = label(bar, upper(file.label), 12, (compact_height - 18) / 2, 100, text, &peepo_bold_14);
     lv_obj_set_style_text_letter_space(name, 1, 0);
     // The file's name only: where it lives says nothing on a small screen.
-    auto* chosen = label(bar, m.file.empty() ? "None chosen" : file_name(m.file), 136, 13, 220, m.file.empty() ? faint : text, &peepo_bold_18);
+    auto* chosen = label(bar, m.file.empty() ? "None chosen" : file_name(m.file), 112, (compact_height - 22) / 2, compact_width - 124, m.file.empty() ? faint : text, &peepo_bold_18);
     lv_obj_set_style_text_align(chosen, LV_TEXT_ALIGN_RIGHT, 0);
     lv_label_set_long_mode(chosen, LV_LABEL_LONG_DOT); lv_obj_set_height(chosen, 22);
     if (files_ && engine_.state() == EngineState::Ready) bind(bar, Action::ChooseFile, m.id);
@@ -2134,7 +2341,7 @@ void Application::activate_parameter() {
 }
 void Application::open_module(InstanceId id) {
     // The same module again keeps its place; another starts at the top.
-    if (id != selected_) { parameter_focus_ = 0; parameter_scroll_ = 0; }
+    if (id != selected_) { parameter_focus_ = 0; parameter_scroll_ = 0; pedal_page_ = 0; }
     selected_ = id; patch_focus_ = id; adjusting_ = false;
     message("Drag a bar to set it. E1 picks a bar, E2 turns it.");
     navigate(Page::Parameters);
@@ -2617,6 +2824,17 @@ void Application::encoder(const Gesture& g) {
             return;
         }
         if (bars_.empty()) return;
+        // The two tabs read as one list: past the main tab's last bar comes
+        // the first of the other, and back.
+        if (const auto* m = find_module(graph_, selected_); turn && first && !adjusting_ && m && module_layout(*m) == ModuleLayout::Pedal) {
+            const int next = static_cast<int>(parameter_focus_) + g.steps;
+            if ((pedal_page_ == 0 && next >= static_cast<int>(bars_.size())) || (pedal_page_ == 1 && next < 0)) {
+                pedal_page_ = next < 0 ? 0 : 1; parameter_scroll_ = 0;
+                // Built again, the focus is clamped to the panel's last bar.
+                parameter_focus_ = next < 0 ? bars_.size() + 100 : 0;
+                rebuild_ = true; return;
+            }
+        }
         if (turn && first && !adjusting_) focus_parameter(static_cast<std::size_t>(std::max(0, static_cast<int>(parameter_focus_) + g.steps)));
         else if (turn && bars_[parameter_focus_].file) message("Push to choose a file.");
         else if (turn) turn_parameter(bars_[parameter_focus_].id, bars_[parameter_focus_].symbol, g, nullptr);

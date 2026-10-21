@@ -1,5 +1,7 @@
 # Module page and two encoders
 
+> Since 20 October 2026 the bars are smaller, and a rail on the left scrolls long lists: [Module rail, Aura's and Discipline's pages](40-module-rail-and-aura.md).
+
 **Implemented:** 17 October 2026, on the Windows PC. **Scope:** the module (parameter) page redone, and the physical controls cut from four encoders to two. **Verified with:** real LVGL pointer and control checks on Windows (`peepo_ui_check`), the controls and Linux input tests, and the Linux build under WSL. **Not covered:** the physical screen and encoders; how a drag feels on the 5-inch touchscreen.
 
 ## Why

@@ -93,7 +93,7 @@ lv_point_t bar_point(peepo::Application& app, const std::string& name) {
 // Drag a bar sideways by a share of its width, or tap it.
 void slide(peepo::Application& app, const std::string& name, double share) {
     const auto at = bar_point(app, name);
-    drag(app, at.x, at.y, at.x + static_cast<int>(share * 372), at.y);
+    drag(app, at.x, at.y, at.x + static_cast<int>(share * lv_obj_get_width(bar(app, name))), at.y);
 }
 void tap_bar(peepo::Application& app, const std::string& name) {
     const auto at = bar_point(app, name);
@@ -1290,6 +1290,117 @@ int main(int argc, char** argv) {
             check(exact_label(app.screen(), "WAITING FOR TRIG") && exact_label(app.screen(), "L1 3:10"), "idle Euclidean did not show beats:steps ratio");
             click(app, 70, 456);
             check(!live.watched, "leaving Euclidean did not stop monitoring");
+        }
+        // Aura's and Discipline's pages: the main controls two to a row, then the rest on the second tab.
+        {
+            using K = peepo::ParameterKind;
+            peepo::ModuleDefinition aura{"https://github.com/ABustos2606/aura#aura", "Aura", "Delay", "Micro-looper", 0xa78bfa,
+                {{"in_l", peepo::Direction::Input}, {"out_l", peepo::Direction::Output}}, {}};
+            const auto knob = [&](const char* s, const char* n, double v) { aura.parameters.push_back({s, n, "", K::Continuous, 0, 1, v}); };
+            const auto toggle = [&](const char* s, const char* n) { aura.parameters.push_back({s, n, "", K::Toggle, 0, 1, 0}); };
+            const auto mode = [&](const char* s, const char* n, double v, std::vector<std::string> c) { aura.parameters.push_back({s, n, "", K::Enumeration, 0, double(c.size() - 1), v, false, std::move(c)}); };
+            knob("mix", "Mix", .5); knob("clock", "Clock", 1); mode("routing", "Routing", 1, {"In", "In+Loop", "Loop"});
+            toggle("wet_on", "Wet on"); toggle("freeze", "Freeze"); mode("wet_mode", "Wet mode", 0, {"Reverb", "Delay", "Slip"});
+            knob("time", "Time", .5); knob("wet_modify", "Wet modify", .5); toggle("loop_on", "Loop on"); toggle("overdub", "Overdub");
+            mode("loop_mode", "Loop mode", 1, {"Env", "Tape", "Stretch"}); knob("length", "Length", 1); knob("loop_modify", "Loop modify", .75);
+            toggle("latch", "Latch"); toggle("trails", "Trails"); toggle("no_dub", "No dub"); toggle("smooth_clock", "Smooth clock");
+            toggle("mono_in", "Mono in"); toggle("spread", "Spread"); toggle("dry_kill", "Dry kill");
+            knob("width", "Width", 1); knob("tone", "Tone", 1); knob("fade", "Fade", .5); knob("balance", "Balance", .5);
+            toggle("sync", "Sync"); toggle("spread_solo", "Spread solo"); toggle("loop_half", "Loop half"); toggle("direct_loop", "Direct loop");
+            aura.groups = {{"Switches", {"latch", "trails", "no_dub", "smooth_clock"}}, {"Stereo", {"mono_in", "spread", "spread_solo", "dry_kill"}},
+                           {"Options", {"width", "direct_loop", "balance", "sync"}}};
+            peepo::register_definitions({aura});
+            peepo::SimulatedEngine aura_engine;
+            auto g = peepo::empty_graph("Aura");
+            g.modules.push_back({3, aura.uri, aura.name, 184, 72, false, false, aura.parameters, aura.ports});
+            aura_engine.submit(peepo::LoadGraph{g}); aura_engine.advance(100);
+            peepo::Application app(aura_engine); step(app);
+            const auto value = [&](const std::string& symbol) {
+                const auto& ps = peepo::find_module(app.graph(), 3)->parameters;
+                return std::find_if(ps.begin(), ps.end(), [&](const peepo::Parameter& p) { return p.symbol == symbol; })->value;
+            };
+            const auto box = [&](const char* name) { lv_area_t a; lv_obj_get_coords(lv_obj_get_parent(first_label(app.screen(), name)), &a); return a; };
+            click(app, 184 + 48, 72 + 72 + 48);
+            check(app.page() == peepo::Page::Parameters, "Aura did not open");
+            for (const char* name : {"TIME", "MODIFY", "LENGTH", "MIX", "CLOCK", "REVERB", "IN+LOOP", "STRETCH", "WET ON", "FREEZE", "LOOP ON", "OVERDUB", "STOMPS"})
+                check(exact_label(app.screen(), name) != nullptr, "an Aura main control is missing");
+            check(!exact_label(app.screen(), "LATCH"), "a second-tab control is on Aura's main tab");
+            // Two to a row: Time and Modify, Mix and Clock, the same bar size as every module.
+            const auto time = box("TIME"), mix = box("MIX"), clock = box("CLOCK");
+            check(time.y1 == box("MODIFY").y1 && mix.y1 == clock.y1 && clock.x1 > mix.x2 && mix.y1 > time.y1 && time.x2 - time.x1 + 1 == 300, "Aura's main bars are not two to a row");
+            capture(app, output / "68-aura-main.bmp");
+            // A segment is tapped or dragged to; the others go dark.
+            tap_first(app, "DELAY"); check(value("wet_mode") == 1, "tapping a segment did not choose it");
+            { auto* routing = lv_obj_get_parent(exact_label(app.screen(), "IN"));
+              lv_obj_scroll_to_view_recursive(routing, LV_ANIM_OFF); lv_obj_update_layout(app.screen());
+              lv_area_t a; lv_obj_get_coords(routing, &a);
+              drag(app, a.x1 + 20, (a.y1 + a.y2) / 2, a.x2 - 20, (a.y1 + a.y2) / 2); }
+            check(value("routing") == 2, "dragging a segmented bar did not snap to its last choice");
+            // Encoder 1 goes from the main tab's last bar on to the second tab.
+            for (int i = 0; i < 20 && !exact_label(app.screen(), "LATCH"); ++i) { app.control({peepo::ControlEvent::Type::Turn, "enc1", 1}); step(app, 64); }
+            check(exact_label(app.screen(), "LATCH") != nullptr, "encoder 1 did not move on to the second tab");
+            app.control({peepo::ControlEvent::Type::Turn, "enc1", -1}); step(app);
+            check(exact_label(app.screen(), "TIME") != nullptr && !exact_label(app.screen(), "LATCH"), "encoder 1 did not move back to the main tab");
+            // The rail's second icon: the rest under the overlay's groups.
+            click(app, 28, 72 + 10 + 52 + 22);
+            check(exact_label(app.screen(), "SWITCHES") && exact_label(app.screen(), "OPTIONS") && exact_label(app.screen(), "LATCH"), "Aura's second tab missing");
+            check(!exact_label(app.screen(), "TIME") && !text_label(app.screen(), "DIP"), "the main controls, or a pedal's word, on the second tab");
+            capture(app, output / "69-aura-more.bmp");
+            auto* list = lv_obj_get_parent(lv_obj_get_parent(exact_label(app.screen(), "LATCH")));
+            check(lv_obj_get_scroll_bottom(list) > 0, "Aura's second tab should scroll in this check");
+            // A swipe up that starts on a bar scrolls; the bar keeps its value.
+            const auto tone = value("tone");
+            { lv_area_t a; lv_obj_get_coords(lv_obj_get_parent(exact_label(app.screen(), "DRY KILL")), &a);
+              drag(app, a.x1 + 40, a.y1 + 20, a.x1 + 90, a.y1 - 120); }
+            check(lv_obj_get_scroll_y(list) > 0 && value("tone") == tone && value("dry_kill") == 0, "a vertical swipe on a bar did not scroll, or changed a value");
+            // A thumb drifts sideways a little before it goes down: still a scroll.
+            {
+                lv_obj_scroll_to_y(list, lv_obj_get_scroll_y(list) + lv_obj_get_scroll_bottom(list), LV_ANIM_OFF); step(app);
+                auto* width_bar = lv_obj_get_parent(exact_label(app.screen(), "WIDTH"));
+                const double width = value("width"); const int before = lv_obj_get_scroll_y(list);
+                lv_area_t a; lv_obj_get_coords(width_bar, &a);
+                check(before > 0 && a.y1 >= 72 && a.y2 < 300, "the Width bar is not where this check needs it");
+                const int x = a.x1 + 120, y = (a.y1 + a.y2) / 2;
+                pointer = {x, y}; pressed = true; step(app, 48);
+                pointer = {x + 10, y + 3}; step(app, 32);
+                for (int i = 1; i <= 6; ++i) { pointer = {x + 10 + 2 * i, y + 3 + 20 * i}; step(app, 32); }
+                pressed = false; step(app);
+                check(value("width") == width && lv_obj_get_scroll_y(list) < before, "a swipe that drifted sideways first changed the bar instead of scrolling");
+            }
+            // The rail: touching its bottom shows the end of the list.
+            click(app, 28, 72 + 352);
+            check(lv_obj_get_scroll_bottom(list) <= 0, "touching the rail's end did not scroll to the end");
+            capture(app, output / "70-aura-more-scrolled.bmp");
+            click(app, 28, 72 + 10 + 22);
+            check(exact_label(app.screen(), "TIME") != nullptr, "the rail's first icon did not show the main tab again");
+        }
+        {
+            using K = peepo::ParameterKind;
+            peepo::ModuleDefinition d{"https://github.com/ABustos2606/discipline#discipline", "Discipline", "Delay", "Delay with a memory", 0xa78bfa,
+                {{"in_l", peepo::Direction::Input}, {"out_l", peepo::Direction::Output}}, {}};
+            for (const auto& [s, n] : std::vector<std::pair<const char*, const char*>>{{"level", "Level"}, {"repeats", "Repeats"}, {"size", "Size"}, {"modify", "Modify"}, {"spread", "Spread"}, {"scan", "Scan"}})
+                d.parameters.push_back({s, n, "", K::Continuous, 0, 1, .5});
+            d.parameters.push_back({"modifier", "Modifier", "", K::Enumeration, 0, 4, 1, false, {"Off", "Stepped speed", "Smooth speed", "Trimmer", "Dropper"}});
+            d.parameters.push_back({"routing", "Routing", "", K::Enumeration, 0, 2, 0, false, {"In", "Feed", "Out"}});
+            d.parameters.push_back({"scan_mode", "Scan mode", "", K::Enumeration, 0, 1, 0, false, {"Auto", "Manual"}});
+            d.parameters.push_back({"memory_dry", "Memory dry", "", K::Enumeration, 0, 2, 1, false, {"Off", "Scanning", "On"}});
+            for (const auto& [s, n] : std::vector<std::pair<const char*, const char*>>{{"loop", "Loop"}, {"scan_hold", "Scan hold"}, {"clear", "Clear"}, {"collect", "Collect"}, {"latch", "Latch"}, {"always", "Always rec"}, {"trails", "Trails"}})
+                d.parameters.push_back({s, n, "", K::Toggle, 0, 1, 0});
+            d.groups = {{"Switches", {"scan_mode", "collect", "latch", "memory_dry", "always", "trails"}}};
+            peepo::register_definitions({d});
+            peepo::SimulatedEngine engine2;
+            auto g = peepo::empty_graph("Discipline");
+            g.modules.push_back({3, d.uri, d.name, 184, 72, false, false, d.parameters, d.ports});
+            engine2.submit(peepo::LoadGraph{g}); engine2.advance(100);
+            peepo::Application app(engine2); step(app);
+            click(app, 184 + 48, 72 + 72 + 48);
+            for (const char* name : {"LEVEL", "REPEATS", "SIZE", "MODIFY", "SPREAD", "SCAN", "MODIFIER", "FEED", "STOMPS", "LOOP", "SCAN HOLD", "CLEAR"})
+                check(exact_label(app.screen(), name) != nullptr, "a Discipline main control is missing");
+            check(!exact_label(app.screen(), "COLLECT"), "a second-tab control is on Discipline's main tab");
+            capture(app, output / "71-discipline-main.bmp");
+            click(app, 28, 72 + 10 + 52 + 22);
+            check(exact_label(app.screen(), "SWITCHES") && exact_label(app.screen(), "MANUAL") && exact_label(app.screen(), "COLLECT"), "Discipline's second tab missing");
+            capture(app, output / "72-discipline-more.bmp");
         }
         // Hold a module and then hold another while still holding the first: direct connect or port selection screen.
         {

@@ -85,6 +85,6 @@ What stays in Peepo:
 
 Aura has its own private repository at https://github.com/ABustos2606/aura. It combines an always-listening Env/Tape/Stretch micro-looper with Reverb, Delay and Slip, at one internal Clock. Its source pin is in the build script and reference manifest. Copyright (c) 2026 Alejandro Bustos. All rights reserved; no license is granted. Access to the private repository is required.
 
-The overlay uses port bypass and patch BPM. Main holds all six knobs under one heading on the scrolling module page. Stomps exposes Wet on, Freeze, Loop on and Overdub for patch-specific footswitch assignments. With Latch off, Freeze and Overdub expect held gates; with Latch on, rising presses toggle. Six additive CV connectors replace hardware ramping.
+The overlay uses port bypass and patch BPM. Aura has a page of its own on two tabs ([Module rail, Aura's and Discipline's pages](40-module-rail-and-aura.md)): the six main controls, three modes and four stomps on the first, every other option on the second. Stomps exposes Wet on, Freeze, Loop on and Overdub for patch-specific footswitch assignments. With Latch off, Freeze and Overdub expect held gates; with Latch on, rising presses toggle. Six additive CV connectors replace hardware ramping.
 
 Pi listening, native arm64 tests and a 30-minute typical-patch xrun/CPU/RSS record are still required in docs/evidence/ before release acceptance.

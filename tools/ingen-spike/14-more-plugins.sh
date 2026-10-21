@@ -222,7 +222,7 @@ third loo-pi https://github.com/ABustos2606/loo-pi.git 45c301f80c1ec63edeb99a45a
 
 # --- Aura: private stereo micro-looper and effects sharing one clock.
 # Requires access to the private source repository; no license is granted.
-third aura https://github.com/ABustos2606/aura.git e4ed6a87c99d9e78156c45b5768e8a91faf52091 "make" \
+third aura https://github.com/ABustos2606/aura.git 82b37d7d2e555d55232f4b238f19b185b0c91842 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix

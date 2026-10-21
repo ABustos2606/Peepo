@@ -10,7 +10,7 @@
             "name": "aura",
             "role": "Stereo micro-looper and effects sharing one clock",
             "origin": "https://github.com/ABustos2606/aura.git",
-            "commit": "e4ed6a87c99d9e78156c45b5768e8a91faf52091",
+            "commit": "82b37d7d2e555d55232f4b238f19b185b0c91842",
             "private": true,
             "storage": "external_private_repository",
             "license": "LicenseRef-Proprietary"
