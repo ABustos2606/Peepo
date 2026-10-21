@@ -211,7 +211,7 @@
       {"name": "Memory only", "parameters": ["wipe"]}
     ]},
     {"uri": "https://github.com/ABustos2606/discipline#return", "name": "Discipline Return", "category": "Utility", "description": "Brings Discipline's repeats back in when its Modifier is Outside. One per patch."},
-    {"uri": "https://github.com/ABustos2606/chamber#chamber", "name": "Chamber", "category": "Resonator", "description": "A plate, string or tube you bow, blow or strike, with reverb. A guitar at Strike in makes it ring at its own pitch, no gate needed. Play or a gate starts a note; Blow in sounds only while one is held.",
+    {"uri": "https://github.com/ABustos2606/chamber#chamber", "name": "Chamber", "category": "Resonator", "description": "A bell, plate or strings that your guitar rings at its own pitch: cable it to Strike in, no gate needed. It starts as a long bell with reverb. Raise Strike, Bow or Blow level to play it with Play or a gate; Blow in sounds only while one is held.",
      "output": "output", "parameters": [{"symbol": "ominous", "hidden": true}], "groups": [
       {"name": "Resonator", "parameters": ["model", "geometry", "brightness", "damping", "position", "space"]},
       {"name": "Input and output", "parameters": ["strike_in_level", "blow_in_level", "output"]},
