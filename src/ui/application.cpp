@@ -382,6 +382,8 @@ void Application::navigate(Page page) {
     if (page == Page::Browser && page_ != Page::Browser) { browser_pick_.clear(); browser_scroll_ = 0; }
     // Another program, or a damaged disk, may have changed what is stored.
     if (page == Page::Patches && page_ != Page::Patches) refresh_stored();
+    // From the patch every list opens at the top.
+    if (page_ == Page::Patch) list_scroll_.clear();
     // Leaving MIDI learn before anything was learned ends the engine's wait.
     if (page_ == Page::MidiLearn && page != Page::MidiLearn && (learn_waiting_ || learn_request_)) {
         learn_waiting_ = false; learn_request_ = 0;
@@ -585,7 +587,7 @@ void Application::update_system() {
     if (page_ == Page::Diagnostics) rebuild_ = true;
 }
 void Application::bind(lv_obj_t* obj, Action action, InstanceId id, std::string symbol, int number, lv_obj_t* value) {
-    bindings_.push_back({this, action, id, std::move(symbol), number, value});
+    bindings_.push_back({this, action, id, std::move(symbol), number, value, obj});
     lv_obj_add_event_cb(obj, event, LV_EVENT_ALL, &bindings_.back());
 }
 lv_obj_t* Application::button(lv_obj_t* parent, const std::string& title, int x, int y, int w,
@@ -631,6 +633,96 @@ void mark(lv_obj_t* b, std::uint32_t ink) {
     lv_obj_set_style_border_color(b, color(ink), 0); lv_obj_set_style_border_width(b, 2, 0);
     lv_obj_set_style_text_color(lv_obj_get_child(b, 0), color(ink), 0);
 }
+// What a lit bar on a page that is not a module's fills with.
+constexpr std::uint32_t setting_fill = 0x166534;
+// A section of a page's list: its name in small capitals across the list.
+lv_obj_t* list_heading(lv_obj_t* list, const std::string& name, std::uint32_t ink = accent) {
+    auto* h = label(list, upper(name), 0, 0, 0, ink, &peepo_mono_14);
+    lv_obj_set_width(h, LV_PCT(100)); lv_obj_set_style_text_letter_space(h, 2, 0);
+    lv_label_set_long_mode(h, LV_LABEL_LONG_DOT); lv_obj_set_height(h, 18);
+    return h;
+}
+// A line of explanation across the list.
+lv_obj_t* list_note(lv_obj_t* list, const std::string& value, std::uint32_t ink = muted) {
+    auto* n = label(list, value, 0, 0, 0, ink, &lv_font_montserrat_14);
+    lv_obj_set_width(n, LV_PCT(100)); lv_label_set_long_mode(n, LV_LABEL_LONG_WRAP);
+    return n;
+}
+// A value bar's fill and value, from its binding.
+void paint_slide(lv_obj_t* bar, double at, double low, double high, const std::function<std::string(double)>& shown) {
+    const double share = high > low ? std::clamp((at - low) / (high - low), 0.0, 1.0) : 0;
+    lv_obj_set_width(lv_obj_get_child(bar, 0), static_cast<int>(std::round(share * bar_span(bar))));
+    const auto value = shown ? shown(at) : std::string();
+    auto* l = lv_obj_get_child(bar, 2);
+    if (value != lv_label_get_text(l)) lv_label_set_text(l, value.c_str());
+}
+}
+lv_obj_t* Application::page_list(lv_obj_t* parent) {
+    auto* list = scroll_list(parent, 0);
+    page_list_ = list; page_list_page_ = page_;
+    return list;
+}
+lv_obj_t* Application::list_bar(lv_obj_t* list, const std::string& name, const BarLook& look, Action action, InstanceId id, std::string symbol, int number) {
+    // A module's bar, compact: its name on the left, what it is now on the right.
+    lv_obj_t* bar = nullptr;
+    if (look.still) bar = panel(list, 0, 0, compact_width, compact_height);
+    else {
+        bar = button(list, "", 0, 0, compact_width, action, id, std::move(symbol), number);
+        lv_obj_set_height(bar, compact_height);
+        lv_obj_delete(lv_obj_get_child(bar, 0));
+        lv_obj_set_style_border_color(bar, color(border), 0);
+        lv_obj_set_style_border_color(bar, color(text), LV_STATE_FOCUS_KEY);
+    }
+    lv_obj_set_style_radius(bar, 10, 0); lv_obj_set_style_clip_corner(bar, true, 0);
+    if (look.edge) lv_obj_set_style_border_color(bar, color(look.edge), 0);
+    auto* fill = panel(bar, 0, 0, look.lit ? compact_width : 0, compact_height, look.fill ? look.fill : setting_fill);
+    lv_obj_set_style_radius(fill, 0, 0); lv_obj_set_style_border_width(fill, 0, 0);
+    lv_obj_remove_flag(fill, LV_OBJ_FLAG_CLICKABLE);
+    // The value's room, roughly by its length; the name has the rest.
+    const int value_room = look.value.empty() ? 0 : std::min(static_cast<int>(look.value.size()) * 13 + 8, 180);
+    const int name_width = compact_width - 24 - value_room;
+    auto* title = label(bar, look.keep_case ? name : upper(name), 12, look.caption.empty() ? 11 : 2, name_width, text, &peepo_bold_14);
+    lv_obj_set_style_text_letter_space(title, 1, 0);
+    lv_label_set_long_mode(title, LV_LABEL_LONG_DOT); lv_obj_set_height(title, 18);
+    auto* value = label(bar, look.value, compact_width - 12 - std::max(value_room, 8), 9, std::max(value_room, 8), look.value_ink ? look.value_ink : text, &peepo_bold_18);
+    lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_RIGHT, 0);
+    lv_label_set_long_mode(value, LV_LABEL_LONG_DOT); lv_obj_set_height(value, 22);
+    if (!look.caption.empty()) {
+        auto* caption = label(bar, look.caption, 12, 21, name_width, look.caption_ink ? look.caption_ink : muted, &peepo_mono_14);
+        lv_label_set_long_mode(caption, LV_LABEL_LONG_DOT); lv_obj_set_height(caption, 16);
+    }
+    return bar;
+}
+void Application::choice_bar(lv_obj_t* list, const std::vector<std::string>& choices, int chosen, Action action, InstanceId id, std::string symbol) {
+    // Like a module's three-way mode: every choice shows, the chosen one lit.
+    auto* bar = panel(list, 0, 0, compact_width, compact_height);
+    lv_obj_set_style_radius(bar, 10, 0); lv_obj_set_style_clip_corner(bar, true, 0);
+    const int count = std::max(1, static_cast<int>(choices.size()));
+    for (int i = 0; i < count; ++i) {
+        const int x = i * compact_width / count, w = (i + 1) * compact_width / count - x;
+        auto* b = button(bar, choices[static_cast<std::size_t>(i)], x, 0, w, action, id, symbol, i);
+        lv_obj_set_height(b, compact_height); lv_obj_set_style_radius(b, 0, 0); lv_obj_set_style_border_width(b, 0, 0);
+        lv_obj_set_style_border_width(b, 2, LV_STATE_FOCUS_KEY);
+        lv_obj_set_style_bg_color(b, color(i == chosen ? setting_fill : surface), 0);
+        lv_obj_set_style_text_color(lv_obj_get_child(b, 0), color(i == chosen ? text : faint), 0);
+        if (i) {
+            auto* line = panel(bar, x, 8, 1, compact_height - 16, border);
+            lv_obj_set_style_border_width(line, 0, 0); lv_obj_remove_flag(line, LV_OBJ_FLAG_CLICKABLE);
+        }
+    }
+}
+lv_obj_t* Application::value_bar(lv_obj_t* list, const std::string& name, double low, double high, double step, double value,
+                                 std::function<std::string(double)> shown, std::function<void(double)> set) {
+    auto* bar = list_bar(list, name, {.value = " "}, Action::Slide);
+    lv_obj_add_flag(bar, LV_OBJ_FLAG_PRESS_LOCK);
+    auto& b = bindings_.back();
+    b.low = low; b.high = high; b.step = step; b.at = value; b.shown = std::move(shown); b.set = std::move(set);
+    // Its value takes the right half, as on a module's bar.
+    auto* v = lv_obj_get_child(bar, 2);
+    lv_obj_set_x(v, compact_width * 2 / 5); lv_obj_set_width(v, compact_width * 3 / 5 - 12);
+    lv_obj_set_width(lv_obj_get_child(bar, 1), compact_width * 54 / 100);
+    paint_slide(bar, b.at, b.low, b.high, b.shown);
+    return bar;
 }
 void Application::event(lv_event_t* e) {
     auto* b = static_cast<Binding*>(lv_event_get_user_data(e));
@@ -786,7 +878,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
                             std::abs(point.x + pan_x_ - item.x - module_width / 2) <= 24 && std::abs(point.y - 72 + pan_y_ - item.y - module_height) <= 24) destination = item.id;
                 if (destination && code == LV_EVENT_RELEASED) {
                     const auto outputs = cv_ports(*m, Direction::Output);
-                    cv_from_ = cable_source_; cv_to_ = destination; cv_page_ = 0; cv_only_ = true;
+                    cv_from_ = cable_source_; cv_to_ = destination; cv_only_ = true;
                     cv_output_ = outputs.size() == 1 ? outputs.front()->symbol : std::string();
                     navigate(Page::CvConnect);
                 } else message("Drop the control cable on the square connector under a module.");
@@ -912,40 +1004,39 @@ void Application::handle(Binding& b, lv_event_t* e) {
         } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !slides) submit(SetParameter{b.id, b.symbol, stepped_choice(*it)});
         return;
     }
-    if (b.action == Action::TempoSlider) {
-        // Whole beats per minute; the value follows the finger, the engine hears the release.
-        if (code != LV_EVENT_VALUE_CHANGED && code != LV_EVENT_RELEASED) return;
-        const auto bpm = static_cast<double>(lv_slider_get_value(target));
-        if (b.value_label) lv_label_set_text(b.value_label, metric_text(bpm, false).c_str());
-        if (code == LV_EVENT_RELEASED) set_tempo(bpm);
-        return;
-    }
-    if (b.action == Action::LoadMessage && b.number % 8 >= 2) {
-        // A controller number or value slider: the label follows, the release is sent.
-        if (code != LV_EVENT_VALUE_CHANGED && code != LV_EVENT_RELEASED) return;
-        const int value = lv_slider_get_value(target);
-        if (b.value_label) lv_label_set_text(b.value_label, std::to_string(value).c_str());
-        auto list = graph_.load_messages;
-        if (const auto i = static_cast<std::size_t>(b.number / 8); code == LV_EVENT_RELEASED && i < list.size()) {
-            (b.number % 8 == 2 ? list[i].number : list[i].value) = value;
-            if (list != graph_.load_messages) submit(SetLoadMessages{list});
-        }
-        return;
-    }
-    if (b.action == Action::RangeEnd) {
-        // The From (0) and To (1) ends of an assignment's range, sent on release.
-        const auto* a = pinned(editing_control_);
-        const auto* p = a ? assignment_parameter(graph_, *a) : nullptr;
-        if (!p) return;
-        auto end = *p;
-        end.value = value_from_normalized(*p, lv_slider_get_value(target) / 1000.0);
-        if (p->kind != ParameterKind::Continuous) end.value = std::round(end.value);
-        if (b.value_label) lv_label_set_text(b.value_label, format_value(end).c_str());
-        if (code == LV_EVENT_RELEASED) {
-            auto changed = *a;
-            (b.number ? changed.maximum : changed.minimum) = end.value;
-            if (changed.minimum > changed.maximum) { message("From must not pass To; use Invert to reverse the direction."); rebuild_ = true; return; }
-            submit(Assign{changed});
+    if (b.action == Action::Slide) {
+        // As a module's bar: relative, a sideways drag over the whole width for
+        // the whole range; a swipe up or down scrolls the list instead.
+        lv_point_t point{};
+        if (auto* indev = lv_indev_active()) lv_indev_get_point(indev, &point);
+        auto* list = lv_obj_get_parent(target);
+        const auto dragged = [&] {
+            double v = b.low + std::clamp(drag_origin_ + static_cast<double>(point.x - press_.x) / bar_span(target), 0.0, 1.0) * (b.high - b.low);
+            if (b.step > 0) v = b.low + std::round((v - b.low) / b.step) * b.step;
+            return std::clamp(v, b.low, b.high);
+        };
+        if (code == LV_EVENT_PRESSED) {
+            press_ = point; bar_moving_ = bar_scrolling_ = false;
+            drag_origin_ = b.high > b.low ? (b.at - b.low) / (b.high - b.low) : 0;
+        } else if (code == LV_EVENT_PRESSING) {
+            const int dx = point.x - press_.x, dy = point.y - press_.y;
+            auto* indev = lv_indev_active();
+            if (!bar_moving_ && !bar_scrolling_) {
+                if (std::abs(dx) > 12 && std::abs(dx) > 2 * std::abs(dy) && !(indev && lv_indev_get_scroll_obj(indev))) {
+                    bar_moving_ = true; lv_obj_remove_flag(list, LV_OBJ_FLAG_SCROLLABLE);
+                } else if (std::abs(dy) > 6 || (indev && lv_indev_get_scroll_obj(indev))) bar_scrolling_ = true;
+            }
+            if (bar_moving_) paint_slide(target, dragged(), b.low, b.high, b.shown);
+        } else if (code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
+            if (bar_moving_) {
+                if (code == LV_EVENT_RELEASED) {
+                    b.at = dragged(); paint_slide(target, b.at, b.low, b.high, b.shown);
+                    // The callback may rebuild the page, and this binding with it.
+                    if (const auto set = b.set) set(b.at);
+                } else paint_slide(target, b.at, b.low, b.high, b.shown);
+                lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLLABLE);
+                bar_moving_ = false;
+            }
         }
         return;
     }
@@ -1047,8 +1138,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
     case Action::ClockRestart:
         if (midi_) { midi_->request_restart(); message("The clock restarts: Stop, then Start."); }
         break;
-    case Action::ChooseFile: selected_ = b.id; file_page_ = 0; navigate(Page::FilePicker); break;
-    case Action::FilePage: file_page_ = static_cast<std::size_t>(b.number); rebuild_ = true; break;
+    case Action::ChooseFile: selected_ = b.id; navigate(Page::FilePicker); break;
     case Action::PickFile:
         if (submit(SetFile{b.id, b.symbol})) message("Loading " + file_name(b.symbol) + ". The plugin reads it in the background.");
         navigate(Page::Parameters);
@@ -1083,6 +1173,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
             message(issue.empty() ? "Saved patch deleted." : issue);
             refresh_stored(); navigate(Page::Patches);
         });
+        confirmation_.back = Page::PatchActions;
         break;
     }
     case Action::StartupStored: {
@@ -1092,12 +1183,20 @@ void Application::handle(Binding& b, lv_event_t* e) {
         message(!issue.empty() ? issue : already ? "No startup patch: the engine keeps whatever it plays." : "This patch loads when the instrument starts.");
         refresh_stored(); rebuild_ = true; break;
     }
-    case Action::PatchPage: patch_page_ = static_cast<std::size_t>(b.number); rebuild_ = true; break;
+    case Action::OpenPatch: patch_selected_ = b.symbol; navigate(Page::PatchActions); break;
     case Action::AssignControl:
-        editing_control_ = b.symbol; picking_module_ = 0; picker_page_ = 0;
+        editing_control_ = b.symbol; picking_module_ = 0; list_scroll_.erase(Page::AssignPicker);
         message("Choose what " + control_label(b.symbol) + " controls in this patch.");
         navigate(Page::AssignPicker); break;
-    case Action::EditControl: editing_control_ = b.symbol; navigate(Page::AssignmentDetail); break;
+    case Action::EditControl:
+        editing_control_ = b.symbol;
+        if (pinned(b.symbol) || (store_ && store_->global_controls().contains(b.symbol))) navigate(Page::AssignmentDetail);
+        else {
+            picking_module_ = 0; list_scroll_.erase(Page::AssignPicker);
+            message("Choose what " + control_label(b.symbol) + " controls in this patch.");
+            navigate(Page::AssignPicker);
+        }
+        break;
     case Action::ClearControl:
         if (pinned(b.symbol)) submit(Unassign{b.symbol});
         else if (store_ && store_->global_controls().contains(b.symbol)) {
@@ -1105,8 +1204,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
             message(issue.empty() ? control_label(b.symbol) + " cleared." : issue);
         }
         navigate(Page::Controls); break;
-    case Action::PickModule: picking_module_ = b.id; picker_page_ = 0; rebuild_ = true; break;
-    case Action::PickerPage: picker_page_ = static_cast<std::size_t>(b.number); rebuild_ = true; break;
+    case Action::PickModule: picking_module_ = b.id; list_scroll_.erase(Page::AssignPicker); rebuild_ = true; break;
     case Action::PickTarget: {
         if (b.symbol == "@next-patch" || b.symbol == "@previous-patch" || b.symbol == "@tap-tempo") {
             const auto issue = store_ ? store_->set_global_control(editing_control_, b.symbol.substr(1)) : std::string("Patch storage is not available");
@@ -1160,7 +1258,6 @@ void Application::handle(Binding& b, lv_event_t* e) {
         if (b.symbol.empty() || b.symbol == browser_pick_) { if (!browser_pick_.empty()) add_module(browser_pick_); }
         else browser_pick(b.symbol, false);
         break;
-    case Action::CvPage: cv_page_ = static_cast<std::size_t>(b.number); rebuild_ = true; break;
     case Action::CvChoice:
         if (cv_output_.empty()) {
             const auto* from = find_module(graph_, cv_from_);
@@ -1170,7 +1267,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 submit(Connect{{cv_from_, cv_to_, b.symbol, inputs.front()->symbol}});
                 navigate(Page::Patch);
             } else {
-                cv_output_ = b.symbol; cv_page_ = 0; rebuild_ = true;
+                cv_output_ = b.symbol; list_scroll_.erase(Page::CvConnect); rebuild_ = true;
             }
         } else { submit(Connect{{cv_from_, cv_to_, cv_output_, b.symbol}}); navigate(Page::Patch); }
         break;
@@ -1285,6 +1382,67 @@ void Application::replace_patch(Command command, Page origin) {
     }
     else submit(std::move(command));
 }
+std::vector<Application::Pill> Application::header_pills() const {
+    const bool ready = engine_.state() == EngineState::Ready;
+    std::vector<Pill> pills;
+    switch (page_) {
+    case Page::Settings:
+        pills.push_back({"Controls", Action::Navigate, 0, {}, static_cast<int>(Page::Controls)});
+        if (midi_) pills.push_back({"MIDI", Action::Navigate, 0, {}, static_cast<int>(Page::Midi)});
+        pills.push_back({"Diagnostics", Action::Navigate, 0, {}, static_cast<int>(Page::Diagnostics)});
+        if (power_off_ || restart_) pills.push_back({"Power", Action::Navigate, 0, {}, static_cast<int>(Page::Power)});
+        break;
+    case Page::Patches:
+        // What can be done to the patch playing.
+        if (!store_) {
+            pills.push_back({"Save", Action::SaveSession, 0, {}, 0, true, !ready});
+            pills.push_back({"Rename", Action::NameEntry, 0, {}, 1, false, !ready});
+            break;
+        }
+        pills.push_back({"Save", Action::SavePatch, 0, {}, 0, true, !ready});
+        pills.push_back({"Save as", Action::SavePatch, 0, {}, 1, false, !ready});
+        pills.push_back({"Rename", Action::NameEntry, 0, {}, 1, false, !ready});
+        pills.push_back({"Revert", Action::Revert, 0, {}, 0, false, graph_.patch_id.empty() || !graph_.dirty});
+        if (midi_) pills.push_back({"MIDI", Action::Navigate, 0, {}, static_cast<int>(Page::PatchMidi)});
+        break;
+    case Page::PatchActions:
+        if (const auto patch = store_ ? store_->find(patch_selected_) : std::nullopt) {
+            const bool playing = patch->id == graph_.patch_id;
+            // Loading the patch playing goes back to its saved revision.
+            pills.push_back({playing ? "Load saved" : "Load", Action::LoadStored, 0, patch->id, 0, true, !patch->revision || (playing && !graph_.dirty)});
+            pills.push_back({"Delete", Action::DeleteStored, 0, patch->id});
+        }
+        break;
+    case Page::PatchMidi:
+        pills.push_back({"+ Add", Action::AddLoadMessage, 0, {}, 0, true, graph_.load_messages.size() >= max_load_messages || !ready});
+        break;
+    case Page::NamePatch: pills.push_back({saving_as_ ? "Save" : renaming_ ? "Rename" : "Create", Action::CommitName, 0, {}, 0, true}); break;
+    case Page::Tempo: pills.push_back({"Tap", Action::Tap, 0, {}, 0, true}); break;
+    case Page::MidiLearn: {
+        const auto* m = find_module(graph_, learn_id_);
+        const auto it = m ? std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == learn_symbol_; }) : std::vector<Parameter>::const_iterator{};
+        if (!m || it == m->parameters.end()) break;
+        if (learn_waiting_ || learn_request_) { pills.push_back({"Cancel", Action::Navigate, 0, {}, static_cast<int>(Page::Parameters), true}); break; }
+        pills.push_back({"Learn", Action::MidiLearn, 0, {}, 0, true});
+        pills.push_back({"Forget", Action::MidiForget, 0, {}, 0, false, !it->midi});
+        break;
+    }
+    case Page::AssignmentDetail:
+        pills.push_back({"Assign", Action::AssignControl, 0, editing_control_});
+        pills.push_back({"Clear", Action::ClearControl, 0, editing_control_});
+        break;
+    case Page::ConfirmAction:
+        pills.push_back({confirmation_.button, Action::ConfirmAction, 0, {}, 0, true});
+        pills.push_back({"Cancel", Action::CancelAction});
+        break;
+    case Page::ConfirmReplace:
+        pills.push_back({"Replace patch", Action::Confirm, 0, {}, 0, true});
+        pills.push_back({"Cancel", Action::CancelReplace});
+        break;
+    default: break;
+    }
+    return pills;
+}
 void Application::rebuild() {
     rebuild_ = news_ = false;
     rebuilt_ms_ = clock_ms_;
@@ -1296,9 +1454,10 @@ void Application::rebuild() {
     } else {
         if (browser_list_) browser_scroll_ = lv_obj_get_scroll_y(browser_list_);
         if (parameter_list_ && page_ == Page::Parameters) parameter_scroll_ = lv_obj_get_scroll_y(parameter_list_);
+        if (page_list_) list_scroll_[page_list_page_] = lv_obj_get_scroll_y(page_list_);
         lv_obj_clean(screen_);
     }
-    browser_list_ = browser_add_ = parameter_list_ = nullptr; browser_cards_.clear();
+    browser_list_ = browser_add_ = parameter_list_ = page_list_ = nullptr; browser_cards_.clear();
     bars_.clear();
     bindings_.clear(); module_widgets_.clear(); input_jacks_.clear(); cv_inputs_.clear(); dots_.clear(); cables_.clear(); canvas_ = nullptr; footer_ = nullptr;
     tempo_value_ = cpu_value_ = network_value_ = nullptr;
@@ -1324,7 +1483,13 @@ void Application::rebuild() {
         title = m ? m->name : "Module";
         break;
     }
-    case Page::Patches: section = "PATCHES"; title = store_ ? "Patches" : "Session patches"; break;
+    case Page::Patches: section = "PATCHES"; break;
+    case Page::PatchActions: {
+        section = "PATCHES";
+        const auto it = std::find_if(stored_.begin(), stored_.end(), [&](const StoredPatch& p) { return p.id == patch_selected_; });
+        title = it != stored_.end() ? it->name : "Saved patch";
+        break;
+    }
     case Page::Settings: section = "SETTINGS"; title = engine_.capabilities().simulation ? "Simulator settings" : "Engine settings"; break;
     case Page::NamePatch: section = "PATCHES"; title = saving_as_ ? "Save as a new patch" : renaming_ ? "Rename patch" : "New patch"; break;
     case Page::ConfirmReplace: section = "PATCHES"; title = "Replace current patch?"; break;
@@ -1368,8 +1533,9 @@ void Application::rebuild() {
     lv_obj_remove_flag(dot, LV_OBJ_FLAG_CLICKABLE);
     auto* crumb = label(header, "PEEPO // " + section, 40, title.empty() ? 27 : 12, 0, faint, &peepo_mono_14);
     lv_obj_set_style_text_letter_space(crumb, 2, 0);
+    lv_obj_t* heading = nullptr;
     if (!title.empty()) {
-        auto* heading = label(header, upper(title), 24, 32, patch ? 412 : page_ == Page::Settings ? 330 : page_ == Page::Patches ? 480 : page_ == Page::Parameters ? 440 : 600, text, &peepo_bold_24);
+        heading = label(header, upper(title), 24, 32, patch ? 412 : page_ == Page::Settings ? 330 : page_ == Page::Parameters ? 440 : 600, text, &peepo_bold_24);
         lv_label_set_long_mode(heading, LV_LABEL_LONG_DOT); lv_obj_set_height(heading, 30);
         if (patch) {
             // Tapping the patch name brings the canvas back to its start.
@@ -1385,34 +1551,21 @@ void Application::rebuild() {
         if (!ready) lv_obj_add_state(add, LV_STATE_DISABLED);
         pill(button(header, "Patches", 556, 12, 104, Action::Navigate, 0, {}, static_cast<int>(Page::Patches)));
         pill(button(header, "Settings", 672, 12, 104, Action::Navigate, 0, {}, static_cast<int>(Page::Settings)));
-    } else if (page_ == Page::PatchMidi) {
-        auto* add = primary(pill(button(header, "+ Add", 680, 12, 96, Action::AddLoadMessage)));
-        if (graph_.load_messages.size() >= max_load_messages || !ready) lv_obj_add_state(add, LV_STATE_DISABLED);
-    } else if (page_ == Page::NamePatch) {
-        primary(pill(button(header, saving_as_ ? "Save" : renaming_ ? "Rename" : "Create", 640, 12, 136, Action::CommitName)));
-    } else if (page_ == Page::Settings || (page_ == Page::Patches && store_)) {
-        // The pages Settings leads to, or what Patches can do to the patch playing,
-        // as pills as wide as their names.
+    } else if (const auto wanted = header_pills(); !wanted.empty()) {
+        // What the page can do, as pills as wide as their names; its main action white.
         auto* pills = lv_obj_create(header); lv_obj_remove_style_all(pills);
         lv_obj_set_size(pills, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
         lv_obj_set_flex_flow(pills, LV_FLEX_FLOW_ROW); lv_obj_set_style_pad_column(pills, 8, 0);
         lv_obj_remove_flag(pills, LV_OBJ_FLAG_CLICKABLE);
-        auto link = [&](const std::string& name, Action action, Page target) {
-            auto* b = pill(button(pills, name, 0, 0, 0, action, 0, {}, static_cast<int>(target)));
+        for (const auto& w : wanted) {
+            auto* b = pill(button(pills, w.name, 0, 0, 0, w.action, w.id, w.symbol, w.number));
             lv_obj_set_width(b, LV_SIZE_CONTENT); lv_obj_set_style_pad_hor(b, 18, 0);
-            return b;
-        };
-        if (page_ == Page::Patches) {
-            auto* revert = link("Revert", Action::Revert, Page::Patches);
-            if (graph_.patch_id.empty() || !graph_.dirty) lv_obj_add_state(revert, LV_STATE_DISABLED);
-            if (midi_) link("MIDI", Action::Navigate, Page::PatchMidi);
-        } else {
-            link("Controls", Action::Navigate, Page::Controls);
-            if (midi_) link("MIDI", Action::Navigate, Page::Midi);
-            link("Diagnostics", Action::Navigate, Page::Diagnostics);
-            if (power_off_ || restart_) link("Power", Action::Navigate, Page::Power);
+            if (w.primary) primary(b);
+            if (w.disabled) lv_obj_add_state(b, LV_STATE_DISABLED);
         }
         lv_obj_align(pills, LV_ALIGN_RIGHT_MID, -24, 0);
+        // The title takes the room the pills leave.
+        if (heading) { lv_obj_update_layout(header); lv_obj_set_width(heading, std::min(lv_obj_get_x(pills) - 40, 600)); }
     } else if (const auto* m = page_ == Page::Parameters ? find_module(graph_, selected_) : nullptr; m && module_available(*m)) {
         // On or bypassed, in the module's colour, and its other actions.
         auto* pills = lv_obj_create(header); lv_obj_remove_style_all(pills);
@@ -1459,7 +1612,13 @@ void Application::rebuild() {
     case Page::Midi: midi_page(content); break;
     case Page::MidiLearn: midi_learn(content); break;
     case Page::PatchMidi: patch_midi(content); break;
+    case Page::PatchActions: patch_actions(content); break;
     case Page::Halting: halting(content); break;
+    }
+    if (page_list_) {
+        lv_obj_update_layout(page_list_);
+        if (const auto it = list_scroll_.find(page_list_page_); it != list_scroll_.end()) lv_obj_scroll_to_y(page_list_, it->second, LV_ANIM_OFF);
+        scroll_rail(content, page_list_, 0, 360, accent);
     }
     std::string missing;
     if (patch) for (const auto& m : graph_.modules) if (!module_available(m)) missing += (missing.empty() ? "" : ", ") + m.name;
@@ -1834,11 +1993,12 @@ void Application::parameters(lv_obj_t* parent) {
     const auto* m = find_module(graph_, selected_);
     if (!m) { label(parent, "Module no longer exists", 24, 24); return; }
     if (!module_available(*m)) {
-        button(parent, "Delete module", 24, 12, 200, Action::Remove, m->id);
-        label(parent, "Module unavailable", 24, 92, 0, warning, &peepo_bold_24);
-        label(parent, "Saved values and cables are retained for repair.\nParameters, bypass and new connections are disabled.\nYou can move or delete the placeholder.", 24, 136, 752, muted);
-        auto* uri = label(parent, m->uri, 24, 244, 752, muted, &lv_font_montserrat_14);
-        lv_label_set_long_mode(uri, LV_LABEL_LONG_DOT); return;
+        auto* list = page_list(parent);
+        list_bar(list, "Delete module", {}, Action::Remove, m->id);
+        list_heading(list, "Module unavailable", warning);
+        list_note(list, "Saved values and cables are retained for repair. Parameters, bypass and new connections are disabled. You can move or delete the placeholder.");
+        list_note(list, m->uri, faint);
+        return;
     }
     // Every control on one page, as bars in two columns; a long module scrolls.
     // A tuner shows its meter above them; Euclidean shows its four concentric rings beside its four track columns.
@@ -1882,6 +2042,13 @@ void Application::parameters(lv_obj_t* parent) {
     scroll_rail(parent, list, rail_top, 360 - rail_top, ink);
 }
 lv_obj_t* Application::bar_list(lv_obj_t* parent, const Module& m, int top) {
+    auto* list = scroll_list(parent, top);
+    // A bypassed module's controls still work, but read as not playing.
+    if (m.bypassed) lv_obj_set_style_opa(list, LV_OPA_50, 0);
+    parameter_list_ = list;
+    return list;
+}
+lv_obj_t* Application::scroll_list(lv_obj_t* parent, int top) {
     // Two columns of bars, with room beside and between them to scroll by.
     auto* list = lv_obj_create(parent); lv_obj_remove_style_all(list);
     lv_obj_set_pos(list, rail_width, top); lv_obj_set_size(list, 800 - rail_width, 360 - top);
@@ -1892,9 +2059,6 @@ lv_obj_t* Application::bar_list(lv_obj_t* parent, const Module& m, int top) {
     // Clickable, so a swipe in the gaps between bars scrolls it; the rail
     // replaces its scrollbar.
     lv_obj_set_scroll_dir(list, LV_DIR_VER); lv_obj_set_scrollbar_mode(list, LV_SCROLLBAR_MODE_OFF);
-    // A bypassed module's controls still work, but read as not playing.
-    if (m.bypassed) lv_obj_set_style_opa(list, LV_OPA_50, 0);
-    parameter_list_ = list;
     return list;
 }
 void Application::scroll_rail(lv_obj_t* parent, lv_obj_t* list, int top, int height, std::uint32_t ink) {
@@ -2462,7 +2626,7 @@ void Application::activate_parameter() {
     const auto* m = find_module(graph_, bar.id);
     if (!m) return;
     if (bar.file) {
-        if (files_ && engine_.state() == EngineState::Ready) { selected_ = m->id; file_page_ = 0; navigate(Page::FilePicker); }
+        if (files_ && engine_.state() == EngineState::Ready) { selected_ = m->id; navigate(Page::FilePicker); }
         else message("Files are not available here.");
         return;
     }
@@ -2486,7 +2650,9 @@ Page Application::back_page() const {
     case Page::NamePatch: return Page::Patches;
     case Page::Controls: case Page::Diagnostics: case Page::Power: case Page::Midi: return Page::Settings;
     case Page::MidiLearn: return Page::Parameters;
-    case Page::PatchMidi: return Page::Patches;
+    case Page::PatchMidi: case Page::PatchActions: return Page::Patches;
+    case Page::ConfirmReplace: return confirm_origin_;
+    case Page::ConfirmAction: return confirmation_.back;
     case Page::AssignPicker: case Page::AssignmentDetail: return Page::Controls;
     case Page::FilePicker: return Page::Parameters;
     default: return Page::Patch;
@@ -2542,44 +2708,26 @@ void Application::tap_tempo() {
 }
 void Application::tempo(lv_obj_t* parent) {
     const auto shown = tempo_sent_ ? *tempo_sent_ : graph_.tempo;
-    auto* card = panel(parent, 24, 12, 752, 150);
+    auto* list = page_list(parent);
     // With the tempo taken from incoming clock, the clock sets it; a step or a tap lasts until the next clock.
     const bool clocked = midi_ && midi_settings_.tempo_source == midi::TempoSource::Clock;
-    label(card, clocked ? (midi_status_.clock_in ? "FOLLOWING MIDI CLOCK" : "WAITING FOR MIDI CLOCK") : "PATCH TEMPO", 24, 18, 300, clocked ? accent : faint, &peepo_mono_14);
-    auto* value = label(card, metric_text(shown, false), 24, 44, 260, accent, &peepo_bold_48);
-    label(card, "BPM", 24, 104, 100, muted, &peepo_bold_14);
-    for (int i = 0; i < 4; ++i) {
-        static const int steps[] = {-5, -1, 1, 5};
-        auto* step = button(card, (steps[i] > 0 ? "+" : "") + std::to_string(steps[i]), 300 + i * 108, 24, 96, Action::TempoStep, 0, {}, steps[i]);
-        lv_obj_set_height(step, 44);
+    value_bar(list, "Tempo", minimum_tempo, maximum_tempo, 1, std::round(shown), [](double bpm) { return metric_text(bpm, false) + " BPM"; },
+              [this](double bpm) { set_tempo(bpm); });
+    if (clocked) list_bar(list, "MIDI clock", {.value = midi_status_.clock_in ? "FOLLOWING" : "WAITING", .value_ink = midi_status_.clock_in ? accent : muted, .still = true});
+    else if (midi_) {
+        // The MIDI clock out: Stop, then Start, to line another device's pattern up by hand.
+        auto* restart = list_bar(list, "Restart clock", {.caption = "Stop, then Start"}, Action::ClockRestart);
+        if (!midi_->connected() || !midi_settings_.clock_out) lv_obj_add_state(restart, LV_STATE_DISABLED);
     }
-    auto* slider = lv_slider_create(card); lv_obj_set_pos(slider, 310, 100); lv_obj_set_size(slider, 410, 12);
-    lv_slider_set_range(slider, static_cast<int>(minimum_tempo), static_cast<int>(maximum_tempo));
-    lv_slider_set_value(slider, static_cast<int>(std::round(shown)), LV_ANIM_OFF);
-    lv_obj_set_style_bg_color(slider, color(border), LV_PART_MAIN); lv_obj_set_style_bg_opa(slider, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_style_bg_color(slider, color(accent), LV_PART_INDICATOR); lv_obj_set_style_bg_opa(slider, LV_OPA_COVER, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(slider, color(text), LV_PART_KNOB); lv_obj_set_style_pad_all(slider, 10, LV_PART_KNOB);
-    lv_obj_set_style_bg_opa(slider, LV_OPA_COVER, LV_PART_KNOB); lv_obj_set_style_radius(slider, LV_RADIUS_CIRCLE, LV_PART_KNOB);
-    lv_obj_set_ext_click_area(slider, 20);
-    bind(slider, Action::TempoSlider, 0, {}, 0, value);
-    if (auto* group = lv_group_get_default()) lv_group_add_obj(group, slider);
-    // A big pad to tap on the beat, as a footswitch set to Tap tempo does.
-    auto* tap = primary(button(parent, "Tap", 24, 178, 360, Action::Tap));
-    lv_obj_set_height(tap, 150);
+    list_bar(list, "Slower", {.value = "-1"}, Action::TempoStep, 0, {}, -1);
+    list_bar(list, "Faster", {.value = "+1"}, Action::TempoStep, 0, {}, 1);
     std::string following;
     unsigned count = 0;
     for (const auto& m : graph_.modules)
         if (const auto* d = definition(m.uri); d && !d->tempo_symbol.empty() && module_available(m)) { following += (count++ ? ", " : "") + m.name; }
-    label(parent, count ? "Follow the tempo" : "Nothing follows it yet", 408, 186, 368, text, &peepo_bold_20);
-    auto* who = label(parent, count ? following : "Modules with a tempo, such as Chorus, Flanger or the sequencers, take it when they are added.",
-                      408, 222, 368, muted, &lv_font_montserrat_14);
-    lv_label_set_long_mode(who, LV_LABEL_LONG_DOT); lv_obj_set_height(who, 60);
-    label(parent, "Saved with the patch. Encoder 1 turns it; a footswitch can tap it.", 408, 284, 196, faint, &lv_font_montserrat_14);
-    // The MIDI clock out: Stop, then Start, to line another device's pattern up by hand.
-    if (midi_) {
-        auto* restart = button(parent, "Restart clock", 616, 284, 160, Action::ClockRestart);
-        if (!midi_->connected() || !midi_settings_.clock_out || midi_settings_.tempo_source == midi::TempoSource::Clock) lv_obj_add_state(restart, LV_STATE_DISABLED);
-    }
+    list_heading(list, count ? "Follow the tempo" : "Nothing follows it yet");
+    list_note(list, count ? following : "Modules with a tempo, such as Chorus, Flanger or the sequencers, take it when they are added.");
+    list_note(list, "Saved with the patch. Encoder 1 turns it; Tap, or a footswitch, taps it.", faint);
 }
 void Application::change_midi(const std::function<void(midi::Settings&)>& change) {
     if (!midi_) return;
@@ -2599,42 +2747,21 @@ void Application::open_learn(InstanceId id, const std::string& symbol) {
 void Application::midi_page(lv_obj_t* parent) {
     const auto& s = midi_settings_;
     const bool following = s.tempo_source == midi::TempoSource::Clock;
-    // One row per setting: its name, what it does now, and its buttons on the right.
-    auto row = [&](int y, const char* name, const std::string& detail, bool lit) {
-        auto* r = panel(parent, 24, y, 752, 48);
-        auto* title = label(r, name, 14, 15, 170, text, &peepo_bold_14);
-        lv_obj_set_style_text_letter_space(title, 1, 0);
-        auto* what = label(r, detail, 184, 15, 340, lit ? text : muted, &lv_font_montserrat_14);
-        lv_label_set_long_mode(what, LV_LABEL_LONG_DOT); lv_obj_set_height(what, 18);
-        return r;
-    };
-    auto choice = [&](lv_obj_t* r, const char* title, int x, int w, Action action, int number, bool chosen) {
-        auto* b = button(r, title, x, 0, w, action, 0, {}, number);
-        if (chosen) mark(b, accent);
-        return b;
-    };
-    auto* clock = row(8, "CLOCK OUT", following ? "Off while the tempo follows incoming clock" : s.clock_out ? "24 per beat at the patch tempo" : "Devices hear no clock from Peepo",
-                      s.clock_out && !following);
-    choice(clock, s.clock_out ? "On" : "Off", 652, 100, Action::MidiToggle, 0, s.clock_out);
-    auto* transport = row(58, "START / STOP", s.start_stop ? "Sent as the clock begins and ends" : "The clock alone, without Start or Stop", s.start_stop);
-    choice(transport, s.start_stop ? "On" : "Off", 652, 100, Action::MidiToggle, 1, s.start_stop);
-    std::string source = "The patch's own, on the Tempo page";
-    if (following) source = midi_status_.clock_in ? "Incoming clock: " + metric_text(midi_status_.clock_in, false) + " BPM" : "Incoming clock: none heard; the patch's tempo stays";
-    auto* tempo_row = row(108, "TEMPO FROM", source, following && midi_status_.clock_in);
-    choice(tempo_row, "Patch", 544, 100, Action::MidiTempoSource, 0, !following);
-    choice(tempo_row, "Clock", 652, 100, Action::MidiTempoSource, 1, following);
+    auto* list = page_list(parent);
+    list_heading(list, "Clock");
+    list_bar(list, "Clock out", {.value = s.clock_out ? "ON" : "OFF", .caption = following ? "Off while following" : "24 per beat", .lit = s.clock_out && !following}, Action::MidiToggle, 0, {}, 0);
+    list_bar(list, "Start / stop", {.value = s.start_stop ? "ON" : "OFF", .caption = "With the clock", .lit = s.start_stop}, Action::MidiToggle, 0, {}, 1);
+    list_heading(list, "Tempo from");
+    choice_bar(list, {"Patch", "MIDI clock"}, following ? 1 : 0, Action::MidiTempoSource);
+    list_bar(list, "Incoming clock", {.value = following ? (midi_status_.clock_in ? metric_text(midi_status_.clock_in, false) + " BPM" : "NONE") : "--",
+                                      .value_ink = following && midi_status_.clock_in ? accent : muted, .still = true});
+    list_heading(list, "Program change");
     const auto channel = s.program_channel;
-    auto* program = row(158, "PROGRAM CHANGE", channel == midi::program_off ? "Off" : "Program N loads patch N of Patches, in order", channel != midi::program_off);
-    button(program, "<", 596, 0, 48, Action::MidiChannel, 0, {}, -1);
-    auto* value = label(program, channel == midi::program_off ? "OFF" : channel == midi::any_channel ? "ANY" : "CH " + std::to_string(channel), 646, 15, 56, channel ? accent : muted, &peepo_bold_14);
-    lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_CENTER, 0);
-    button(program, ">", 704, 0, 48, Action::MidiChannel, 0, {}, 1);
-    auto* heading = label(parent, "DEVICES", 24, 218, 200, faint, &peepo_mono_14);
-    lv_obj_set_style_text_letter_space(heading, 2, 0);
-    if (!midi_->connected()) {
-        label(parent, "The instrument lists its MIDI devices here.", 24, 244, 752, muted, &lv_font_montserrat_14);
-        return;
-    }
+    list_bar(list, "Loads patch N", {.value = channel == midi::program_off ? "OFF" : channel == midi::any_channel ? "ANY" : "CH " + std::to_string(channel),
+                                     .value_ink = channel ? accent : muted, .caption = "Tap: next channel"}, Action::MidiChannel, 0, {}, 1);
+    list_bar(list, "Previous channel", {}, Action::MidiChannel, 0, {}, -1);
+    list_heading(list, "Devices");
+    if (!midi_->connected()) { list_note(list, "The instrument lists its MIDI devices here."); return; }
     // A device that sends and receives shows once, with both switches.
     struct Device { std::string label, input, output; };
     std::vector<Device> devices;
@@ -2646,178 +2773,129 @@ void Application::midi_page(lv_obj_t* parent) {
     };
     for (const auto& name : midi_status_.inputs) add(name, true);
     for (const auto& name : midi_status_.outputs) add(name, false);
-    if (devices.empty()) {
-        label(parent, "None plugged in. A class-compliant USB MIDI device is found by itself.", 24, 244, 752, muted, &lv_font_montserrat_14);
-        return;
-    }
-    auto* list = lv_obj_create(parent); lv_obj_remove_style_all(list);
-    lv_obj_set_pos(list, 24, 240); lv_obj_set_size(list, 752, 116);
-    lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN); lv_obj_set_style_pad_row(list, 2, 0);
-    lv_obj_set_scroll_dir(list, LV_DIR_VER);
+    if (devices.empty()) { list_note(list, "None plugged in. A class-compliant USB MIDI device is found by itself."); return; }
     for (const auto& d : devices) {
-        auto* r = panel(list, 0, 0, 752, 48);
-        auto* name = label(r, d.label, 14, 14, 420, text, &lv_font_montserrat_14);
-        lv_label_set_long_mode(name, LV_LABEL_LONG_DOT); lv_obj_set_height(name, 18);
-        // In: it plays into Peepo. Out: it hears Peepo's MIDI and clock.
-        if (!d.input.empty()) { const bool on = !s.inputs_off.contains(d.input); auto* b = button(r, on ? "In: on" : "In: off", 436, 0, 150, Action::MidiDevice, 0, d.input, 0); if (on) mark(b, accent); }
-        if (!d.output.empty()) { const bool on = !s.outputs_off.contains(d.output); auto* b = button(r, on ? "Out: on" : "Out: off", 600, 0, 150, Action::MidiDevice, 0, d.output, 1); if (on) mark(b, accent); }
+        // In: it plays into Peepo. Out: it hears Peepo's MIDI and clock. A row each.
+        for (int out = 0; out < 2; ++out) {
+            const auto& port = out ? d.output : d.input;
+            if (port.empty()) {
+                auto* gap = lv_obj_create(list); lv_obj_remove_style_all(gap); lv_obj_set_size(gap, compact_width, compact_height);
+                continue;
+            }
+            const bool on = !(out ? s.outputs_off : s.inputs_off).contains(port);
+            list_bar(list, d.label, {.value = on ? "ON" : "OFF", .caption = out ? "Out: hears Peepo" : "In: plays Peepo", .lit = on, .keep_case = true}, Action::MidiDevice, 0, port, out);
+        }
     }
 }
 void Application::midi_learn(lv_obj_t* parent) {
     const auto* m = find_module(graph_, learn_id_);
     const auto it = m ? std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == learn_symbol_; }) : std::vector<Parameter>::const_iterator{};
-    if (!m || it == m->parameters.end()) { label(parent, "Nothing to learn here.", 24, 24, 752, muted); return; }
-    label(parent, upper(it->name), 24, 20, 752, module_ink(*m), &peepo_bold_24);
+    auto* list = page_list(parent);
+    if (!m || it == m->parameters.end()) { list_note(list, "Nothing to learn here."); return; }
+    list_heading(list, it->name, module_ink(*m));
     if (learn_waiting_ || learn_request_) {
-        label(parent, "Move a knob, fader, pedal or pad on a MIDI device.", 24, 72, 752, text);
-        label(parent, "The first message on any channel sets this control from now on.\nA key sets it only when the control is a switch.", 24, 108, 752, muted, &lv_font_montserrat_14);
-        primary(button(parent, "Cancel", 616, 280, 160, Action::Navigate, 0, {}, static_cast<int>(Page::Parameters)));
+        list_bar(list, "Waiting", {.value = "MOVE ONE", .value_ink = accent, .caption = "A knob, fader, pedal or pad", .still = true});
+        list_note(list, "The first message on any channel sets this control from now on. A key sets it only when the control is a switch.");
         return;
     }
-    label(parent, it->midi ? "Set by " + midi_binding_text(*it->midi) + "." : "No MIDI message sets it.", 24, 72, 752, it->midi ? accent : muted);
-    label(parent, "Learn waits for the next control moved on a MIDI device, and replaces what\nset it before. Saved with the patch.", 24, 108, 752, muted, &lv_font_montserrat_14);
-    auto* forget = button(parent, "Forget", 24, 280, 160, Action::MidiForget);
-    if (!it->midi) lv_obj_add_state(forget, LV_STATE_DISABLED);
-    primary(button(parent, "Learn", 616, 280, 160, Action::MidiLearn));
+    list_bar(list, "Set by", {.value = it->midi ? midi_binding_text(*it->midi) : "NOTHING", .value_ink = it->midi ? accent : muted, .still = true});
+    list_note(list, "Learn waits for the next control moved on a MIDI device, and replaces what set it before. Saved with the patch.");
 }
 void Application::patch_midi(lv_obj_t* parent) {
-    const auto& list = graph_.load_messages;
-    // A 0 to 127 slider with its number beside it, sent on release.
-    auto slider = [&](lv_obj_t* row, int x, int w, int value, int number) {
-        auto* shown = label(row, std::to_string(value), x + w + 10, 15, 34, text, &peepo_bold_14);
-        auto* s = lv_slider_create(row); lv_obj_set_pos(s, x, 18); lv_obj_set_size(s, w, 12);
-        lv_slider_set_range(s, 0, 127); lv_slider_set_value(s, value, LV_ANIM_OFF);
-        lv_obj_set_style_bg_color(s, color(border), LV_PART_MAIN); lv_obj_set_style_bg_opa(s, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_bg_color(s, color(midi_ink), LV_PART_INDICATOR); lv_obj_set_style_bg_opa(s, LV_OPA_COVER, LV_PART_INDICATOR);
-        lv_obj_set_style_bg_color(s, color(text), LV_PART_KNOB); lv_obj_set_style_pad_all(s, 8, LV_PART_KNOB);
-        lv_obj_set_style_bg_opa(s, LV_OPA_COVER, LV_PART_KNOB); lv_obj_set_style_radius(s, LV_RADIUS_CIRCLE, LV_PART_KNOB);
-        lv_obj_set_ext_click_area(s, 16);
-        bind(s, Action::LoadMessage, 0, {}, number, shown);
-        if (auto* group = lv_group_get_default()) lv_group_add_obj(group, s);
+    const auto& messages = graph_.load_messages;
+    auto* list = page_list(parent);
+    // A control change: its channel, controller and value, each dragged like a module's bar.
+    const auto change = [this](std::size_t i, int field, double v) {
+        auto next = graph_.load_messages;
+        if (i >= next.size()) return;
+        const int value = static_cast<int>(std::round(v));
+        (field == 0 ? next[i].channel : field == 1 ? next[i].number : next[i].value) = value;
+        if (next != graph_.load_messages) submit(SetLoadMessages{next});
     };
-    auto caption = [&](lv_obj_t* row, const char* name, int x) {
-        auto* l = label(row, name, x, 16, 0, faint, &peepo_mono_14);
-        lv_obj_set_style_text_letter_space(l, 1, 0);
-    };
-    for (std::size_t i = 0; i < list.size(); ++i) {
-        const int at = static_cast<int>(i) * 8;
-        auto* row = panel(parent, 24, 8 + static_cast<int>(i) * 50, 752, 48);
-        caption(row, "CH", 14);
-        button(row, "<", 44, 0, 44, Action::LoadMessage, 0, {}, at);
-        auto* channel = label(row, std::to_string(list[i].channel), 88, 15, 40, text, &peepo_bold_14);
-        lv_obj_set_style_text_align(channel, LV_TEXT_ALIGN_CENTER, 0);
-        button(row, ">", 128, 0, 44, Action::LoadMessage, 0, {}, at + 1);
-        caption(row, "CC", 190);
-        slider(row, 240, 160, list[i].number, at + 2);
-        caption(row, "VALUE", 456);
-        slider(row, 526, 128, list[i].value, at + 3);
-        button(row, "X", 704, 0, 48, Action::RemoveLoadMessage, 0, {}, static_cast<int>(i));
+    const auto number = [](double v) { return std::to_string(static_cast<int>(std::round(v))); };
+    for (std::size_t i = 0; i < messages.size(); ++i) {
+        list_heading(list, "Control change " + std::to_string(i + 1), midi_ink);
+        value_bar(list, "Channel", 1, 16, 1, messages[i].channel, number, [change, i](double v) { change(i, 0, v); });
+        value_bar(list, "Controller", 0, 127, 1, messages[i].number, number, [change, i](double v) { change(i, 1, v); });
+        value_bar(list, "Value", 0, 127, 1, messages[i].value, number, [change, i](double v) { change(i, 2, v); });
+        list_bar(list, "Remove", {}, Action::RemoveLoadMessage, 0, {}, static_cast<int>(i));
     }
-    if (list.empty()) label(parent, "This patch sends no MIDI when it loads.", 24, 20, 752, muted);
-    auto* note = label(parent, "Sent to every MIDI device as the patch loads, and again when changed here; for a\npattern or preset on a pedal or drum machine. Saved with the patch.",
-                       24, list.empty() ? 56 : 312, 752, faint, &lv_font_montserrat_14);
-    lv_label_set_long_mode(note, LV_LABEL_LONG_DOT); lv_obj_set_height(note, 40);
+    if (messages.empty()) list_note(list, "This patch sends no MIDI when it loads.");
+    list_note(list, "Sent to every MIDI device as the patch loads, and again when changed here; for a pattern or preset on a pedal or drum machine. Saved with the patch.", faint);
 }
 void Application::file_picker(lv_obj_t* parent) {
     const auto* m = find_module(graph_, selected_);
     const auto* d = m ? definition(m->uri) : nullptr;
-    if (!d || d->file.property.empty() || !files_) { label(parent, "Nothing to choose here.", 24, 24, 752, muted); return; }
+    auto* list = page_list(parent);
+    if (!d || d->file.property.empty() || !files_) { list_note(list, "Nothing to choose here."); return; }
     std::string types;
     for (const auto& e : d->file.extensions) types += (types.empty() ? "." : ", .") + e;
     const auto found = files_->list(d->file.folder, d->file.extensions);
     if (found.empty()) {
-        label(parent, "No " + types + " files yet", 24, 20, 752, text, &peepo_bold_24);
-        auto* where = label(parent, "Copy them into " + (files_->root() / d->file.folder).generic_string() + "\n(for example over SSH), then open this page again.", 24, 68, 752, muted);
-        lv_label_set_long_mode(where, LV_LABEL_LONG_WRAP);
+        list_heading(list, "No " + types + " files yet");
+        list_note(list, "Copy them into " + (files_->root() / d->file.folder).generic_string() + " (for example over SSH), then open this page again.");
         return;
     }
-    constexpr std::size_t per_page = 8;
-    const auto pages = (found.size() + per_page - 1) / per_page;
-    file_page_ = std::min(file_page_, pages - 1);
-    auto* prompt = label(parent, std::to_string(found.size()) + (found.size() == 1 ? " file" : " files") + " in " + d->file.folder + "/", 24, 18, 560, muted, &lv_font_montserrat_14);
-    lv_label_set_long_mode(prompt, LV_LABEL_LONG_DOT); lv_obj_set_height(prompt, 18);
-    if (pages > 1) {
-        auto* previous = button(parent, "<", 600, 4, 48, Action::FilePage, 0, {}, static_cast<int>(file_page_ ? file_page_ - 1 : 0));
-        if (!file_page_) lv_obj_add_state(previous, LV_STATE_DISABLED);
-        label(parent, std::to_string(file_page_ + 1) + " / " + std::to_string(pages), 664, 18, 56, muted, &lv_font_montserrat_14);
-        auto* next = button(parent, ">", 728, 4, 48, Action::FilePage, 0, {}, static_cast<int>(std::min(file_page_ + 1, pages - 1)));
-        if (file_page_ + 1 >= pages) lv_obj_add_state(next, LV_STATE_DISABLED);
-    }
     const auto ink = module_ink(*m);
-    for (std::size_t i = file_page_ * per_page; i < std::min(found.size(), file_page_ * per_page + per_page); ++i) {
-        const auto slot = i - file_page_ * per_page;
-        auto* choice = button(parent, found[i].name, 24 + static_cast<int>(slot % 2) * 384, 64 + static_cast<int>(slot / 2) * 68, 368, Action::PickFile, m->id, found[i].engine_path);
-        // File names keep their case, and long ones end in dots.
-        if (auto* title = lv_obj_get_child(choice, 0)) {
-            lv_label_set_text(title, found[i].name.c_str());
-            lv_label_set_long_mode(title, LV_LABEL_LONG_DOT); lv_obj_set_width(title, 340); lv_obj_center(title);
-        }
-        if (found[i].engine_path == m->file) mark(choice, ink);
-    }
+    list_heading(list, std::to_string(found.size()) + (found.size() == 1 ? " file" : " files") + " in " + d->file.folder + "/", ink);
+    // File names keep their case; the chosen one is lit in the module's colour.
+    for (const auto& file : found)
+        list_bar(list, file.name, {.lit = file.engine_path == m->file, .keep_case = true, .fill = module_fill(*m)}, Action::PickFile, m->id, file.engine_path);
 }
 void Application::confirm_action(lv_obj_t* parent) {
-    auto* heading = label(parent, confirmation_.heading, 24, 44, 752, accent, &peepo_bold_24);
-    lv_label_set_long_mode(heading, LV_LABEL_LONG_DOT); lv_obj_set_height(heading, 32);
-    label(parent, confirmation_.body, 24, 104, 752, muted);
-    button(parent, "Cancel", 24, 268, 200, Action::CancelAction);
-    primary(button(parent, confirmation_.button, 552, 268, 224, Action::ConfirmAction));
+    auto* list = page_list(parent);
+    list_heading(list, confirmation_.heading);
+    list_note(list, confirmation_.body, text);
 }
 void Application::stored_patches(lv_obj_t* parent) {
-    constexpr std::size_t rows = 3;
-    label(parent, "Saved patches", 24, 16, 0, text, &peepo_bold_24);
-    const auto pages = std::max<std::size_t>(1, (stored_.size() + rows - 1) / rows);
-    patch_page_ = std::min(patch_page_, pages - 1);
-    if (pages > 1) {
-        auto* previous = button(parent, "<", 600, 4, 48, Action::PatchPage, 0, {}, static_cast<int>(patch_page_ ? patch_page_ - 1 : 0));
-        if (!patch_page_) lv_obj_add_state(previous, LV_STATE_DISABLED);
-        label(parent, std::to_string(patch_page_ + 1) + " / " + std::to_string(pages), 664, 18, 56, muted, &lv_font_montserrat_14);
-        auto* next = button(parent, ">", 728, 4, 48, Action::PatchPage, 0, {}, static_cast<int>(std::min(patch_page_ + 1, pages - 1)));
-        if (patch_page_ + 1 >= pages) lv_obj_add_state(next, LV_STATE_DISABLED);
+    // Like a module page: every saved patch on one list, two to a row; a long
+    // list scrolls. What can be done to the patch playing is in the header.
+    auto* list = page_list(parent);
+    list_bar(list, "+ New patch", {}, Action::NameEntry, 0, {}, 0);
+    if (engine_.capabilities().simulation) list_bar(list, "Parallel demo", {}, Action::ParallelDemo);
+    list_heading(list, "Saved");
+    if (stored_.empty()) list_note(list, "Nothing saved yet. Save keeps this patch on disk, with its plugin state, through restarts.");
+    for (const auto& patch : stored_) {
+        const bool playing = patch.id == graph_.patch_id, trouble = !patch.revision || !patch.issue.empty() || !patch.missing_files.empty();
+        BarLook look;
+        // What the patch holds, and on the right whether it plays or starts.
+        look.caption = !patch.revision ? "Unreadable" : !patch.missing_files.empty() ? std::to_string(patch.missing_files.size()) + " missing files"
+                                                      : std::to_string(patch.bundle.blocks.size()) + " modules" + (playing && patch.startup ? " / startup" : "");
+        look.caption_ink = trouble ? warning : muted;
+        look.value = playing ? "PLAYING" : patch.startup ? "STARTUP" : "";
+        look.value_ink = playing ? accent : muted;
+        if (playing) look.edge = accent;
+        list_bar(list, patch.name, look, Action::OpenPatch, 0, patch.id);
     }
-    if (stored_.empty()) label(parent, "Nothing saved yet. Save keeps this patch on disk, with its\nplugin state, and survives restarting the app and the engine.", 24, 72, 752, muted);
-    for (std::size_t i = patch_page_ * rows; i < std::min(stored_.size(), patch_page_ * rows + rows); ++i) {
-        const auto& patch = stored_[i];
-        auto* row = panel(parent, 24, 60 + static_cast<int>(i - patch_page_ * rows) * 64, 752, 56);
-        const bool playing = patch.id == graph_.patch_id;
-        if (playing) lv_obj_set_style_border_color(row, color(accent), 0);
-        auto* name = label(row, patch.name, 16, 6, 424, text);
-        lv_label_set_long_mode(name, LV_LABEL_LONG_DOT); lv_obj_set_height(name, 22);
-        std::string detail = patch.revision ? "Revision " + std::to_string(patch.revision) + " / " + std::to_string(patch.bundle.blocks.size()) + " modules" : "Unreadable";
-        if (patch.startup) detail += " / loads at startup";
-        if (playing) detail += graph_.dirty ? " / playing, unsaved edits" : " / playing";
-        if (!patch.missing_files.empty()) detail += " / " + std::to_string(patch.missing_files.size()) + " missing files";
-        if (!patch.issue.empty()) detail += " / " + patch.issue;
-        auto* info = label(row, detail, 16, 30, 424, patch.issue.empty() && patch.missing_files.empty() ? muted : warning, &lv_font_montserrat_14);
-        lv_label_set_long_mode(info, LV_LABEL_LONG_DOT); lv_obj_set_height(info, 18);
-        auto* load = button(row, "Load", 448, 3, 96, Action::LoadStored, 0, patch.id);
-        if (!patch.revision) lv_obj_add_state(load, LV_STATE_DISABLED);
-        auto* startup = button(row, "Startup", 552, 3, 104, Action::StartupStored, 0, patch.id);
-        if (patch.startup) { lv_obj_set_style_border_color(startup, color(accent), 0); lv_obj_set_style_text_color(lv_obj_get_child(startup, 0), color(accent), 0); }
-        button(row, "Delete", 664, 3, 80, Action::DeleteStored, 0, patch.id);
+}
+void Application::patch_actions(lv_obj_t* parent) {
+    const auto patch = store_ ? store_->find(patch_selected_) : std::nullopt;
+    auto* list = page_list(parent);
+    if (!patch) { list_note(list, "That patch is no longer stored."); return; }
+    const bool playing = patch->id == graph_.patch_id;
+    list_bar(list, "Load at startup", {.value = patch->startup ? "ON" : "OFF", .caption = "When Peepo starts", .lit = patch->startup}, Action::StartupStored, 0, patch->id);
+    list_bar(list, "Revision", {.value = patch->revision ? std::to_string(patch->revision) : "--", .caption = patch->revision ? std::to_string(patch->bundle.blocks.size()) + " modules" : "Unreadable",
+                                .caption_ink = patch->revision ? 0u : warning, .still = true});
+    if (playing) list_note(list, graph_.dirty ? "Playing now, with unsaved edits: Load saved discards them." : "Playing now, as saved.");
+    std::string trouble = patch->issue;
+    if (!patch->missing_files.empty()) {
+        std::string files;
+        for (const auto& file : patch->missing_files) files += (files.empty() ? "" : ", ") + file;
+        trouble += (trouble.empty() ? "" : " ") + std::string("Missing files: ") + files + ".";
     }
-    const std::string playing = graph_.patch_id.empty() ? "never saved" : graph_.dirty ? "unsaved edits since its last save" : "saved";
-    auto* now = label(parent, "Playing: " + graph_.name + " / " + playing, 24, 252, 752, muted, &lv_font_montserrat_14);
-    lv_label_set_long_mode(now, LV_LABEL_LONG_DOT); lv_obj_set_height(now, 18);
-    primary(button(parent, "Save", 24, 280, 140, Action::SavePatch, 0, {}, 0));
-    button(parent, "Save as", 176, 280, 140, Action::SavePatch, 0, {}, 1);
-    button(parent, "New patch", 328, 280, 140, Action::NameEntry, 0, {}, 0);
-    button(parent, "Rename", 480, 280, 140, Action::NameEntry, 0, {}, 1);
-    if (engine_.capabilities().simulation) button(parent, "Parallel demo", 632, 280, 144, Action::ParallelDemo);
+    if (!trouble.empty()) list_note(list, trouble, warning);
 }
 void Application::patches(lv_obj_t* parent) {
     if (store_) { stored_patches(parent); return; }
-    label(parent, "Keep a snapshot while exploring", 24, 24, 0, text, &peepo_bold_24);
-    label(parent, "Session storage is in memory. Closing the app clears it.\nDisk persistence and plugin state arrive in Phase 5.", 24, 68, 710, muted);
-    auto* row = panel(parent, 24, 140, 752, 100);
-    auto* name = label(row, has_saved_ ? saved_.name : "No session snapshot yet", 20, 20, 560, text, &peepo_bold_24);
-    lv_label_set_long_mode(name, LV_LABEL_LONG_DOT);
-    lv_obj_set_height(name, 30);
-    label(row, has_saved_ ? std::to_string(saved_.modules.size()) + " modules / session only" : "Save the current graph to try restoring it", 20, 60, 440, muted, &lv_font_montserrat_14);
-    button(row, "Load", 616, 26, 112, Action::LoadSession);
-    button(parent, "Save snapshot", 24, 268, 200, Action::SaveSession);
-    button(parent, "New patch", 240, 268, 168, Action::NameEntry, 0, {}, 0);
-    button(parent, "Rename", 424, 268, 168, Action::NameEntry, 0, {}, 1);
-    button(parent, "Parallel demo", 608, 268, 168, Action::ParallelDemo);
+    // Without a store: one snapshot in memory, until the app closes.
+    auto* list = page_list(parent);
+    list_bar(list, "+ New patch", {}, Action::NameEntry, 0, {}, 0);
+    list_bar(list, "Parallel demo", {}, Action::ParallelDemo);
+    list_heading(list, "Snapshot");
+    auto* snapshot = list_bar(list, has_saved_ ? saved_.name : "No snapshot yet",
+                              {.value = has_saved_ ? "LOAD" : "", .caption = has_saved_ ? std::to_string(saved_.modules.size()) + " modules" : "Save keeps one"}, Action::LoadSession);
+    if (!has_saved_) lv_obj_add_state(snapshot, LV_STATE_DISABLED);
+    list_note(list, "Session storage is in memory. Closing the app clears it.");
 }
 void Application::name_patch(lv_obj_t* parent) {
     auto* input = lv_textarea_create(parent); lv_obj_set_pos(input, 24, 20); lv_obj_set_size(input, 752, 56);
@@ -2855,25 +2933,16 @@ void Application::name_patch(lv_obj_t* parent) {
 }
 void Application::cv_connect(lv_obj_t* parent) {
     const auto* from = find_module(graph_, cv_from_); const auto* to = find_module(graph_, cv_to_);
-    if (!from || !to) { label(parent, "Module no longer exists", 24, 24); return; }
+    auto* list = page_list(parent);
+    if (!from || !to) { list_note(list, "Module no longer exists"); return; }
     const bool choosing_output = cv_output_.empty();
     const auto ports = connectable_ports(*from, *to, cv_output_, cv_only_);
-    auto* prompt = label(parent, choosing_output ? "Which output of " + from->name + "?"
-                                                 : from->name + " / " + cv_output_ + "  >  which input of " + to->name + "?", 24, 14, 560, text, &peepo_bold_20);
-    lv_label_set_long_mode(prompt, LV_LABEL_LONG_DOT); lv_obj_set_height(prompt, 26);
-    const auto count = std::max<std::size_t>(1, (ports.size() + 7) / 8);
-    cv_page_ = std::min(cv_page_, count - 1);
-    if (count > 1) {
-        auto* previous = button(parent, "<", 600, 4, 48, Action::CvPage, 0, {}, static_cast<int>(cv_page_ ? cv_page_ - 1 : 0));
-        if (!cv_page_) lv_obj_add_state(previous, LV_STATE_DISABLED);
-        label(parent, std::to_string(cv_page_ + 1) + " / " + std::to_string(count), 664, 18, 56, muted, &lv_font_montserrat_14);
-        auto* next = button(parent, ">", 728, 4, 48, Action::CvPage, 0, {}, static_cast<int>(std::min(cv_page_ + 1, count - 1)));
-        if (cv_page_ + 1 >= count) lv_obj_add_state(next, LV_STATE_DISABLED);
-    }
-    for (std::size_t i = cv_page_ * 8; i < std::min(ports.size(), cv_page_ * 8 + 8); ++i) {
-        const auto slot = i - cv_page_ * 8;
-        auto* choice = button(parent, ports[i]->symbol, 24 + static_cast<int>(slot % 2) * 384, 64 + static_cast<int>(slot / 2) * 68, 368, Action::CvChoice, 0, ports[i]->symbol);
-        lv_obj_set_style_border_color(choice, color(ports[i]->type == PortType::Cv ? control_ink : ports[i]->type == PortType::Midi ? midi_ink : cable_ink), 0);
+    list_heading(list, choosing_output ? "Outputs of " + from->name : from->name + " / " + cv_output_ + " > inputs of " + to->name);
+    // Each port's edge in its cable's colour: control, MIDI or audio.
+    for (const auto* port : ports) {
+        const auto ink = port->type == PortType::Cv ? control_ink : port->type == PortType::Midi ? midi_ink : cable_ink;
+        list_bar(list, port->symbol, {.caption = port->type == PortType::Cv ? "Control" : port->type == PortType::Midi ? "MIDI" : "Audio", .caption_ink = ink, .edge = ink},
+                 Action::CvChoice, 0, port->symbol);
     }
 }
 void Application::connect_modules(InstanceId from_id, InstanceId to_id) {
@@ -2901,69 +2970,70 @@ void Application::connect_modules(InstanceId from_id, InstanceId to_id) {
         navigate(Page::Patch);
         return;
     }
-    cv_from_ = from_id; cv_to_ = to_id; cv_page_ = 0; cv_only_ = false;
+    cv_from_ = from_id; cv_to_ = to_id; cv_only_ = false;
     cv_output_ = outputs.size() == 1 ? outputs.front()->symbol : std::string();
     navigate(Page::CvConnect);
 }
 void Application::confirm_replace(lv_obj_t* parent) {
-    label(parent, "Current edits have not been saved", 24, 44, 752, text, &peepo_bold_24);
-    auto* name = label(parent, graph_.name, 24, 104, 752, accent, &peepo_bold_24); lv_label_set_long_mode(name, LV_LABEL_LONG_DOT);
-    lv_obj_set_height(name, 32);
-    label(parent, std::string("Replace this patch and discard its current unsaved edits?\nCancel to return and save ") + (store_ ? "it first." : "a session snapshot first."), 24, 168, 752, muted);
-    button(parent, "Cancel", 24, 268, 200, Action::CancelReplace);
-    primary(button(parent, "Replace patch", 552, 268, 224, Action::Confirm));
+    auto* list = page_list(parent);
+    list_heading(list, graph_.name + " has unsaved edits");
+    list_note(list, std::string("Replace this patch and discard them? Cancel to return and save ") + (store_ ? "it first." : "a session snapshot first."), text);
 }
 void Application::module_actions(lv_obj_t* parent) {
     const auto* m = find_module(graph_, selected_);
-    if (!m || m->fixed) { label(parent, "Module actions unavailable", 24, 24); return; }
-    label(parent, "Choose an action for this module", 24, 24, 0, text, &peepo_bold_24);
-    button(parent, "Parameters", 24, 84, 352, Action::Edit, m->id);
-    auto* bypass = button(parent, m->bypassed ? "Enable module" : "Software bypass", 408, 84, 368, Action::Bypass, m->id);
-    auto* duplicate = button(parent, "Duplicate", 24, 156, 352, Action::Duplicate, m->id);
-    if (!module_available(*m)) { lv_obj_add_state(bypass, LV_STATE_DISABLED); lv_obj_add_state(duplicate, LV_STATE_DISABLED); }
-    button(parent, "Delete module", 408, 156, 368, Action::Remove, m->id);
-    if (!module_available(*m)) {
+    auto* list = page_list(parent);
+    if (!m || m->fixed) { list_note(list, "Module actions unavailable"); return; }
+    const bool available = module_available(*m);
+    list_bar(list, "Parameters", {}, Action::Edit, m->id);
+    auto* bypass = list_bar(list, "Software bypass", {.value = m->bypassed ? "ON" : "OFF", .lit = m->bypassed, .fill = module_fill(*m)}, Action::Bypass, m->id);
+    auto* duplicate = list_bar(list, "Duplicate", {}, Action::Duplicate, m->id);
+    list_bar(list, "Delete module", {}, Action::Remove, m->id);
+    if (!available) {
+        lv_obj_add_state(bypass, LV_STATE_DISABLED); lv_obj_add_state(duplicate, LV_STATE_DISABLED);
         const auto* d = definition(m->uri);
         const auto why = d && !d->availability_reason.empty() ? d->availability_reason : std::string("its plugin is not installed here");
-        auto* note = label(parent, "Not available: " + why + ".\nIts cables carry no sound. Delete module removes it and its cables;\nthe saved patch keeps it until you save again.", 24, 232, 752, warning);
-        lv_obj_set_height(note, 96); lv_label_set_long_mode(note, LV_LABEL_LONG_DOT);
+        list_heading(list, "Not available", warning);
+        list_note(list, "Not available: " + why + ". Its cables carry no sound. Delete module removes it and its cables; the saved patch keeps it until you save again.", warning);
         return;
     }
     // While this page is open a stomp press assigns rather than plays (quick_assign).
     std::vector<std::string> switching;
     for (const auto& id : layout_.ids())
         for (const auto* a : bypass_assignments(graph_, id)) if (a->module == m->id) switching.push_back(control_label(id));
-    label(parent, "Press a stomp to switch this module with it", 24, 228, 752, accent, &peepo_bold_20);
-    label(parent, (switching.empty() ? std::string("No stomp switches it yet.") : joined_names(switching) + " switches it; press it again to stop.") +
-                  " A stomp can switch several modules. Each one flips, so one on and one bypassed swap places.", 24, 262, 752, muted, &lv_font_montserrat_14);
-    label(parent, "Duplicate keeps parameter values and software bypass; cables and control assignments stay with the original. "
-                  "Settings > Controls assigns parameters too.", 24, 316, 752, faint, &lv_font_montserrat_14);
+    list_heading(list, "Stomps");
+    list_note(list, "Press a stomp to switch this module with it.", text);
+    list_note(list, (switching.empty() ? std::string("No stomp switches it yet.") : joined_names(switching) + " switches it; press it again to stop.") +
+                    " A stomp can switch several modules. Each one flips, so one on and one bypassed swap places.");
+    list_note(list, "Duplicate keeps parameter values and software bypass; cables and control assignments stay with the original. "
+                    "Settings > Controls assigns parameters too.", faint);
 }
 void Application::settings(lv_obj_t* parent) {
+    auto* list = page_list(parent);
     if (!engine_.capabilities().simulation) {
-        label(parent, "Engine connection", 24, 20, 0, text, &peepo_bold_24);
-        auto* state = label(parent, status_text() + (engine_note_.empty() ? std::string() : ": " + engine_note_), 24, 65, 752, engine_.state() == EngineState::Ready ? accent : warning);
-        lv_label_set_long_mode(state, LV_LABEL_LONG_DOT); lv_obj_set_height(state, 24);
-        label(parent, "Disconnecting stops only this interface; the engine keeps playing.\nA lost engine is retried every second.", 24, 96, 752, muted, &lv_font_montserrat_14);
-        button(parent, "Connect", 24, 142, 160, Action::State, 0, {}, static_cast<int>(EngineState::Ready));
-        button(parent, "Disconnect", 200, 142, 160, Action::State, 0, {}, static_cast<int>(EngineState::Disconnected));
-        label(parent, store_ ? "Patches are stored in " + store_->root().generic_string() : "Patch storage is not available: session snapshots only.", 24, 216, 752, muted, &lv_font_montserrat_14);
+        list_heading(list, "Engine");
+        const bool up = engine_.state() == EngineState::Ready;
+        list_bar(list, "Connection", {.value = status_text(), .value_ink = up ? accent : warning, .caption = engine_note_.empty() ? "Retried every second" : engine_note_,
+                                      .caption_ink = engine_note_.empty() ? 0u : warning, .still = true});
+        list_bar(list, "Connect", {}, Action::State, 0, {}, static_cast<int>(EngineState::Ready));
+        list_bar(list, "Disconnect", {.caption = "The engine keeps playing"}, Action::State, 0, {}, static_cast<int>(EngineState::Disconnected));
         if (network_) {
-            label(parent, "Network", 24, 244, 0, text, &peepo_bold_18);
-            network_value_ = label(parent, "", 24, 270, 752, muted, &lv_font_montserrat_14);
+            list_heading(list, "Network");
+            network_value_ = list_note(list, "");
             update_network();
         }
-        label(parent, "Temperature, memory, the power supply and CPU load: Diagnostics.", 24, 316, 752, muted, &lv_font_montserrat_14);
+        list_heading(list, "Storage");
+        list_note(list, store_ ? "Patches are stored in " + store_->root().generic_string() : "Patch storage is not available: session snapshots only.");
+        list_note(list, "Temperature, memory, the power supply and CPU load: Diagnostics.", faint);
         return;
     }
-    label(parent, "Windows simulator / 800 x 480", 24, 20, 0, text, &peepo_bold_24);
-    label(parent, "No audio processing. No hardware connection required.\nUse these states to exercise the interface.", 24, 65, 710, muted);
-    button(parent, "Ready", 24, 142, 160, Action::State, 0, {}, static_cast<int>(EngineState::Ready));
-    button(parent, "Disconnect", 200, 142, 160, Action::State, 0, {}, static_cast<int>(EngineState::Disconnected));
-    button(parent, "Engine error", 376, 142, 180, Action::State, 0, {}, static_cast<int>(EngineState::Error));
-    button(parent, "Reject next edit", 24, 216, 220, Action::Reject);
-    button(parent, "Missing module", 264, 216, 220, Action::MissingFixture);
-    label(parent, "Keys: Q/A W/S turn encoders 1 and 2, keys 1 and 2 push them, Z X C are the stomps.", 24, 276, 752, muted, &lv_font_montserrat_14);
+    list_heading(list, "Windows simulator / 800 x 480");
+    list_bar(list, "Ready", {}, Action::State, 0, {}, static_cast<int>(EngineState::Ready));
+    list_bar(list, "Disconnect", {}, Action::State, 0, {}, static_cast<int>(EngineState::Disconnected));
+    list_bar(list, "Engine error", {}, Action::State, 0, {}, static_cast<int>(EngineState::Error));
+    list_bar(list, "Reject next edit", {}, Action::Reject);
+    list_bar(list, "Missing module", {}, Action::MissingFixture);
+    list_note(list, "No audio processing. No hardware connection required. Use these states to exercise the interface.");
+    list_note(list, "Keys: Q/A W/S turn encoders 1 and 2, keys 1 and 2 push them, Z X C are the stomps.", faint);
 }
 namespace {
 std::string decimal(double value, int places) {
@@ -2979,67 +3049,45 @@ std::string duration(double seconds) {
 }
 }
 void Application::diagnostics(lv_obj_t* parent) {
-    // Six cards: a caption, the reading, and what it means. Nothing is
-    // estimated: a reading this machine does not give is said to be missing.
-    struct Card { const char* caption; std::string value, detail; std::uint32_t ink; };
+    // Six readings: what it is, the reading, and a short line on what it
+    // means. Nothing is estimated: a reading this machine does not give is
+    // said to be missing.
+    struct Reading { const char* name; std::string value, detail; std::uint32_t ink; };
     const auto& r = reading_;
     const bool measured = static_cast<bool>(system_);
-    std::vector<Card> cards;
+    std::vector<Reading> readings;
     const auto cpu = engine_.telemetry().cpu_percent;
-    cards.push_back({"ENGINE", status_text(), metric_text(cpu, true) == "--" ? "The engine reports no CPU load." :
-                     "CPU " + metric_text(cpu, true) + ": the engine's mean run load" + (engine_.capabilities().simulation ? ", simulated." : "."),
-                     engine_.state() == EngineState::Ready ? accent : warning});
-    if (!r.under_voltage) cards.push_back({"POWER", "--", "The supply voltage is not measured here.", muted});
-    else if (*r.under_voltage) cards.push_back({"POWER", "TOO LOW", "The supply is too weak now: audio can crackle and the CPU slows down.", warning});
-    else if (low_voltage_seen_) cards.push_back({"POWER", "WAS LOW", "It dropped too low since this screen started. Use a 5 V, 5 A supply.", warning});
-    else cards.push_back({"POWER", "OK", "Not too low since this screen started.", accent});
-    if (r.temperature_c) cards.push_back({"TEMPERATURE", decimal(*r.temperature_c, 1) + " C",
-                                          *r.temperature_c >= 80 ? "Hot: the CPU slows down near 85 C." : "The CPU slows down near 85 C.", *r.temperature_c >= 80 ? warning : text});
-    else cards.push_back({"TEMPERATURE", "--", "Not measured here.", muted});
+    readings.push_back({"Engine", status_text(), metric_text(cpu, true) == "--" ? "No CPU load reported" : "CPU " + metric_text(cpu, true) + (engine_.capabilities().simulation ? ", simulated" : ""),
+                        engine_.state() == EngineState::Ready ? accent : warning});
+    if (!r.under_voltage) readings.push_back({"Power", "--", "Not measured here", muted});
+    else if (*r.under_voltage) readings.push_back({"Power", "TOO LOW", "Audio can crackle", warning});
+    else if (low_voltage_seen_) readings.push_back({"Power", "WAS LOW", "Use a 5 V, 5 A supply", warning});
+    else readings.push_back({"Power", "OK", "Never too low", accent});
+    if (r.temperature_c) readings.push_back({"Temperature", decimal(*r.temperature_c, 1) + " C", *r.temperature_c >= 80 ? "Hot: slows near 85 C" : "Slows near 85 C", *r.temperature_c >= 80 ? warning : text});
+    else readings.push_back({"Temperature", "--", "Not measured here", muted});
     if (r.memory_total && r.memory_available) {
         const bool short_of = *r.memory_available * 10 < *r.memory_total;
-        cards.push_back({"MEMORY", gigabytes(*r.memory_available) + " free", "Of " + gigabytes(*r.memory_total) + ", shared by the engine, its plugins and this screen.", short_of ? warning : text});
-    } else cards.push_back({"MEMORY", "--", "Not measured here.", muted});
+        readings.push_back({"Memory", gigabytes(*r.memory_available) + " free", "Of " + gigabytes(*r.memory_total), short_of ? warning : text});
+    } else readings.push_back({"Memory", "--", "Not measured here", muted});
     std::error_code error;
     const auto space = store_ ? std::filesystem::space(store_->root(), error) : std::filesystem::space_info{};
     if (store_ && !error && space.capacity) {
         const bool short_of = space.available * 20 < space.capacity;
-        cards.push_back({"STORAGE", gigabytes(space.available) + " free", "Of " + gigabytes(space.capacity) + " where patches are saved.", short_of ? warning : text});
-    } else cards.push_back({"STORAGE", "--", "No patch storage: session snapshots only.", muted});
-    if (r.uptime_s) cards.push_back({"UPTIME", duration(*r.uptime_s), "Since the system started.", text});
-    else cards.push_back({"UPTIME", "--", "Not measured here.", muted});
-    for (std::size_t i = 0; i < cards.size(); ++i) {
-        auto* card = panel(parent, 24 + static_cast<int>(i % 3) * 256, 12 + static_cast<int>(i / 3) * 162, 240, 150);
-        auto* caption = label(card, cards[i].caption, 16, 14, 208, faint, &peepo_mono_14);
-        lv_obj_set_style_text_letter_space(caption, 2, 0);
-        auto* value = label(card, cards[i].value, 16, 38, 208, cards[i].ink, &peepo_bold_24);
-        lv_label_set_long_mode(value, LV_LABEL_LONG_DOT); lv_obj_set_height(value, 30);
-        auto* detail = label(card, cards[i].detail, 16, 78, 208, muted, &lv_font_montserrat_14);
-        lv_label_set_long_mode(detail, LV_LABEL_LONG_DOT); lv_obj_set_height(detail, 60);
-    }
-    label(parent, measured ? "Read every 2 s. Audio dropouts (xruns) are not counted here yet." : "This computer's readings are not shown; the instrument shows its own.",
-          24, 334, 752, faint, &lv_font_montserrat_14);
+        readings.push_back({"Storage", gigabytes(space.available) + " free", "Of " + gigabytes(space.capacity), short_of ? warning : text});
+    } else readings.push_back({"Storage", "--", "Session snapshots only", muted});
+    if (r.uptime_s) readings.push_back({"Uptime", duration(*r.uptime_s), "Since boot", text});
+    else readings.push_back({"Uptime", "--", "Not measured here", muted});
+    auto* list = page_list(parent);
+    for (const auto& reading : readings) list_bar(list, reading.name, {.value = reading.value, .value_ink = reading.ink, .caption = reading.detail, .still = true});
+    list_note(list, "Memory is shared by the engine, its plugins and this screen; storage is where patches are saved. The CPU slows down near 85 C.");
+    list_note(list, measured ? "Read every 2 s. Audio dropouts (xruns) are not counted here yet." : "This computer's readings are not shown; the instrument shows its own.", faint);
 }
 void Application::power(lv_obj_t* parent) {
-    struct Choice { const char* title; const char* detail; Action action; bool offered; };
-    const Choice choices[] = {
-        {"Shut down", "Saved patches are safe. Unplug the instrument when the screen goes dark.", Action::PowerOff, static_cast<bool>(power_off_)},
-        {"Restart", "Starts the whole instrument again. It comes back by itself, playing its startup patch.", Action::Restart, static_cast<bool>(restart_)}};
-    int y = 12;
-    for (const auto& choice : choices) {
-        if (!choice.offered) continue;
-        auto* card = panel(parent, 24, y, 752, 120);
-        label(card, upper(choice.title), 20, 18, 480, text, &peepo_bold_20);
-        auto* detail = label(card, choice.detail, 20, 54, 520, muted, &lv_font_montserrat_14);
-        lv_obj_set_height(detail, 50);
-        auto* b = button(card, choice.title, 572, 35, 160, choice.action);
-        if (choice.action == Action::PowerOff) primary(b);
-        y += 136;
-    }
-    if (graph_.dirty) {
-        auto* note = label(parent, "This patch has unsaved edits. Save it in Patches first to keep them.", 24, y + 8, 752, warning, &lv_font_montserrat_14);
-        lv_label_set_long_mode(note, LV_LABEL_LONG_DOT); lv_obj_set_height(note, 20);
-    }
+    auto* list = page_list(parent);
+    if (power_off_) list_bar(list, "Shut down", {.caption = "Then unplug it"}, Action::PowerOff);
+    if (restart_) list_bar(list, "Restart", {.caption = "Back with its startup patch"}, Action::Restart);
+    list_note(list, "Saved patches are safe. After Shut down, unplug the instrument when the screen goes dark. Restart starts the whole instrument again; it comes back by itself.");
+    if (graph_.dirty) list_note(list, "This patch has unsaved edits. Save it in Patches first to keep them.", warning);
 }
 void Application::halting(lv_obj_t* parent) {
     label(parent, restarting_ ? "Peepo is restarting" : "Peepo is shutting down", 24, 96, 752, text, &peepo_bold_24);
@@ -3155,6 +3203,17 @@ void Application::encoder(const Gesture& g) {
     // buttons, and push the one highlighted.
     auto* group = lv_group_get_default();
     if (!group) return;
+    // Encoder 2 on a value bar turns it, a step a detent (or a hundredth of its range).
+    if (auto* focused = lv_group_get_focused(group); turn && !first && focused) {
+        for (auto& bound : bindings_)
+            if (bound.widget == focused && bound.action == Action::Slide) {
+                const double step = bound.step > 0 ? bound.step : (bound.high - bound.low) / 100;
+                bound.at = std::clamp(bound.at + g.steps * step, bound.low, bound.high);
+                paint_slide(focused, bound.at, bound.low, bound.high, bound.shown);
+                if (const auto set = bound.set) set(bound.at);
+                return;
+            }
+    }
     if (turn) {
         if (auto* old = lv_group_get_focused(group)) lv_obj_remove_state(old, LV_STATE_FOCUS_KEY);
         for (int i = 0; i < std::abs(g.steps); ++i) (g.steps > 0 ? lv_group_focus_next : lv_group_focus_prev)(group);
@@ -3340,104 +3399,85 @@ std::string Application::assignment_text(const std::string& control) const {
     return is_encoder(control) ? "Turns the highlighted control" : "Not assigned";
 }
 void Application::controls(lv_obj_t* parent) {
-    const auto ids = layout_.ids();
-    for (std::size_t i = 0; i < ids.size(); ++i) {
-        const auto& id = ids[i];
-        auto* row = panel(parent, 24, 8 + static_cast<int>(i) * 50, 752, 48);
-        // Turning or pressing a control shows which row it is.
-        if (id == active_control_) lv_obj_set_style_border_color(row, color(accent), 0);
-        label(row, control_label(id), 14, 13, 120, id == active_control_ ? accent : text);
+    // One bar per control: what it does in this patch. Tap it to change that.
+    auto* list = page_list(parent);
+    for (const auto& id : layout_.ids()) {
         const auto* pin = pinned(id);
         const bool orphan = orphaned(id);
-        auto* what = label(row, assignment_text(id), 140, 14, 396, orphan ? warning : pin ? text : muted, &lv_font_montserrat_14);
-        lv_label_set_long_mode(what, LV_LABEL_LONG_DOT); lv_obj_set_height(what, 18);
-        button(row, "Assign", 544, 0, 100, Action::AssignControl, 0, id);
-        auto* edit = button(row, "Edit", 652, 0, 100, Action::EditControl, 0, id);
-        if (!pin && !(store_ && store_->global_controls().contains(id))) lv_obj_add_state(edit, LV_STATE_DISABLED);
+        BarLook look{.caption = assignment_text(id), .caption_ink = orphan ? warning : pin ? text : muted};
+        // Turning or pressing a control shows which bar it is.
+        if (id == active_control_) look.edge = accent;
+        list_bar(list, control_label(id), look, Action::EditControl, 0, id);
     }
+    list_note(list, "Tap a control to choose what it does; a footswitch can also change patch or tap the tempo in every patch.");
 }
 void Application::assign_picker(lv_obj_t* parent) {
-    struct Choice { std::string title; Action action; InstanceId id; std::string symbol; };
-    std::vector<Choice> choices;
+    auto* list = page_list(parent);
     const bool stomp = is_stomp(editing_control_);
     if (!picking_module_) {
         if (stomp && store_) {
-            choices.push_back({"Next patch", Action::PickTarget, 0, "@next-patch"});
-            choices.push_back({"Previous patch", Action::PickTarget, 0, "@previous-patch"});
-            choices.push_back({"Tap tempo", Action::PickTarget, 0, "@tap-tempo"});
+            list_heading(list, "Every patch");
+            list_bar(list, "Next patch", {}, Action::PickTarget, 0, "@next-patch");
+            list_bar(list, "Previous patch", {}, Action::PickTarget, 0, "@previous-patch");
+            list_bar(list, "Tap tempo", {}, Action::PickTarget, 0, "@tap-tempo");
         }
+        std::vector<const Module*> modules;
         for (const auto& m : graph_.modules)
-            if (!m.fixed && module_available(m) && (stomp || !m.parameters.empty())) choices.push_back({m.name, Action::PickModule, m.id, {}});
-    } else if (const auto* m = find_module(graph_, picking_module_)) {
-        if (stomp) choices.push_back({"Bypass", Action::PickTarget, 0, "@bypass"});
-        for (const auto& p : m->parameters) choices.push_back({p.name, Action::PickTarget, 0, p.symbol});
+            if (!m.fixed && module_available(m) && (stomp || !m.parameters.empty())) modules.push_back(&m);
+        list_heading(list, "This patch");
+        if (modules.empty()) list_note(list, "Nothing in this patch can be controlled yet.");
+        for (const auto* m : modules) list_bar(list, m->name, {.lit = false, .edge = module_ink(*m)}, Action::PickModule, m->id);
+        return;
     }
-    auto* prompt = label(parent, picking_module_ ? "Which control?" : stomp ? "A module, or a patch change for every patch" : "Which module?", 24, 18, 560, text, &peepo_bold_20);
-    lv_label_set_long_mode(prompt, LV_LABEL_LONG_DOT); lv_obj_set_height(prompt, 26);
-    if (choices.empty()) { label(parent, "Nothing in this patch can be controlled yet.", 24, 72, 752, muted); return; }
-    const auto pages = std::max<std::size_t>(1, (choices.size() + 7) / 8);
-    picker_page_ = std::min(picker_page_, pages - 1);
-    if (pages > 1) {
-        auto* previous = button(parent, "<", 600, 4, 48, Action::PickerPage, 0, {}, static_cast<int>(picker_page_ ? picker_page_ - 1 : 0));
-        if (!picker_page_) lv_obj_add_state(previous, LV_STATE_DISABLED);
-        label(parent, std::to_string(picker_page_ + 1) + " / " + std::to_string(pages), 664, 18, 56, muted, &lv_font_montserrat_14);
-        auto* next = button(parent, ">", 728, 4, 48, Action::PickerPage, 0, {}, static_cast<int>(std::min(picker_page_ + 1, pages - 1)));
-        if (picker_page_ + 1 >= pages) lv_obj_add_state(next, LV_STATE_DISABLED);
-    }
-    for (std::size_t i = picker_page_ * 8; i < std::min(choices.size(), picker_page_ * 8 + 8); ++i) {
-        const auto slot = i - picker_page_ * 8;
-        auto* choice = button(parent, choices[i].title, 24 + static_cast<int>(slot % 2) * 384, 64 + static_cast<int>(slot / 2) * 68, 368,
-                              choices[i].action, choices[i].id, choices[i].symbol);
-        if (auto* title = lv_obj_get_child(choice, 0)) { lv_label_set_long_mode(title, LV_LABEL_LONG_DOT); lv_obj_set_width(title, 340); lv_obj_center(title); }
-    }
+    const auto* m = find_module(graph_, picking_module_);
+    if (!m) { list_note(list, "Module no longer exists."); return; }
+    list_heading(list, m->name, module_ink(*m));
+    if (stomp) list_bar(list, "Bypass", {}, Action::PickTarget, 0, "@bypass");
+    for (const auto& p : m->parameters) list_bar(list, p.name, {}, Action::PickTarget, 0, p.symbol);
 }
 void Application::assignment_detail(lv_obj_t* parent) {
     const auto& id = editing_control_;
-    auto* heading = label(parent, assignment_text(id), 24, 16, 752, accent, &peepo_bold_20);
-    lv_label_set_long_mode(heading, LV_LABEL_LONG_DOT); lv_obj_set_height(heading, 26);
-    button(parent, "Clear", 24, 280, 160, Action::ClearControl, 0, id);
-    primary(button(parent, "Done", 616, 280, 160, Action::Navigate, 0, {}, static_cast<int>(Page::Controls)));
+    auto* list = page_list(parent);
+    list_heading(list, assignment_text(id));
     const auto* a = pinned(id);
-    if (!a) { label(parent, "This control acts the same in every patch.", 24, 64, 752, muted); return; }
+    if (!a) { list_note(list, "This control acts the same in every patch."); return; }
     const auto* p = assignment_parameter(graph_, *a);
     if (orphaned(id)) {
-        label(parent, "Its module was removed, or now holds a different plugin, so it is never applied.\nClear it, then assign the control again.", 24, 64, 752, muted);
+        list_note(list, "Its module was removed, or now holds a different plugin, so it is never applied. Clear it, then assign the control again.", warning);
         return;
     }
     if (a->action == ControlAction::Looper) {
-        label(parent, "Held: the command is pressed. Released: it is let go, so a long press\nworks as on the page. To change it, bind it again on the Loo-pi page.", 24, 64, 752, muted);
+        list_note(list, "Held: the command is pressed. Released: it is let go, so a long press works as on the page. To change it, bind it again on the Loo-pi page.");
         return;
     }
     if (!p) {
-        label(parent, "Each press switches the software bypass of each module: one that plays is\nbypassed, one bypassed plays, so two set opposite ways swap places.\n"
-                      "To add or remove a module, hold it on the patch and press this stomp.", 24, 64, 752, muted);
+        list_note(list, "Each press switches the software bypass of each module: one that plays is bypassed, one bypassed plays, so two set opposite ways swap places. "
+                        "To add or remove a module, hold it on the patch and press this stomp.");
         return;
     }
-    auto* invert = button(parent, a->inverted ? "Inverted" : "Invert", 24, 60, 160, Action::InvertControl);
-    if (a->inverted) lv_obj_set_style_border_color(invert, color(accent), 0);
-    if (is_stomp(id)) {
-        auto* toggle = button(parent, "Toggle", 200, 60, 160, Action::SwitchModeChoice, 0, {}, 0);
-        auto* momentary = button(parent, "Momentary", 376, 60, 160, Action::SwitchModeChoice, 0, {}, 1);
-        lv_obj_set_style_border_color(a->mode == SwitchMode::Momentary ? momentary : toggle, color(accent), 0);
+    list_bar(list, "Invert", {.value = a->inverted ? "ON" : "OFF", .lit = a->inverted}, Action::InvertControl);
+    if (is_stomp(id)) choice_bar(list, {"Toggle", "Momentary"}, a->mode == SwitchMode::Momentary ? 1 : 0, Action::SwitchModeChoice);
+    if (p->kind != ParameterKind::Toggle && p->kind != ParameterKind::Enumeration) {
+        // The two ends of the range, in the parameter's own (linear or logarithmic) scale.
+        const Parameter shape = *p;
+        const auto end_bar = [&](const char* name, int end) {
+            auto at = shape; at.value = end ? a->maximum : a->minimum;
+            value_bar(list, name, 0, 1, shape.kind == ParameterKind::Continuous ? 0 : 1.0 / std::max(1.0, shape.maximum - shape.minimum), normalized_value(at),
+                [shape](double v) { auto q = shape; q.value = value_from_normalized(shape, v); if (shape.kind != ParameterKind::Continuous) q.value = std::round(q.value); return format_value(q); },
+                [this, shape, end](double v) {
+                    const auto* now = pinned(editing_control_);
+                    if (!now) return;
+                    auto changed = *now;
+                    double value = value_from_normalized(shape, v);
+                    if (shape.kind != ParameterKind::Continuous) value = std::round(value);
+                    (end ? changed.maximum : changed.minimum) = value;
+                    if (changed.minimum > changed.maximum) { message("From must not pass To; use Invert to reverse the direction."); rebuild_ = true; return; }
+                    submit(Assign{changed});
+                });
+        };
+        end_bar("From", 0); end_bar("To", 1);
     }
-    label(parent, is_stomp(id) ? (a->mode == SwitchMode::Momentary ? "Held: To. Released: From." : "Each press: From, then To.")
-                               : "Clockwise moves from From towards To; push and turn for fine steps.", 24, 120, 752, muted, &lv_font_montserrat_14);
-    if (p->kind == ParameterKind::Toggle || p->kind == ParameterKind::Enumeration) return;
-    // The two ends of the range, in the parameter's own (linear or logarithmic) scale.
-    for (int end = 0; end < 2; ++end) {
-        const int y = 148 + end * 64;
-        auto shown = *p; shown.value = end ? a->maximum : a->minimum;
-        label(parent, end ? "To" : "From", 24, y + 8, 80, text);
-        auto* value = label(parent, format_value(shown), 600, y + 8, 176, accent);
-        lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_RIGHT, 0);
-        auto* slider = lv_slider_create(parent); lv_obj_set_pos(slider, 120, y + 14); lv_obj_set_size(slider, 460, 12);
-        lv_slider_set_range(slider, 0, 1000); lv_slider_set_value(slider, static_cast<int>(normalized_value(shown) * 1000), LV_ANIM_OFF);
-        lv_obj_set_style_bg_color(slider, color(border), LV_PART_MAIN); lv_obj_set_style_bg_opa(slider, LV_OPA_COVER, LV_PART_MAIN);
-        lv_obj_set_style_bg_color(slider, color(accent), LV_PART_INDICATOR); lv_obj_set_style_bg_opa(slider, LV_OPA_COVER, LV_PART_INDICATOR);
-        lv_obj_set_style_bg_color(slider, color(text), LV_PART_KNOB); lv_obj_set_style_pad_all(slider, 10, LV_PART_KNOB);
-        lv_obj_set_style_bg_opa(slider, LV_OPA_COVER, LV_PART_KNOB); lv_obj_set_style_radius(slider, LV_RADIUS_CIRCLE, LV_PART_KNOB);
-        lv_obj_set_ext_click_area(slider, 20);
-        bind(slider, Action::RangeEnd, 0, {}, end, value);
-    }
+    list_note(list, is_stomp(id) ? (a->mode == SwitchMode::Momentary ? "Held: To. Released: From." : "Each press: From, then To.")
+                                 : "Clockwise moves from From towards To; push and turn for fine steps.");
 }
 }

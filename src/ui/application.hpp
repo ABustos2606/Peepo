@@ -14,7 +14,7 @@
 
 namespace peepo {
 enum class Page { Patch, Browser, Parameters, Patches, Settings, ModuleActions, NamePatch, ConfirmReplace, CvConnect, ConfirmAction,
-                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo, Midi, MidiLearn, PatchMidi };
+                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo, Midi, MidiLearn, PatchMidi, PatchActions };
 class Application {
 public:
     // Without a store the Patches page offers the in-memory session snapshot.
@@ -57,10 +57,10 @@ private:
     enum class Action { Navigate, Add, Module, Port, SelectCable, DeleteCable, ClearCable, Pan, Home,
                         OpenActions, Edit, Duplicate, Parameter, Bypass, Remove, SaveSession, LoadSession, State, Reject,
                         NameEntry, NameInput, Keyboard, CommitName, Confirm, CancelReplace, ParameterPage, BrowserGroup, BrowserPick, MissingFixture,
-                        ParallelDemo, CvChoice, CvPage,
-                        SavePatch, LoadStored, DeleteStored, StartupStored, PatchPage, ConfirmAction, CancelAction,
-                        AssignControl, EditControl, ClearControl, PickModule, PickTarget, PickerPage, InvertControl, SwitchModeChoice, RangeEnd, PowerOff,
-                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, FilePage, TempoStep, TempoSlider, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind, ModulePage,
+                        ParallelDemo, CvChoice, Slide,
+                        SavePatch, LoadStored, DeleteStored, StartupStored, OpenPatch, ConfirmAction, CancelAction,
+                        AssignControl, EditControl, ClearControl, PickModule, PickTarget, InvertControl, SwitchModeChoice, PowerOff,
+                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, TempoStep, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind, ModulePage,
                         MidiToggle, MidiTempoSource, MidiChannel, MidiDevice, MidiLearn, MidiForget, ClockRestart,
                         LoadMessage, AddLoadMessage, RemoveLoadMessage };
     struct Binding {
@@ -70,7 +70,36 @@ private:
         std::string symbol;
         int number = 0;
         lv_obj_t* value_label = nullptr;
+        lv_obj_t* widget = nullptr;
+        // A value bar's range, step (0: any), value, how it reads, and what a
+        // release or a turn does with it.
+        double low = 0, high = 1, step = 0, at = 0;
+        std::function<std::string(double)> shown;
+        std::function<void(double)> set;
     };
+    // How a bar on a page's list looks: its value on the right (in an ink;
+    // 0 is white), a line under its name (0 is grey), filled when lit (0 is
+    // green), its name's case kept, still (shown, not tapped), its edge.
+    struct BarLook {
+        std::string value;
+        std::uint32_t value_ink = 0;
+        std::string caption;
+        std::uint32_t caption_ink = 0;
+        bool lit = false, keep_case = false, still = false;
+        std::uint32_t fill = 0, edge = 0;
+    };
+    // A header pill: what it says and does; the page's main action is white.
+    struct Pill { std::string name; Action action; InstanceId id = 0; std::string symbol; int number = 0; bool primary = false, disabled = false; };
+    std::vector<Pill> header_pills() const;
+    // The page's list: compact bars two to a row, right of the rail, as on a
+    // module page. Bars, choices, value bars, headings and notes go in it.
+    lv_obj_t* page_list(lv_obj_t* parent);
+    lv_obj_t* list_bar(lv_obj_t* list, const std::string& name, const BarLook&, Action = Action::Navigate, InstanceId = 0, std::string symbol = {}, int number = 0);
+    // Every choice in one bar, the chosen one lit; a tap takes one (its index is the number).
+    void choice_bar(lv_obj_t* list, const std::vector<std::string>& choices, int chosen, Action, InstanceId = 0, std::string symbol = {});
+    // Dragged sideways like a module's bar, or turned by encoder 2.
+    lv_obj_t* value_bar(lv_obj_t* list, const std::string& name, double low, double high, double step, double value,
+                        std::function<std::string(double)> shown, std::function<void(double)> set);
     static void event(lv_event_t*);
     void handle(Binding&, lv_event_t*);
     RequestId submit(Command);
@@ -91,6 +120,8 @@ private:
     void parameter_bar(lv_obj_t*, const Module&, const Parameter&, int width = 372, int height = 48, bool segmented = false);
     // The module page's list of bars, right of the rail.
     lv_obj_t* bar_list(lv_obj_t* parent, const Module&, int top);
+    // A list of compact bars in two columns, right of the rail; it scrolls.
+    lv_obj_t* scroll_list(lv_obj_t* parent, int top);
     // The rail left of a long list: a line and a ball where the list is
     // scrolled to. Dragging along it scrolls the list.
     void scroll_rail(lv_obj_t* parent, lv_obj_t* list, int top, int height, std::uint32_t ink);
@@ -144,6 +175,8 @@ private:
     void replace_patch(Command, Page origin);
     void confirm_action(lv_obj_t*);
     void stored_patches(lv_obj_t*);
+    // Load, startup or delete one saved patch.
+    void patch_actions(lv_obj_t*);
     void refresh_stored();
     void save_patch(bool as_new);
     void start_save(const std::string& id);
@@ -203,7 +236,13 @@ private:
     // Saved patches on disk; null when the application has no store.
     PatchStore* store_ = nullptr;
     std::vector<StoredPatch> stored_;
-    std::size_t patch_page_ = 0;
+    // The saved patch whose actions are open, and how far the list was scrolled.
+    std::string patch_selected_;
+    // The page's list, the page it was built for, and how far each page's list
+    // was scrolled; opening a page from the patch starts them at the top.
+    lv_obj_t* page_list_ = nullptr;
+    Page page_list_page_ = Page::Patch;
+    std::map<Page, int> list_scroll_;
     // A save the engine is writing, published once it answers.
     std::optional<PatchStore::Staging> staging_;
     std::string save_as_id_, load_note_;
@@ -239,7 +278,6 @@ private:
     unsigned long long message_ms_ = 0;
     // A tempo on its way to the engine, so steps build on it rather than on the last answer.
     std::optional<double> tempo_sent_;
-    std::size_t file_page_ = 0;
     System reading_;
     // Whether the supply was ever too low while the interface ran.
     bool low_voltage_seen_ = false;
@@ -271,7 +309,6 @@ private:
     // The control last used, highlighted on the Controls page; the one being assigned or edited.
     std::string active_control_, editing_control_;
     InstanceId picking_module_ = 0;
-    std::size_t picker_page_ = 0;
     // The module browser: the group filter (empty for all), the picked module,
     // and where the cards were scrolled.
     std::string browser_group_, browser_pick_;
@@ -339,7 +376,6 @@ private:
     bool cable_cv_ = false, cv_only_ = false;
     InstanceId cv_from_ = 0, cv_to_ = 0;
     std::string cv_output_;
-    std::size_t cv_page_ = 0;
     std::map<InstanceId, lv_obj_t*> cv_inputs_;
 };
 }

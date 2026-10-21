@@ -80,17 +80,17 @@ Graph properties are set with `patch:context ingen:internalContext`, without whi
 
 ## Interface
 
-**Patches** lists the stored patches by name, three per page, each with:
+**Patches** is built like a module page (21 October 2026). The title is the patch playing, with `*` for unsaved edits, and the header pills act on it:
 
-- its revision, module count and any issue;
-- whether it loads at startup and whether it is playing;
-- **Load**, **Startup** and **Delete** buttons.
-
-Below the list:
-
-- **Save** writes a new revision of the playing patch, or creates one the first time.
+- **Save** (white) writes a new revision of the playing patch, or creates one the first time.
 - **Save as** asks for a name and saves a separate copy.
-- **New patch** and **Rename** work as before. A rename is stored with the next save, and identities do not change.
+- **Rename** is stored with the next save, and identities do not change.
+- **Revert** and **MIDI**: see [screens](28-screens-and-diagnostics.md) and [MIDI](39-midi.md).
+
+Below, one list, two bars to a row, that scrolls with the rail on the left as a module page does; there are no pages. **+ New patch** comes first (and **Parallel demo** in the simulator). Under **SAVED**, each stored patch is a compact bar: its name, its module count or what is wrong with it, and **PLAYING** or **STARTUP** on the right. The playing patch has a green edge.
+
+Tapping a patch opens its actions, like a module's: **Load** (white), **Load at startup** (green once it does; tap again to stop) and **Delete patch**, with its revision and any issue below. For the patch playing, Load reads **Load saved** and is only offered with unsaved edits. Back returns to the same place in the list.
+
 - Loading over unsaved edits asks first, as does Delete.
 - A patch with an unavailable module asks whether to load the rest without plugin state.
 
@@ -103,6 +103,8 @@ A failed add names the module and the engine's reason. Settings shows the connec
 **Windows.** `--patches DIR` chooses the folder; the default is `%LOCALAPPDATA%\Peepo\patches`, or `simulator-patches` for the simulation. With `--engine`, the engine is told the same folder as WSL sees it (`/mnt/c/…`), unless `--engine-patches PATH` says otherwise.
 
 ![Saved patches](images/ui-stored-patches.png)
+![A long list, scrolled](images/ui-patches-scrolled.png)
+![A patch's actions](images/ui-patch-actions.png)
 ![Asking before loading without a module](images/ui-missing-on-load.png)
 ![Engine away](images/ui-reconnecting.png)
 

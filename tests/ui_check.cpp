@@ -123,7 +123,8 @@ void tap_first(peepo::Application& app, const std::string& text) {
 // A header pill, by its label: On or Bypassed, Actions.
 void tap_header(peepo::Application& app, const std::string& text) {
     std::function<lv_obj_t*(lv_obj_t*)> find = [&](lv_obj_t* root) -> lv_obj_t* {
-        if (lv_obj_check_type(root, &lv_label_class) && text == lv_label_get_text(root)) {
+        // A pill, not the page's title, which can say the same.
+        if (lv_obj_check_type(root, &lv_label_class) && text == lv_label_get_text(root) && lv_obj_check_type(lv_obj_get_parent(root), &lv_button_class)) {
             lv_area_t area; lv_obj_get_coords(root, &area);
             if (area.y2 < 72) return root;
         }
@@ -132,6 +133,14 @@ void tap_header(peepo::Application& app, const std::string& text) {
         return nullptr;
     };
     auto* l = find(app.screen()); check(l != nullptr, "header pill missing");
+    lv_area_t area; lv_obj_get_coords(l, &area);
+    click(app, (area.x1 + area.x2) / 2, (area.y1 + area.y2) / 2);
+}
+// The last label holding the text, scrolled into view and tapped: a bar whose
+// name ends in dots.
+void tap_containing(peepo::Application& app, const std::string& text) {
+    auto* l = text_label(app.screen(), text); check(l != nullptr, "label missing");
+    lv_obj_scroll_to_view_recursive(l, LV_ANIM_OFF); lv_obj_update_layout(app.screen());
     lv_area_t area; lv_obj_get_coords(l, &area);
     click(app, (area.x1 + area.x2) / 2, (area.y1 + area.y2) / 2);
 }
@@ -254,28 +263,28 @@ int main(int argc, char** argv) {
             check(app.graph().connections.size() == 9, "output to input drag failed");
             click(app, 707, 36); check(app.page() == peepo::Page::Settings, "settings navigation failed");
             capture(app, output / "04-settings.bmp");
-            click(app, 273, 238); check(engine.state() == peepo::EngineState::Disconnected, "disconnect control failed");
+            tap(app, "DISCONNECT"); check(engine.state() == peepo::EngineState::Disconnected, "disconnect control failed");
             click(app, 70, 456); click(app, 396, 244);
             check(app.page() == peepo::Page::Parameters, "module navigation while disconnected failed");
             const auto old_mix = peepo::find_module(app.graph(), 4)->parameters[2].value;
             slide(app, "MIX", 0.5);
             check(peepo::find_module(app.graph(), 4)->parameters[2].value == old_mix, "a bar dragged while disconnected changed the engine");
-            click(app, 70, 456); click(app, 716, 36); click(app, 104, 238);
+            click(app, 70, 456); click(app, 716, 36); tap(app, "READY");
             check(engine.state() == peepo::EngineState::Ready, "reconnect control failed");
-            click(app, 135, 312); click(app, 70, 456); click(app, 396, 244);
+            tap(app, "REJECT NEXT EDIT"); click(app, 70, 456); click(app, 396, 244);
             tap_header(app, "ON"); check(!peepo::find_module(app.graph(), 4)->bypassed, "rejected bypass accepted");
             check(app.message().find("rejection") != std::string::npos, "rejection feedback missing");
             tap_header(app, "ON"); check(peepo::find_module(app.graph(), 4)->bypassed, "accepted bypass missing");
             capture(app, output / "60-bypassed-module.bmp");
             tap_header(app, "BYPASSED"); check(!peepo::find_module(app.graph(), 4)->bypassed, "the Bypassed pill did not switch the module on");
             tap_header(app, "ON");
-            click(app, 70, 456); click(app, 600, 36); click(app, 130, 364);
+            click(app, 70, 456); click(app, 600, 36); tap_header(app, "SAVE");
             capture(app, output / "05-session.bmp");
-            click(app, 70, 456); click(app, 396, 244); tap_header(app, "ACTIONS"); click(app, 592, 252);
+            click(app, 70, 456); click(app, 396, 244); tap_header(app, "ACTIONS"); tap(app, "DELETE MODULE");
             check(app.graph().modules.size() == 5, "delete module failed");
-            click(app, 600, 36); click(app, 700, 264);
+            click(app, 600, 36); tap(app, "LOAD");
             check(app.page() == peepo::Page::ConfirmReplace, "unsaved patch load was not guarded");
-            click(app, 650, 364);
+            tap_header(app, "REPLACE PATCH");
             check(app.graph().modules.size() == 6, "session restore failed");
             capture(app, output / "06-edited-patch.bmp");
             // Pan the view without changing any graph coordinates or dirty state.
@@ -295,7 +304,7 @@ int main(int argc, char** argv) {
             hold(app, 236, 244); check(app.page() == peepo::Page::ModuleActions, "long press did not open actions");
             capture(app, output / "12-module-actions.bmp");
             const auto source = *peepo::find_module(app.graph(), 4);
-            click(app, 170, 252); check(app.graph().modules.size() == 7, "context duplicate failed");
+            tap(app, "DUPLICATE"); check(app.graph().modules.size() == 7, "context duplicate failed");
             const auto copy = app.graph().modules.back();
             check(copy.id != source.id && copy.uri == source.uri && copy.bypassed == source.bypassed &&
                 copy.parameters[3].value == source.parameters[3].value, "UI duplicate did not preserve state");
@@ -304,17 +313,17 @@ int main(int argc, char** argv) {
             click(app, source.x + 42, source.y + 100);
             check(app.page() == peepo::Page::Parameters, "tapping the patch name did not restore original module location");
             tap_header(app, "ACTIONS"); check(app.page() == peepo::Page::ModuleActions, "parameter Actions button failed");
-            click(app, 170, 180); check(app.page() == peepo::Page::Parameters, "context Parameters action failed");
+            tap(app, "PARAMETERS"); check(app.page() == peepo::Page::Parameters, "context Parameters action failed");
             click(app, 70, 456);
             engine.reject_next();
-            hold(app, source.x + 42, source.y + 100); click(app, 170, 252);
+            hold(app, source.x + 42, source.y + 100); tap(app, "DUPLICATE");
             check(app.graph().modules.size() == 7 && app.message().find("rejection") != std::string::npos,
                 "rejected context duplicate changed graph or lost feedback");
             hold(app, copy.x + 42, copy.y + 100);
             check(app.page() == peepo::Page::ModuleActions, "duplicate module did not open context actions");
-            click(app, 600, 180);
+            tap(app, "SOFTWARE BYPASS");
             check(peepo::find_module(app.graph(), copy.id)->bypassed != copy.bypassed, "context software bypass failed");
-            click(app, 600, 252);
+            tap(app, "DELETE MODULE");
             check(!peepo::find_module(app.graph(), copy.id) && app.graph().connections.size() == 9, "context delete changed unrelated cables");
             // Run enough redraw cycles to expose stale bindings and queued callbacks.
             for (int i = 0; i < 10; ++i) { click(app, 490, 36); click(app, 70, 456); }
@@ -340,7 +349,7 @@ int main(int argc, char** argv) {
             check(app.page() == peepo::Page::Parameters, "new offscreen module was not revealed after add");
             click(app, 70, 456); click(app, 276, 36);
             engine.submit(peepo::LoadGraph{peepo::demo_graph()}); step(app, 256);
-            click(app, 707, 36); click(app, 374, 312);
+            click(app, 707, 36); tap(app, "MISSING MODULE");
             check(app.page() == peepo::Page::Patch && app.graph().connections.size() == 8 &&
                 !peepo::module_available(*peepo::find_module(app.graph(), 4)), "missing module fixture lost graph");
             check(text_label(app.screen(), "Not available here: Missing texture") != nullptr, "the canvas did not say which module is missing");
@@ -352,9 +361,9 @@ int main(int argc, char** argv) {
             check(app.page() == peepo::Page::ModuleActions && text_label(app.screen(), "Not available: ") && text_label(app.screen(), "until you save again"),
                   "the missing module's actions did not explain it");
             capture(app, output / "45-missing-actions.bmp");
-            click(app, 170, 252);
+            tap(app, "DUPLICATE");
             check(app.graph().modules.size() == 5 && !app.pending(), "disabled missing-module duplication submitted an edit");
-            click(app, 600, 252); check(app.graph().modules.size() == 4 && app.graph().connections.size() == 4, "missing placeholder deletion failed");
+            tap(app, "DELETE MODULE"); check(app.graph().modules.size() == 4 && app.graph().connections.size() == 4, "missing placeholder deletion failed");
             click(app, 490, 36); tap(app, "GAIN");
             capture(app, output / "18-catalogue-status.bmp");
             check(text_label(app.screen(), "compatibility") != nullptr, "untested entry reason missing");
@@ -365,32 +374,32 @@ int main(int argc, char** argv) {
             check(app.graph().modules.back().uri == "urn:peepo:demo:mono", "available mono fixture could not be added");
 
             // Create, cancel and rename through actual on-screen keyboard presses.
-            click(app, 600, 36); click(app, 320, 364);
+            click(app, 600, 36); tap(app, "+ NEW PATCH");
             check(app.page() == peepo::Page::NamePatch, "new patch naming did not open");
             click(app, 710, 36); check(app.graph().modules.size() == 5 && app.message().find("Enter a patch name") != std::string::npos, "blank name was accepted");
             for (const auto* key : {"t", "e", "s", "t"}) keyboard_key(app, key);
             capture(app, output / "20-name-keyboard.bmp");
             click(app, 710, 36); check(app.page() == peepo::Page::ConfirmReplace, "new patch did not guard unsaved edits");
             capture(app, output / "21-replace-confirmation.bmp");
-            click(app, 130, 364); check(app.page() == peepo::Page::NamePatch && app.graph().modules.size() == 5, "cancel replaced graph or lost draft");
+            tap_header(app, "CANCEL"); check(app.page() == peepo::Page::NamePatch && app.graph().modules.size() == 5, "cancel replaced graph or lost draft");
             check(std::string(lv_textarea_get_text(widget(app.screen(), &lv_textarea_class))) == "test", "cancel lost typed name");
             keyboard_key(app, LV_SYMBOL_BACKSPACE); keyboard_key(app, "e");
             keyboard_key(app, LV_SYMBOL_OK);
             check(app.page() == peepo::Page::ConfirmReplace, "keyboard OK did not request create");
-            engine.reject_next(); click(app, 650, 364);
+            engine.reject_next(); tap_header(app, "REPLACE PATCH");
             check(app.graph().modules.size() == 5 && app.message().find("rejection") != std::string::npos, "rejected new patch replaced graph");
-            click(app, 650, 364); check(app.page() == peepo::Page::Patch && app.graph().name == "tese" && app.graph().modules.size() == 2, "new patch accepted wrong name or endpoints");
+            tap_header(app, "REPLACE PATCH"); check(app.page() == peepo::Page::Patch && app.graph().name == "tese" && app.graph().modules.size() == 2, "new patch accepted wrong name or endpoints");
             capture(app, output / "22-new-patch.bmp");
-            click(app, 600, 36); click(app, 505, 364);
+            click(app, 600, 36); tap_header(app, "RENAME");
             keyboard_key(app, LV_SYMBOL_BACKSPACE); keyboard_key(app, "t");
             keyboard_key(app, LV_SYMBOL_OK);
             check(app.page() == peepo::Page::Patches && app.graph().name == "test", "rename via keyboard failed");
-            click(app, 130, 364); check(!app.graph().dirty, "accepted session save did not clear dirty marker");
-            click(app, 320, 364); keyboard_key(app, "a"); keyboard_key(app, LV_SYMBOL_KEYBOARD);
+            tap_header(app, "SAVE"); check(!app.graph().dirty, "accepted session save did not clear dirty marker");
+            tap(app, "+ NEW PATCH"); keyboard_key(app, "a"); keyboard_key(app, LV_SYMBOL_KEYBOARD);
             check(app.page() == peepo::Page::Patches && app.graph().name == "test", "keyboard cancel changed patch");
-            click(app, 320, 364); keyboard_key(app, "a"); keyboard_key(app, LV_SYMBOL_OK);
+            tap(app, "+ NEW PATCH"); keyboard_key(app, "a"); keyboard_key(app, LV_SYMBOL_OK);
             check(app.page() == peepo::Page::Patch && app.graph().name == "a", "clean patch creation required an unnecessary replacement guard");
-            click(app, 600, 36); click(app, 700, 264); click(app, 650, 364);
+            click(app, 600, 36); tap(app, "LOAD"); if (app.page() == peepo::Page::ConfirmReplace) tap_header(app, "REPLACE PATCH");
             check(app.graph().name == "test" && !app.graph().dirty, "saved session did not survive new patch");
             check(!app.pending(), "new editor requests did not resolve");
 
@@ -406,14 +415,14 @@ int main(int argc, char** argv) {
             auto* focus = lv_group_get_focused(group);
             keypad_press(app, LV_KEY_NEXT); check(lv_group_get_focused(group) != focus, "Tab did not traverse controls");
             keypad_press(app, LV_KEY_ENTER); check(app.page() == peepo::Page::Browser, "keyboard Enter did not activate Add");
-            click(app, 70, 456); check(app.page() == peepo::Page::Patch, "browser Back did not return to the patch"); click(app, 600, 36); click(app, 320, 364);
+            click(app, 70, 456); check(app.page() == peepo::Page::Patch, "browser Back did not return to the patch"); click(app, 600, 36); tap(app, "+ NEW PATCH");
             keypad_press(app, 'p'); keypad_press(app, 'c');
             check(std::string(lv_textarea_get_text(widget(app.screen(), &lv_textarea_class))) == "pc", "physical keyboard did not enter name");
             keypad_press(app, LV_KEY_ENTER);
             check(app.page() == peepo::Page::ConfirmReplace, "physical Enter did not request new patch");
-            click(app, 130, 364); keyboard_key(app, LV_SYMBOL_KEYBOARD);
+            tap_header(app, "CANCEL"); keyboard_key(app, LV_SYMBOL_KEYBOARD);
             check(app.graph().name == names.name, "keyboard cancellation changed current graph");
-            click(app, 505, 364);
+            tap_header(app, "RENAME");
             check(std::string(lv_textarea_get_text(widget(app.screen(), &lv_textarea_class))) == names.name,
                 "opening rename silently truncated a backend name");
             keyboard_key(app, LV_SYMBOL_KEYBOARD);
@@ -462,12 +471,12 @@ int main(int argc, char** argv) {
             click(app, 70, 456);
 
             // The preset uses the same replacement guard and graph commands as session restore.
-            click(app, 600, 36); click(app, 690, 364);
+            click(app, 600, 36); tap(app, "PARALLEL DEMO");
             check(app.page() == peepo::Page::ConfirmReplace, "parallel demo did not guard unsaved edits");
-            click(app, 130, 364); check(app.graph().modules[3].parameters.size() == 7, "cancelled demo lost current graph");
-            click(app, 690, 364); engine.reject_next(); click(app, 650, 364);
+            tap_header(app, "CANCEL"); check(app.graph().modules[3].parameters.size() == 7, "cancelled demo lost current graph");
+            tap(app, "PARALLEL DEMO"); engine.reject_next(); tap_header(app, "REPLACE PATCH");
             check(app.graph().modules[3].parameters.size() == 7 && !app.pending(), "rejected demo replaced current graph");
-            click(app, 650, 364);
+            tap_header(app, "REPLACE PATCH");
             check(app.page() == peepo::Page::Patch && app.graph().name == "Parallel texture" && app.graph().connections.size() == 10, "parallel starter did not load");
             capture(app, output / "27-parallel-patch.bmp");
             // Delete one side of the split; the other side and both merge cables survive.
@@ -541,9 +550,9 @@ int main(int argc, char** argv) {
             drag(app, 226, 312, 394, 152);
             check(app.page() == peepo::Page::CvConnect && !app.pending(), "control cable drop did not ask for ports");
             capture(app, output / "31-control-ports.bmp");
-            click(app, 200, 160);
+            tap(app, "OUT1");
             check(app.page() == peepo::Page::CvConnect, "choosing the output closed the port list");
-            click(app, 200, 160);
+            tap(app, "FREEZE");
             check(app.page() == peepo::Page::Patch && has({6, 7, "out1", "freeze"}), "control cable was not created between the chosen ports");
             capture(app, output / "32-control-cable.bmp");
             drag(app, 226, 312, 80, 300);
@@ -562,49 +571,58 @@ int main(int argc, char** argv) {
             peepo::SimulatedEngine stored_engine;
             peepo::Application app(stored_engine, &store); step(app);
             click(app, 600, 36); check(app.page() == peepo::Page::Patches && text_label(app.screen(), "Nothing saved yet") != nullptr, "empty store not shown");
-            click(app, 94, 376); step(app, 256);
+            check(!exact_label(app.screen(), "<") && !exact_label(app.screen(), ">"), "the Patches page still pages");
+            tap_header(app, "SAVE"); step(app, 256);
             check(store.list().size() == 1 && app.graph().patch_id == store.list()[0].id && !app.graph().dirty, "Save did not store the patch");
             const auto first = store.list()[0].id;
-            check(text_label(app.screen(), "Revision 1") != nullptr && text_label(app.screen(), "Playing: First light / saved") != nullptr, "saved patch not listed");
+            // Listed as a bar like a module's: its name, what it holds, and that it plays.
+            check(exact_label(app.screen(), "3 modules") != nullptr && exact_label(app.screen(), "PLAYING") != nullptr, "saved patch not listed");
             click(app, 70, 456); drag(app, 225, 244, 225, 124); check(app.graph().dirty, "edit after save not marked");
-            click(app, 600, 36); check(text_label(app.screen(), "playing, unsaved edits") != nullptr, "unsaved edits not shown on the stored patch");
-            click(app, 94, 376); step(app, 256);
+            click(app, 600, 36); check(exact_label(app.screen(), "FIRST LIGHT *") != nullptr, "unsaved edits not shown on the patch playing");
+            tap_header(app, "SAVE"); step(app, 256);
             check(store.find(first)->revision == 2 && !app.graph().dirty && store.list().size() == 1, "second save did not add a revision");
             // Save as: a separate stored patch under a new name.
-            click(app, 246, 376); check(app.page() == peepo::Page::NamePatch, "Save as did not ask for a name");
+            tap_header(app, "SAVE AS"); check(app.page() == peepo::Page::NamePatch, "Save as did not ask for a name");
             keyboard_key(app, LV_SYMBOL_BACKSPACE); keyboard_key(app, "x");
             click(app, 710, 36); step(app, 256);
             check(store.list().size() == 2 && app.graph().name == "First lighx" && app.graph().patch_id != first, "Save as did not create a second patch");
             capture(app, output / "33-stored-patches.bmp");
-            // Rows are by name: "First light", then "First lighx". Mark the first as the startup patch.
-            click(app, 628, 159);
-            check(store.startup() == first && text_label(app.screen(), "loads at startup") != nullptr, "startup choice not recorded");
+            // Tapping a patch opens its actions. Mark the first as the startup patch.
+            tap(app, "FIRST LIGHT"); check(app.page() == peepo::Page::PatchActions, "tapping a patch did not open its actions");
+            tap(app, "LOAD AT STARTUP");
+            check(store.startup() == first && bar_value(app, "LOAD AT STARTUP") == "ON", "startup choice not recorded");
+            capture(app, output / "81-patch-actions.bmp");
+            click(app, 70, 456); check(app.page() == peepo::Page::Patches && exact_label(app.screen(), "STARTUP") != nullptr, "the startup patch is not marked on the list");
             // Load the first; the current one is saved, so nothing is guarded.
-            click(app, 520, 159); step(app, 256);
+            tap(app, "FIRST LIGHT"); tap_header(app, "LOAD"); step(app, 256);
             check(app.page() == peepo::Page::Patch && app.graph().patch_id == first && app.graph().name == "First light" && peepo::find_module(app.graph(), 3)->y == 24, "stored patch not loaded");
             // A patch whose module is unavailable asks before loading the rest.
             stored_engine.submit(peepo::LoadGraph{peepo::missing_module_graph()}); step(app, 256);
-            click(app, 600, 36); click(app, 246, 376);
+            click(app, 600, 36); tap_header(app, "SAVE AS");
             for (const auto* key : {"z", "z"}) keyboard_key(app, key);
             click(app, 710, 36); step(app, 256);
             const auto missing = app.graph().patch_id;
             check(store.find(missing).has_value(), "patch with a missing module not saved");
-            click(app, 70, 456); click(app, 600, 36);
-            const auto listed = store.list();
-            const auto row = std::find_if(listed.begin(), listed.end(), [&](const peepo::StoredPatch& p) { return p.id == missing; }) - listed.begin();
-            click(app, 520, 159 + static_cast<int>(row) * 64);
+            // Its name is too long for its bar and ends in dots.
+            const auto missing_bar = [&] { tap_containing(app, "MISSING MODULE"); };
+            // The patch playing, as saved, has nothing to load back.
+            click(app, 70, 456); click(app, 600, 36); missing_bar();
+            check(disabled_button(exact_label(app.screen(), "LOAD SAVED")), "Load offered for the patch playing as saved");
+            click(app, 70, 456); tap(app, "FIRST LIGHT"); tap_header(app, "LOAD"); step(app, 256);
+            check(app.graph().patch_id == first, "first patch not loaded again");
+            click(app, 600, 36); missing_bar(); tap_header(app, "LOAD");
             check(app.page() == peepo::Page::ConfirmAction && text_label(app.screen(), "Not available here") != nullptr, "missing module did not ask before loading");
             capture(app, output / "34-missing-on-load.bmp");
-            click(app, 664, 364); step(app, 256);
+            tap_header(app, "LOAD THE REST"); step(app, 256);
             check(app.graph().patch_id == missing && app.graph().dirty && app.message().find("Left out: Missing texture") != std::string::npos && !peepo::find_module(app.graph(), 4),
                   "load without the missing module failed or went unreported");
             // Delete asks first, and leaves the playing patch alone.
-            click(app, 600, 36);
-            click(app, 728, 159 + static_cast<int>(row) * 64);
+            click(app, 600, 36); missing_bar(); tap_header(app, "DELETE");
             check(app.page() == peepo::Page::ConfirmAction, "delete did not ask");
-            click(app, 130, 364); check(store.list().size() == 3, "cancelled delete removed the patch");
-            click(app, 728, 159 + static_cast<int>(row) * 64); click(app, 664, 364);
-            check(store.list().size() == 2 && !store.find(missing) && app.graph().patch_id == missing, "delete failed or changed the playing patch");
+            tap_header(app, "CANCEL"); check(store.list().size() == 3 && app.page() == peepo::Page::PatchActions, "cancelled delete removed the patch or lost its place");
+            tap_header(app, "DELETE"); tap_header(app, "DELETE");
+            check(store.list().size() == 2 && !store.find(missing) && app.graph().patch_id == missing && app.page() == peepo::Page::Patches,
+                  "delete failed or changed the playing patch");
 
             // The engine away: the last graph stays, with a banner, and nothing can be added.
             stored_engine.set_state(peepo::EngineState::Connecting); step(app);
@@ -718,17 +736,17 @@ int main(int argc, char** argv) {
             // Stomps are assigned on the Controls page: stomp 1 toggles Mist Demo freeze.
             click(app, 707, 36); tap(app, "CONTROLS");
             check(app.page() == peepo::Page::Controls && text_label(app.screen(), "Moves through the page"), "Controls page did not open");
-            click(app, 618, 204); check(app.page() == peepo::Page::AssignPicker, "Assign did not open the picker");
-            click(app, 592, 160); check(text_label(app.screen(), "BYPASS") != nullptr, "picking Mist Demo did not list its controls");
-            click(app, 208, 296);
+            tap(app, "STOMP 1"); check(app.page() == peepo::Page::AssignPicker, "Assign did not open the picker");
+            tap(app, "MIST DEMO"); check(text_label(app.screen(), "BYPASS") != nullptr, "picking Mist Demo did not list its controls");
+            tap(app, "FREEZE");
             check(app.page() == peepo::Page::Controls && app.graph().assignments.size() == 1 && app.graph().assignments[0].parameter == "freeze", "stomp 1 not assigned to freeze");
             press("stomp1"); release("stomp1");
             check(value(4, 3) == 1, "stomp toggle did not switch freeze on");
             press("stomp1"); release("stomp1");
             check(value(4, 3) == 0, "stomp toggle did not switch freeze off");
             // Momentary: held on, released off.
-            click(app, 726, 204); check(app.page() == peepo::Page::AssignmentDetail, "Edit did not open the assignment");
-            click(app, 456, 156);
+            tap(app, "STOMP 1"); check(app.page() == peepo::Page::AssignmentDetail, "Edit did not open the assignment");
+            tap(app, "MOMENTARY");
             check(app.graph().assignments[0].mode == peepo::SwitchMode::Momentary, "momentary mode not stored");
             capture(app, output / "37-assignment-detail.bmp");
             app.control({Type::Press, "stomp1"}); step(app, 256);
@@ -736,7 +754,7 @@ int main(int argc, char** argv) {
             release("stomp1");
             check(value(4, 3) == 0, "momentary release did not let go");
             // Stomp 2 bypasses Delay.
-            click(app, 70, 456); click(app, 618, 254); click(app, 208, 228); click(app, 208, 160);
+            click(app, 70, 456); tap(app, "STOMP 2"); tap(app, "DELAY"); tap(app, "BYPASS");
             check(app.graph().assignments.size() == 2 && app.graph().assignments[1].action == peepo::ControlAction::Bypass, "bypass assignment not made");
             press("stomp2"); release("stomp2");
             check(peepo::find_module(app.graph(), 5)->bypassed, "bypass stomp did nothing");
@@ -744,7 +762,7 @@ int main(int argc, char** argv) {
             check(app.message().find("Stomp 3 is not assigned") != std::string::npos, "an unassigned stomp did not say so");
             capture(app, output / "38-controls.bmp");
             // Controls are ignored while a name is typed.
-            click(app, 70, 456); click(app, 70, 456); click(app, 600, 36); click(app, 320, 364);
+            click(app, 70, 456); click(app, 70, 456); click(app, 600, 36); tap(app, "+ NEW PATCH");
             check(app.page() == peepo::Page::NamePatch, "name page did not open");
             press("stomp2"); release("stomp2");
             check(peepo::find_module(app.graph(), 5)->bypassed, "a stomp acted while a name was being typed");
@@ -848,7 +866,7 @@ int main(int argc, char** argv) {
             system.under_voltage = false; step(app, 2100);
             check(exact_label(app.screen(), "WAS LOW") != nullptr, "a low supply was forgotten when it recovered");
             system = {}; step(app, 2100);
-            check(!text_label(app.screen(), "47.9 C") && text_label(app.screen(), "Not measured here."), "a missing reading kept an old value");
+            check(!text_label(app.screen(), "47.9 C") && text_label(app.screen(), "Not measured here"), "a missing reading kept an old value");
             click(app, 70, 456); check(app.page() == peepo::Page::Settings, "Diagnostics did not go back to Settings");
             // Power: shut down and restart, each confirmed, then nothing more to do.
             unsigned restarts = 0, power_offs = 0;
@@ -859,13 +877,13 @@ int main(int argc, char** argv) {
             tap(app, "POWER"); check(app.page() == peepo::Page::Power && exact_label(app.screen(), "SHUT DOWN") && exact_label(app.screen(), "RESTART"), "Power page missing its choices");
             capture(app, output / "48-power.bmp");
             refusal = "Could not restart: the system refused.";
-            tap(app, "RESTART"); check(app.page() == peepo::Page::ConfirmAction && text_label(app.screen(), "Restart Peepo?"), "restart was not confirmed first");
-            click(app, 664, 364);
+            tap(app, "RESTART"); check(app.page() == peepo::Page::ConfirmAction && text_label(app.screen(), "RESTART PEEPO?"), "restart was not confirmed first");
+            tap_header(app, "RESTART");
             check(restarts == 1 && app.page() == peepo::Page::Power && app.message() == refusal, "a refused restart was not reported on the Power page");
             refusal.clear();
-            tap(app, "RESTART"); click(app, 130, 364);
+            tap(app, "RESTART"); tap_header(app, "CANCEL");
             check(restarts == 1 && app.page() == peepo::Page::Power, "cancelled restart went ahead");
-            tap(app, "SHUT DOWN"); click(app, 664, 364);
+            tap(app, "SHUT DOWN"); tap_header(app, "SHUT DOWN");
             check(power_offs == 1 && app.page() == peepo::Page::Halting && text_label(app.screen(), "shutting down") && !exact_label(app.screen(), "< BACK"),
                   "shutting down did not leave a final page");
             capture(app, output / "49-shutting-down.bmp");
@@ -882,14 +900,27 @@ int main(int argc, char** argv) {
             peepo::SimulatedEngine sim;
             peepo::Application app(sim, &store); step(app);
             click(app, 600, 36); check(disabled_button(exact_label(app.screen(), "REVERT")), "Revert offered for a patch never saved");
-            click(app, 94, 376); step(app, 256);
+            tap_header(app, "SAVE"); step(app, 256);
             check(!app.graph().dirty && disabled_button(exact_label(app.screen(), "REVERT")), "Revert offered for a saved patch without edits");
             const auto y = peepo::find_module(app.graph(), 3)->y;
             click(app, 70, 456); drag(app, 225, 244, 225, 124); check(app.graph().dirty && peepo::find_module(app.graph(), 3)->y != y, "edit after save not made");
             click(app, 600, 36); check(!disabled_button(exact_label(app.screen(), "REVERT")), "Revert not offered for unsaved edits");
             tap(app, "REVERT"); check(app.page() == peepo::Page::ConfirmReplace, "Revert did not ask before discarding edits");
-            click(app, 664, 364); step(app, 256);
+            tap_header(app, "REPLACE PATCH"); step(app, 256);
             check(app.page() == peepo::Page::Patch && !app.graph().dirty && peepo::find_module(app.graph(), 3)->y == y, "Revert did not restore the saved revision");
+            // Many patches: one list that scrolls, as on a module page; no pages.
+            click(app, 600, 36);
+            for (const auto* key : {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"}) {
+                tap_header(app, "SAVE AS"); keyboard_key(app, LV_SYMBOL_BACKSPACE); keyboard_key(app, key); click(app, 710, 36); step(app, 256);
+            }
+            check(store.list().size() == 12 && app.page() == peepo::Page::Patches, "copies not saved");
+            capture(app, output / "82-patches-long.bmp");
+            tap(app, "FIRST LIGHK"); check(app.page() == peepo::Page::PatchActions && exact_label(app.screen(), "FIRST LIGHK") != nullptr,
+                                          "a patch further down the list could not be reached");
+            click(app, 70, 456);
+            check(app.page() == peepo::Page::Patches && text_label(app.screen(), "FIRST LIGHK") && lv_obj_get_scroll_y(lv_obj_get_parent(lv_obj_get_parent(text_label(app.screen(), "FIRST LIGHK")))) > 0,
+                  "Back from a patch's actions lost the place in the list");
+            capture(app, output / "83-patches-scrolled.bmp");
             std::filesystem::remove_all(store_root);
         }
         // Inside a group, the finer categories filter the cards.
@@ -996,14 +1027,16 @@ int main(int argc, char** argv) {
             const auto rate = [&] { return peepo::find_module(app.graph(), id)->parameters[0].value; };
             check(app.graph().tempo == 120 && rate() == 120, "an added module did not follow the default tempo");
             click(app, 660, 446);
-            check(app.page() == peepo::Page::Tempo && exact_label(app.screen(), "120") && text_label(app.screen(), "Model player"), "the footer BPM did not open the Tempo page");
-            tap(app, "+5"); check(app.graph().tempo == 125 && rate() == 125, "+5 did not reach the tempo and its follower");
-            tap(app, "-1"); check(app.graph().tempo == 124, "-1 did not step the tempo down");
+            check(app.page() == peepo::Page::Tempo && exact_label(app.screen(), "120 BPM") && text_label(app.screen(), "Model player"), "the footer BPM did not open the Tempo page");
+            // Dragged like a module's bar: the whole width for the whole range.
+            slide(app, "TEMPO", 27.0 / (peepo::maximum_tempo - peepo::minimum_tempo)); step(app, 256);
+            check(app.graph().tempo == 147 && rate() == 147, "dragging the tempo did not reach the tempo and its follower");
+            tap(app, "SLOWER"); check(app.graph().tempo == 146, "Slower did not step the tempo down");
             // Taps half a second apart are 120 BPM.
-            tap(app, "TAP"); step(app, 264); tap(app, "TAP");
+            tap_header(app, "TAP"); step(app, 264); tap_header(app, "TAP");
             // The taps are about half a second apart, give or take the frames a
             // click and a rebuild take; the arithmetic is checked in controls_tests.
-            check(std::abs(app.graph().tempo - 120) < 15 && app.graph().tempo != 124 && rate() == app.graph().tempo, "the TAP pad did not set about 120 BPM");
+            check(std::abs(app.graph().tempo - 120) < 15 && app.graph().tempo != 146 && rate() == app.graph().tempo, "the TAP pad did not set about 120 BPM");
             capture(app, output / "52-tempo.bmp");
             const auto tapped = app.graph().tempo;
             app.control({peepo::ControlEvent::Type::Turn, "enc1", 3}); step(app, 256);
@@ -1022,11 +1055,11 @@ int main(int argc, char** argv) {
             check(app.page() == peepo::Page::Parameters && exact_label(app.screen(), "MODEL") && exact_label(app.screen(), "None chosen") && exact_label(app.screen(), "RATE"),
                   "the file is not the first bar");
             tap_bar(app, "MODEL");
-            check(app.page() == peepo::Page::FilePicker && text_label(app.screen(), "No .nam files yet"), "an empty folder was not explained");
+            check(app.page() == peepo::Page::FilePicker && text_label(app.screen(), "NO .NAM FILES YET"), "an empty folder was not explained");
             click(app, 70, 456);
             for (const char* name : {"Clean.nam", "Crunch Lead.nam", "readme.txt"}) std::ofstream(base / "files" / "nam" / name) << "x";
             tap_bar(app, "MODEL");
-            check(app.page() == peepo::Page::FilePicker && exact_label(app.screen(), "Clean.nam") && !exact_label(app.screen(), "readme.txt") && text_label(app.screen(), "2 files"),
+            check(app.page() == peepo::Page::FilePicker && exact_label(app.screen(), "Clean.nam") && !exact_label(app.screen(), "readme.txt") && text_label(app.screen(), "2 FILES"),
                   "the models were not listed");
             capture(app, output / "53-file-picker.bmp");
             tap(app, "Crunch Lead.nam");
@@ -1422,22 +1455,22 @@ int main(int argc, char** argv) {
             check(!link.settings().clock_out, "Clock out did not switch off");
             tap_first(app, "OFF");
             check(link.settings().clock_out, "Clock out did not switch on again");
-            tap_first(app, ">"); tap_first(app, ">");
+            tap(app, "LOADS PATCH N"); tap(app, "LOADS PATCH N");
             check(link.settings().program_channel == 2, "the program change channel did not step");
-            tap_first(app, "CLOCK");
+            tap(app, "MIDI CLOCK");
             check(link.settings().tempo_source == peepo::midi::TempoSource::Clock, "the tempo source did not change");
             // Arturia sends only: one switch. UM-ONE both ways: switch its output off.
-            tap_first(app, "OUT: ON");
-            check(link.settings().outputs_off.size() == 1 && exact_label(app.screen(), "OUT: OFF"), "a device's output did not switch off");
+            tap_containing(app, "Out: hears");
+            check(link.settings().outputs_off.size() == 1, "a device's output did not switch off");
             link.write_status({119.5, {}, {}});
             step(app, 1100);
-            check(text_label(app.screen(), "Incoming clock: 119.5 BPM") != nullptr, "incoming clock not shown");
+            check(exact_label(app.screen(), "119.5 BPM") != nullptr, "incoming clock not shown");
             capture(app, output / "74-midi-settings-changed.bmp");
             // The Tempo page says whose tempo it is.
             click(app, 70, 456); click(app, 70, 456);
             tap_first(app, "120");
             if (app.page() == peepo::Page::Tempo) {
-                check(exact_label(app.screen(), "FOLLOWING MIDI CLOCK") != nullptr, "the Tempo page does not say it follows the clock");
+                check(exact_label(app.screen(), "FOLLOWING") != nullptr, "the Tempo page does not say it follows the clock");
                 capture(app, output / "75-tempo-following.bmp");
                 click(app, 70, 456);
             }
@@ -1445,19 +1478,19 @@ int main(int argc, char** argv) {
             click(app, 225, 252); check(app.page() == peepo::Page::Parameters, "tap did not open parameters");
             const auto at = bar_point(app, "DRIVE");
             hold(app, at.x, at.y);
-            check(app.page() == peepo::Page::MidiLearn && exact_label(app.screen(), "No MIDI message sets it."), "holding a bar did not open MIDI learn");
+            check(app.page() == peepo::Page::MidiLearn && exact_label(app.screen(), "NOTHING"), "holding a bar did not open MIDI learn");
             capture(app, output / "76-midi-learn.bmp");
-            tap_first(app, "LEARN");
-            check(text_label(app.screen(), "Move a knob") != nullptr, "learn does not wait");
+            tap_header(app, "LEARN");
+            check(exact_label(app.screen(), "MOVE ONE") != nullptr, "learn does not wait");
             capture(app, output / "77-midi-learn-waiting.bmp");
             step(app, 1800);
             check(app.page() == peepo::Page::Parameters && peepo::find_module(app.graph(), 3)->parameters[0].midi &&
                   text_label(app.screen(), "CC 20 / 1") != nullptr, "the learned controller is not shown on the bar");
             capture(app, output / "78-midi-learned.bmp");
             // Cancelling a wait leaves nothing learned.
-            hold(app, at.x, at.y); tap_first(app, "FORGET");
+            hold(app, at.x, at.y); tap_header(app, "FORGET");
             check(!peepo::find_module(app.graph(), 3)->parameters[0].midi, "forget");
-            tap_first(app, "LEARN"); tap_first(app, "CANCEL"); step(app, 1800);
+            tap_header(app, "LEARN"); tap_header(app, "CANCEL"); step(app, 1800);
             check(app.page() == peepo::Page::Parameters && !peepo::find_module(app.graph(), 3)->parameters[0].midi, "a cancelled learn learned");
             // Patches > MIDI: the control changes this patch sends as it loads.
             click(app, 70, 456); click(app, 70, 456);
@@ -1466,13 +1499,19 @@ int main(int argc, char** argv) {
             peepo::Application with_store(engine3, &store);
             with_store.set_midi(&link); step(with_store);
             click(with_store, 608, 36); check(with_store.page() == peepo::Page::Patches, "patches navigation failed");
+            capture(with_store, output / "84-patches-midi.bmp");
             tap_header(with_store, "MIDI"); check(with_store.page() == peepo::Page::PatchMidi, "the MIDI pill did not open MIDI on load");
             capture(with_store, output / "79-patch-midi-empty.bmp");
             tap_header(with_store, "+ ADD"); tap_header(with_store, "+ ADD");
             check(with_store.graph().load_messages.size() == 2, "Add did not add control changes");
-            tap_first(with_store, ">");
+            {
+                // The first message's channel, dragged one step (a fifteenth of the width) to the right.
+                auto* channel = lv_obj_get_parent(first_label(with_store.screen(), "CHANNEL"));
+                lv_area_t a; lv_obj_get_coords(channel, &a);
+                drag(with_store, a.x1 + 60, (a.y1 + a.y2) / 2, a.x1 + 60 + 25, (a.y1 + a.y2) / 2); step(with_store, 256);
+            }
             check(with_store.graph().load_messages[0].channel == 2, "the channel did not step");
-            tap_first(with_store, "X");
+            tap_first(with_store, "REMOVE");
             check(with_store.graph().load_messages.size() == 1 && with_store.graph().load_messages[0].channel == 1, "remove");
             capture(with_store, output / "80-patch-midi.bmp");
             std::filesystem::remove_all(folder);
@@ -1514,32 +1553,32 @@ int main(int argc, char** argv) {
             // 2) Single-pointer hold-then-hold: hold Mono utility #3 (1 output) and then hold Twist Wavefolder #4 (2 audio inputs) -> opens port screen for inputs.
             pointer = {232, 164}; pressed = true; step(app, 480);
             pointer = {392, 164}; step(app, 480);
-            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "which input of Twist") != nullptr &&
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "INPUTS OF TWIST") != nullptr &&
                   exact_label(app.screen(), "IN") != nullptr && exact_label(app.screen(), "SYM_MOD") != nullptr,
                   "holding 1-output then 2-input module did not open input selection screen");
             pressed = false; step(app);
             check(app.page() == peepo::Page::CvConnect, "releasing hold dismissed port selection screen prematurely");
-            click(app, 592, 160); step(app, 256);
+            tap(app, "SYM_MOD"); step(app, 256);
             check(app.page() == peepo::Page::Patch && has_conn({3, 4, "out", "sym_mod"}), "choosing second input did not connect to sym_mod");
             // 3) Hold Twist Wavefolder #4 (2 outputs: out, aux) and then hold Mono utility #6 (1 input: in) -> asks for output, then connects immediately.
             pointer = {392, 164}; pressed = true; step(app, 480);
             pointer2 = {232, 308}; pressed2 = true; step(app, 480);
             pressed = false; pressed2 = false; step(app);
-            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "Which output of Twist Wavefolder?") != nullptr &&
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "OUTPUTS OF TWIST WAVEFOLDER") != nullptr &&
                   exact_label(app.screen(), "OUT") != nullptr && exact_label(app.screen(), "AUX") != nullptr,
                   "holding 2-output then 1-input module did not open output selection screen");
-            click(app, 592, 160); step(app, 256);
+            tap(app, "AUX"); step(app, 256);
             check(app.page() == peepo::Page::Patch && has_conn({4, 6, "aux", "in"}), "choosing output when target has 1 input did not connect immediately");
             // 4) Hold Twist Wavefolder #4 (2 outputs) and then hold Twist Wavefolder #5 (2 inputs) -> asks for output, then asks for input.
             pointer = {392, 164}; pressed = true; step(app, 480);
             pointer2 = {552, 164}; pressed2 = true; step(app, 480);
             pressed = false; pressed2 = false; step(app);
-            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "Which output of Twist Wavefolder?") != nullptr,
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "OUTPUTS OF TWIST WAVEFOLDER") != nullptr,
                   "holding 2-output then 2-input module did not ask for output first");
-            click(app, 592, 160);
-            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "which input of Twist") != nullptr,
+            tap(app, "AUX");
+            check(app.page() == peepo::Page::CvConnect && text_label(app.screen(), "INPUTS OF TWIST") != nullptr,
                   "choosing output did not advance to input selection when target has 2 inputs");
-            click(app, 592, 160); step(app, 256);
+            tap(app, "SYM_MOD"); step(app, 256);
             check(app.page() == peepo::Page::Patch && has_conn({4, 5, "aux", "sym_mod"}),
                   "choosing input did not connect the two multi-port modules");
             lv_indev_delete(indev2);
