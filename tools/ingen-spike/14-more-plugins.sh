@@ -233,8 +233,8 @@ third loo-pi https://github.com/ABustos2606/loo-pi.git 45c301f80c1ec63edeb99a45a
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- Chamber (modal synthesis voice; a guitar can excite its resonator), the
 # project's own port of Emilie Gillet's Elements (MIT). Its Makefile also adds
-# -fno-fast-math after OPT, so it gets the same flags.
-third chamber https://github.com/ABustos2606/chamber.git b15b3dcb60a220ca779fa89a3805143e1e294a89 "make" \
+# -fno-fast-math after OPT, so it gets the same flags. Pinned at v0.2.1.
+third chamber https://github.com/ABustos2606/chamber.git 675ac8eb3b0a9fa56d6a4a0b076b6ca9bd5356c3 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- MIDI to CV and MIDI to CV poly (MIDI notes to Poly's pitch and gate CVs), the project's own.
 third midi-cv https://github.com/ABustos2606/midi-cv.git 03ac4344aeae7e49625fb77f9a770a39d91f9749 "make" \
