@@ -18,6 +18,15 @@ int main() {
         check(!validate_connection(g, {2, 3}).empty(), "wrong port direction accepted");
         check(validate_connection(g, {3, 5}).empty(), "valid fan-out rejected");
         check(!validate_connection(g, {99, 3}).empty(), "missing module accepted");
+        {
+            auto named = g; const auto plain = named.modules[2].name;
+            check(numbered_name(named, "Nobody") == "Nobody" && numbered_name(named, plain) == plain + " 2", "first copy not numbered 2");
+            named.modules.push_back(named.modules[2]); named.modules.back().name = plain + " 3";
+            check(numbered_name(named, plain) == plain + " 2", "lowest free number not taken");
+            const Port stereo_in{"in", Direction::Input, 2}, side{"side", Direction::Input, 1}, out{"out", Direction::Output, 2};
+            check(card_height({stereo_in, out}) == module_height && card_height({stereo_in, side, out}) == 3 * connector_pitch + 8,
+                "card not grown for a third connector");
+        }
         const auto& p = g.modules[3].parameters[1];
         check(std::abs(value_from_normalized(p, normalized_value(p)) - p.value) < 0.0001, "logarithmic round trip");
         check(value_from_normalized(p, -1) == p.minimum && value_from_normalized(p, 2) == p.maximum, "range clamp");
@@ -69,6 +78,7 @@ int main() {
         check(copy.id != original.id && copy.uri == original.uri && copy.bypassed && copy.parameters[0].value == 81,
             "duplicate lost identity, parameter or bypass state");
         check(copy.x == 1008 && copy.y == 504 && engine.snapshot().connections == cables, "duplicate copied cables or lost world position");
+        check(copy.name == original.name + " 2", "duplicate not numbered after the original");
         check(engine.snapshot().assignments.size() == 1 && engine.snapshot().assignments[0].module == 3, "duplicate copied control assignments");
         engine.submit(MoveModule{copy.id, 2016, 1008}); engine.advance(100);
         check(engine.snapshot().modules.back().x == 2016 && engine.snapshot().modules.back().y == 1008, "larger canvas movement was clamped to viewport");

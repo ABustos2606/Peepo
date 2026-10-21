@@ -85,6 +85,18 @@ lv_obj_t* label(lv_obj_t* parent, const std::string& value, int x, int y, int w 
     lv_obj_remove_flag(l, LV_OBJ_FLAG_CLICKABLE);
     return l;
 }
+// Whether text shows whole in a box this wide and tall: no word wider than
+// the box, so none is broken, and every wrapped line inside.
+bool text_fits(const std::string& value, const lv_font_t* font, int width, int height) {
+    lv_point_t size;
+    std::istringstream words(value);
+    for (std::string word; words >> word;) {
+        lv_text_get_size(&size, word.c_str(), font, 0, 0, LV_COORD_MAX, LV_TEXT_FLAG_NONE);
+        if (size.x > width) return false;
+    }
+    lv_text_get_size(&size, value.c_str(), font, 0, 0, width, LV_TEXT_FLAG_NONE);
+    return size.y <= height;
+}
 int snap(int value) { return static_cast<int>(std::round(value / 24.0)) * 24; }
 std::string metric_text(std::optional<double> reading, bool cpu) {
     if (!reading || !std::isfinite(*reading) || (cpu ? *reading < 0 || *reading > 100 : *reading <= 0)) return "--";
@@ -152,10 +164,11 @@ ModuleLayout module_layout(const Module& m) {
     if (pedal_layout(m.uri)) return ModuleLayout::Pedal;
     return ModuleLayout::Generic;
 }
-// Vertical placement of one connector on its edge of the square. Every audio
+// Vertical placement of one connector on its edge of the card. Every audio
 // channel has its own connector, so a stereo port shows two (left above
 // right). A single connector stays centred; several share the edge in equal
-// touch bands.
+// touch bands, and a card with more than two on a side grows to keep them
+// apart.
 std::vector<const Port*> cv_ports(const Module& m, Direction direction) {
     std::vector<const Port*> found;
     for (const auto& p : module_ports(m)) if (p.type == PortType::Cv && p.direction == direction) found.push_back(&p);
@@ -199,7 +212,8 @@ std::optional<Jack> jack(const Module& m, const std::string& symbol, Direction d
         count += static_cast<int>(p.channels);
     }
     if (index < 0) return {};
-    return Jack{(2 * index + 1) * module_height / (2 * count), std::min(44, module_height / count)};
+    const int height = module_height_of(m);
+    return Jack{(2 * index + 1) * height / (2 * count), std::min(44, height / count)};
 }
 // A module's colour: its group's, or the warning colour when it is missing.
 std::uint32_t module_ink(const Module& m) {
@@ -814,7 +828,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 lv_obj_set_style_line_color(preview_, color(cable_cv_ ? control_ink : source && source->type == PortType::Midi ? midi_ink : accent), 0);
                 lv_obj_set_style_line_width(preview_, 2, 0);
                 if (cable_cv_) preview_points_[0] = {static_cast<lv_value_precise_t>(m->x + module_width / 2 - pan_x_), static_cast<lv_value_precise_t>(m->y - pan_y_)};
-                else preview_points_[0] = {static_cast<lv_value_precise_t>(m->x + module_width - pan_x_), static_cast<lv_value_precise_t>(m->y + (from ? from->centre : module_height / 2) - pan_y_)};
+                else preview_points_[0] = {static_cast<lv_value_precise_t>(m->x + module_width - pan_x_), static_cast<lv_value_precise_t>(m->y + (from ? from->centre : module_height_of(*m) / 2) - pan_y_)};
                 indicate_targets(true);
             }
         } else if (code == LV_EVENT_LONG_PRESSED && b.action == Action::Module && !dragging_) {
@@ -835,7 +849,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 if (point.x >= 0 && point.x < 800 && point.y >= 72 && point.y < 432) {
                     const int cx = point.x + pan_x_, cy = point.y - 72 + pan_y_;
                     for (const auto& item : graph_.modules)
-                        if (item.id != b.id && cx >= item.x && cx < item.x + module_width && cy >= item.y && cy < item.y + module_height) {
+                        if (item.id != b.id && cx >= item.x && cx < item.x + module_width && cy >= item.y && cy < item.y + module_height_of(item)) {
                             under = item.id;
                             break;
                         }
@@ -875,7 +889,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 if (point.x >= 0 && point.x < 800 && point.y >= 72 && point.y < 432)
                     for (const auto& item : graph_.modules)
                         if (item.id != cable_source_ && !cv_ports(item, Direction::Input).empty() &&
-                            std::abs(point.x + pan_x_ - item.x - module_width / 2) <= 24 && std::abs(point.y - 72 + pan_y_ - item.y - module_height) <= 24) destination = item.id;
+                            std::abs(point.x + pan_x_ - item.x - module_width / 2) <= 24 && std::abs(point.y - 72 + pan_y_ - item.y - module_height_of(item)) <= 24) destination = item.id;
                 if (destination && code == LV_EVENT_RELEASED) {
                     const auto outputs = cv_ports(*m, Direction::Output);
                     cv_from_ = cable_source_; cv_to_ = destination; cv_only_ = true;
@@ -1062,13 +1076,16 @@ void Application::handle(Binding& b, lv_event_t* e) {
     }
     case Action::Navigate: navigate(static_cast<Page>(b.number)); break;
     case Action::Add: add_module(b.symbol); break;
-    case Action::Duplicate:
-        if (const auto slot = vacant_slot()) {
+    case Action::Duplicate: {
+        const auto* m = find_module(graph_, b.id);
+        const int height = m ? module_height_of(*m) : module_height;
+        if (const auto slot = vacant_slot(height)) {
             const auto [x, y] = *slot;
             submit(DuplicateModule{b.id, x, y});
-            reveal(x, y); navigate(Page::Patch);
+            reveal(x, y, height); navigate(Page::Patch);
         } else message("No free module slot remains on this canvas.");
         break;
+    }
     case Action::SelectCable:
         if (b.number >= 0 && static_cast<std::size_t>(b.number) < cables_.size()) {
             selected_cable_ = cables_[b.number].connection; rebuild_ = true;
@@ -1275,14 +1292,13 @@ void Application::handle(Binding& b, lv_event_t* e) {
     }
 }
 void Application::add_module(const std::string& uri) {
-    const auto slot = vacant_slot();
+    const auto* d = definition(uri);
+    const int height = d ? card_height(d->ports) : module_height;
+    const auto slot = vacant_slot(height);
     if (!slot) { message("No free module slot remains on this canvas."); return; }
     const auto [x, y] = *slot;
-    if (const auto request = submit(AddModule{uri, x, y})) {
-        const auto* d = definition(uri);
-        pending_[request] = PendingKind::Add; adding_[request] = d ? d->name : uri;
-    }
-    reveal(x, y); navigate(Page::Patch);
+    if (const auto request = submit(AddModule{uri, x, y})) { pending_[request] = PendingKind::Add; adding_[request] = d ? d->name : uri; }
+    reveal(x, y, height); navigate(Page::Patch);
 }
 void Application::commit_name() {
     if (pending()) { message("Wait for pending edits before naming a patch."); return; }
@@ -1696,7 +1712,8 @@ void Application::patch_view(lv_obj_t* parent) {
     for (const auto& m : graph_.modules) {
         const auto ink = module_ink(m);
         // A browser card in miniature: dark, outlined in the group colour, a white name.
-        auto* card = panel(parent, m.x - pan_x_, m.y - pan_y_, module_width, module_height);
+        const int height = module_height_of(m);
+        auto* card = panel(parent, m.x - pan_x_, m.y - pan_y_, module_width, height);
         lv_obj_set_style_border_color(card, color(ink), 0); lv_obj_set_style_border_width(card, 2, 0);
         lv_obj_set_style_border_opa(card, static_cast<lv_opa_t>(m.bypassed ? LV_OPA_40 : LV_OPA_COVER), 0);
         lv_obj_set_style_bg_color(card, color(m.bypassed ? background : surface), 0);
@@ -1710,13 +1727,19 @@ void Application::patch_view(lv_obj_t* parent) {
         // stick out past the edge: LVGL looks that far beyond the square.
         lv_obj_set_style_shadow_width(card, 14, 0); lv_obj_set_style_shadow_opa(card, LV_OPA_20, 0);
         lv_obj_set_style_shadow_color(card, color(background), 0);
-        auto* name = label(card, upper(m.name), 0, 0, module_width - 8, m.bypassed ? faint : text, &peepo_bold_14);
+        // The name in the largest type that shows it whole: no word broken,
+        // no line cut off. Only a name too long even at 10 px is shortened.
+        const auto title = upper(m.name);
+        const lv_font_t* font = &peepo_bold_10;
+        for (const auto* f : {&peepo_bold_14, &peepo_bold_12})
+            if (text_fits(title, f, module_width - 8, height - 10)) { font = f; break; }
+        auto* name = label(card, title, 0, 0, module_width - 8, m.bypassed ? faint : text, font);
         lv_label_set_long_mode(name, LV_LABEL_LONG_WRAP);
         lv_obj_set_style_text_align(name, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_update_layout(name);
-        if (lv_obj_get_height(name) > 36) {
+        if (lv_obj_get_height(name) > height - 10) {
             lv_label_set_long_mode(name, LV_LABEL_LONG_DOT);
-            lv_obj_set_height(name, 36);
+            lv_obj_set_height(name, height - 10);
         }
         lv_obj_align(name, LV_ALIGN_CENTER, 0, 0);
         const auto& ports = module_ports(m);
@@ -1764,7 +1787,7 @@ void Application::patch_view(lv_obj_t* parent) {
         for (const bool output : {false, true}) {
             if (cv_ports(m, output ? Direction::Output : Direction::Input).empty()) continue;
             auto* hit = lv_obj_create(card); lv_obj_remove_style_all(hit);
-            lv_obj_set_size(hit, 44, 44); lv_obj_set_pos(hit, module_width / 2 - 22, output ? -22 : module_height - 22);
+            lv_obj_set_size(hit, 44, 44); lv_obj_set_pos(hit, module_width / 2 - 22, output ? -22 : height - 22);
             lv_obj_remove_flag(hit, LV_OBJ_FLAG_SCROLLABLE);
             lv_obj_add_flag(hit, LV_OBJ_FLAG_PRESS_LOCK);
             auto* dot = panel(hit, 15, 15, 14, 14, background);
@@ -1804,22 +1827,23 @@ void Application::indicate_targets(bool active) {
         lv_obj_set_style_outline_opa(jack, LV_OPA_COVER, 0);
     }
 }
-std::optional<std::pair<int, int>> Application::vacant_slot() const {
+std::optional<std::pair<int, int>> Application::vacant_slot(int height) const {
     // Prefer the current viewport, then search the larger canvas.
     for (int visible = 1; visible >= 0; --visible)
         for (int y = module_min_y; y <= module_max_y; y += 120)
             for (int x = module_min_x; x <= module_max_x; x += 144) {
-                if (visible && (x < pan_x_ + 24 || x + module_width > pan_x_ + 776 || y < pan_y_ + 12 || y + module_height > pan_y_ + 360)) continue;
+                if (visible && (x < pan_x_ + 24 || x + module_width > pan_x_ + 776 || y < pan_y_ + 12 || y + height > pan_y_ + 360)) continue;
+                // Clear of every card by 36 across and 54 down, tall ones too.
                 const bool occupied = std::any_of(graph_.modules.begin(), graph_.modules.end(), [&](const Module& m) {
-                    return std::abs(m.x - x) < 120 && std::abs(m.y - y) < 110;
+                    return std::abs(m.x - x) < module_width + 36 && y < m.y + module_height_of(m) + 54 && m.y < y + height + 54;
                 });
                 if (!occupied) return std::pair{x, y};
             }
     return {};
 }
-void Application::reveal(int x, int y) {
+void Application::reveal(int x, int y, int height) {
     if (x < pan_x_ + 24 || x + module_width > pan_x_ + 776) pan_x_ = std::clamp(x - 24, 0, canvas_width - 800);
-    if (y < pan_y_ + 12 || y + module_height > pan_y_ + 360) pan_y_ = std::clamp(y - 12, 0, canvas_height - 360);
+    if (y < pan_y_ + 12 || y + height > pan_y_ + 360) pan_y_ = std::clamp(y - 12, 0, canvas_height - 360);
 }
 void Application::update_cables() {
     // LVGL positions are lazy; resolve the cards before reading coordinates.
@@ -1827,16 +1851,16 @@ void Application::update_cables() {
     for (auto& c : cables_) {
         auto a = module_widgets_.find(c.connection.from), b = module_widgets_.find(c.connection.to);
         if (a == module_widgets_.end() || b == module_widgets_.end()) continue;
+        const auto* source = find_module(graph_, c.connection.from); const auto* sink = find_module(graph_, c.connection.to);
         if (c.cv) {
             // Top of the source to the underside of the destination.
-            sample_cable(c.line, c.points, lv_obj_get_x(a->second) + module_width / 2, lv_obj_get_y(a->second), lv_obj_get_x(b->second) + module_width / 2, lv_obj_get_y(b->second) + module_height, true);
+            sample_cable(c.line, c.points, lv_obj_get_x(a->second) + module_width / 2, lv_obj_get_y(a->second), lv_obj_get_x(b->second) + module_width / 2, lv_obj_get_y(b->second) + (sink ? module_height_of(*sink) : module_height), true);
             continue;
         }
-        const auto* source = find_module(graph_, c.connection.from); const auto* sink = find_module(graph_, c.connection.to);
         const auto out = source ? jack(*source, c.connection.output, Direction::Output, c.out_channel) : std::nullopt;
         const auto in = sink ? jack(*sink, c.connection.input, Direction::Input, c.in_channel) : std::nullopt;
-        sample_cable(c.line, c.points, lv_obj_get_x(a->second) + module_width, lv_obj_get_y(a->second) + (out ? out->centre : module_height / 2),
-                     lv_obj_get_x(b->second), lv_obj_get_y(b->second) + (in ? in->centre : module_height / 2), false);
+        sample_cable(c.line, c.points, lv_obj_get_x(a->second) + module_width, lv_obj_get_y(a->second) + (out ? out->centre : module_height_of(*source) / 2),
+                     lv_obj_get_x(b->second), lv_obj_get_y(b->second) + (in ? in->centre : module_height_of(*sink) / 2), false);
     }
 }
 void Application::browser(lv_obj_t* header, lv_obj_t* content, lv_obj_t* foot) {
@@ -2690,7 +2714,7 @@ void Application::focus_module(int steps) {
     const int at = it == order.end() ? (steps > 0 ? -1 : last + 1) : static_cast<int>(it - order.begin());
     const auto* m = order[static_cast<std::size_t>(std::clamp(at + steps, 0, last))];
     patch_focus_ = m->id;
-    reveal(m->x, m->y);
+    reveal(m->x, m->y, module_height_of(*m));
     message(m->name + ": push encoder 1 to open it.");
     rebuild_ = true;
 }

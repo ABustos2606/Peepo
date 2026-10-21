@@ -211,8 +211,9 @@ private:
     void update_metrics();
     void update_network();
     void indicate_targets(bool);
-    std::optional<std::pair<int, int>> vacant_slot() const;
-    void reveal(int x, int y);
+    // Where a new card of this height goes, and panning to show one.
+    std::optional<std::pair<int, int>> vacant_slot(int height = module_height) const;
+    void reveal(int x, int y, int height = module_height);
     void bind(lv_obj_t*, Action, InstanceId = 0, std::string = {}, int = 0, lv_obj_t* = nullptr);
     lv_obj_t* button(lv_obj_t*, const std::string&, int, int, int, Action, InstanceId = 0, std::string = {}, int = 0);
     void message(std::string);

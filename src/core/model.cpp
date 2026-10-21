@@ -6,6 +6,7 @@
 #include <charconv>
 #include <cmath>
 #include <iomanip>
+#include <set>
 #include <sstream>
 #include <unordered_set>
 #include <limits>
@@ -161,6 +162,21 @@ const std::vector<Port>& module_ports(const Module& m) {
     if (!m.ports.empty()) return m.ports;
     if (const auto* d = definition(m.uri)) return d->ports;
     static const std::vector<Port> empty; return empty;
+}
+int card_height(const std::vector<Port>& ports) {
+    unsigned inputs = 0, outputs = 0;
+    for (const auto& p : ports)
+        if (p.type == PortType::Audio || p.type == PortType::Midi) (p.direction == Direction::Input ? inputs : outputs) += p.channels;
+    const int most = static_cast<int>(std::max(inputs, outputs));
+    return most <= 2 ? module_height : most * connector_pitch + 8;
+}
+int module_height_of(const Module& m) { return card_height(module_ports(m)); }
+std::string numbered_name(const Graph& g, const std::string& name) {
+    std::set<std::string> taken;
+    for (const auto& m : g.modules) taken.insert(m.name);
+    if (!taken.contains(name)) return name;
+    for (int n = 2;; ++n)
+        if (auto candidate = name + " " + std::to_string(n); !taken.contains(candidate)) return candidate;
 }
 bool module_available(const Module& m) {
     const auto* d = definition(m.uri);

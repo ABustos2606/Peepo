@@ -29,7 +29,7 @@ Built-in Montserrat font tables at sizes 14, 18, 20, 24 and 28 are supplied by t
 
 The interface also compiles its own font tables, generated with [lv_font_conv](https://github.com/lvgl/lv_font_conv) 1.5.3 into `src/ui/fonts/` (printable ASCII, 4 bits per pixel):
 
-- **Montserrat Bold**, sizes 14, 18, 20, 24 and 48, from [JulietaUla/Montserrat](https://github.com/JulietaUla/Montserrat) `fonts/ttf/Montserrat-Bold.ttf`. Covered by the same [Montserrat OFL notice](licenses/Montserrat-OFL.txt).
+- **Montserrat Bold**, sizes 10, 12, 14, 18, 20, 24 and 48, from [JulietaUla/Montserrat](https://github.com/JulietaUla/Montserrat) `fonts/ttf/Montserrat-Bold.ttf`. Covered by the same [Montserrat OFL notice](licenses/Montserrat-OFL.txt).
 - **JetBrains Mono Regular**, size 14, from [JetBrains/JetBrainsMono](https://github.com/JetBrains/JetBrainsMono) `fonts/ttf/JetBrainsMono-Regular.ttf`. Its [OFL notice](licenses/JetBrains-Mono-OFL.txt) is retained.
 
 Both fonts were downloaded on 15 October 2026. The OFL allows bundling the fonts with software. The generated tables keep the original font names, and the fonts are not sold on their own.

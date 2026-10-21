@@ -101,7 +101,7 @@ if(PEEPO_BUILD_UI)
     message(STATUS "Linux displays: framebuffer, DRM=${PEEPO_DRM_FOUND}, SDL=${PEEPO_SDL_FOUND}")
   endif()
   add_library(peepo_ui src/ui/application.cpp
-    src/ui/fonts/peepo_bold_14.c src/ui/fonts/peepo_bold_18.c src/ui/fonts/peepo_bold_20.c
+    src/ui/fonts/peepo_bold_10.c src/ui/fonts/peepo_bold_12.c src/ui/fonts/peepo_bold_14.c src/ui/fonts/peepo_bold_18.c src/ui/fonts/peepo_bold_20.c
     src/ui/fonts/peepo_bold_24.c src/ui/fonts/peepo_bold_48.c src/ui/fonts/peepo_mono_14.c)
   target_link_libraries(peepo_ui PUBLIC peepo_core lvgl)
   target_include_directories(peepo_ui PUBLIC src)

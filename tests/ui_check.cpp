@@ -992,14 +992,14 @@ int main(int argc, char** argv) {
             sim.submit(peepo::AddModule{chord, 328, 276}); step(app, 256);
             const auto id = app.graph().modules.back().id;
             const auto cables = app.graph().connections.size();
-            // IN's third jack and the module's only input, both at their edge.
-            drag(app, 116, 72 + 132 + 46, 328, 72 + 276 + 28);
+            // IN's third jack, on a card grown for three, and the module's only input.
+            drag(app, 116, 72 + 132 + 76, 328, 72 + 276 + 28);
             check(app.graph().connections.size() == cables + 1 && app.graph().connections.back() == peepo::Connection{1, id, "midi", "midi_in"},
                   "dragging IN's MIDI jack to the module did not make a MIDI cable");
-            drag(app, 328 + peepo::module_width, 72 + 276 + 28, 664, 72 + 132 + 46);
+            drag(app, 328 + peepo::module_width, 72 + 276 + 28, 664, 72 + 132 + 76);
             check(app.graph().connections.size() == cables + 2 && app.graph().connections.back() == peepo::Connection{id, 2, "midi_out", "midi"},
                   "dragging the module's MIDI output to OUT did not make a MIDI cable");
-            drag(app, 116, 72 + 132 + 9, 328, 72 + 276 + 28);
+            drag(app, 116, 72 + 132 + 15, 328, 72 + 276 + 28);
             check(app.graph().connections.size() == cables + 2, "an audio cable landed on a MIDI jack");
             capture(app, output / "70-midi-cables.bmp");
         }

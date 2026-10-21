@@ -872,7 +872,7 @@ std::string Session::plan(const Command& command, Transaction& to) {
             if (next_instance_ == std::numeric_limits<InstanceId>::max()) return "Instance ID space exhausted";
             const auto number = sequence();
             const auto path = child(main_path, "m" + std::to_string(next_instance_++));
-            send(to, put(number, path, block(c.uri, known->name, c.x, c.y, false)), number);
+            send(to, put(number, path, block(c.uri, numbered_name(graph_, known->name), c.x, c.y, false)), number);
             // Some plugins start switched off and stay silent until told otherwise.
             if (!known->enable_symbol.empty()) set_local(child(path, known->enable_symbol), "ingen:value", value_key, float_literal(1), ingen::number(1));
             for (const auto& symbol : known->project_defaults)
@@ -1034,9 +1034,11 @@ std::string Session::plan(const Command& command, Transaction& to) {
                 // The engine applies a block's output level only when told, so the copy is told too.
                 std::string level;
                 for (const auto& p : m->parameters) if (p.symbol == general_output_symbol) level = " ;\n\t\tpeepo:outputLevel " + float_literal(p.value);
-                send(to, put(number, copy_path, position(c.x, c.y) + " ;\n\t\tpeepo:displayName " + string_literal(m->name) + level), number);
+                const auto* known = definition(m->uri);
+                const auto name = numbered_name(graph_, known ? known->name : m->name);
+                send(to, put(number, copy_path, position(c.x, c.y) + " ;\n\t\tpeepo:displayName " + string_literal(name) + level), number);
                 // Nor does it copy the plugin's file: the copy is given it again.
-                if (const auto* known = definition(m->uri); known && !m->file.empty()) give_file(to, copy_path, *known, m->file);
+                if (known && !m->file.empty()) give_file(to, copy_path, *known, m->file);
                 send(to, get, copy_path);
             } else if constexpr (std::is_same_v<T, SetBypass>) {
                 if (m->fixed) return "Endpoints cannot be bypassed";

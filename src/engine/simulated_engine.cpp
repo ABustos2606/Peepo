@@ -83,7 +83,7 @@ std::string SimulatedEngine::apply(const Command& command) {
             const auto* d = definition(c.uri);
             if (!d || d->category == "Endpoint" || d->availability != Availability::Available) return "Module is unavailable or untested";
             if (next_instance_ == std::numeric_limits<InstanceId>::max()) return "Instance ID space exhausted";
-            graph_.modules.push_back({next_instance_++, d->uri, d->name, std::clamp(c.x, module_min_x, module_max_x),
+            graph_.modules.push_back({next_instance_++, d->uri, numbered_name(graph_, d->name), std::clamp(c.x, module_min_x, module_max_x),
                 std::clamp(c.y, module_min_y, module_max_y), false, false, d->parameters, d->ports});
             for (auto& p : graph_.modules.back().parameters) if (p.symbol == d->tempo_symbol) p.value = tempo_value(p, graph_.tempo);
         } else if constexpr (std::is_same_v<T, Connect>) {
@@ -192,6 +192,8 @@ std::string SimulatedEngine::apply(const Command& command) {
                 if (next_instance_ == std::numeric_limits<InstanceId>::max()) return "Instance ID space exhausted";
                 auto copy = *m;
                 copy.id = next_instance_++;
+                const auto* d = definition(m->uri);
+                copy.name = numbered_name(graph_, d ? d->name : m->name);
                 copy.x = std::clamp(c.x, module_min_x, module_max_x);
                 copy.y = std::clamp(c.y, module_min_y, module_max_y);
                 graph_.modules.push_back(std::move(copy));

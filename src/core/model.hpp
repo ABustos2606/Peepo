@@ -202,6 +202,15 @@ Graph parallel_demo_graph();
 Graph empty_graph(std::string name);
 Graph missing_module_graph();
 const std::vector<Port>& module_ports(const Module&);
+// A card is module_height tall unless a side has more than two audio or MIDI
+// connectors; then it grows so each keeps a band of connector_pitch.
+inline constexpr int connector_pitch = 28;
+int card_height(const std::vector<Port>&);
+int module_height_of(const Module&);
+// A new module's name: the plugin's, or with the lowest free number from 2
+// when another module already has it ("Delay", "Delay 2", "Delay 3"). A copy
+// is numbered from the plugin's name too, so a copy of "Delay 2" is "Delay 3".
+std::string numbered_name(const Graph&, const std::string& name);
 bool module_available(const Module&);
 std::string validate_patch_name(const std::string&);
 // Stored patch identities: 1-64 lowercase letters, digits and hyphens.
