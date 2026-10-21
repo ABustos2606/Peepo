@@ -88,12 +88,16 @@ In Peepo:
 
 ## 2. Chamber (Elements)
 
-- [ ] **Resampling** (decided 20 October 2026). Elements' tables, filters and exciter samples assume 32 kHz, so Chamber resamples 48 -> 32 -> 48 kHz around the unchanged voice (about 1 ms of latency, reported to the host).
-- [ ] Wrap `elements::Part` with its reverb buffer; inputs: gate, V/oct, strength, external blow and strike audio; outputs: main and aux.
-- [ ] About 20 controls (exciter levels and timbres, contour, coarse/fine/FM, geometry, brightness, damping, position, space) in overlay pages: Exciter, Resonator, Pitch, Output.
-- [ ] Guitar use: external audio into the strike input, with a level control, tested as an effect.
-- [ ] **Decision:** whether the Ominous mode (`ominous_voice.cc`) becomes a second plugin.
-- [ ] CPU on the Pi is the risk: the resonator is the costliest part; measure before polishing.
+**21 October 2026:** offline work done in Chamber's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step, inventory and overlay entry added. Not yet done: the Pi checks below.
+
+- [x] **Resampling** (decided 20 October 2026). Elements' tables, filters and exciter samples assume 32 kHz, so Chamber resamples 48 -> 32 -> 48 kHz around the unchanged voice. Latency, reported to the host: 88 frames (1.83 ms) at 48 kHz.
+- [x] Wrap `elements::Part` with its reverb buffer; inputs: gate, V/oct, strength, external blow and strike audio; outputs: main and aux.
+- [x] 33 controls and 14 CV inputs, in eight overlay pages: Resonator, Input and output, Play, Strike, Bow and blow, Pitch, and the CV amounts for exciter and resonator.
+- [x] Guitar use: external audio into the strike input, with a level control, tested offline as an effect (it rings at the resonator's pitch with no gate). Blow in sounds only while Play or a gate is held, as on the module.
+- [x] **Decision:** the Ominous mode is a switch in Chamber, not a second plugin, offered only if CPU allows. The overlay hides it until the Pi measurement says it fits; on a desktop it costs 1.8 times the worst modal case.
+- [ ] CPU and xruns on the Pi (`make test-timing` there, then `tools/pi/measure-effect.py` alone and in a typical patch), with and without the Ominous voice.
+- [ ] Listened to with guitar on the Pi; defaults tuned for guitar use (Damping, input levels); result in `docs/evidence/`.
+- [ ] Pi catalogue exported; `docs/33-module-list.md` regenerated.
 
 ## 3. Slope (Stages)
 
@@ -124,5 +128,7 @@ Settled with the user on 20 October 2026:
 | Drizzle | Vintage digital runs at 32 kHz with resampling, as on the hardware |
 | Chamber | The Ominous voice is offered only if CPU allows, measured on the Pi in milestone 2 |
 | Reel | Reel LFO is a separate plugin; easing and response are plain controls |
+
+Settled for Chamber on 21 October 2026: no Dry/wet control (Peepo's mixer modules blend the dry guitar); the Ominous voice is a switch in Chamber, hidden by the overlay until it is measured on the Pi.
 
 No decisions are open.

@@ -211,6 +211,17 @@
       {"name": "Memory only", "parameters": ["wipe"]}
     ]},
     {"uri": "https://github.com/ABustos2606/discipline#return", "name": "Discipline Return", "category": "Utility", "description": "Brings Discipline's repeats back in when its Modifier is Outside. One per patch."},
+    {"uri": "https://github.com/ABustos2606/chamber#chamber", "name": "Chamber", "category": "Resonator", "description": "A plate, string or tube you bow, blow or strike, with reverb. A guitar at Strike in makes it ring at its own pitch, no gate needed. Play or a gate starts a note; Blow in sounds only while one is held.",
+     "output": "output", "parameters": [{"symbol": "ominous", "hidden": true}], "groups": [
+      {"name": "Resonator", "parameters": ["model", "geometry", "brightness", "damping", "position", "space"]},
+      {"name": "Input and output", "parameters": ["strike_in_level", "blow_in_level", "output"]},
+      {"name": "Play", "parameters": ["play", "strength", "contour"]},
+      {"name": "Strike", "parameters": ["strike_level", "strike_meta", "strike_timbre"]},
+      {"name": "Bow and blow", "parameters": ["bow_level", "bow_timbre", "blow_level", "blow_meta", "blow_timbre"]},
+      {"name": "Pitch", "parameters": ["coarse", "fine", "fm_amount"]},
+      {"name": "Exciter CV amounts", "parameters": ["bow_timbre_amount", "blow_meta_amount", "blow_timbre_amount", "strike_meta_amount", "strike_timbre_amount"]},
+      {"name": "Resonator CV amounts", "parameters": ["geometry_amount", "brightness_amount", "damping_amount", "position_amount", "space_amount"]}
+    ]},
     {"uri": "urn:peepo:lv2:footswitch", "name": "Foot switch", "category": "Control", "description": "A stomp as a control signal: On value while it is down, Off value otherwise. Latching flips it on each press instead.", "parameters": [
       {"symbol": "stomp", "choices": ["1", "2", "3"]}, {"symbol": "latching"}, {"symbol": "on_value"}, {"symbol": "off_value"}, {"symbol": "pressed"}
     ]},
