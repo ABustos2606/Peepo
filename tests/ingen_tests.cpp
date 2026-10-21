@@ -54,6 +54,8 @@ struct FakeEngine {
     int mute = 0, requests = 0, label = 0;
     // Every tempo the graph was given, in order.
     std::vector<double> tempos;
+    // The control port waiting for MIDI learn, as Ingen keeps one.
+    std::string learning;
     // Saved bundles by file URI: the objects under ingen:/main and the cables.
     std::map<std::string, std::pair<std::map<std::string, Properties>, std::vector<std::pair<std::string, std::string>>>> files;
 
@@ -62,6 +64,10 @@ struct FakeEngine {
         case Value::Kind::Uri: return "<" + value.text + ">";
         case Value::Kind::Number: return float_literal(value.number);
         case Value::Kind::Boolean: return value.boolean ? "true" : "false";
+        // A MIDI binding, as the engine writes one.
+        case Value::Kind::Object:
+            return "[\n\t\ta <" + value.text + "> ;\n\t\t<" + full(uri::midi, value.text.ends_with("Controller") ? "controllerNumber" : value.text.ends_with("NoteOn") ? "noteNumber" : "channel") +
+                   "> \"" + std::to_string(static_cast<int>(value.number)) + "\"^^xsd:int\n\t]";
         // The engine switches to a long string when the text has a quote in it.
         default: return value.text.find('"') != std::string::npos ? "\"\"\"" + value.text + "\"\"\"" : string_literal(value.text);
         }
@@ -176,6 +182,8 @@ struct FakeEngine {
             subject = m.subject;
             if (!objects.contains(m.subject)) status = 16;
             else {
+                // MIDI learn waits for a message; nothing is stored until then.
+                if (m.property == full(uri::midi, "binding") && m.value.kind == Value::Kind::Uri && m.value.text == full(uri::patch, "wildcard")) { learning = m.subject; break; }
                 // A graph property set without a context is accepted and never described again.
                 if (m.subject != "ingen:/main" || m.context == full(uri::ingen, "internalContext")) merge(objects[m.subject], {{m.property, m.value}});
                 if (m.subject == "ingen:/main" && m.property == full(uri::peepo, "tempo")) tempos.push_back(m.value.number);
@@ -239,12 +247,30 @@ struct FakeEngine {
                            "> ;\n\tpatch:destination <" + m.destination + ">");
             }
             break;
+        case Message::Type::Patch:
+            // Only what MIDI learn needs: dropping every value of a property.
+            subject = m.subject;
+            if (!objects.contains(m.subject)) status = 16;
+            else for (const auto& [predicate, value] : m.remove)
+                if (value.kind == Value::Kind::Uri && value.text == full(uri::patch, "wildcard")) std::erase_if(objects[m.subject], [&](const auto& e) { return e.first == predicate; });
+            break;
         default: status = 4;
         }
         for (auto* client : clients) {
             const auto start = bundle(true);
             client->deliver(start + (client == &from ? response(m.sequence, status, subject) + all : all + others) + bundle(false));
         }
+    }
+    // A MIDI message reached the engine's control port while a port was
+    // learning: the binding is stored and told to every client.
+    void learn(const std::string& type, int number) {
+        if (learning.empty()) return;
+        const Value binding{Value::Kind::Object, double(number), false, full(uri::midi, type)};
+        merge(objects[learning], {{full(uri::midi, "binding"), binding}});
+        for (auto* client : clients)
+            client->deliver(node("\ta patch:Set ;\n\tpatch:sequenceNumber \"" + std::to_string(++label) + "\"^^xsd:int ;\n\tpatch:subject <" + learning +
+                                 "> ;\n\tpatch:property <" + full(uri::midi, "binding") + "> ;\n\tpatch:value " + term(binding)));
+        learning.clear();
     }
     void die() {
         for (auto* client : std::vector(clients)) { client->connected = false; client->events.push_back({Transport::Event::Kind::Closed, "Engine closed the connection"}); }
@@ -941,12 +967,61 @@ void midi_cables() {
     check(!rig.result(Connect{{1, 3, "midi", "control"}}).accepted && !rig.result(Connect{{1, 3, "out", "midi_in"}}).accepted && fake.requests == before,
           "a MIDI cable to a message port or an audio cable to MIDI reached the engine");
 }
+void midi_learn() {
+    // Ingen's own MIDI learn: a port waits, the engine announces what it
+    // learned, and the binding is a port property saved with the patch.
+    FakeEngine fake;
+    const std::string port = "ingen:/main/m3/gain", binding = full(uri::midi, "binding"), modified = full(uri::peepo, "modified");
+    fake.create_block("ingen:/main/m3", {{rdf_type, iri_value(full(uri::ingen, "Block"))}, {full(uri::lv2, "prototype"), iri_value(amp)}});
+    Rig rig(fake), other(fake);
+    rig.engine->connect(); other.engine->connect(); rig.settle(); other.settle();
+    auto gain = [](const Rig& r) { return find_module(r.graph(), 3)->parameters.at(0); };
+    check(rig.result(LearnMidi{3, "gain"}).accepted && fake.learning == port && !rig.graph().dirty, "learn not started, or marked the patch before learning");
+    // Controller 7 on channel 3: Ingen numbers it 2 * 256 + 7.
+    fake.learn("Controller", 2 * 256 + 7);
+    rig.settle(); other.settle();
+    check(gain(rig).midi == MidiBinding{MidiBinding::Kind::Controller, 3, 7} && gain(other).midi == gain(rig).midi, "learned binding not read");
+    check(rig.graph().dirty && property(fake, "ingen:/main", modified) && property(fake, "ingen:/main", modified)->boolean, "learning did not mark the patch");
+    check(midi_binding_text(*gain(rig).midi) == "CC 7 / 3", "binding text");
+    // Learning again replaces it: Ingen would keep both, so the old one goes first.
+    check(rig.result(LearnMidi{3, "gain"}).accepted && !property(fake, port, binding) && fake.learning == port, "old binding kept while learning again");
+    fake.learn("NoteOn", 60);
+    rig.settle();
+    check(gain(rig).midi == MidiBinding{MidiBinding::Kind::Note, 1, 60}, "note binding not read");
+    check(rig.result(LearnMidi{3, "gain", true}).accepted && !property(fake, port, binding) && !gain(rig).midi, "forget left the binding");
+    // A wait ended here cannot be ended in Ingen: what it learns later goes again.
+    check(rig.result(LearnMidi{3, "gain"}).accepted && rig.result(LearnMidi{3, "gain", true}).accepted, "learn and cancel refused");
+    fake.learn("Controller", 1);
+    rig.settle(); rig.settle();
+    check(!property(fake, port, binding) && !gain(rig).midi, "a cancelled learn kept its binding");
+    check(!rig.result(LearnMidi{3, general_output_symbol}).accepted && !rig.result(LearnMidi{1, "out"}).accepted, "learn on something that is not a port");
+    // A rebuilt graph brings its bindings with it.
+    auto copy = rig.graph();
+    find_module(copy, 3)->parameters.at(0).midi = MidiBinding{MidiBinding::Kind::Bender, 16, 0};
+    check(rig.result(LoadGraph{copy}).accepted, "graph with a binding refused");
+    const auto* stored = property(fake, port, binding);
+    check(stored && stored->kind == Value::Kind::Object && stored->number == 15 && stored->text == full(uri::midi, "Bender"), "binding not given to the engine");
+    rig.settle();
+    check(gain(rig).midi == MidiBinding{MidiBinding::Kind::Bender, 16, 0}, "binding of a rebuilt graph not read back");
+    // A tempo from incoming MIDI clock follows the playing; it does not edit the patch.
+    check(rig.result(SaveGraph{SaveScope::Persistent, true, "file:///tmp/learn.ingen", "learn"}).accepted && !rig.graph().dirty, "save");
+    check(rig.result(SetTempo{97, true}).accepted && rig.graph().tempo == 97 && !rig.graph().dirty, "following MIDI clock marked the patch");
+    check(rig.result(SetTempo{98}).accepted && rig.graph().dirty, "a tempo edit did not mark the patch");
+    // The control changes a patch sends as it loads: a graph property, read back, cleared by a new patch.
+    const auto on_load = full(uri::peepo, "midiOnLoad");
+    check(rig.result(SetLoadMessages{{{1, 7, 100}, {2, 10, 64}}}).accepted && property(fake, "ingen:/main", on_load)->text == "1:7:100 2:10:64", "control changes not given to the engine");
+    other.settle();
+    check(other.graph().load_messages == std::vector<ControlChange>{{1, 7, 100}, {2, 10, 64}}, "control changes not read by another client");
+    check(!rig.result(SetLoadMessages{{{0, 7, 100}}}).accepted, "a control change on channel 0 accepted");
+    check(rig.result(NewPatch{"Plain"}).accepted && rig.graph().load_messages.empty() && property(fake, "ingen:/main", on_load)->text.empty(), "a new patch kept the control changes");
+}
 int main() {
     try {
         turtle_and_protocol();
         adapter();
         relative_paths();
         midi_cables();
+        midi_learn();
         tuner_monitor();
         euclidean_monitor();
         looper_monitor();

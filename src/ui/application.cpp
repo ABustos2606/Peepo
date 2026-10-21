@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Peepo contributors
 #include "ui/application.hpp"
+#include "core/poly_voices.hpp"
 #include "core/tuning.hpp"
 #include "ui/fonts/fonts.h"
 // v9.5.0 exposes the hit-test payload through this header. Keep this usage
@@ -381,6 +382,12 @@ void Application::navigate(Page page) {
     if (page == Page::Browser && page_ != Page::Browser) { browser_pick_.clear(); browser_scroll_ = 0; }
     // Another program, or a damaged disk, may have changed what is stored.
     if (page == Page::Patches && page_ != Page::Patches) refresh_stored();
+    // Leaving MIDI learn before anything was learned ends the engine's wait.
+    if (page_ == Page::MidiLearn && page != Page::MidiLearn && (learn_waiting_ || learn_request_)) {
+        learn_waiting_ = false; learn_request_ = 0;
+        submit(LearnMidi{learn_id_, learn_symbol_, true});
+    }
+    if (page == Page::Midi && midi_) { midi_settings_ = midi_->settings(); midi_status_ = midi_->status(); }
     page_ = page; rebuild_ = true;
 }
 RequestId Application::submit(Command command) {
@@ -413,11 +420,31 @@ void Application::send_stream() {
     stream_->in_flight = submit(SetParameter{stream_->id, stream_->symbol, stream_->latest});
     if (!stream_->in_flight) stream_.reset();
 }
+// When the cables on a MIDI to CV poly's voices change, its Voices follows
+// them, so no note goes to a voice nothing plays. A patch as loaded, or a
+// Voices set by hand, stays until its cables next change.
+void Application::follow_poly_voices(bool replaced) {
+    if (replaced) poly_voices_.clear();
+    std::map<InstanceId, int> seen;
+    for (const auto& m : graph_.modules) {
+        if (m.uri != midi_cv_poly_uri) continue;
+        const int cabled = cabled_voices(graph_, m);
+        seen[m.id] = cabled;
+        const auto before = poly_voices_.find(m.id);
+        if (before == poly_voices_.end() || before->second == cabled || cabled == 0) continue;
+        const auto voices = std::find_if(m.parameters.begin(), m.parameters.end(), [](const Parameter& p) { return p.symbol == "voices"; });
+        if (voices != m.parameters.end() && std::lround(voices->value) != cabled) submit(SetParameter{m.id, "voices", static_cast<double>(cabled)});
+    }
+    poly_voices_ = std::move(seen);
+}
 void Application::tick(unsigned ms) {
     clock_ms_ += ms;
+    bool changed = false, replaced = false;
     for (auto& e : engine_.advance(ms)) {
         const auto it = pending_.find(e.request);
         const auto kind = it == pending_.end() ? PendingKind::Edit : it->second;
+        if (e.snapshot) changed = true;
+        if (kind == PendingKind::Replace && e.accepted) replaced = true;
         pending_.erase(e.request);
         if (stream_ && e.request && e.request == stream_->in_flight) { stream_->in_flight = 0; send_stream(); }
         if (e.snapshot) graph_ = *e.snapshot;
@@ -462,7 +489,36 @@ void Application::tick(unsigned ms) {
             save_as_id_.clear();
         } else if (kind == PendingKind::Replace && e.accepted && !load_note_.empty()) message(e.message.empty() ? load_note_ : e.message + " " + load_note_);
         if (kind == PendingKind::Replace) load_note_.clear();
-        rebuild_ = true;
+        // MIDI learn waits once the engine has dropped the old binding and listens.
+        if (e.request && e.request == learn_request_) {
+            learn_request_ = 0;
+            learn_waiting_ = e.accepted && page_ == Page::MidiLearn;
+            if (learn_waiting_) message("Move a control on a MIDI device.");
+        }
+        // Another client's edits, or a learned MIDI controller turning, can
+        // arrive dozens of times a second: those redraw at most ten times a second.
+        if (e.request) rebuild_ = true;
+        else news_ = true;
+    }
+    if (changed) follow_poly_voices(replaced);
+    if (news_ && clock_ms_ - rebuilt_ms_ >= 100) { news_ = false; rebuild_ = true; }
+    if (learn_waiting_) {
+        const auto* m = find_module(graph_, learn_id_);
+        const auto it = m ? std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == learn_symbol_; }) : std::vector<Parameter>::const_iterator{};
+        if (!m || it == m->parameters.end()) { learn_waiting_ = false; message("The module is gone; nothing was learned."); navigate(Page::Patch); }
+        else if (it->midi) {
+            learn_waiting_ = false;
+            message(it->name + " now follows " + midi_binding_text(*it->midi) + ".");
+            navigate(Page::Parameters);
+        }
+    }
+    // What peepo-midi hears: devices come and go, incoming clock changes.
+    if (midi_ && (midi_age_ += ms) >= 1000) {
+        midi_age_ = 0;
+        if (auto heard = midi_->status(); !(heard == midi_status_)) {
+            midi_status_ = std::move(heard);
+            if (page_ == Page::Midi || page_ == Page::Tempo) rebuild_ = true;
+        }
     }
     for (const auto& g : recognizer_.advance(ms)) gesture(g);
     if (startup_pending_ && engine_.state() == EngineState::Ready && pending_.empty()) {
@@ -847,6 +903,10 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 if (parameter_list_) lv_obj_add_flag(parameter_list_, LV_OBJ_FLAG_SCROLLABLE);
                 bar_moving_ = false;
             }
+        } else if (code == LV_EVENT_LONG_PRESSED && !bar_moving_ && !bar_scrolling_ && b.symbol != general_output_symbol) {
+            // Held still: MIDI learn for this control. The release that follows is not a tap.
+            bar_dragged_ = true;
+            open_learn(b.id, b.symbol);
         } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !bar_scrolling_ && segments) {
             if (const auto p = chosen(); p.value != std::round(it->value)) submit(SetParameter{b.id, b.symbol, p.value});
         } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !slides) submit(SetParameter{b.id, b.symbol, stepped_choice(*it)});
@@ -858,6 +918,18 @@ void Application::handle(Binding& b, lv_event_t* e) {
         const auto bpm = static_cast<double>(lv_slider_get_value(target));
         if (b.value_label) lv_label_set_text(b.value_label, metric_text(bpm, false).c_str());
         if (code == LV_EVENT_RELEASED) set_tempo(bpm);
+        return;
+    }
+    if (b.action == Action::LoadMessage && b.number % 8 >= 2) {
+        // A controller number or value slider: the label follows, the release is sent.
+        if (code != LV_EVENT_VALUE_CHANGED && code != LV_EVENT_RELEASED) return;
+        const int value = lv_slider_get_value(target);
+        if (b.value_label) lv_label_set_text(b.value_label, std::to_string(value).c_str());
+        auto list = graph_.load_messages;
+        if (const auto i = static_cast<std::size_t>(b.number / 8); code == LV_EVENT_RELEASED && i < list.size()) {
+            (b.number % 8 == 2 ? list[i].number : list[i].value) = value;
+            if (list != graph_.load_messages) submit(SetLoadMessages{list});
+        }
         return;
     }
     if (b.action == Action::RangeEnd) {
@@ -932,6 +1004,49 @@ void Application::handle(Binding& b, lv_event_t* e) {
     case Action::ParallelDemo: replace_patch(LoadGraph{parallel_demo_graph()}, Page::Patches); break;
     case Action::TempoStep: set_tempo((tempo_sent_ ? *tempo_sent_ : graph_.tempo) + b.number); break;
     case Action::Tap: tap_tempo(); break;
+    case Action::MidiToggle:
+        change_midi([&](midi::Settings& s) { auto& flag = b.number ? s.start_stop : s.clock_out; flag = !flag; });
+        break;
+    case Action::MidiTempoSource:
+        change_midi([&](midi::Settings& s) { s.tempo_source = b.number ? midi::TempoSource::Clock : midi::TempoSource::Patch; });
+        break;
+    case Action::MidiChannel:
+        // Off, channels 1 to 16, any: round and round.
+        change_midi([&](midi::Settings& s) { s.program_channel = (s.program_channel + b.number + midi::any_channel + 1) % (midi::any_channel + 1); });
+        break;
+    case Action::MidiDevice:
+        change_midi([&](midi::Settings& s) {
+            auto& off = b.number ? s.outputs_off : s.inputs_off;
+            if (!off.erase(b.symbol)) off.insert(b.symbol);
+        });
+        break;
+    case Action::MidiLearn:
+        learn_waiting_ = false;
+        learn_request_ = submit(LearnMidi{learn_id_, learn_symbol_});
+        break;
+    case Action::MidiForget: submit(LearnMidi{learn_id_, learn_symbol_, true}); break;
+    case Action::AddLoadMessage: {
+        auto list = graph_.load_messages;
+        if (list.size() < max_load_messages) { list.push_back({}); submit(SetLoadMessages{list}); }
+        break;
+    }
+    case Action::RemoveLoadMessage: {
+        auto list = graph_.load_messages;
+        if (static_cast<std::size_t>(b.number) < list.size()) { list.erase(list.begin() + b.number); submit(SetLoadMessages{list}); }
+        break;
+    }
+    case Action::LoadMessage: {
+        // The channel steps round from 1 to 16.
+        auto list = graph_.load_messages;
+        if (const auto i = static_cast<std::size_t>(b.number / 8); i < list.size()) {
+            list[i].channel = (list[i].channel - 1 + (b.number % 8 ? 1 : 15)) % 16 + 1;
+            submit(SetLoadMessages{list});
+        }
+        break;
+    }
+    case Action::ClockRestart:
+        if (midi_) { midi_->request_restart(); message("The clock restarts: Stop, then Start."); }
+        break;
     case Action::ChooseFile: selected_ = b.id; file_page_ = 0; navigate(Page::FilePicker); break;
     case Action::FilePage: file_page_ = static_cast<std::size_t>(b.number); rebuild_ = true; break;
     case Action::PickFile:
@@ -1171,7 +1286,8 @@ void Application::replace_patch(Command command, Page origin) {
     else submit(std::move(command));
 }
 void Application::rebuild() {
-    rebuild_ = false;
+    rebuild_ = news_ = false;
+    rebuilt_ms_ = clock_ms_;
     if (!screen_) {
         screen_ = lv_obj_create(nullptr);
         lv_obj_remove_style_all(screen_); lv_obj_set_size(screen_, 800, 480);
@@ -1236,6 +1352,14 @@ void Application::rebuild() {
         break;
     }
     case Page::Power: section = "SETTINGS"; title = "Power"; break;
+    case Page::Midi: section = "SETTINGS"; title = "MIDI"; break;
+    case Page::PatchMidi: section = "PATCHES"; title = "MIDI on load"; break;
+    case Page::MidiLearn: {
+        section = "MIDI LEARN";
+        const auto* m = find_module(graph_, learn_id_);
+        title = m ? m->name : "Module";
+        break;
+    }
     case Page::Halting: section = "POWER"; title = restarting_ ? "Restarting" : "Shutting down"; break;
     }
     // The dot is the engine: green when it answers.
@@ -1261,6 +1385,9 @@ void Application::rebuild() {
         if (!ready) lv_obj_add_state(add, LV_STATE_DISABLED);
         pill(button(header, "Patches", 556, 12, 104, Action::Navigate, 0, {}, static_cast<int>(Page::Patches)));
         pill(button(header, "Settings", 672, 12, 104, Action::Navigate, 0, {}, static_cast<int>(Page::Settings)));
+    } else if (page_ == Page::PatchMidi) {
+        auto* add = primary(pill(button(header, "+ Add", 680, 12, 96, Action::AddLoadMessage)));
+        if (graph_.load_messages.size() >= max_load_messages || !ready) lv_obj_add_state(add, LV_STATE_DISABLED);
     } else if (page_ == Page::NamePatch) {
         primary(pill(button(header, saving_as_ ? "Save" : renaming_ ? "Rename" : "Create", 640, 12, 136, Action::CommitName)));
     } else if (page_ == Page::Settings || (page_ == Page::Patches && store_)) {
@@ -1278,8 +1405,10 @@ void Application::rebuild() {
         if (page_ == Page::Patches) {
             auto* revert = link("Revert", Action::Revert, Page::Patches);
             if (graph_.patch_id.empty() || !graph_.dirty) lv_obj_add_state(revert, LV_STATE_DISABLED);
+            if (midi_) link("MIDI", Action::Navigate, Page::PatchMidi);
         } else {
             link("Controls", Action::Navigate, Page::Controls);
+            if (midi_) link("MIDI", Action::Navigate, Page::Midi);
             link("Diagnostics", Action::Navigate, Page::Diagnostics);
             if (power_off_ || restart_) link("Power", Action::Navigate, Page::Power);
         }
@@ -1327,6 +1456,9 @@ void Application::rebuild() {
     case Page::FilePicker: file_picker(content); break;
     case Page::Tempo: tempo(content); break;
     case Page::Power: power(content); break;
+    case Page::Midi: midi_page(content); break;
+    case Page::MidiLearn: midi_learn(content); break;
+    case Page::PatchMidi: patch_midi(content); break;
     case Page::Halting: halting(content); break;
     }
     std::string missing;
@@ -2263,6 +2395,8 @@ void Application::parameter_bar(lv_obj_t* parent, const Module& m, const Paramet
     for (const auto& a : graph_.assignments)
         if (a.module == m.id && a.action == ControlAction::Parameter && a.parameter == p.symbol && assignment_target(graph_, a))
             caption += (caption.empty() ? "" : "  ") + std::string(is_encoder(a.control) ? "E" : "S") + a.control.substr(is_encoder(a.control) ? 3 : 5);
+    // And the MIDI message that sets it, learned by holding the bar.
+    if (p.midi) caption += (caption.empty() ? "" : "  ") + midi_binding_text(*p.midi);
     // The name takes the left half and more, the value the right.
     const int name_width = width * 54 / 100, value_x = width * 2 / 5, inset = width < bar_width ? 12 : 16;
     auto* name = label(bar, upper(p.name), inset, caption.empty() ? (height - 18) / 2 : height / 2 - 18, name_width, text, &peepo_bold_14);
@@ -2350,7 +2484,9 @@ Page Application::back_page() const {
     // Back returns to where the page was opened from.
     switch (page_) {
     case Page::NamePatch: return Page::Patches;
-    case Page::Controls: case Page::Diagnostics: case Page::Power: return Page::Settings;
+    case Page::Controls: case Page::Diagnostics: case Page::Power: case Page::Midi: return Page::Settings;
+    case Page::MidiLearn: return Page::Parameters;
+    case Page::PatchMidi: return Page::Patches;
     case Page::AssignPicker: case Page::AssignmentDetail: return Page::Controls;
     case Page::FilePicker: return Page::Parameters;
     default: return Page::Patch;
@@ -2407,7 +2543,9 @@ void Application::tap_tempo() {
 void Application::tempo(lv_obj_t* parent) {
     const auto shown = tempo_sent_ ? *tempo_sent_ : graph_.tempo;
     auto* card = panel(parent, 24, 12, 752, 150);
-    label(card, "PATCH TEMPO", 24, 18, 300, faint, &peepo_mono_14);
+    // With the tempo taken from incoming clock, the clock sets it; a step or a tap lasts until the next clock.
+    const bool clocked = midi_ && midi_settings_.tempo_source == midi::TempoSource::Clock;
+    label(card, clocked ? (midi_status_.clock_in ? "FOLLOWING MIDI CLOCK" : "WAITING FOR MIDI CLOCK") : "PATCH TEMPO", 24, 18, 300, clocked ? accent : faint, &peepo_mono_14);
     auto* value = label(card, metric_text(shown, false), 24, 44, 260, accent, &peepo_bold_48);
     label(card, "BPM", 24, 104, 100, muted, &peepo_bold_14);
     for (int i = 0; i < 4; ++i) {
@@ -2436,7 +2574,149 @@ void Application::tempo(lv_obj_t* parent) {
     auto* who = label(parent, count ? following : "Modules with a tempo, such as Chorus, Flanger or the sequencers, take it when they are added.",
                       408, 222, 368, muted, &lv_font_montserrat_14);
     lv_label_set_long_mode(who, LV_LABEL_LONG_DOT); lv_obj_set_height(who, 60);
-    label(parent, "Saved with the patch. Encoder 1 turns it; a footswitch can tap it.", 408, 292, 368, faint, &lv_font_montserrat_14);
+    label(parent, "Saved with the patch. Encoder 1 turns it; a footswitch can tap it.", 408, 284, 196, faint, &lv_font_montserrat_14);
+    // The MIDI clock out: Stop, then Start, to line another device's pattern up by hand.
+    if (midi_) {
+        auto* restart = button(parent, "Restart clock", 616, 284, 160, Action::ClockRestart);
+        if (!midi_->connected() || !midi_settings_.clock_out || midi_settings_.tempo_source == midi::TempoSource::Clock) lv_obj_add_state(restart, LV_STATE_DISABLED);
+    }
+}
+void Application::change_midi(const std::function<void(midi::Settings&)>& change) {
+    if (!midi_) return;
+    auto next = midi_->settings();
+    change(next);
+    if (const auto issue = midi_->save(next); !issue.empty()) { message(issue); return; }
+    midi_settings_ = next;
+    message("MIDI settings saved for every patch.");
+    rebuild_ = true;
+}
+void Application::open_learn(InstanceId id, const std::string& symbol) {
+    if (engine_.state() != EngineState::Ready) { message("The engine is unavailable."); return; }
+    learn_id_ = id; learn_symbol_ = symbol;
+    learn_waiting_ = false; learn_request_ = 0;
+    navigate(Page::MidiLearn);
+}
+void Application::midi_page(lv_obj_t* parent) {
+    const auto& s = midi_settings_;
+    const bool following = s.tempo_source == midi::TempoSource::Clock;
+    // One row per setting: its name, what it does now, and its buttons on the right.
+    auto row = [&](int y, const char* name, const std::string& detail, bool lit) {
+        auto* r = panel(parent, 24, y, 752, 48);
+        auto* title = label(r, name, 14, 15, 170, text, &peepo_bold_14);
+        lv_obj_set_style_text_letter_space(title, 1, 0);
+        auto* what = label(r, detail, 184, 15, 340, lit ? text : muted, &lv_font_montserrat_14);
+        lv_label_set_long_mode(what, LV_LABEL_LONG_DOT); lv_obj_set_height(what, 18);
+        return r;
+    };
+    auto choice = [&](lv_obj_t* r, const char* title, int x, int w, Action action, int number, bool chosen) {
+        auto* b = button(r, title, x, 0, w, action, 0, {}, number);
+        if (chosen) mark(b, accent);
+        return b;
+    };
+    auto* clock = row(8, "CLOCK OUT", following ? "Off while the tempo follows incoming clock" : s.clock_out ? "24 per beat at the patch tempo" : "Devices hear no clock from Peepo",
+                      s.clock_out && !following);
+    choice(clock, s.clock_out ? "On" : "Off", 652, 100, Action::MidiToggle, 0, s.clock_out);
+    auto* transport = row(58, "START / STOP", s.start_stop ? "Sent as the clock begins and ends" : "The clock alone, without Start or Stop", s.start_stop);
+    choice(transport, s.start_stop ? "On" : "Off", 652, 100, Action::MidiToggle, 1, s.start_stop);
+    std::string source = "The patch's own, on the Tempo page";
+    if (following) source = midi_status_.clock_in ? "Incoming clock: " + metric_text(midi_status_.clock_in, false) + " BPM" : "Incoming clock: none heard; the patch's tempo stays";
+    auto* tempo_row = row(108, "TEMPO FROM", source, following && midi_status_.clock_in);
+    choice(tempo_row, "Patch", 544, 100, Action::MidiTempoSource, 0, !following);
+    choice(tempo_row, "Clock", 652, 100, Action::MidiTempoSource, 1, following);
+    const auto channel = s.program_channel;
+    auto* program = row(158, "PROGRAM CHANGE", channel == midi::program_off ? "Off" : "Program N loads patch N of Patches, in order", channel != midi::program_off);
+    button(program, "<", 596, 0, 48, Action::MidiChannel, 0, {}, -1);
+    auto* value = label(program, channel == midi::program_off ? "OFF" : channel == midi::any_channel ? "ANY" : "CH " + std::to_string(channel), 646, 15, 56, channel ? accent : muted, &peepo_bold_14);
+    lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_CENTER, 0);
+    button(program, ">", 704, 0, 48, Action::MidiChannel, 0, {}, 1);
+    auto* heading = label(parent, "DEVICES", 24, 218, 200, faint, &peepo_mono_14);
+    lv_obj_set_style_text_letter_space(heading, 2, 0);
+    if (!midi_->connected()) {
+        label(parent, "The instrument lists its MIDI devices here.", 24, 244, 752, muted, &lv_font_montserrat_14);
+        return;
+    }
+    // A device that sends and receives shows once, with both switches.
+    struct Device { std::string label, input, output; };
+    std::vector<Device> devices;
+    auto add = [&](const std::string& name, bool input) {
+        const auto shown = midi::device_label(name);
+        auto it = std::find_if(devices.begin(), devices.end(), [&](const Device& d) { return d.label == shown; });
+        if (it == devices.end()) { devices.push_back({shown, {}, {}}); it = devices.end() - 1; }
+        (input ? it->input : it->output) = name;
+    };
+    for (const auto& name : midi_status_.inputs) add(name, true);
+    for (const auto& name : midi_status_.outputs) add(name, false);
+    if (devices.empty()) {
+        label(parent, "None plugged in. A class-compliant USB MIDI device is found by itself.", 24, 244, 752, muted, &lv_font_montserrat_14);
+        return;
+    }
+    auto* list = lv_obj_create(parent); lv_obj_remove_style_all(list);
+    lv_obj_set_pos(list, 24, 240); lv_obj_set_size(list, 752, 116);
+    lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN); lv_obj_set_style_pad_row(list, 2, 0);
+    lv_obj_set_scroll_dir(list, LV_DIR_VER);
+    for (const auto& d : devices) {
+        auto* r = panel(list, 0, 0, 752, 48);
+        auto* name = label(r, d.label, 14, 14, 420, text, &lv_font_montserrat_14);
+        lv_label_set_long_mode(name, LV_LABEL_LONG_DOT); lv_obj_set_height(name, 18);
+        // In: it plays into Peepo. Out: it hears Peepo's MIDI and clock.
+        if (!d.input.empty()) { const bool on = !s.inputs_off.contains(d.input); auto* b = button(r, on ? "In: on" : "In: off", 436, 0, 150, Action::MidiDevice, 0, d.input, 0); if (on) mark(b, accent); }
+        if (!d.output.empty()) { const bool on = !s.outputs_off.contains(d.output); auto* b = button(r, on ? "Out: on" : "Out: off", 600, 0, 150, Action::MidiDevice, 0, d.output, 1); if (on) mark(b, accent); }
+    }
+}
+void Application::midi_learn(lv_obj_t* parent) {
+    const auto* m = find_module(graph_, learn_id_);
+    const auto it = m ? std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == learn_symbol_; }) : std::vector<Parameter>::const_iterator{};
+    if (!m || it == m->parameters.end()) { label(parent, "Nothing to learn here.", 24, 24, 752, muted); return; }
+    label(parent, upper(it->name), 24, 20, 752, module_ink(*m), &peepo_bold_24);
+    if (learn_waiting_ || learn_request_) {
+        label(parent, "Move a knob, fader, pedal or pad on a MIDI device.", 24, 72, 752, text);
+        label(parent, "The first message on any channel sets this control from now on.\nA key sets it only when the control is a switch.", 24, 108, 752, muted, &lv_font_montserrat_14);
+        primary(button(parent, "Cancel", 616, 280, 160, Action::Navigate, 0, {}, static_cast<int>(Page::Parameters)));
+        return;
+    }
+    label(parent, it->midi ? "Set by " + midi_binding_text(*it->midi) + "." : "No MIDI message sets it.", 24, 72, 752, it->midi ? accent : muted);
+    label(parent, "Learn waits for the next control moved on a MIDI device, and replaces what\nset it before. Saved with the patch.", 24, 108, 752, muted, &lv_font_montserrat_14);
+    auto* forget = button(parent, "Forget", 24, 280, 160, Action::MidiForget);
+    if (!it->midi) lv_obj_add_state(forget, LV_STATE_DISABLED);
+    primary(button(parent, "Learn", 616, 280, 160, Action::MidiLearn));
+}
+void Application::patch_midi(lv_obj_t* parent) {
+    const auto& list = graph_.load_messages;
+    // A 0 to 127 slider with its number beside it, sent on release.
+    auto slider = [&](lv_obj_t* row, int x, int w, int value, int number) {
+        auto* shown = label(row, std::to_string(value), x + w + 10, 15, 34, text, &peepo_bold_14);
+        auto* s = lv_slider_create(row); lv_obj_set_pos(s, x, 18); lv_obj_set_size(s, w, 12);
+        lv_slider_set_range(s, 0, 127); lv_slider_set_value(s, value, LV_ANIM_OFF);
+        lv_obj_set_style_bg_color(s, color(border), LV_PART_MAIN); lv_obj_set_style_bg_opa(s, LV_OPA_COVER, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(s, color(midi_ink), LV_PART_INDICATOR); lv_obj_set_style_bg_opa(s, LV_OPA_COVER, LV_PART_INDICATOR);
+        lv_obj_set_style_bg_color(s, color(text), LV_PART_KNOB); lv_obj_set_style_pad_all(s, 8, LV_PART_KNOB);
+        lv_obj_set_style_bg_opa(s, LV_OPA_COVER, LV_PART_KNOB); lv_obj_set_style_radius(s, LV_RADIUS_CIRCLE, LV_PART_KNOB);
+        lv_obj_set_ext_click_area(s, 16);
+        bind(s, Action::LoadMessage, 0, {}, number, shown);
+        if (auto* group = lv_group_get_default()) lv_group_add_obj(group, s);
+    };
+    auto caption = [&](lv_obj_t* row, const char* name, int x) {
+        auto* l = label(row, name, x, 16, 0, faint, &peepo_mono_14);
+        lv_obj_set_style_text_letter_space(l, 1, 0);
+    };
+    for (std::size_t i = 0; i < list.size(); ++i) {
+        const int at = static_cast<int>(i) * 8;
+        auto* row = panel(parent, 24, 8 + static_cast<int>(i) * 50, 752, 48);
+        caption(row, "CH", 14);
+        button(row, "<", 44, 0, 44, Action::LoadMessage, 0, {}, at);
+        auto* channel = label(row, std::to_string(list[i].channel), 88, 15, 40, text, &peepo_bold_14);
+        lv_obj_set_style_text_align(channel, LV_TEXT_ALIGN_CENTER, 0);
+        button(row, ">", 128, 0, 44, Action::LoadMessage, 0, {}, at + 1);
+        caption(row, "CC", 190);
+        slider(row, 240, 160, list[i].number, at + 2);
+        caption(row, "VALUE", 456);
+        slider(row, 526, 128, list[i].value, at + 3);
+        button(row, "X", 704, 0, 48, Action::RemoveLoadMessage, 0, {}, static_cast<int>(i));
+    }
+    if (list.empty()) label(parent, "This patch sends no MIDI when it loads.", 24, 20, 752, muted);
+    auto* note = label(parent, "Sent to every MIDI device as the patch loads, and again when changed here; for a\npattern or preset on a pedal or drum machine. Saved with the patch.",
+                       24, list.empty() ? 56 : 312, 752, faint, &lv_font_montserrat_14);
+    lv_label_set_long_mode(note, LV_LABEL_LONG_DOT); lv_obj_set_height(note, 40);
 }
 void Application::file_picker(lv_obj_t* parent) {
     const auto* m = find_module(graph_, selected_);

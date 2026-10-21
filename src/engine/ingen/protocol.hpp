@@ -22,7 +22,10 @@ inline constexpr std::string_view peepo = "urn:peepo:ns#";
 inline constexpr std::string_view rdf_type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
 }
 struct Value {
-    enum class Kind { None, Number, Boolean, String, Uri };
+    // Object: a blank node of one type and one number, as Ingen writes a MIDI
+    // binding ([ a midi:Controller ; midi:controllerNumber 519 ]): the type's
+    // IRI in `text`, the number in `number`.
+    enum class Kind { None, Number, Boolean, String, Uri, Object };
     Kind kind = Kind::None;
     double number = 0;
     bool boolean = false;
@@ -64,6 +67,8 @@ std::string remove(int sequence, std::string_view subject);
 std::string put_arc(int sequence, std::string_view parent, std::string_view tail, std::string_view head);
 std::string remove_arc(int sequence, std::string_view tail, std::string_view head);
 std::string copy(int sequence, std::string_view subject, std::string_view destination);
+// Drop every value of `property` (a patch:wildcard remove), adding nothing.
+std::string remove_property(int sequence, std::string_view subject, std::string_view property);
 // Literal forms. A string that cannot be an IRI or symbol must not be sent.
 std::string string_literal(std::string_view);
 std::string float_literal(double);

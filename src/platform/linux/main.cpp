@@ -60,6 +60,8 @@ void usage() {
         "  --controls FILE         physical control bindings (default /etc/peepo/controls.conf if present)\n"
         "  --patches DIR           saved patches; --engine-patches PATH if the engine sees them elsewhere\n"
         "  --files DIR             models and impulse responses to offer (default beside the patches)\n"
+        "  --midi FILE             MIDI settings (default midi.conf beside the patches)\n"
+        "  --midi-status DIR       where peepo-midi says what it hears, such as /run/peepo-midi\n"
         "  --catalogue FILE        modules on offer (default catalogue.json beside the program)\n"
         "  --smoke                 run one second, check that something was drawn, and exit\n"
         "  --screenshot FILE       with --smoke and --display offscreen: save what was drawn as BMP\n";
@@ -128,7 +130,7 @@ void write_bmp(lv_display_t* display, const std::string& path) {
 
 int main(int argc, char** argv) {
     std::string address, catalogue_path, overlay_path, patches_path, engine_patches, files_path, display_name, drm_device, fbdev_path = "/dev/fb0",
-        touch_path, controls_path, screenshot;
+        touch_path, controls_path, screenshot, midi_path, midi_status;
     int rotation = 0;
     bool smoke = false;
     for (int i = 1; i < argc; ++i) {
@@ -142,6 +144,8 @@ int main(int argc, char** argv) {
         else if (option == "--patches") patches_path = value();
         else if (option == "--engine-patches") engine_patches = value();
         else if (option == "--files") files_path = value();
+        else if (option == "--midi") midi_path = value();
+        else if (option == "--midi-status") midi_status = value();
         else if (option == "--display") display_name = value();
         else if (option == "--drm-device") drm_device = value();
         else if (option == "--fbdev") fbdev_path = value();
@@ -277,8 +281,12 @@ int main(int argc, char** argv) {
         files = std::make_unique<peepo::FileStore>(!files_path.empty() ? std::filesystem::path(files_path) : data_home() / "peepo" / "files");
         if (const auto issue = files->open(); !issue.empty()) std::cerr << "files: " << issue << "\n";
     }
+    // Instrument-wide MIDI, shared with peepo-midi and peepo-route.
+    std::unique_ptr<peepo::midi::Link> midi;
+    if (!smoke) midi = std::make_unique<peepo::midi::Link>(!midi_path.empty() ? std::filesystem::path(midi_path) : store->root().parent_path() / (address.empty() ? "simulator-midi.conf" : "midi.conf"), midi_status);
     peepo::Application app(*engine, store.get());
     app.set_files(files.get());
+    app.set_midi(midi.get());
     // Only the instrument, drawing on its own screen, may power the machine off or restart it.
     if (display_name == "drm" || display_name == "fbdev") {
         app.set_power_off([] { return std::system("systemctl poweroff") == 0 ? std::string() : std::string("Could not shut down: the system refused."); });

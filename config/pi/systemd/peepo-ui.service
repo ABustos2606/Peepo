@@ -14,6 +14,6 @@ Type=simple
 User=peepo
 StateDirectory=peepo
 EnvironmentFile=/etc/peepo/peepo.conf
-ExecStart=/opt/peepo/bin/peepo --engine unix:///run/peepo/ingen.sock --patches /var/lib/peepo/patches --files /var/lib/peepo/files --controls /etc/peepo/controls.conf $UI_OPTIONS
+ExecStart=/opt/peepo/bin/peepo --engine unix:///run/peepo/ingen.sock --patches /var/lib/peepo/patches --files /var/lib/peepo/files --controls /etc/peepo/controls.conf --midi /var/lib/peepo/midi.conf --midi-status /run/peepo-midi $UI_OPTIONS
 Restart=always
 RestartSec=1

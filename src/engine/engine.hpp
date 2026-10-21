@@ -30,7 +30,9 @@ struct DuplicateModule { InstanceId id; int x, y; };
 struct SetParameter { InstanceId id; std::string symbol; double value; };
 struct SetBypass { InstanceId id; bool value; };
 // The patch tempo: stored with the patch, and given to every module that follows it.
-struct SetTempo { double bpm; };
+// `follow` is a tempo taken from incoming MIDI clock: it follows the playing
+// rather than editing the patch, so the unsaved marker is left alone.
+struct SetTempo { double bpm; bool follow = false; };
 // Give a module's file parameter a file, by its path on the engine's machine.
 struct SetFile { InstanceId id; std::string path; };
 struct Connect { Connection connection; };
@@ -71,8 +73,15 @@ struct LoadPatch {
 struct Assign { Assignment assignment; bool add = false; };
 // Clear a control; with a module, only that module's bypass on it.
 struct Unassign { std::string control; InstanceId module = 0; };
+// MIDI learn: the next controller, note, pitch bend or pressure message from
+// a MIDI device sets this control from then on, replacing what set it before.
+// One control learns at a time; learning another ends this one's wait. With
+// `forget`, no MIDI message sets it any more, and a wait still open ends.
+struct LearnMidi { InstanceId id; std::string symbol; bool forget = false; };
+// The control changes the patch sends to every MIDI device as it loads; saved with it.
+struct SetLoadMessages { std::vector<ControlChange> messages; };
 using Command = std::variant<AddModule, RemoveModule, MoveModule, DuplicateModule, SetParameter, SetBypass, SetFile, SetTempo, Connect, Disconnect,
-                             LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, LoadPatch, Assign, Unassign>;
+                             LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, LoadPatch, Assign, Unassign, LearnMidi, SetLoadMessages>;
 struct EngineEvent {
     RequestId request = 0;
     bool accepted = true;

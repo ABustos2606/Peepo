@@ -52,6 +52,8 @@ step "catalogue"
 # Reused prefixes can still hold retired plugins, even with --skip-engine.
 # Move only dedicated bundles; shared Debian bundles remain intact.
 python3 "$REPO/tools/prune-retired-bundles.py" --prefix "$PREFIX" --backup "$PREFIX/build/retired-bundles"
+# A package replaces /opt/peepo whole: anything missing here vanishes from the Pi.
+python3 "$REPO/tools/pi/check-prefix.py" "$PREFIX"
 # The modules this build of the engine can load, exported here so the Pi
 # offers exactly these; the project's overlay goes beside it.
 mkdir -p "$PREFIX/share/peepo"

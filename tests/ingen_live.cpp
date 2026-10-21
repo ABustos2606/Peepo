@@ -123,6 +123,77 @@ int main(int argc, char** argv) {
         const auto event = a->result(LoadPatch{stored.location, saved_blocks(stored.bundle), stored.id, stored.bundle.tempo});
         return check(event.accepted, "load it", event.message) ? 0 : 1;
     }
+    // For the MIDI settings check: what plays now; stored patches for program
+    // change; and MIDI learn, waiting for a probe to move a controller.
+    if (mode == "--state") {
+        std::cout << "STATE name=" << a->graph().name << " tempo=" << a->graph().tempo << " dirty=" << a->graph().dirty << std::endl;
+        return 0;
+    }
+    if (mode == "--midi-patches" && argc > 4) {
+        std::error_code cleared;
+        std::filesystem::remove_all(argv[4], cleared);
+        PatchStore store(argv[4]);
+        if (!check(store.open().empty(), "patch store opens")) return 1;
+        for (const auto& [name, bpm] : {std::pair{"Alpha", 90.0}, std::pair{"Bravo", 100.0}, std::pair{"Charlie", 110.0}}) {
+            a->ok(NewPatch{name}, std::string("new patch ") + name);
+            a->ok(SetTempo{bpm}, "at " + std::to_string(static_cast<int>(bpm)) + " BPM");
+            // Bravo sends two control changes as it loads.
+            if (std::string(name) == "Bravo") a->ok(SetLoadMessages{{{1, 7, 100}, {2, 10, 64}}}, "with two control changes on load");
+            const auto id = store.new_id();
+            std::string issue;
+            auto staging = store.stage(id, issue);
+            check(staging && a->result(SaveGraph{SaveScope::Persistent, true, staging->location, id}).accepted && store.publish(*staging).empty(), std::string("store ") + name);
+        }
+        a->ok(NewPatch{"Scratch"}, "then play an unsaved patch");
+        return failures ? 1 : 0;
+    }
+    if (mode == "--midi-learn") {
+        a->ok(NewPatch{"Learn"}, "new patch");
+        // The first module with a continuous control that this engine has.
+        const ModuleDefinition* known = nullptr;
+        for (const auto& d : catalogue())
+            if (d.availability == Availability::Available && d.category != "Endpoint" &&
+                std::any_of(d.parameters.begin(), d.parameters.end(), [](const Parameter& p) { return p.kind == ParameterKind::Continuous && p.symbol != general_output_symbol; }) &&
+                a->result(AddModule{d.uri, 300, 200}).accepted) { known = &d; break; }
+        if (!check(known, "add a module with a continuous control", known ? known->name : "")) return 1;
+        const auto& m = a->graph().modules.back();
+        const auto symbol = std::find_if(m.parameters.begin(), m.parameters.end(), [](const Parameter& p) { return p.kind == ParameterKind::Continuous && p.symbol != general_output_symbol; })->symbol;
+        a->ok(LearnMidi{m.id, symbol}, "learn " + symbol);
+        std::cout << "LEARNING " << symbol << std::endl;
+        auto bound = [&] { const auto* now = find_module(a->graph(), m.id); for (const auto& p : now->parameters) if (p.symbol == symbol) return p.midi; return std::optional<MidiBinding>{}; };
+        const auto until = Clock::now() + std::chrono::seconds(10);
+        while (!bound() && Clock::now() < until) a->pump(20);
+        if (!check(bound().has_value(), "a controller moved on a device is learned", bound() ? midi_binding_text(*bound()) : "nothing learned")) return 1;
+        check(a->graph().dirty, "learning marks the patch");
+        std::cout << "LEARNED " << midi_binding_text(*bound()) << std::endl;
+        // The probe moves it again; the engine sets the control.
+        const auto value = [&] { for (const auto& p : find_module(a->graph(), m.id)->parameters) if (p.symbol == symbol) return normalized_value(p); return -1.0; };
+        const auto start = value();
+        const auto moved = Clock::now() + std::chrono::seconds(5);
+        while (std::abs(value() - start) < 0.2 && Clock::now() < moved) a->pump(20);
+        check(std::abs(value() - start) >= 0.2, "the learned controller sets the control", std::to_string(start) + " -> " + std::to_string(value()));
+        // Saved and loaded again, the binding is still there.
+        const std::filesystem::path root = std::filesystem::temp_directory_path() / "peepo-live-patches" / "learn";
+        std::error_code cleared;
+        std::filesystem::remove_all(root, cleared);
+        PatchStore store(root);
+        store.open();
+        const auto id = store.new_id();
+        std::string issue;
+        auto staging = store.stage(id, issue);
+        check(staging && a->result(SaveGraph{SaveScope::Persistent, true, staging->location, id}).accepted && store.publish(*staging).empty(), "save the patch");
+        a->ok(NewPatch{"Empty"}, "play another patch");
+        const auto stored = store.find(id);
+        const auto loaded = a->result(LoadPatch{stored->location, saved_blocks(stored->bundle), stored->id, stored->bundle.tempo});
+        check(loaded.accepted, "load it again", loaded.message);
+        const auto* again = a->graph().modules.size() > 2 ? &a->graph().modules.back() : nullptr;
+        const auto restored = again ? std::find_if(again->parameters.begin(), again->parameters.end(), [&](const Parameter& p) { return p.symbol == symbol; }) : std::vector<Parameter>::const_iterator{};
+        check(again && restored != again->parameters.end() && restored->midi == bound(), "the binding is saved with the patch", again && restored != again->parameters.end() && restored->midi ? midi_binding_text(*restored->midi) : "none");
+        a->ok(LearnMidi{again->id, symbol, true}, "forget it");
+        check(!find_module(a->graph(), again->id)->parameters.empty() && std::none_of(find_module(a->graph(), again->id)->parameters.begin(), find_module(a->graph(), again->id)->parameters.end(), [](const Parameter& p) { return p.midi.has_value(); }), "forgotten");
+        std::cout << "SUMMARY " << (failures ? std::to_string(failures) + " failed" : std::string("MIDI learn passed")) << std::endl;
+        return failures ? 1 : 0;
+    }
     if (argc > 3 && std::string(argv[3]) == "--midi") {
         // MIDI IN -> x42 MIDI Transpose (+12) -> MIDI OUT, saved and loaded
         // again, then left for a JACK MIDI probe to play through.

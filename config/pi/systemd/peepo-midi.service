@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# The instrument's own MIDI: clock out at the patch tempo. Independent of the
-# interface, so the clock keeps going while the interface restarts; it follows
-# the engine, and reconnects by itself when the engine restarts.
+# The instrument's own MIDI: clock out at the patch tempo, clock in, program
+# change. Independent of the interface, so the clock keeps going while the
+# interface restarts; it follows the engine, and reconnects by itself when the
+# engine restarts. It reads the settings the interface writes and tells it
+# what it hears in /run/peepo-midi.
 [Unit]
-Description=Peepo MIDI clock
+Description=Peepo MIDI clock and program change
 PartOf=peepo.target
 BindsTo=peepo-jack.service
 After=peepo-jack.service peepo-engine.service
@@ -12,8 +14,10 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 User=peepo
+StateDirectory=peepo
+RuntimeDirectory=peepo-midi
 EnvironmentFile=/etc/peepo/peepo.conf
-ExecStart=/opt/peepo/bin/peepo-midi --engine unix:///run/peepo/ingen.sock
+ExecStart=/opt/peepo/bin/peepo-midi --engine unix:///run/peepo/ingen.sock --settings /var/lib/peepo/midi.conf --status /run/peepo-midi --patches /var/lib/peepo/patches
 LimitRTPRIO=95
 LimitMEMLOCK=infinity
 Restart=always

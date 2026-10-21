@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Peepo contributors
 #include "core/euclidean.hpp"
+#include "core/poly_voices.hpp"
 #include "engine/simulated_engine.hpp"
 #include <cmath>
 #include <iostream>
@@ -20,6 +21,12 @@ int main() {
         const auto& p = g.modules[3].parameters[1];
         check(std::abs(value_from_normalized(p, normalized_value(p)) - p.value) < 0.0001, "logarithmic round trip");
         check(value_from_normalized(p, -1) == p.minimum && value_from_normalized(p, 2) == p.maximum, "range clamp");
+        // A patch's control changes as one property value.
+        const std::vector<ControlChange> changes{{1, 7, 100}, {3, 0, 0}, {16, 127, 127}};
+        check(encode_control_changes(changes) == "1:7:100 3:0:0 16:127:127" && decode_control_changes(encode_control_changes(changes)) == changes &&
+              decode_control_changes("") == std::vector<ControlChange>{}, "control changes do not read back");
+        for (const char* bad : {"0:7:1", "17:7:1", "1:128:1", "1:7:-1", "1:7", "1-7-1", "1:7:1x", "1:1:1 1:1:1 1:1:1 1:1:1 1:1:1 1:1:1 1:1:1"})
+            check(!decode_control_changes(bad), "a bad control change list was read");
         SimulatedEngine engine;
         const auto req = engine.submit(SetParameter{3, "drive", 70});
         check(engine.snapshot().modules[2].parameters[0].value == 32, "edit applied before ack");
@@ -233,6 +240,20 @@ int main() {
         check(euclidean_pattern(8, 3, 1) == std::vector<bool>{false, true, false, true, false, false, true, false}, "tresillo 3:8 shifted by 1");
         check(euclidean_pattern(8, 3, 2) == std::vector<bool>{false, false, true, false, true, false, false, true}, "tresillo 3:8 shifted by 2");
         check(euclidean_pattern(40, 1, 0).size() == euclidean_max_steps, "euclidean step count clamped to 32");
+        // MIDI to CV poly's Voices follows the highest voice with a cable.
+        Graph poly;
+        poly.modules.push_back(Module{7, midi_cv_poly_uri, "MIDI to CV poly", 0, 0});
+        const auto& midi_cv = poly.modules.back();
+        check(cabled_voices(poly, midi_cv) == 0, "no cables, no voices");
+        poly.connections = {{7, 8, "pitch_1", "note_cv"}, {7, 8, "gate_1", "trigger_cv"}, {7, 9, "gate_2", "trigger_cv"}};
+        check(cabled_voices(poly, midi_cv) == 2, "two voices cabled");
+        poly.connections.push_back({7, 10, "pitch_3", "note_cv"});
+        check(cabled_voices(poly, midi_cv) == 3, "a pitch alone counts");
+        poly.connections.push_back({7, 10, "mod", "timbre_cv"});
+        poly.connections.push_back({6, 10, "gate_4", "trigger_cv"});
+        check(cabled_voices(poly, midi_cv) == 3, "mod and other modules' cables do not count");
+        poly.connections = {{7, 8, "gate_4", "trigger_cv"}, {7, 8, "gate_1", "level_cv"}};
+        check(cabled_voices(poly, midi_cv) == 4, "the highest voice counts, in any order");
         std::cout << "Domain validation, typed ranges, delayed acknowledgment, rejection, reconnect and restore passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

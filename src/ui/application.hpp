@@ -3,6 +3,7 @@
 #pragma once
 #include "controls/controls.hpp"
 #include "engine/engine.hpp"
+#include "midi/settings.hpp"
 #include "storage/file_store.hpp"
 #include "storage/patch_store.hpp"
 #include "lvgl.h"
@@ -13,7 +14,7 @@
 
 namespace peepo {
 enum class Page { Patch, Browser, Parameters, Patches, Settings, ModuleActions, NamePatch, ConfirmReplace, CvConnect, ConfirmAction,
-                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo };
+                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo, Midi, MidiLearn, PatchMidi };
 class Application {
 public:
     // Without a store the Patches page offers the in-memory session snapshot.
@@ -49,6 +50,9 @@ public:
     void set_system(std::function<System()> system) { system_ = std::move(system); system_age_ = 2000; }
     // The files plugins can be given (models, impulse responses); none without a store.
     void set_files(FileStore* files) { files_ = files && files->usable() ? files : nullptr; rebuild_ = true; }
+    // Instrument-wide MIDI: the settings file and what peepo-midi hears.
+    // Without it, Settings offers no MIDI page.
+    void set_midi(const midi::Link* link) { midi_ = link; midi_settings_ = link ? link->settings() : midi::Settings{}; midi_age_ = 1000; rebuild_ = true; }
 private:
     enum class Action { Navigate, Add, Module, Port, SelectCable, DeleteCable, ClearCable, Pan, Home,
                         OpenActions, Edit, Duplicate, Parameter, Bypass, Remove, SaveSession, LoadSession, State, Reject,
@@ -56,7 +60,9 @@ private:
                         ParallelDemo, CvChoice, CvPage,
                         SavePatch, LoadStored, DeleteStored, StartupStored, PatchPage, ConfirmAction, CancelAction,
                         AssignControl, EditControl, ClearControl, PickModule, PickTarget, PickerPage, InvertControl, SwitchModeChoice, RangeEnd, PowerOff,
-                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, FilePage, TempoStep, TempoSlider, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind, ModulePage };
+                        Restart, BrowserCategory, Revert, ChooseFile, PickFile, FilePage, TempoStep, TempoSlider, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind, ModulePage,
+                        MidiToggle, MidiTempoSource, MidiChannel, MidiDevice, MidiLearn, MidiForget, ClockRestart,
+                        LoadMessage, AddLoadMessage, RemoveLoadMessage };
     struct Binding {
         Application* app;
         Action action;
@@ -70,6 +76,7 @@ private:
     RequestId submit(Command);
     void stream_parameter(InstanceId, const std::string& symbol, double value);
     void send_stream();
+    void follow_poly_voices(bool replaced);
     void navigate(Page);
     void rebuild();
     void patch_view(lv_obj_t*);
@@ -104,6 +111,14 @@ private:
     void open_module(InstanceId);
     void file_picker(lv_obj_t*);
     void tempo(lv_obj_t*);
+    void midi_page(lv_obj_t*);
+    void midi_learn(lv_obj_t*);
+    // The control changes this patch sends as it loads.
+    void patch_midi(lv_obj_t*);
+    // Change the MIDI settings and write them, for peepo-midi and peepo-route to read.
+    void change_midi(const std::function<void(midi::Settings&)>&);
+    // A held bar: MIDI learn for that control.
+    void open_learn(InstanceId, const std::string& symbol);
     void tap_tempo();
     void set_tempo(double bpm);
     void tuner_meter(lv_obj_t*);
@@ -175,11 +190,16 @@ private:
     Page page_ = Page::Patch;
     InstanceId selected_ = 0;
     bool rebuild_ = true;
+    // Engine news nobody here asked for, and when the page was last built.
+    bool news_ = false;
+    unsigned long long rebuilt_ms_ = 0;
     std::string message_ = "Drag space to pan. Hold a module for actions. Drag output to input.";
     enum class PendingKind { Edit, Rename, Replace, Add, Save, SaveAs };
     std::map<RequestId, PendingKind> pending_;
     // Module names of adds in flight, to say which plugin failed.
     std::map<RequestId, std::string> adding_;
+    // MIDI to CV poly modules and their cabled voices when last seen.
+    std::map<InstanceId, int> poly_voices_;
     // Saved patches on disk; null when the application has no store.
     PatchStore* store_ = nullptr;
     std::vector<StoredPatch> stored_;
@@ -201,6 +221,17 @@ private:
     std::function<Network()> network_;
     std::function<System()> system_;
     FileStore* files_ = nullptr;
+    const midi::Link* midi_ = nullptr;
+    midi::Settings midi_settings_;
+    // What peepo-midi last said it hears, read every second.
+    midi::Status midi_status_;
+    unsigned midi_age_ = 0;
+    // MIDI learn: the control, the request that starts it, and whether the
+    // engine waits for a MIDI message now.
+    InstanceId learn_id_ = 0;
+    std::string learn_symbol_;
+    RequestId learn_request_ = 0;
+    bool learn_waiting_ = false;
     TapTempo tapper_;
     unsigned long long clock_ms_ = 0;
     // When the last message was given: the Loo-pi page's status line waits

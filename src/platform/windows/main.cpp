@@ -137,6 +137,10 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR command_line, int) {
         files = std::make_unique<peepo::FileStore>(root, address.empty() ? std::string() : peepo::wsl_path(root));
         files->open();
     }
+    // MIDI settings beside the patches. This computer runs no peepo-midi, so
+    // no devices are listed; the instrument lists its own.
+    std::unique_ptr<peepo::midi::Link> midi;
+    if (store) midi = std::make_unique<peepo::midi::Link>(store->root().parent_path() / (address.empty() ? L"simulator-midi.conf" : L"midi.conf"), std::filesystem::path());
     lv_lock();
     bool display_alive = true;
     unsigned completed_flushes = 0;
@@ -148,6 +152,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR command_line, int) {
     }, LV_EVENT_FLUSH_FINISH, &completed_flushes);
     peepo::Application app(engine, store.get());
     app.set_files(files.get());
+    app.set_midi(midi.get());
     lv_unlock();
     const auto window = lv_windows_get_display_window_handle(display);
     original_procedure = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(control_keys)));

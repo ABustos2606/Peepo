@@ -176,6 +176,10 @@ void bundles() {
     Bundle with_tempo;
     check(read_bundle(write_main_ttl(timed), with_tempo).empty() && with_tempo.tempo == 87.5, "tempo not written to the bundle");
     const auto timed_back = bundle_graph(with_tempo);
+    timed.load_messages = {{1, 7, 100}, {16, 0, 127}};
+    Bundle with_messages;
+    check(read_bundle(write_main_ttl(timed), with_messages).empty() && with_messages.load_messages == timed.load_messages &&
+          bundle_graph(with_messages).load_messages == timed.load_messages && with_tempo.load_messages.empty(), "control changes on load lost in a round trip");
     check(timed_back.tempo == 87.5 && find_module(timed_back, timed.modules[3].id)->file == timed.modules[3].file && find_module(timed_back, timed.modules[2].id)->file.empty(),
           "tempo or file lost in a round trip");
     auto text = write_main_ttl(timed);

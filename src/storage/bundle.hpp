@@ -31,6 +31,8 @@ struct Bundle {
     bool modified = false;
     // The patch tempo; bundles saved before it existed have none.
     std::optional<double> tempo;
+    // The control changes sent as it loads (peepo:midiOnLoad).
+    std::vector<ControlChange> load_messages;
     std::vector<BundleBlock> blocks;
     // Tail and head, relative to the graph: `in_l`, `m3/out`.
     std::vector<std::pair<std::string, std::string>> arcs;

@@ -54,11 +54,23 @@ std::vector<Message> decode(const std::vector<turtle::Triple>& triples) {
         if (list.empty()) order.push_back(triple.subject.value);
         list.push_back(&triple);
     }
+    // A blank-node value: its type and its first number.
+    auto value = [&](const turtle::Term& term) {
+        if (term.kind != turtle::Term::Kind::Blank) return value_of(term);
+        Value object{Value::Kind::Object, 0, false, {}};
+        bool numbered = false;
+        if (const auto it = blank.find(term.value); it != blank.end())
+            for (const auto* triple : it->second) {
+                if (triple->predicate.value == uri::rdf_type && triple->object.kind == turtle::Term::Kind::Iri) object.text = triple->object.value;
+                else if (const auto number = value_of(triple->object); number.kind == Value::Kind::Number && !numbered) { object.number = number.number; numbered = true; }
+            }
+        return object.text.empty() || !numbered ? Value{} : object;
+    };
     auto properties = [&](const turtle::Term& node) {
         Properties result;
         if (node.kind != turtle::Term::Kind::Blank) return result;
         if (const auto it = blank.find(node.value); it != blank.end())
-            for (const auto* triple : it->second) result.emplace_back(triple->predicate.value, value_of(triple->object));
+            for (const auto* triple : it->second) result.emplace_back(triple->predicate.value, value(triple->object));
         return result;
     };
     static const std::pair<std::string_view, Message::Type> types[] = {
@@ -80,7 +92,7 @@ std::vector<Message> decode(const std::vector<turtle::Triple>& triples) {
             else if (predicate == name(uri::patch, "destination")) message.destination = normal_path(object.value);
             else if (predicate == name(uri::patch, "property")) message.property = object.value;
             else if (predicate == name(uri::patch, "context")) message.context = object.value;
-            else if (predicate == name(uri::patch, "value")) message.value = value_of(object);
+            else if (predicate == name(uri::patch, "value")) message.value = value(object);
             else if (predicate == name(uri::patch, "add")) message.body = properties(object);
             else if (predicate == name(uri::patch, "remove")) message.remove = properties(object);
             else if (predicate == name(uri::patch, "body")) {
@@ -136,6 +148,10 @@ std::string remove_arc(int sequence, std::string_view tail, std::string_view hea
 }
 std::string copy(int sequence, std::string_view subject, std::string_view destination) {
     return header(sequence, "Copy") + "\tpatch:subject " + reference(subject) + " ;\n\tpatch:destination " + reference(destination) + " .\n";
+}
+std::string remove_property(int sequence, std::string_view subject, std::string_view property) {
+    return header(sequence, "Patch") + "\tpatch:subject " + reference(subject) + " ;\n\tpatch:remove [\n\t\t" + std::string(property) +
+           " patch:wildcard\n\t] ;\n\tpatch:add [ ] .\n";
 }
 std::string string_literal(std::string_view text) {
     std::string out = "\"";

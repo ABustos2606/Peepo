@@ -1,0 +1,53 @@
+# Settings > MIDI, program change, clock in, MIDI learn and control changes on load (P12.6-P12.8, P12.11)
+# tools/ingen-spike/25-midi-settings.sh in WSL2 Debian, JACK dummy 48 kHz / 128, 2026-10-20
+MIDI clock out and in, Start and Stop, program change and the settings files passed.
+PASS  store Alpha (90 BPM), Bravo (100) and Charlie (110), then play an unsaved patch
+PASS  peepo-midi tells the interface what it hears -- (no devices, no clock)
+PASS  with no settings file, the clock goes out
+PASS  program change while it is off changes nothing -- {'name': 'Scratch', 'tempo': '120', 'dirty': '1'}
+PASS  program 2 on channel 1 loads the second stored patch, with its tempo -- {'name': 'Bravo', 'tempo': '100', 'dirty': '0'}
+PASS  Bravo's two control changes go out as it loads -- b0 07 64 b1 0a 40
+PASS  a program change on another channel is ignored -- {'name': 'Bravo', 'tempo': '100', 'dirty': '0'}
+PASS  a program with no stored patch changes nothing -- {'name': 'Bravo', 'tempo': '100', 'dirty': '0'}
+PASS  with any channel, program 3 on channel 6 loads Charlie -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0'}
+PASS  Restart sends Stop, then Start, and the clock goes on -- f8 f8 f8 fc fa f8
+PASS  with Start and Stop off, a restart sends neither
+PASS  clock out off: nothing goes out
+PASS  clock out on again: it begins with Start
+PASS  the patch tempo follows incoming clock at 125 BPM -- 125 (was 110)
+PASS  following the clock does not mark the patch as edited -- {'name': 'Charlie', 'tempo': '125', 'dirty': '0'}
+PASS  while following incoming clock, Peepo sends none of its own
+PASS  the interface is told the clock it hears -- clock_in=125.0
+PASS  and follows a change to 93.5 BPM
+PASS  a clock that stops is no longer reported
+       | PASS  connect, read the graph and create the audio endpoints -- unix:///tmp/peepo-ingen.sock
+       | PASS  new patch
+       | PASS  add a module with a continuous control -- Calf Vinyl
+       | PASS  learn level_in
+       | LEARNING level_in
+       | PASS  a controller moved on a device is learned -- CC 7 / 3
+       | PASS  learning marks the patch
+       | LEARNED CC 7 / 3
+       | PASS  the learned controller sets the control -- 1.000000 -> 0.000000
+       | PASS  save the patch
+       | PASS  play another patch
+       | PASS  load it again -- Loaded Learn.
+       | PASS  the binding is saved with the patch -- CC 7 / 3
+       | PASS  forget it
+       | PASS  forgotten
+PASS  controller 7 on channel 3 learned, sets the control, is saved, loaded and forgotten
+       | peepo-midi: settings changed
+       | peepo-midi: clock out on
+       | peepo-midi: settings changed
+       | peepo-midi: clock out off
+       | peepo-midi: tempo 125 BPM
+       | peepo-midi: tempo 123.3 BPM
+       | peepo-midi: tempo 112.4 BPM
+       | peepo-midi: tempo 102.1 BPM
+       | peepo-midi: tempo 94.5 BPM
+       | peepo-midi: tempo 93.5 BPM
+       | peepo-midi: settings changed
+       | peepo-midi: clock out on
+       | peepo-midi: tempo 120 BPM
+       | peepo-midi: stopped
+SUMMARY MIDI settings checks passed

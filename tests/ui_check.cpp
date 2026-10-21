@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Peepo contributors
 #include "ui/application.hpp"
 #include "engine/simulated_engine.hpp"
+#include "core/poly_voices.hpp"
 #include "core/tuning.hpp"
 // Test-only geometry access for real pointer presses on the pinned keyboard.
 #include "src/widgets/buttonmatrix/lv_buttonmatrix_private.h"
@@ -1402,6 +1403,80 @@ int main(int argc, char** argv) {
             check(exact_label(app.screen(), "SWITCHES") && exact_label(app.screen(), "MANUAL") && exact_label(app.screen(), "COLLECT"), "Discipline's second tab missing");
             capture(app, output / "72-discipline-more.bmp");
         }
+        // Settings > MIDI, the Tempo page following incoming clock, and MIDI learn on a held bar.
+        {
+            const auto folder = std::filesystem::temp_directory_path() / "peepo-ui-midi";
+            std::filesystem::remove_all(folder);
+            std::filesystem::create_directories(folder / "run");
+            const peepo::midi::Link link(folder / "midi.conf", folder / "run");
+            link.write_status({std::nullopt, {"a2j:Arturia MiniLab mkII (capture): Arturia MiniLab mkII MIDI 1", "a2j:UM-ONE (capture): UM-ONE"},
+                               {"a2j:UM-ONE (playback): UM-ONE", "a2j:KO-2 (playback): KO-2"}});
+            peepo::SimulatedEngine engine3;
+            peepo::Application app(engine3);
+            app.set_midi(&link); step(app);
+            click(app, 707, 36); check(app.page() == peepo::Page::Settings, "settings navigation failed");
+            tap_header(app, "MIDI"); check(app.page() == peepo::Page::Midi, "the MIDI pill did not open Settings > MIDI");
+            check(exact_label(app.screen(), "Arturia MiniLab mkII") && exact_label(app.screen(), "UM-ONE") && exact_label(app.screen(), "KO-2"), "a device is not listed");
+            capture(app, output / "73-midi-settings.bmp");
+            tap_first(app, "ON");
+            check(!link.settings().clock_out, "Clock out did not switch off");
+            tap_first(app, "OFF");
+            check(link.settings().clock_out, "Clock out did not switch on again");
+            tap_first(app, ">"); tap_first(app, ">");
+            check(link.settings().program_channel == 2, "the program change channel did not step");
+            tap_first(app, "CLOCK");
+            check(link.settings().tempo_source == peepo::midi::TempoSource::Clock, "the tempo source did not change");
+            // Arturia sends only: one switch. UM-ONE both ways: switch its output off.
+            tap_first(app, "OUT: ON");
+            check(link.settings().outputs_off.size() == 1 && exact_label(app.screen(), "OUT: OFF"), "a device's output did not switch off");
+            link.write_status({119.5, {}, {}});
+            step(app, 1100);
+            check(text_label(app.screen(), "Incoming clock: 119.5 BPM") != nullptr, "incoming clock not shown");
+            capture(app, output / "74-midi-settings-changed.bmp");
+            // The Tempo page says whose tempo it is.
+            click(app, 70, 456); click(app, 70, 456);
+            tap_first(app, "120");
+            if (app.page() == peepo::Page::Tempo) {
+                check(exact_label(app.screen(), "FOLLOWING MIDI CLOCK") != nullptr, "the Tempo page does not say it follows the clock");
+                capture(app, output / "75-tempo-following.bmp");
+                click(app, 70, 456);
+            }
+            // Hold a bar: MIDI learn. The simulation learns controller 20 a moment later.
+            click(app, 225, 252); check(app.page() == peepo::Page::Parameters, "tap did not open parameters");
+            const auto at = bar_point(app, "DRIVE");
+            hold(app, at.x, at.y);
+            check(app.page() == peepo::Page::MidiLearn && exact_label(app.screen(), "No MIDI message sets it."), "holding a bar did not open MIDI learn");
+            capture(app, output / "76-midi-learn.bmp");
+            tap_first(app, "LEARN");
+            check(text_label(app.screen(), "Move a knob") != nullptr, "learn does not wait");
+            capture(app, output / "77-midi-learn-waiting.bmp");
+            step(app, 1800);
+            check(app.page() == peepo::Page::Parameters && peepo::find_module(app.graph(), 3)->parameters[0].midi &&
+                  text_label(app.screen(), "CC 20 / 1") != nullptr, "the learned controller is not shown on the bar");
+            capture(app, output / "78-midi-learned.bmp");
+            // Cancelling a wait leaves nothing learned.
+            hold(app, at.x, at.y); tap_first(app, "FORGET");
+            check(!peepo::find_module(app.graph(), 3)->parameters[0].midi, "forget");
+            tap_first(app, "LEARN"); tap_first(app, "CANCEL"); step(app, 1800);
+            check(app.page() == peepo::Page::Parameters && !peepo::find_module(app.graph(), 3)->parameters[0].midi, "a cancelled learn learned");
+            // Patches > MIDI: the control changes this patch sends as it loads.
+            click(app, 70, 456); click(app, 70, 456);
+            peepo::PatchStore store(folder / "patches");
+            check(store.open().empty(), "patch store");
+            peepo::Application with_store(engine3, &store);
+            with_store.set_midi(&link); step(with_store);
+            click(with_store, 608, 36); check(with_store.page() == peepo::Page::Patches, "patches navigation failed");
+            tap_header(with_store, "MIDI"); check(with_store.page() == peepo::Page::PatchMidi, "the MIDI pill did not open MIDI on load");
+            capture(with_store, output / "79-patch-midi-empty.bmp");
+            tap_header(with_store, "+ ADD"); tap_header(with_store, "+ ADD");
+            check(with_store.graph().load_messages.size() == 2, "Add did not add control changes");
+            tap_first(with_store, ">");
+            check(with_store.graph().load_messages[0].channel == 2, "the channel did not step");
+            tap_first(with_store, "X");
+            check(with_store.graph().load_messages.size() == 1 && with_store.graph().load_messages[0].channel == 1, "remove");
+            capture(with_store, output / "80-patch-midi.bmp");
+            std::filesystem::remove_all(folder);
+        }
         // Hold a module and then hold another while still holding the first: direct connect or port selection screen.
         {
             static lv_point_t pointer2{};
@@ -1468,6 +1543,37 @@ int main(int argc, char** argv) {
             check(app.page() == peepo::Page::Patch && has_conn({4, 5, "aux", "sym_mod"}),
                   "choosing input did not connect the two multi-port modules");
             lv_indev_delete(indev2);
+        }
+        // MIDI to CV poly: Voices follows the voices that have cables, and a
+        // Voices set by hand stays until the cables next change.
+        {
+            peepo::ModuleDefinition poly{peepo::midi_cv_poly_uri, "MIDI to CV poly", "Control", "", 0x7bbaed};
+            poly.ports.push_back({"midi_in", peepo::Direction::Input, 1, peepo::PortType::Midi});
+            for (int v = 1; v <= peepo::midi_cv_poly_max_voices; ++v)
+                for (const char* s : {"pitch_", "gate_", "velocity_"}) poly.ports.push_back({s + std::to_string(v), peepo::Direction::Output, 1, peepo::PortType::Cv});
+            peepo::Parameter voices{"voices", "Voices", "", peepo::ParameterKind::Integer, 1, 4, 4};
+            poly.parameters.push_back(voices);
+            peepo::ModuleDefinition sink{"urn:peepo:test:cv-sink", "CV sink", "Utility", "", 0x7bbaed};
+            sink.ports.push_back({"in", peepo::Direction::Input, 1, peepo::PortType::Cv});
+            peepo::register_definitions({poly, sink});
+            auto graph = peepo::demo_graph();
+            graph.modules.push_back({50, poly.uri, poly.name, 100, 100, false, false, {voices}});
+            graph.modules.push_back({51, sink.uri, sink.name, 300, 100});
+            graph.modules.push_back({52, sink.uri, sink.name, 300, 300});
+            graph.connections.clear();
+            peepo::SimulatedEngine poly_engine;
+            peepo::Application app(poly_engine); step(app);
+            poly_engine.submit(peepo::LoadGraph{graph}); step(app, 256);
+            const auto voices_now = [&] { return peepo::find_module(app.graph(), 50)->parameters[0].value; };
+            check(voices_now() == 4, "loading a patch changed Voices");
+            poly_engine.submit(peepo::Connect{{50, 51, "gate_1", "in"}}); step(app, 256); step(app, 256);
+            check(voices_now() == 1, "one cabled voice did not set Voices to 1");
+            poly_engine.submit(peepo::Connect{{50, 52, "pitch_2", "in"}}); step(app, 256); step(app, 256);
+            check(voices_now() == 2, "a second cabled voice did not set Voices to 2");
+            poly_engine.submit(peepo::SetParameter{50, "voices", 4}); step(app, 256); step(app, 256);
+            check(voices_now() == 4, "Voices set by hand was overridden without a cable change");
+            poly_engine.submit(peepo::Disconnect{{50, 52, "pitch_2", "in"}}); step(app, 256); step(app, 256);
+            check(voices_now() == 1, "removing the second voice's cable did not set Voices back to 1");
         }
         // Release the headless devices before the global runtime.
         lv_indev_delete(indev);

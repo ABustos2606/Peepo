@@ -26,11 +26,15 @@ const std::string x_key = iri(uri::ingen, "canvasX"), y_key = iri(uri::ingen, "c
 const std::string name_key = iri(uri::peepo, "displayName"), patch_name_key = iri(uri::peepo, "patchName");
 const std::string patch_id_key = iri(uri::peepo, "patchId"), modified_key = iri(uri::peepo, "modified");
 const std::string tempo_key = iri(uri::peepo, "tempo");
+// The control changes sent as the patch loads: "1:7:100 3:10:64".
+const std::string load_messages_key = iri(uri::peepo, "midiOnLoad");
 // The general Output is the block's own property, in dB, not a plugin port.
 const std::string output_level_key = iri(uri::peepo, "outputLevel");
 // The file last given to a block's file parameter. The plugin keeps the file
 // in its own state; this names it for every client and survives a restart.
 const std::string file_key = iri(uri::peepo, "file");
+// MIDI learn's result on a control port: [ a midi:Controller ; midi:controllerNumber 519 ].
+const std::string binding_key = iri(uri::midi, "binding");
 // One graph property per pinned control: peepo:control-enc1 "parameter|m3|...".
 const std::string control_prefix = iri(uri::peepo, "control-");
 // Where the engine may write or read a bundle: a plain file URI to a .ingen
@@ -70,6 +74,32 @@ std::string message_port(const ModuleDefinition& d) {
         for (const auto& p : d.ports) if (p.type == kind && p.direction == Direction::Input) return p.symbol;
     return {};
 }
+// Ingen numbers a controller or note binding channel * 256 + number, and
+// counts channels from 0; pitch bend and pressure carry only the channel.
+constexpr std::pair<MidiBinding::Kind, std::string_view> binding_types[] = {
+    {MidiBinding::Kind::Controller, "Controller"}, {MidiBinding::Kind::Note, "NoteOn"}, {MidiBinding::Kind::Bender, "Bender"}, {MidiBinding::Kind::Pressure, "ChannelPressure"}};
+std::optional<MidiBinding> midi_binding(const Value* value) {
+    if (!value || value->kind != Value::Kind::Object || value->number < 0 || value->number != std::round(value->number) || value->number >= 16 * 256) return std::nullopt;
+    const auto n = static_cast<int>(value->number);
+    for (const auto& [kind, local] : binding_types) {
+        if (value->text != iri(uri::midi, local)) continue;
+        const bool numbered = kind == MidiBinding::Kind::Controller || kind == MidiBinding::Kind::Note;
+        if (numbered && n % 256 < 128) return MidiBinding{kind, n / 256 + 1, n % 256};
+        if (!numbered && n < 16) return MidiBinding{kind, n + 1, 0};
+    }
+    return std::nullopt;
+}
+Value binding_value(const MidiBinding& b) {
+    const bool numbered = b.kind == MidiBinding::Kind::Controller || b.kind == MidiBinding::Kind::Note;
+    for (const auto& [kind, local] : binding_types)
+        if (kind == b.kind) return {Value::Kind::Object, double(numbered ? (b.channel - 1) * 256 + b.number : b.channel - 1), false, iri(uri::midi, local)};
+    return {};
+}
+std::string binding_literal(const MidiBinding& b) {
+    const auto value = binding_value(b);
+    const char* field = b.kind == MidiBinding::Kind::Controller ? "controllerNumber" : b.kind == MidiBinding::Kind::Note ? "noteNumber" : "channel";
+    return "[\n\t\ta <" + value.text + "> ;\n\t\tmidi:" + field + " \"" + std::to_string(static_cast<int>(value.number)) + "\"^^xsd:int\n\t]";
+}
 std::string block(const std::string& plugin, const std::string& name, int x, int y, bool bypassed) {
     return "a ingen:Block ;\n\t\tlv2:prototype <" + plugin + "> ;\n\t\t" + position(x, y) + " ;\n\t\tpeepo:displayName " + string_literal(name) +
            (bypassed ? " ;\n\t\tingen:enabled false" : "");
@@ -104,6 +134,7 @@ void Session::closed(std::string reason, bool retrying) {
     depth_ = 0; cpu_.reset(); fault_.reset(); sent_modified_.reset();
     tuner_.reset(); tuner_port_.clear(); tuner_frequency_.reset();
     looper_.reset(); looper_ports_ = {}; looper_status_ = {};
+    learning_.clear(); cancelled_learn_.clear();
     euclidean_.reset(); euclidean_ports_ = {}; euclidean_steps_ = {}; euclidean_age_ = 0;
     emit(0, true, std::move(reason));
 }
@@ -348,6 +379,23 @@ bool Session::looper_command(InstanceId id, int command, int target, bool press)
     send(tx, set(seq, port, "ingen:value", "\"" + std::to_string(value) + "\"^^xsd:int"), seq);
     return true;
 }
+void Session::learned(const std::string& port) {
+    // The engine announces what a port learned. Its wait is over, and the
+    // patch has changed; unless the wait was ended here, then it goes again.
+    if (state_ != EngineState::Ready) return;
+    auto& tx = begin(0, Purpose::Edit);
+    if (port == cancelled_learn_) {
+        cancelled_learn_.clear();
+        std::erase_if(objects_[port], [](const auto& entry) { return entry.first == binding_key; });
+        const auto number = sequence();
+        send(tx, remove_property(number, port, "midi:binding"), number);
+    } else if (port == learning_) {
+        // Only the client that asked marks it: another, such as peepo-midi, only watches.
+        learning_.clear();
+        if (!sent_modified_.value_or(graph_.dirty)) mark(tx, true);
+    }
+    if (tx.waiting.empty()) transactions_.erase(tx.id);
+}
 void Session::erase(const std::string& path) {
     const auto prefix = path + "/";
     std::erase_if(objects_, [&](const auto& entry) { return entry.first == path || entry.first.starts_with(prefix); });
@@ -376,7 +424,9 @@ void Session::apply(const Message& message) {
         else if (has(message.body, type, iri(uri::lv2, "Plugin")) || has(message.body, type, iri(uri::ingen, "Internal"))) plugins_.insert(message.subject);
         break;
     case Message::Type::Set:
-        if (under_main(message.subject)) merge(message.subject, {{message.property, message.value}});
+        if (!under_main(message.subject)) break;
+        merge(message.subject, {{message.property, message.value}});
+        if (message.property == binding_key && message.value.kind == Value::Kind::Object) learned(message.subject);
         break;
     case Message::Type::Patch:
         if (!under_main(message.subject)) break;
@@ -426,6 +476,8 @@ void Session::finish(Transaction& done) {
             send(back, set_on_graph(number, main_path, "peepo:patchId", string_literal(*done.restore_id)), number);
         }
         if (ok) {
+            for (const auto& [path, predicate] : done.dropped)
+                if (const auto object = objects_.find(path); object != objects_.end()) std::erase_if(object->second, [&](const auto& entry) { return entry.first == predicate; });
             for (const auto& local : done.local) merge(local.path, {{local.predicate, local.value}});
             mirror_changed_ = true;
         } else if (done.sequences.size() > 1 && state_ == EngineState::Ready) {
@@ -503,6 +555,8 @@ void Session::rebuild() {
         if (const auto* id = find(root->second, patch_id_key); id && id->kind == Value::Kind::String && valid_patch_id(id->text)) graph.patch_id = id->text;
         if (const auto* modified = find(root->second, modified_key); modified && modified->kind == Value::Kind::Boolean) graph.dirty = modified->boolean;
         if (const auto tempo = finite(find(root->second, tempo_key)); tempo && *tempo >= minimum_tempo && *tempo <= maximum_tempo) graph.tempo = *tempo;
+        if (const auto* sent = find(root->second, load_messages_key); sent && sent->kind == Value::Kind::String)
+            if (auto messages = decode_control_changes(sent->text)) graph.load_messages = std::move(*messages);
     }
     const auto& in = demo_catalogue()[0];
     const auto& out = demo_catalogue()[1];
@@ -587,6 +641,7 @@ void Session::rebuild() {
                 if (!described) { parameter.minimum = std::min(0.0, value); parameter.maximum = std::max(1.0, value); }
                 if (parameter.kind != ParameterKind::Continuous) value = std::round(value);
                 parameter.value = std::clamp(value, parameter.minimum, parameter.maximum);
+                parameter.midi = midi_binding(find(*port.properties, binding_key));
                 m.parameters.push_back(std::move(parameter));
             }
         }
@@ -754,7 +809,10 @@ std::string Session::create_graph(const Graph& graph, Transaction& to) {
         }
         for (const auto& parameter : m.parameters)
             if (parameter.symbol == general_output_symbol) set_local(path, "peepo:outputLevel", output_level_key, float_literal(parameter.value), ingen::number(parameter.value));
-            else set_local(child(path, parameter.symbol), "ingen:value", value_key, float_literal(parameter.value), ingen::number(parameter.value));
+            else {
+                set_local(child(path, parameter.symbol), "ingen:value", value_key, float_literal(parameter.value), ingen::number(parameter.value));
+                if (parameter.midi) set_local(child(path, parameter.symbol), "midi:binding", binding_key, binding_literal(*parameter.midi), binding_value(*parameter.midi));
+            }
         if (known && !m.file.empty()) give_file(to, path, *known, m.file);
         next_instance_ = std::max(next_instance_, m.id + 1);
     }
@@ -766,6 +824,7 @@ std::string Session::create_graph(const Graph& graph, Transaction& to) {
     name_patch(to, graph.name);
     identify(to, graph.patch_id);
     set_tempo(to, std::clamp(graph.tempo, minimum_tempo, maximum_tempo));
+    load_messages(to, graph.load_messages);
     // One property per control, holding every module a stomp switches.
     std::map<std::string, std::string> controls;
     for (const auto& a : graph.assignments) {
@@ -779,6 +838,12 @@ void Session::set_tempo(Transaction& to, double bpm) {
     const auto number = sequence();
     send(to, set_on_graph(number, main_path, "peepo:tempo", float_literal(bpm)), number);
     to.local.push_back({main_path, tempo_key, ingen::number(bpm)});
+}
+void Session::load_messages(Transaction& to, const std::vector<ControlChange>& messages) {
+    const auto text = encode_control_changes(messages);
+    const auto number = sequence();
+    send(to, set_on_graph(number, main_path, "peepo:midiOnLoad", string_literal(text)), number);
+    to.local.push_back({main_path, load_messages_key, {Value::Kind::String, 0, false, text}});
 }
 void Session::give_file(Transaction& to, const std::string& path, const ModuleDefinition& d, const std::string& file) {
     // The plugin is told on its control port, as a patch:Set with a path; it
@@ -839,6 +904,7 @@ std::string Session::plan(const Command& command, Transaction& to) {
             result = create_graph(*saved_session_, to);
         } else if constexpr (std::is_same_v<T, SetTempo>) {
             if (!std::isfinite(c.bpm) || c.bpm < minimum_tempo || c.bpm > maximum_tempo) return "Tempo is outside 30 to 300 BPM";
+            if (c.follow) to.dirty.reset();
             set_tempo(to, c.bpm);
             for (const auto& m : graph_.modules) {
                 const auto* known = definition(m.uri);
@@ -850,10 +916,14 @@ std::string Session::plan(const Command& command, Transaction& to) {
                         set_local(child(found->second, p.symbol), "ingen:value", value_key, float_literal(value), ingen::number(value));
                     }
             }
+        } else if constexpr (std::is_same_v<T, SetLoadMessages>) {
+            if (decode_control_changes(encode_control_changes(c.messages)) != c.messages) return "Invalid MIDI messages";
+            load_messages(to, c.messages);
         } else if constexpr (std::is_same_v<T, NewPatch>) {
             if (auto issue = validate_patch_name(c.name); !issue.empty()) return issue;
             clear_engine_graph(to);
             set_tempo(to, default_tempo);
+            load_messages(to, {});
             for (const char* side : {"l", "r"}) {
                 const auto number = sequence();
                 send(to, put_arc(number, main_path + "/", main_path + "/in_" + side, main_path + "/out_" + side), number);
@@ -920,6 +990,7 @@ std::string Session::plan(const Command& command, Transaction& to) {
             // read, must not leave the emptied graph claiming the previous patch's.
             identify(to, "");
             name_patch(to, "");
+            load_messages(to, {});
             // The bundle's own tempo, which it then sets again; one from before
             // tempo was saved plays at the default.
             const auto tempo = c.tempo.value_or(default_tempo);
@@ -988,6 +1059,26 @@ std::string Session::plan(const Command& command, Transaction& to) {
                 if (!known || known->file.property.empty() || message_port(*known).empty()) return "This module reads no file";
                 if (!file_path(c.path)) return "Invalid file path";
                 give_file(to, found->second, *known, c.path);
+            } else if constexpr (std::is_same_v<T, LearnMidi>) {
+                if (m->fixed || !module_available(*m)) return "Module is unavailable";
+                const auto it = std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == c.symbol; });
+                // The general Output is the block's own level, not a port Ingen can bind.
+                if (it == m->parameters.end() || c.symbol == general_output_symbol || !lv2_symbol(c.symbol)) return "This control cannot be set by MIDI";
+                const auto port = child(found->second, c.symbol);
+                // Ingen keeps the old binding beside a newly learned one, so it goes first.
+                auto number = sequence();
+                send(to, remove_property(number, port, "midi:binding"), number);
+                to.dropped.push_back({port, binding_key});
+                // Until something is learned, the patch is as it was.
+                if (!it->midi) to.dirty.reset();
+                if (c.forget) {
+                    if (port == learning_) { cancelled_learn_ = port; learning_.clear(); }
+                } else {
+                    number = sequence();
+                    send(to, set(number, port, "midi:binding", "patch:wildcard"), number);
+                    learning_ = port;
+                    if (cancelled_learn_ == port) cancelled_learn_.clear();
+                }
             } else if constexpr (std::is_same_v<T, SetParameter>) {
                 if (m->fixed || !module_available(*m)) return "Module is unavailable";
                 const auto it = std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == c.symbol; });

@@ -120,6 +120,15 @@ std::string PatchStore::open() {
     usable_ = true;
     return {};
 }
+std::string PatchStore::open_to_read() {
+    usable_ = false;
+    if (!engine_path(engine_root_))
+        return "Patch folder " + engine_root_ + " cannot be given to the engine: use letters, digits, '.', '_' and '-' only";
+    std::error_code error;
+    if (!fs::is_directory(root_, error)) return "Patch folder " + root_.generic_string() + " is not available";
+    usable_ = true;
+    return {};
+}
 std::vector<unsigned> PatchStore::revisions(const fs::path& patch) const {
     std::vector<unsigned> found;
     std::error_code error;

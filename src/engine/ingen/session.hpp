@@ -66,6 +66,8 @@ private:
         unsigned age = 0;
         // Values the engine does not echo to the client that set them.
         std::vector<Local> local;
+        // Properties removed, by path and predicate, likewise not echoed.
+        std::vector<std::pair<std::string, std::string>> dropped;
         std::optional<bool> dirty;
         std::string message;
         // A save or load answered: what to do next, under the same request.
@@ -87,6 +89,7 @@ private:
     void apply(const Message&);
     void merge(const std::string& path, const Properties&);
     void erase(const std::string& path);
+    void learned(const std::string& port);
     void finish_ready();
     void finish(Transaction&);
     void fail_edits(const std::string& message);
@@ -99,6 +102,7 @@ private:
     std::string plan(const Command&, Transaction&);
     void give_file(Transaction&, const std::string& path, const ModuleDefinition&, const std::string& file);
     void set_tempo(Transaction&, double bpm);
+    void load_messages(Transaction&, const std::vector<ControlChange>&);
     void name_patch(Transaction&, const std::string& name);
     void identify(Transaction&, const std::string& id);
     void mark(Transaction&, bool modified);
@@ -128,6 +132,10 @@ private:
     std::array<std::string, euclidean_tracks> euclidean_ports_{};
     EuclideanSteps euclidean_steps_{};
     unsigned euclidean_age_ = 0;
+    // MIDI learn: the port waiting for a MIDI message, and one whose wait was
+    // ended here. Ingen cannot end a wait, so a binding that still arrives on
+    // that port is removed again.
+    std::string learning_, cancelled_learn_;
     std::optional<InstanceId> looper_;
     std::array<std::string, looper_outputs> looper_ports_{};
     LooperStatus looper_status_{};

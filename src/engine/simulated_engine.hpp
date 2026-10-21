@@ -37,6 +37,10 @@ private:
     InstanceId next_instance_ = 6;
     bool reject_next_ = false;
     std::deque<Pending> pending_;
+    // A control waiting for MIDI learn. Nothing plays MIDI here, so it learns
+    // the next unused controller on channel 1 a moment later.
+    struct Learning { InstanceId id; std::string symbol; std::uint64_t due; };
+    std::optional<Learning> learning_;
     std::vector<EngineEvent> events_;
 };
 }

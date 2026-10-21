@@ -208,6 +208,18 @@ else
 fi
 third mod-cv-plugins https://github.com/moddevices/mod-cv-plugins.git f0a6b39a5ebb8cf2ab428d76aa8c8262aceb6362 "make" \
     make -j"$JOBS" LV2_DESTDIR="$LV2DIR" install
+# MIDI modules Beebo maps, built since MIDI can be cabled (P12.5): x42's MIDI
+# clock (not in Debian's x42-plugins) and midimsg's controller, modwheel and
+# aftertouch. midimsg's bundled waf cannot run on this Python; its plugins use
+# plain LV2, so each is compiled directly as its wscript would.
+third mclk.lv2 https://github.com/x42/mclk.lv2.git 4f9d423b5d374d4b4a2c1bdd49257f36a77cdb10 "make" \
+    make -j"$JOBS" OPTIMIZATIONS="$OPT" PREFIX="$PREFIX" LV2DIR="$LV2DIR" install
+midimsg() {
+    mkdir -p "$LV2DIR/midimsg.lv2" && cp midimsg.lv2/*.ttl "$LV2DIR/midimsg.lv2/" || return 1
+    for p in controller modwheel aftertouch; do g++ -shared -fPIC $OPT -std=c++11 -I. -Isrc "src/$p.cpp" -o "$LV2DIR/midimsg.lv2/$p.so" || return 1; done
+}
+export -f midimsg
+third midimsg-lv2 https://github.com/blablack/midimsg-lv2.git 46beb4891ac6f223b33b298b96764535d8f80e18 "g++, as its wscript" bash -c midimsg
 
 # --- Discipline (delay with a scannable memory, and its Return), the
 # project's own. Its Makefile adds -fno-fast-math after OPT: its NaN guards
@@ -218,6 +230,12 @@ third discipline https://github.com/ABustos2606/discipline.git 4f68f3b967f8fb92c
 # --- Loo-pi (multi-loop looper on SooperLooper's core), the project's own.
 # Like Discipline it adds -fno-fast-math after OPT, so it gets the same flags.
 third loo-pi https://github.com/ABustos2606/loo-pi.git 45c301f80c1ec63edeb99a45ae0998f01ac424fd "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+# --- MIDI to CV and MIDI to CV poly (MIDI notes to Poly's pitch and gate CVs), the project's own.
+third midi-cv https://github.com/ABustos2606/midi-cv.git 03ac4344aeae7e49625fb77f9a770a39d91f9749 "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+# --- MIDI program change (sends program changes on triggers), the project's own.
+third midi-pc https://github.com/ABustos2606/midi-pc.git cf1f945da9d05cd57ecb4b8d3b59b6e1de9f6a70 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
 # --- Aura: private stereo micro-looper and effects sharing one clock.

@@ -399,4 +399,34 @@ std::string format_value(const Parameter& p) {
     if (!p.unit.empty()) out << " " << p.unit;
     return out.str();
 }
+std::string encode_control_changes(const std::vector<ControlChange>& messages) {
+    std::string text;
+    for (const auto& m : messages)
+        text += (text.empty() ? "" : " ") + std::to_string(m.channel) + ":" + std::to_string(m.number) + ":" + std::to_string(m.value);
+    return text;
+}
+std::optional<std::vector<ControlChange>> decode_control_changes(const std::string& text) {
+    std::vector<ControlChange> out;
+    std::istringstream in(text);
+    for (std::string part; in >> part;) {
+        ControlChange m;
+        char a = 0, b = 0;
+        std::istringstream fields(part);
+        if (!(fields >> m.channel >> a >> m.number >> b >> m.value) || a != ':' || b != ':' || fields.peek() != EOF) return std::nullopt;
+        if (m.channel < 1 || m.channel > 16 || m.number < 0 || m.number > 127 || m.value < 0 || m.value > 127) return std::nullopt;
+        out.push_back(m);
+    }
+    if (out.size() > max_load_messages) return std::nullopt;
+    return out;
+}
+std::string midi_binding_text(const MidiBinding& b) {
+    const auto channel = " / " + std::to_string(b.channel);
+    switch (b.kind) {
+    case MidiBinding::Kind::Controller: return "CC " + std::to_string(b.number) + channel;
+    case MidiBinding::Kind::Note: return "NOTE " + std::to_string(b.number) + channel;
+    case MidiBinding::Kind::Bender: return "BEND" + channel;
+    case MidiBinding::Kind::Pressure: return "PRESS" + channel;
+    }
+    return {};
+}
 }

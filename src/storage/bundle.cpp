@@ -72,6 +72,9 @@ std::string read_bundle(std::string_view text, Bundle& out) {
         else if (predicate == peepo_ns + "schemaVersion") out.schema = static_cast<int>(number(object).value_or(0));
         else if (predicate == peepo_ns + "modified") out.modified = boolean(object).value_or(false);
         else if (predicate == peepo_ns + "tempo") out.tempo = number(object);
+        else if (predicate == peepo_ns + "midiOnLoad" && object.kind == Term::Kind::Literal) {
+            if (auto messages = decode_control_changes(object.value)) out.load_messages = std::move(*messages);
+        }
         else if (predicate.starts_with(peepo_ns + "control-") && object.kind == Term::Kind::Literal && !object.value.empty())
             out.controls[predicate.substr(peepo_ns.size() + 8)] = object.value;
         else if (predicate == ingen_ns + "arc" && object.kind == Term::Kind::Blank) {
@@ -134,6 +137,7 @@ Graph bundle_graph(const Bundle& bundle) {
     Graph graph;
     graph.name = validate_patch_name(bundle.name).empty() ? bundle.name : "Untitled";
     if (bundle.tempo && *bundle.tempo >= minimum_tempo && *bundle.tempo <= maximum_tempo) graph.tempo = *bundle.tempo;
+    graph.load_messages = bundle.load_messages;
     graph.patch_id = valid_patch_id(bundle.id) ? bundle.id : std::string();
     graph.dirty = bundle.modified;
     const auto& in = demo_catalogue()[0];
@@ -256,6 +260,7 @@ std::string write_main_ttl(const Graph& graph) {
     for (const auto& [control, value] : controls) text += " ;\n\tpeepo:control-" + control + " " + ingen::string_literal(value);
     text += " ;\n\tpeepo:patchName " + ingen::string_literal(graph.name);
     text += " ;\n\tpeepo:tempo " + literal_number(graph.tempo);
+    if (!graph.load_messages.empty()) text += " ;\n\tpeepo:midiOnLoad " + ingen::string_literal(encode_control_changes(graph.load_messages));
     if (!graph.patch_id.empty()) text += " ;\n\tpeepo:patchId " + ingen::string_literal(graph.patch_id);
     text += " ;\n\tpeepo:schemaVersion " + std::to_string(bundle_schema_version) + " ;\n\tpeepo:modified " + (graph.dirty ? "true" : "false") + " .\n";
     return text;

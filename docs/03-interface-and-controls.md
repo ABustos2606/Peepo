@@ -109,6 +109,15 @@ Agreed 20 October 2026 (D16 revised again; [MIDI](39-midi.md)). The look was cho
 
 A visual cable must always correspond to a valid engine connection; a refused connection shows a short reason.
 
+### MIDI pages
+
+Added 20 October 2026 ([MIDI](39-midi.md)), in the rows-and-buttons style of the Controls page:
+
+- **Settings → MIDI**, instrument-wide: clock out on or off, Start / Stop on or off, tempo from the patch or from incoming clock (with the clock heard), program change off, on one channel or any; then the MIDI devices plugged in, each with In and Out switches. A chosen option has a green border.
+- **MIDI learn**: hold a bar on a module page. The page names the control and what sets it; **Learn** waits for a control moved on a MIDI device, **Forget** removes the binding, Cancel or Back ends a wait. The bar shows the binding under its name (`CC 7 / 3`), beside any encoder or stomp pinned to it.
+- **Patches → MIDI** (*MIDI on load*): the control changes this patch sends to every device as it loads, up to six, each a channel stepper, a controller slider, a value slider and a remove button; **+ Add** in the header.
+- The **Tempo page** says *FOLLOWING MIDI CLOCK* when the tempo comes from incoming clock, and has **Restart clock** (Stop, then Start) to line another device's pattern up by hand.
+
 ## Module page
 
 Opened by tapping a square. It fills the screen with the module's parameters and a **back** button to the patch view. Redone on 17 October 2026 in the direction of Beebo's module pages ([record](31-module-page-and-two-encoders.md)):

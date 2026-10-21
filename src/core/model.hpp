@@ -17,12 +17,25 @@ inline constexpr int module_min_x = 24, module_min_y = 24;
 inline constexpr double default_tempo = 120, minimum_tempo = 30, maximum_tempo = 300;
 inline constexpr int module_max_x = 3984, module_max_y = 1920;
 enum class ParameterKind { Continuous, Integer, Toggle, Enumeration };
+// A MIDI message that sets a control (MIDI learn): the engine's own binding,
+// saved with the patch. Channels are 1 to 16; `number` is the controller or
+// the note, unused for pitch bend and channel pressure.
+struct MidiBinding {
+    enum class Kind { Controller, Note, Bender, Pressure };
+    Kind kind = Kind::Controller;
+    int channel = 1, number = 0;
+    bool operator==(const MidiBinding&) const = default;
+};
+// How the bar shows it: "CC 7 / 3" (controller 7 on channel 3).
+std::string midi_binding_text(const MidiBinding&);
 struct Parameter {
     std::string symbol, name, unit;
     ParameterKind kind = ParameterKind::Continuous;
     double minimum = 0, maximum = 1, value = 0;
     bool logarithmic = false;
     std::vector<std::string> choices;
+    // Set by MIDI learn; empty when no MIDI message sets this control.
+    std::optional<MidiBinding> midi;
 };
 enum class Direction { Input, Output };
 // Midi is an LV2 atom port that supports midi:MidiEvent, a MIDI connector.
@@ -126,6 +139,17 @@ struct Assignment {
     // the same identity is never controlled by mistake.
     std::string plugin;
 };
+// A MIDI control change a patch sends to every device as it loads, such as a
+// pattern or preset on a pedal or drum machine. Channels are 1 to 16.
+struct ControlChange {
+    int channel = 1, number = 0, value = 0;
+    bool operator==(const ControlChange&) const = default;
+};
+inline constexpr std::size_t max_load_messages = 6;
+// As one engine property value: "1:7:100 3:10:64".
+std::string encode_control_changes(const std::vector<ControlChange>&);
+// Empty when the text is not such a list, or holds too many.
+std::optional<std::vector<ControlChange>> decode_control_changes(const std::string&);
 struct Graph {
     std::string name = "First light";
     // The stored patch this graph was loaded from or last saved as; empty
@@ -137,6 +161,8 @@ struct Graph {
     bool dirty = false;
     // Beats per minute, for every module that follows the tempo.
     double tempo = default_tempo;
+    // Sent to every MIDI device when the patch loads.
+    std::vector<ControlChange> load_messages;
 };
 // The value a module's tempo control takes for a tempo: the tempo, inside the
 // control's own range.

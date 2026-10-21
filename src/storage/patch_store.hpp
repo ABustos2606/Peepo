@@ -40,6 +40,9 @@ public:
     explicit PatchStore(std::filesystem::path root, std::string engine_root = {});
     // Create the root and clear interrupted saves. Returns what is wrong, or "".
     std::string open();
+    // For a program beside the interface, such as peepo-midi: reads only, and
+    // clears nothing, since the interface may be saving.
+    std::string open_to_read();
     bool usable() const { return usable_; }
     const std::filesystem::path& root() const { return root_; }
     // Every stored patch, by name.

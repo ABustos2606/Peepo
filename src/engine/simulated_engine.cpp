@@ -51,6 +51,14 @@ bool SimulatedEngine::simulate_missing_module() {
 std::vector<EngineEvent> SimulatedEngine::advance(unsigned milliseconds) {
     clock_ += milliseconds;
     if (connect_due_ && clock_ >= *connect_due_) set_state(EngineState::Ready);
+    if (learning_ && clock_ >= learning_->due && state_ == EngineState::Ready) {
+        int number = 20;
+        for (const auto& m : graph_.modules) for (const auto& p : m.parameters) if (p.midi) number = std::max(number, p.midi->number + 1);
+        if (auto* m = find_module(graph_, learning_->id))
+            for (auto& p : m->parameters) if (p.symbol == learning_->symbol) { p.midi = MidiBinding{MidiBinding::Kind::Controller, 1, std::min(number, 127)}; graph_.dirty = true; }
+        learning_.reset();
+        events_.push_back({0, true, {}, state_, graph_});
+    }
     while (!pending_.empty() && pending_.front().due <= clock_) {
         auto p = std::move(pending_.front()); pending_.pop_front();
         std::string error;
@@ -68,6 +76,7 @@ std::vector<EngineEvent> SimulatedEngine::advance(unsigned milliseconds) {
     auto result = std::move(events_); events_.clear(); return result;
 }
 std::string SimulatedEngine::apply(const Command& command) {
+    bool following = false;
     auto error = std::visit([&](const auto& c) -> std::string {
         using T = std::decay_t<decltype(c)>;
         if constexpr (std::is_same_v<T, AddModule>) {
@@ -91,9 +100,13 @@ std::string SimulatedEngine::apply(const Command& command) {
         } else if constexpr (std::is_same_v<T, SetTempo>) {
             if (!std::isfinite(c.bpm) || c.bpm < minimum_tempo || c.bpm > maximum_tempo) return "Tempo is outside 30 to 300 BPM";
             graph_.tempo = c.bpm;
+            if (c.follow) following = true;
             for (auto& m : graph_.modules)
                 if (const auto* d = definition(m.uri); d && !d->tempo_symbol.empty() && module_available(m))
                     for (auto& p : m.parameters) if (p.symbol == d->tempo_symbol) p.value = tempo_value(p, c.bpm);
+        } else if constexpr (std::is_same_v<T, SetLoadMessages>) {
+            if (decode_control_changes(encode_control_changes(c.messages)) != c.messages) return "Invalid MIDI messages";
+            graph_.load_messages = c.messages;
         } else if constexpr (std::is_same_v<T, NewPatch>) {
             if (auto issue = validate_patch_name(c.name); !issue.empty()) return issue;
             graph_ = empty_graph(c.name);
@@ -193,6 +206,13 @@ std::string SimulatedEngine::apply(const Command& command) {
                 if (!d || d->file.property.empty()) return "This module reads no file";
                 if (c.path.empty() || c.path.size() > 1024) return "Invalid file path";
                 m->file = c.path;
+            } else if constexpr (std::is_same_v<T, LearnMidi>) {
+                if (!module_available(*m)) return "Module is unavailable";
+                auto it = std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == c.symbol; });
+                if (it == m->parameters.end() || c.symbol == general_output_symbol) return "This control cannot be set by MIDI";
+                it->midi.reset();
+                if (c.forget) { if (learning_ && learning_->id == c.id && learning_->symbol == c.symbol) learning_.reset(); }
+                else learning_ = Learning{c.id, c.symbol, clock_ + 1500};
             } else if constexpr (std::is_same_v<T, SetParameter>) {
                 if (!module_available(*m)) return "Module is unavailable";
                 auto it = std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == c.symbol; });
@@ -205,7 +225,7 @@ std::string SimulatedEngine::apply(const Command& command) {
         return {};
     }, command);
     if (error.empty() && !std::holds_alternative<LoadGraph>(command) && !std::holds_alternative<SaveGraph>(command) &&
-        !std::holds_alternative<LoadSession>(command) && !std::holds_alternative<LoadPatch>(command)) graph_.dirty = true;
+        !std::holds_alternative<LoadSession>(command) && !std::holds_alternative<LoadPatch>(command) && !following) graph_.dirty = true;
     return error;
 }
 }

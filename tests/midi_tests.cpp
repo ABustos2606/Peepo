@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Peepo contributors
 // MIDI clock out: where each message lands, period by period.
 #include "midi/clock.hpp"
+#include <algorithm>
+#include <filesystem>
 #include <cmath>
 #include <cstdint>
 #include <iostream>
@@ -83,12 +85,90 @@ void stopping() {
     const auto again = run(clock, 128, 1, now);
     check(again.size() == 2 && again[0].status == clock_start && again[1].status == clock_tick && again[0].frame == again[1].frame, "the clock does not start again");
 }
+void silent_transport() {
+    // Start and Stop off: the clock alone, for a follower that starts its pattern on Start.
+    ClockOut clock(48000);
+    clock.set_transport(false);
+    clock.start();
+    std::int64_t now = 0;
+    auto messages = run(clock, 128, 20, now);
+    clock.stop();
+    for (const auto& m : run(clock, 128, 2, now)) messages.push_back(m);
+    check(!messages.empty() && std::all_of(messages.begin(), messages.end(), [](const Message& m) { return m.status == clock_tick; }) && !clock.running(),
+          "Start or Stop sent with them switched off");
+}
+void clock_in() {
+    // 120 BPM is a clock every 1000 frames at 48 kHz; USB moves each by up to 48 frames (1 ms).
+    ClockIn in(48000);
+    check(!in.tempo(0), "a tempo before any clock");
+    std::uint64_t frame = 5000;
+    int jitter[] = {0, 48, -48, 20, -30, 5, 40, -10};
+    for (int i = 0; i < 6; ++i) in.message(frame + i * 1000 + jitter[i % 8], clock_tick);
+    check(!in.tempo(frame + 5000), "a tempo from too few clocks");
+    for (int i = 6; i < 200; ++i) in.message(frame + i * 1000 + jitter[i % 8], clock_tick);
+    const auto heard = in.tempo(frame + 199 * 1000);
+    check(heard && std::abs(*heard - 120) < 0.3, "jittery 120 BPM not heard as 120");
+    // A change shows within a beat.
+    frame += 199 * 1000;
+    for (int i = 1; i <= 26; ++i) in.message(frame + i * 2000, clock_tick);
+    check(std::abs(in.tempo(frame + 26 * 2000).value_or(0) - 60) < 0.01, "a change to 60 BPM not heard within a beat");
+    // Lost when the clock stops, or when it falls silent.
+    check(!in.tempo(frame + 26 * 2000 + 48000), "a silent clock still has a tempo");
+    for (int i = 0; i < 10; ++i) in.message(frame + 200000 + i * 400, clock_tick);
+    check(std::abs(in.tempo(frame + 200000 + 3600).value_or(0) - 300) < 0.01, "a clock that came back not heard afresh");
+    in.message(frame + 204000, clock_stop);
+    check(!in.tempo(frame + 204000), "a stopped clock still has a tempo");
+    in.message(frame + 300000, 0x90);
+    check(!in.tempo(frame + 300000), "a note made a tempo");
+}
+void program_changes() {
+    const std::uint8_t on_three[] = {0xc2, 5}, note[] = {0x92, 60, 100};
+    check(program_change(on_three, 2, 3) == 5 && program_change(on_three, 2, any_channel) == 5, "program change on its channel");
+    check(!program_change(on_three, 2, 1) && !program_change(on_three, 2, program_off) && !program_change(on_three, 1, 3) && !program_change(note, 3, any_channel),
+          "a program change taken from another channel, while off, cut short, or from a note");
+}
+void settings_files() {
+    Settings s;
+    check(parse_settings("") == s && s.clock_out && s.start_stop && s.tempo_source == TempoSource::Patch && s.program_channel == program_off, "defaults");
+    s.clock_out = false; s.tempo_source = TempoSource::Clock; s.program_channel = 16;
+    s.inputs_off = {"a2j:Arturia (capture): Arturia MIDI 1"}; s.outputs_off = {"a2j:KO-2 (playback): KO-2"};
+    check(parse_settings(format_settings(s)) == s, "settings do not read back");
+    s.program_channel = any_channel;
+    check(parse_settings(format_settings(s)).program_channel == any_channel, "any channel does not read back");
+    check(parse_settings("program_change=17\nprogram_change=0x3\nsomething=else\r\n").program_channel == program_off, "a bad channel or an unknown line was taken");
+    Status status{119.96, {"a2j:A (capture): A"}, {"a2j:B (playback): B"}};
+    const auto back = parse_status(format_status(status));
+    check(back.clock_in && std::abs(*back.clock_in - 120) < 1e-9 && back.inputs == status.inputs && back.outputs == status.outputs, "status does not read back");
+    check(!parse_status("clock_in=nan\n").clock_in && !parse_status("").clock_in, "no clock read as a clock");
+    check(device_name("a2j:Arturia MiniLab mkII [24] (capture): Arturia MiniLab mkII MIDI 1") == "a2j:Arturia MiniLab mkII (capture): Arturia MiniLab mkII MIDI 1" &&
+          device_name("a2j:Odd [x] (capture): Odd") == "a2j:Odd [x] (capture): Odd", "ALSA's client number not removed");
+    check(device_label("a2j:Arturia MiniLab mkII (capture): Arturia MiniLab mkII MIDI 1") == "Arturia MiniLab mkII" &&
+          device_label("a2j:UM-ONE (playback): UM-ONE") == "UM-ONE" &&
+          device_label("a2j:Virtual Raw MIDI 1-0 (capture): VirMIDI 1-0") == "Virtual Raw MIDI 1-0: VirMIDI 1-0" &&
+          device_label("a2j:MIDI4x4 (capture): MIDI4x4 MIDI 2") == "MIDI4x4: MIDI 2", "device labels");
+    // The files: written whole, read back; restart requests count up.
+    const auto folder = std::filesystem::temp_directory_path() / "peepo-midi-tests";
+    std::filesystem::remove_all(folder);
+    const Link link(folder / "midi.conf", folder / "run");
+    check(link.settings() == Settings{} && link.status() == Status{} && link.restart_requests() == 0, "missing files are not the defaults");
+    check(link.save(s).empty() && link.settings() == s, "saved settings do not read back");
+    link.write_status(status);
+    check(link.status().inputs == status.inputs, "status file");
+    link.request_restart(); link.request_restart();
+    check(link.restart_requests() == 2, "restart requests");
+    check(!Link({}, {}).save(s).empty() && !Link({}, {}).connected(), "a link with no files claims to store");
+    std::filesystem::remove_all(folder);
+}
 }
 int main() {
     try {
         intervals();
         tempo_changes();
         stopping();
-        std::cout << "MIDI clock intervals, drift, tempo changes, Start and Stop passed.\n";
+        silent_transport();
+        clock_in();
+        program_changes();
+        settings_files();
+        std::cout << "MIDI clock out and in, Start and Stop, program change and the settings files passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

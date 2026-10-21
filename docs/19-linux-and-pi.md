@@ -101,9 +101,9 @@ It **never** edits `/boot/firmware/config.txt`. Ordinary installation reports co
 | --- | --- | --- |
 | `peepo-jack` | `jackd` with the driver and options of `peepo.conf` | On failure, without exhausting a start limit. Wants the engine, so automatic JACK recovery also starts its client again. |
 | `peepo-engine` | Ingen on `/run/peepo/ingen.sock`, no TCP | On failure. Bound to JACK; independent of the interface. |
-| `peepo-route` | Keeps the engine's IN and OUT wired to the ports named in `peepo.conf`, and every MIDI device both ways: its MIDI out to `ingen:midi_in`, `ingen:midi_out` and `peepo-midi:clock_out` to its MIDI in ([MIDI](39-midi.md)) | Always. It checks every two seconds, so new ports after any restart, and devices plugged in again, are wired again. |
+| `peepo-route` | Keeps the engine's IN and OUT wired to the ports named in `peepo.conf`, and every MIDI device both ways: its MIDI out to `ingen:midi_in`, `ingen:control` (MIDI learn) and `peepo-midi:midi_in`, `ingen:midi_out` and `peepo-midi:clock_out` to its MIDI in; devices switched off in Settings → MIDI (`/var/lib/peepo/midi.conf`) are left out ([MIDI](39-midi.md)) | Always. It checks every two seconds, so new ports after any restart, and devices plugged in again, are wired again. |
 | `peepo-a2j` | `a2jmidid -e`: every ALSA hardware MIDI port (USB devices) as JACK MIDI ports, following hot-plugging | Always, after two seconds. Bound to JACK. |
-| `peepo-midi` | MIDI clock out at the patch tempo on `peepo-midi:clock_out`; a second engine client | Always, after one second. Bound to JACK; independent of the interface, so the clock goes on while it restarts. |
+| `peepo-midi` | MIDI clock out at the patch tempo and each patch's control changes on `peepo-midi:clock_out`; clock in and program change on `peepo-midi:midi_in`; a second engine client. Reads `/var/lib/peepo/midi.conf`, tells the interface what it hears in `/run/peepo-midi` | Always, after one second. Bound to JACK; independent of the interface, so the clock goes on while it restarts. |
 | `peepo-ui` | The interface on DRM/KMS with the touch screen and controls | Always, after one second. It only *wants* the engine: either can restart without the other, and it reconnects by itself. |
 | `peepo.target` | All of the above | `systemctl enable peepo.target` starts the instrument at boot. |
 

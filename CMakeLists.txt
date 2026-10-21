@@ -11,7 +11,7 @@ add_library(peepo_core src/core/model.cpp src/core/reference_catalogue.cpp src/e
   src/engine/ingen/turtle.cpp src/engine/ingen/protocol.cpp src/engine/ingen/session.cpp
   src/engine/ingen/socket_transport.cpp src/engine/ingen/ingen_engine.cpp
   src/catalogue/json.cpp src/catalogue/catalogue.cpp
-  src/storage/bundle.cpp src/storage/patch_store.cpp src/storage/file_store.cpp src/controls/controls.cpp)
+  src/storage/bundle.cpp src/storage/patch_store.cpp src/storage/file_store.cpp src/controls/controls.cpp src/midi/settings.cpp)
 target_include_directories(peepo_core PUBLIC src)
 find_package(Threads REQUIRED)
 target_link_libraries(peepo_core PUBLIC Threads::Threads)
@@ -164,7 +164,7 @@ if(BUILD_TESTING)
   add_test(NAME physical_controls COMMAND peepo_controls_tests)
   add_executable(peepo_midi_tests tests/midi_tests.cpp)
   target_link_libraries(peepo_midi_tests PRIVATE peepo_core)
-  add_test(NAME midi_clock COMMAND peepo_midi_tests)
+  add_test(NAME midi COMMAND peepo_midi_tests)
   if(UNIX AND NOT APPLE)
     add_executable(peepo_linux_input_tests tests/linux_input_tests.cpp)
     target_link_libraries(peepo_linux_input_tests PRIVATE peepo_linux_input)

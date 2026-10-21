@@ -463,8 +463,8 @@ These are reference identities, not available effects. The installed Foot switch
 | Looper MIDI output | no public implementation known; Beebo maps it without a source. Reference: Ouput MIDI Clock from looper. | `http://polyeffects.com/lv2/loop_midi_out` |
 | Looper output | no public implementation known; Beebo maps it without a source. Reference: Common output from the loopler | `http://polyeffects.com/lv2/loop_common_out` |
 | Matrix mixer (4 in, 3 out) | MOD's 4-in 3-out build of x42's matrix mixer; Debian ships only the 8 x 8 one. Reference: 4 in 3 out matrix mixer | `http://gareus.org/oss/lv2/matrixmixer#i4o3` |
-| MIDI clock | x42 MIDI clock: not in Debian's x42-plugins; MIDI only, so not built while MIDI routing is deferred. Reference: BPM to MIDI Clock | `http://gareus.org/oss/lv2/mclk` |
-| MIDI controller | midimsg-lv2 is not packaged; MIDI only, so not built while MIDI routing is deferred. Reference: MIDI CC to control value | `http://github.com/blablack/midimsg-lv2/controller` |
+| MIDI clock | x42 MIDI clock: built from source since MIDI can be cabled (P12.5); works on MIDI only, so offered once checked with a MIDI controller. Reference: BPM to MIDI Clock | `http://gareus.org/oss/lv2/mclk` |
+| MIDI controller | midimsg-lv2: built from source since MIDI can be cabled (P12.5); works on MIDI only, so offered once checked with a MIDI controller. Reference: MIDI CC to control value | `http://github.com/blablack/midimsg-lv2/controller` |
 | MIDI program change | no public implementation known; Beebo maps it without a source. Reference: Send a MIDI program change message when triggered | `http://polyeffects.com/lv2/midi_pc` |
 | MIDI to CV (mono) | no public implementation known; Beebo maps it without a source. Reference: convert MIDI notes to v per octave pitch CVs | `http://polyeffects.com/lv2/midi_to_cv_mono` |
 | MIDI to CV (poly) | no public implementation known; Beebo maps it without a source. Reference: convert poly MIDI notes to v per octave pitch CVs | `http://polyeffects.com/lv2/midi_to_cv_poly` |
