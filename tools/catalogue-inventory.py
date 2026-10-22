@@ -25,11 +25,12 @@ MDA = ["Ambience", "Bandisto", "BeatBox", "Combo", "DX10", "DeEss", "Degrade", "
        "Dynamics", "EPiano", "Image", "JX10", "Leslie", "Limiter", "Loudness", "MultiBand", "Overdrive", "Piano", "RePsycho",
        "RezFilter", "RingMod", "RoundPan", "Shepard", "Splitter", "Stereo", "SubSynth", "TalkBox", "TestTone", "ThruZero",
        "Tracker", "Transient", "VocInput", "Vocoder"]
-# Peepo's own plugins: plugins/ of this repository, and Discipline, Loo-pi and Chamber from their own.
+# Peepo's own plugins: plugins/ of this repository, and Discipline, Loo-pi, Chamber and Drizzle from their own.
 PEEPO = ["urn:peepo:lv2:footswitch",
          "https://github.com/ABustos2606/discipline#discipline", "https://github.com/ABustos2606/discipline#return",
          "https://github.com/ABustos2606/loo-pi#loopi",
          "https://github.com/ABustos2606/chamber#chamber",
+         "https://github.com/ABustos2606/drizzle#drizzle", "https://github.com/ABustos2606/drizzle#synth",
          "https://github.com/ABustos2606/aura#aura"]
 EXAMPLES = ["eg-amp", "eg-fifths", "eg-metro", "eg-midigate", "eg-params", "eg-scope#Mono", "eg-scope#Stereo"]
 

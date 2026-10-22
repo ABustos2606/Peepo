@@ -79,11 +79,17 @@ In Peepo:
 
 ## 1. Drizzle (Beads)
 
-- [ ] Wrap `beads::Processor`: allocate its delay and reverb buffers in `instantiate`, call `Process` in Beads' block size (12 frames in its own test), stereo in and out.
-- [ ] Controls: Time, Size, Shape, Pitch (semitones), Density, Feedback, Dry/wet, Reverb; Freeze switch; Seed as a trigger; random amount per parameter (Beads' attenurandomizers); Quality as an enumeration of its four media (`Configure` switches them while running); Mono switch.
-- [ ] CV inputs for the main parameters, seed and freeze gates, pitch in V/oct.
-- [ ] Read `beads.cc` and `ui.cc` for the button gestures (seed held = latched, clocked or gated grain triggers; media + seed = mono) and make each one an explicit control.
-- [ ] **Drizzle Synth** (decided 20 October 2026): Beads becomes a synth when its inputs are unplugged, which an LV2 plugin cannot see, so the synth is a second plugin in the same repository, a wavetable sound source.
+**21 October 2026:** offline work done in Drizzle's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step (pinned at `v0.2.0`), inventory, overlay entries and notice added. Not yet done: the Pi checks below.
+
+- [x] Wrap `beads::Processor`: delay and reverb buffers allocated in `instantiate`, `Process` in whole 1/4000 s blocks whatever Ingen's slices, stereo in and out. Dirty tape runs at 24 kHz and vintage digital at 32 kHz, as on the hardware, resampled around the processor; latency 95 frames (2 ms) at 48 kHz in every quality, reported to the host.
+- [x] Controls: Time, Size, Shape, Pitch (semitones), Density, Feedback, Dry/wet, Reverb; Freeze switch; Seed as a trigger; random amount per parameter (Beads' attenurandomizers); Quality as an enumeration of its four media (switching fades out, clears the buffer over 16 ms and fades in); Mono switch; Auto gain and Input gain; On (`lv2:enabled`, `"bypass": "port"`: tails ring out).
+- [x] CV inputs for the main parameters, the Assign CV, seed and freeze gates, pitch in V/oct; a Grain out CV output (trigger or gate).
+- [x] The button gestures and "is a cable in" cases are explicit controls: Seed lock, the four "uses CV" switches, Seed uses gate, CV assign to, Gate out, Mono.
+- [x] **Drizzle Synth** (decided 20 October 2026): Beads becomes a synth when its inputs are unplugged, which an LV2 plugin cannot see, so the synth is a second plugin in the same repository, a wavetable sound source.
+- [x] Overlay: Drizzle under Texture (27 controls in seven pages: Grain, Density and mix, Play, Modulation, CV use, Input and output, CV assign and out), Drizzle Synth under Sound source (24 controls in six pages). Checked with the exporter and `peepo_catalogue_tests` under WSL.
+- [ ] CPU and xruns on the Pi (`make test-timing` there, then `tools/pi/measure-effect.py` alone and in a typical patch, Density at maximum, every quality, with a Drizzle Synth).
+- [ ] Listened to with guitar on the Pi; defaults tuned (Quality, Density, gain, Gate out's trigger length); result in `docs/evidence/`.
+- [ ] Pi catalogue exported; `docs/33-module-list.md` regenerated.
 - [ ] Not in scope: saving the captured buffer in the patch (possible later with LV2 state, about 1 MB per instance).
 
 ## 2. Chamber (Elements)
@@ -130,5 +136,7 @@ Settled with the user on 20 October 2026:
 | Reel | Reel LFO is a separate plugin; easing and response are plain controls |
 
 Settled for Chamber on 21 October 2026: no Dry/wet control (Peepo's mixer modules blend the dry guitar); the Ominous voice is a switch in Chamber, hidden by the overlay until it is measured on the Pi.
+
+Settled for Drizzle on 21 October 2026 (Drizzle's `docs/design.md`, Decisions): dirty tape also runs at its hardware rate (24 kHz); Drizzle has an On port and is bypassed through it; Seed lock starts on and Density at 0.7 so a new Drizzle plays grains.
 
 No decisions are open.

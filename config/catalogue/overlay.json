@@ -222,6 +222,25 @@
       {"name": "Exciter CV amounts", "parameters": ["bow_timbre_amount", "blow_meta_amount", "blow_timbre_amount", "strike_meta_amount", "strike_timbre_amount"]},
       {"name": "Resonator CV amounts", "parameters": ["geometry_amount", "brightness_amount", "damping_amount", "position_amount", "space_amount"]}
     ]},
+    {"uri": "https://github.com/ABustos2606/drizzle#drizzle", "name": "Drizzle", "category": "Texture", "description": "Grains of the live input, with reverb; Size at the top makes it a delay. Freeze holds the recording. With Seed lock on grains run at the Density rate; off, they play while Seed is held.",
+     "output": "output", "bypass": "port", "groups": [
+      {"name": "Grain", "parameters": ["time", "size", "shape", "pitch"]},
+      {"name": "Density and mix", "parameters": ["density", "feedback", "dry_wet", "reverb"]},
+      {"name": "Play", "parameters": ["freeze", "seed", "seed_lock", "quality"]},
+      {"name": "Modulation", "parameters": ["time_mod", "size_mod", "shape_mod", "pitch_mod"]},
+      {"name": "CV use", "parameters": ["time_uses_cv", "size_uses_cv", "shape_uses_cv", "pitch_uses_cv", "seed_uses_gate"]},
+      {"name": "Input and output", "parameters": ["auto_gain", "gain", "mono", "output"]},
+      {"name": "CV assign and out", "parameters": ["assign_to", "gate_mode"]}
+    ]},
+    {"uri": "https://github.com/ABustos2606/drizzle#synth", "name": "Drizzle Synth", "category": "Sound source", "description": "A wavetable voice played as grains, with reverb. Needs no input. Wavetable picks the sound, Osc/grains mixes the plain voice with its grains, and Pitch CV takes volt per octave.",
+     "output": "output", "groups": [
+      {"name": "Grain", "parameters": ["time", "size", "shape", "pitch"]},
+      {"name": "Voice and mix", "parameters": ["density", "wavetable", "osc_grains", "reverb"]},
+      {"name": "Play", "parameters": ["freeze", "seed", "seed_lock", "quality"]},
+      {"name": "Modulation", "parameters": ["time_mod", "size_mod", "shape_mod", "pitch_mod"]},
+      {"name": "CV use", "parameters": ["time_uses_cv", "size_uses_cv", "shape_uses_cv", "pitch_uses_cv", "seed_uses_gate"]},
+      {"name": "CV assign and out", "parameters": ["assign_to", "gate_mode", "output"]}
+    ]},
     {"uri": "urn:peepo:lv2:footswitch", "name": "Foot switch", "category": "Control", "description": "A stomp as a control signal: On value while it is down, Off value otherwise. Latching flips it on each press instead.", "parameters": [
       {"symbol": "stomp", "choices": ["1", "2", "3"]}, {"symbol": "latching"}, {"symbol": "on_value"}, {"symbol": "off_value"}, {"symbol": "pressed"}
     ]},

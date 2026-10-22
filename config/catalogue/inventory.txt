@@ -238,6 +238,8 @@ https://github.com/ABustos2606/discipline#discipline
 https://github.com/ABustos2606/discipline#return
 https://github.com/ABustos2606/loo-pi#loopi
 https://github.com/ABustos2606/chamber#chamber
+https://github.com/ABustos2606/drizzle#drizzle
+https://github.com/ABustos2606/drizzle#synth
 https://github.com/ABustos2606/midi-cv#mono
 https://github.com/ABustos2606/midi-cv#poly
 https://github.com/ABustos2606/midi-pc#pc
