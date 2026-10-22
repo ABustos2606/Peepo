@@ -82,8 +82,8 @@ def connections(module):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--catalogue", type=Path, default=ROOT / "docs/evidence/catalogue-pi-20261019-purged.json")
-    parser.add_argument("--date", default="2026-10-19")
+    parser.add_argument("--catalogue", type=Path, default=ROOT / "docs/evidence/catalogue-pi-20261022.json")
+    parser.add_argument("--date", default="2026-10-22")
     args = parser.parse_args()
     recorded = date.fromisoformat(args.date).strftime("%d %B %Y").lstrip("0")
     export = read_json(args.catalogue)

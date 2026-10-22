@@ -79,7 +79,7 @@ In Peepo:
 
 ## 1. Drizzle (Beads)
 
-**21 October 2026:** offline work done in Drizzle's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step (pinned at `v0.2.0`), inventory, overlay entries and notice added. Not yet done: the Pi checks below.
+**21 October 2026:** offline work done in Drizzle's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step (pinned at `v0.2.0`), inventory, overlay entries and notice added. **22 October:** built, tested and installed on the Pi, offered in its catalogue, and the user's guitar test passed. Not yet done: the measurements below.
 
 - [x] Wrap `beads::Processor`: delay and reverb buffers allocated in `instantiate`, `Process` in whole 1/4000 s blocks whatever Ingen's slices, stereo in and out. Dirty tape runs at 24 kHz and vintage digital at 32 kHz, as on the hardware, resampled around the processor; latency 95 frames (2 ms) at 48 kHz in every quality, reported to the host.
 - [x] Controls: Time, Size, Shape, Pitch (semitones), Density, Feedback, Dry/wet, Reverb; Freeze switch; Seed as a trigger; random amount per parameter (Beads' attenurandomizers); Quality as an enumeration of its four media (switching fades out, clears the buffer over 16 ms and fades in); Mono switch; Auto gain and Input gain; On (`lv2:enabled`, `"bypass": "port"`: tails ring out).
@@ -88,8 +88,9 @@ In Peepo:
 - [x] **Drizzle Synth** (decided 20 October 2026): Beads becomes a synth when its inputs are unplugged, which an LV2 plugin cannot see, so the synth is a second plugin in the same repository, a wavetable sound source.
 - [x] Overlay: Drizzle under Texture (27 controls in seven pages: Grain, Density and mix, Play, Modulation, CV use, Input and output, CV assign and out), Drizzle Synth under Sound source (24 controls in six pages). Checked with the exporter and `peepo_catalogue_tests` under WSL.
 - [ ] CPU and xruns on the Pi (`make test-timing` there, then `tools/pi/measure-effect.py` alone and in a typical patch, Density at maximum, every quality, with a Drizzle Synth).
-- [ ] Listened to with guitar on the Pi; defaults tuned (Quality, Density, gain, Gate out's trigger length); result in `docs/evidence/`.
-- [ ] Pi catalogue exported; `docs/33-module-list.md` regenerated.
+- [x] Listened to with guitar on the Pi (22 October 2026): passed, no default changed. Record in Drizzle's `docs/milestone-3-validation.md`.
+- [x] Pi catalogue exported (22 October 2026: 336 -> 338 modules, only Drizzle's two added).
+- [x] `docs/33-module-list.md` regenerated (22 October 2026, from that export: 358 identities, 338 installed).
 - [ ] Not in scope: saving the captured buffer in the patch (possible later with LV2 state, about 1 MB per instance).
 
 ## 2. Chamber (Elements)
@@ -103,7 +104,7 @@ In Peepo:
 - [x] **Decision:** the Ominous mode is a switch in Chamber, not a second plugin, offered only if CPU allows. The overlay hides it until the Pi measurement says it fits; on a desktop it costs 1.8 times the worst modal case.
 - [ ] CPU and xruns on the Pi (`make test-timing` there, then `tools/pi/measure-effect.py` alone and in a typical patch), with and without the Ominous voice.
 - [ ] Listened to with guitar on the Pi; defaults tuned for guitar use (Damping, input levels); result in `docs/evidence/`.
-- [ ] Pi catalogue exported; `docs/33-module-list.md` regenerated.
+- [x] Pi catalogue exported; `docs/33-module-list.md` regenerated (22 October 2026, with Drizzle's export: Chamber listed under Resonator, Ready).
 
 ## 3. Slope (Stages)
 
