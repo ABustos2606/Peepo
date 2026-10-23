@@ -1271,8 +1271,16 @@ void Application::handle(Binding& b, lv_event_t* e) {
         if (browser_category_ != b.symbol) { browser_category_ = b.symbol; browser_pick_.clear(); browser_scroll_ = 0; rebuild_ = true; }
         break;
     case Action::BrowserPick:
-        // The first tap picks a card; tapping it again, or Add, adds it.
-        if (b.symbol.empty() || b.symbol == browser_pick_) { if (!browser_pick_.empty()) add_module(browser_pick_); }
+        // The first tap picks a card; tapping it again, or Add, adds it, in
+        // the variant its pills show.
+        if (b.symbol.empty() || b.symbol == browser_pick_ ||
+            (browser_cards_.count(b.symbol) && browser_cards_.count(browser_pick_) && browser_cards_[b.symbol] == browser_cards_[browser_pick_])) {
+            if (!browser_pick_.empty()) add_module(browser_pick_);
+        } else browser_pick(b.symbol, false);
+        break;
+    case Action::BrowserVariant:
+        // A pill picks its variant and the card; tapping it again adds it.
+        if (b.symbol == browser_pick_) add_module(browser_pick_);
         else browser_pick(b.symbol, false);
         break;
     case Action::CvChoice:
@@ -1473,7 +1481,7 @@ void Application::rebuild() {
         if (page_list_) list_scroll_[page_list_page_] = lv_obj_get_scroll_y(page_list_);
         lv_obj_clean(screen_);
     }
-    browser_list_ = browser_add_ = parameter_list_ = page_list_ = nullptr; browser_cards_.clear();
+    browser_list_ = browser_add_ = parameter_list_ = page_list_ = nullptr; browser_cards_.clear(); browser_pills_.clear();
     bars_.clear();
     bindings_.clear(); module_widgets_.clear(); input_jacks_.clear(); cv_inputs_.clear(); dots_.clear(); cables_.clear(); canvas_ = nullptr; footer_ = nullptr;
     tempo_value_ = cpu_value_ = network_value_ = nullptr;
@@ -1865,14 +1873,25 @@ void Application::update_cables() {
 }
 void Application::browser(lv_obj_t* header, lv_obj_t* content, lv_obj_t* foot) {
     const auto& groups = module_groups();
-    std::vector<std::vector<const ModuleDefinition*>> members(groups.size());
-    for (const auto& d : catalogue()) if (d.category != "Endpoint" && !d.hidden) members[module_group(d.category)].push_back(&d);
-    // Usable modules first, each part alphabetical.
-    for (auto& entries : members)
-        std::stable_sort(entries.begin(), entries.end(), [](const ModuleDefinition* a, const ModuleDefinition* b) {
-            const bool ua = a->availability == Availability::Available, ub = b->availability == Availability::Available;
-            return ua != ub ? ua : a->name < b->name;
-        });
+    // A card per module, or per family: its variants, in the overlay's order.
+    struct Card { std::string name; std::vector<const ModuleDefinition*> variants; bool usable = false; };
+    std::vector<std::vector<Card>> members(groups.size());
+    std::map<std::string, std::pair<std::size_t, std::size_t>> family_cards;
+    for (const auto& d : catalogue()) {
+        if (d.category == "Endpoint" || d.hidden) continue;
+        auto& cards = members[module_group(d.category)];
+        const auto at = d.family.empty() ? family_cards.end() : family_cards.find(d.family);
+        auto& card = at != family_cards.end() ? members[at->second.first][at->second.second] : cards.emplace_back(Card{d.family.empty() ? d.name : d.family, {}});
+        if (!d.family.empty() && at == family_cards.end()) family_cards[d.family] = {module_group(d.category), cards.size() - 1};
+        card.variants.push_back(&d);
+        card.usable = card.usable || d.availability == Availability::Available;
+    }
+    for (auto& cards : members) {
+        for (auto& c : cards)
+            std::stable_sort(c.variants.begin(), c.variants.end(), [](const ModuleDefinition* a, const ModuleDefinition* b) { return a->variant_order < b->variant_order; });
+        // Usable modules first, each part alphabetical.
+        std::stable_sort(cards.begin(), cards.end(), [](const Card& a, const Card& b) { return a.usable != b.usable ? a.usable : a.name < b.name; });
+    }
     // A group the catalogue leaves empty has no pill; a filter on one shows all.
     browser_groups_ = {std::string()};
     for (std::size_t i = 0; i < groups.size(); ++i) if (!members[i].empty()) browser_groups_.push_back(groups[i].name);
@@ -1913,9 +1932,9 @@ void Application::browser(lv_obj_t* header, lv_obj_t* content, lv_obj_t* foot) {
     if (!browser_group_.empty()) {
         const auto gi = static_cast<std::size_t>(std::find_if(groups.begin(), groups.end(), [&](const ModuleGroup& x) { return browser_group_ == x.name; }) - groups.begin());
         for (const auto& name : groups[gi].categories)
-            if (std::any_of(members[gi].begin(), members[gi].end(), [&](const ModuleDefinition* d) { return d->category == name; })) categories.push_back(name);
-        for (const auto* d : members[gi])
-            if (std::find(categories.begin(), categories.end(), d->category) == categories.end()) categories.push_back(d->category);
+            if (std::any_of(members[gi].begin(), members[gi].end(), [&](const Card& c) { return c.variants[0]->category == name; })) categories.push_back(name);
+        for (const auto& c : members[gi])
+            if (std::find(categories.begin(), categories.end(), c.variants[0]->category) == categories.end()) categories.push_back(c.variants[0]->category);
     }
     if (categories.size() < 2 || std::find(categories.begin(), categories.end(), browser_category_) == categories.end()) browser_category_.clear();
     int top = 8;
@@ -1947,9 +1966,17 @@ void Application::browser(lv_obj_t* header, lv_obj_t* content, lv_obj_t* foot) {
     for (std::size_t gi = 0; gi < groups.size(); ++gi) {
         if (!browser_group_.empty() && browser_group_ != groups[gi].name) continue;
         const auto& g = groups[gi];
-        for (const auto* d : members[gi]) {
+        for (const auto& c : members[gi]) {
+            const auto* d = c.variants[0];
             if (!browser_category_.empty() && d->category != browser_category_) continue;
-            const bool usable = d->availability == Availability::Available;
+            const bool usable = c.usable;
+            // A family offers the variants it can add, one pill each; the one
+            // last picked is what a tap on the card picks.
+            std::vector<const ModuleDefinition*> variants;
+            for (const auto* v : c.variants) if (v->availability == Availability::Available) variants.push_back(v);
+            const ModuleDefinition* chosen = variants.empty() ? d : variants[0];
+            if (const auto last = browser_variant_.find(d->family); !d->family.empty() && last != browser_variant_.end())
+                for (const auto* v : variants) if (v->uri == last->second) chosen = v;
             auto* card = lv_button_create(content); lv_obj_remove_style_all(card);
             lv_obj_set_pos(card, shown % 2 ? 406 : 14, top + shown / 2 * 172); lv_obj_set_size(card, 380, 160);
             lv_obj_set_style_bg_color(card, color(surface), 0); lv_obj_set_style_bg_opa(card, LV_OPA_COVER, 0);
@@ -1972,18 +1999,42 @@ void Application::browser(lv_obj_t* header, lv_obj_t* content, lv_obj_t* foot) {
             lv_obj_set_style_text_letter_space(category, 1, 0);
             lv_obj_align(tag, LV_ALIGN_TOP_RIGHT, -16, 18);
             lv_obj_update_layout(tag);
-            auto* title = label(card, upper(d->name), 18, 18, 380 - 18 - 16 - lv_obj_get_width(tag) - 12, text, &peepo_bold_20);
+            auto* title = label(card, upper(c.name), 18, 18, 380 - 18 - 16 - lv_obj_get_width(tag) - 12, text, &peepo_bold_20);
             lv_label_set_long_mode(title, LV_LABEL_LONG_DOT); lv_obj_set_height(title, 26);
             // An entry that cannot be added says why instead of what it does.
-            const auto about = usable ? d->description : "Needs setup: " + (d->availability_reason.empty() ? d->description : d->availability_reason);
+            const auto& what = d->family_description.empty() ? chosen->description : d->family_description;
+            const auto about = usable ? what : "Needs setup: " + (d->availability_reason.empty() ? d->description : d->availability_reason);
+            const bool offers = variants.size() > 1;
             auto* description = label(card, about, 18, 54, 344, muted, &lv_font_montserrat_18);
-            lv_label_set_long_mode(description, LV_LABEL_LONG_DOT); lv_obj_set_height(description, 92);
+            lv_label_set_long_mode(description, LV_LABEL_LONG_DOT); lv_obj_set_height(description, offers ? 46 : 92);
             if (usable) {
-                bind(card, Action::BrowserPick, 0, d->uri);
+                bind(card, Action::BrowserPick, 0, chosen->uri);
                 if (group) lv_group_add_obj(group, card);
-                browser_cards_[d->uri] = card;
-                browser_order_.push_back(d->uri);
-            } else {
+                for (const auto* v : variants) { browser_cards_[v->uri] = card; browser_order_.push_back(v->uri); }
+            }
+            if (offers) {
+                auto* row = lv_obj_create(card); lv_obj_remove_style_all(row);
+                lv_obj_set_pos(row, 18, 112); lv_obj_set_size(row, 344, 32);
+                lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW); lv_obj_set_style_pad_column(row, 6, 0);
+                lv_obj_remove_flag(row, LV_OBJ_FLAG_CLICKABLE);
+                for (const auto* v : variants) {
+                    auto* pill = lv_button_create(row); lv_obj_remove_style_all(pill);
+                    lv_obj_set_size(pill, LV_SIZE_CONTENT, 32); lv_obj_set_style_pad_hor(pill, 12, 0);
+                    lv_obj_set_style_radius(pill, LV_RADIUS_CIRCLE, 0);
+                    lv_obj_set_style_bg_color(pill, color(background), 0); lv_obj_set_style_bg_opa(pill, LV_OPA_COVER, 0);
+                    lv_obj_set_style_bg_color(pill, color(g.bright), LV_STATE_CHECKED);
+                    lv_obj_set_style_bg_opa(pill, LV_OPA_80, LV_STATE_PRESSED);
+                    lv_obj_set_style_border_width(pill, 1, 0); lv_obj_set_style_border_color(pill, color(rim), 0);
+                    lv_obj_set_style_border_width(pill, 0, LV_STATE_CHECKED);
+                    auto* l = label(pill, upper(v->variant), 0, 0, 0, g.bright, &peepo_bold_14);
+                    lv_obj_set_style_text_color(l, color(background), LV_STATE_CHECKED);
+                    lv_obj_set_style_text_letter_space(l, 1, 0); lv_obj_center(l);
+                    if (v == chosen) { lv_obj_add_state(pill, LV_STATE_CHECKED); lv_obj_add_state(l, LV_STATE_CHECKED); }
+                    bind(pill, Action::BrowserVariant, 0, v->uri);
+                    browser_pills_[v->uri] = pill;
+                }
+            }
+            if (!usable) {
                 // Not clickable, so a drag starting here still scrolls the list.
                 lv_obj_remove_flag(card, LV_OBJ_FLAG_CLICKABLE);
                 lv_obj_set_style_opa(card, LV_OPA_40, 0);
@@ -2007,6 +2058,16 @@ void Application::browser(lv_obj_t* header, lv_obj_t* content, lv_obj_t* foot) {
 void Application::browser_pick(const std::string& uri, bool reveal) {
     if (const auto old = browser_cards_.find(browser_pick_); old != browser_cards_.end()) lv_obj_remove_state(old->second, LV_STATE_CHECKED);
     browser_pick_ = uri;
+    // On a family's card, its pill for this variant, which the card remembers.
+    if (const auto* d = definition(uri); d && !d->family.empty() && browser_pills_.count(uri)) {
+        browser_variant_[d->family] = uri;
+        for (const auto& [other, pill] : browser_pills_) {
+            const auto* v = definition(other);
+            if (!v || v->family != d->family) continue;
+            lv_obj_set_state(pill, LV_STATE_CHECKED, other == uri);
+            lv_obj_set_state(lv_obj_get_child(pill, 0), LV_STATE_CHECKED, other == uri);
+        }
+    }
     if (const auto card = browser_cards_.find(uri); card != browser_cards_.end()) {
         lv_obj_add_state(card->second, LV_STATE_CHECKED);
         if (reveal) lv_obj_scroll_to_view(card->second, LV_ANIM_ON);

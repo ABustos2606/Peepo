@@ -73,3 +73,32 @@ visible; legacy convolution definitions remain hidden; build pruning was
 checked with a disposable prefix, repeated execution and an invalid path.
 The convolver channel mapping was checked against its pinned source. No DSP
 changed and no new guitar listening or CPU benchmark was performed.
+
+## Families in Add
+
+**22 October 2026. Windows editor and tests; not yet deployed to the Pi.**
+
+Plugins that do one job in several configurations are now one card in Add,
+with a pill for each variant. Tapping the card picks the variant its pills
+show, a pill picks another, and a second tap or Add adds it. The card
+remembers the last variant picked; encoder 1 steps through the variants as
+through cards. Nothing is removed: each variant keeps its identity, its name
+on the canvas and its place in saved patches.
+
+The `families` list in `config/catalogue/overlay.json` defines them: a name, a
+card description and the variants in pill order, all of one category. A
+variant that is not installed is left out; a plugin in two families, a repeated
+label or mixed categories refuse the overlay.
+
+| Family | Pills |
+| --- | --- |
+| Cabinet, IR Reverb | Mono, Mono > stereo, Stereo |
+| Gx Amplifier, Gx JCM800 preamp, Gx Digital delay, Gx Duck delay, Downsampler, Compressor, Parametric EQ, Stone phaser, Beat Repeater, Beat Slicer, Granulator, Scope | Mono, Stereo |
+| Chorus, Flanger, Harmonic tremolo, Vibrato | LFO, CV |
+| Rotary speaker | Simple, Full |
+| 16 Step Sequencer, 16 Step Note Sequencer | Trigger, BPM |
+| LFO | Rate, Tempo |
+
+Ring Modulator stays two cards: the CV one multiplies control signals, a
+different job from the audio effect. With the Pi export of 22 October, the
+281 ready entries become 257 cards.

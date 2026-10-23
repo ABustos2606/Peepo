@@ -97,6 +97,12 @@ struct ModuleDefinition {
     // echoes ring on or whose memory keeps recording, which the engine's
     // bypass would stop.
     bool port_bypass = false;
+    // One card in Add for several plugins that do the same job, such as a
+    // mono and a stereo compressor: the card's name and text, and this
+    // plugin's pill on it, in the order the overlay lists them. Empty for a
+    // module with a card of its own.
+    std::string family, family_description, variant;
+    int variant_order = 0;
 };
 // The general Output: not a plugin port but the block's own level, which the
 // engine applies to its audio outputs (urn:peepo:ns#outputLevel, in dB).

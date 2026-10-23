@@ -370,6 +370,40 @@ std::string apply_catalogue_overlay(std::string_view text, std::vector<ModuleDef
             if (!bypass.empty()) d.port_bypass = bypass == "port";
         }
     }
+    // Families: plugins doing one job, offered in Add as one card with a pill
+    // for each. A listed plugin that is not installed is left out, as a rule
+    // for one is ignored.
+    if (const auto* families = root.get("families")) {
+        if (families->kind != Value::Kind::Array) return "overlay families are not a list";
+        std::set<std::string> listed;
+        number = 0;
+        for (const auto& item : families->items) {
+            if (item.kind != Value::Kind::Object) return "an overlay family is not an object";
+            Fields family{item, "overlay family " + std::to_string(++number), {}};
+            const auto name = family.text("name", true, 48), description = family.text("description", false);
+            const auto* variants = family.find("variants", Value::Kind::Array, true);
+            if (!family.issue.empty()) return family.issue;
+            if (name.empty() || variants->items.size() < 2) return family.where + ": needs a name and two variants or more";
+            std::set<std::string> labels;
+            std::string category;
+            int order = 0;
+            for (const auto& entry : variants->items) {
+                if (entry.kind != Value::Kind::Object) return family.where + " " + name + ": a variant is not an object";
+                Fields variant{entry, family.where + " " + name + " variant", {}};
+                const auto uri = variant.text("uri", true, 1024), label = variant.text("label", true, 16);
+                if (!variant.issue.empty()) return variant.issue;
+                if (!address(uri) || label.empty()) return variant.where + ": needs a URI and a label";
+                if (!labels.insert(label).second) return variant.where + ": " + label + " is listed twice";
+                if (!listed.insert(uri).second) return variant.where + ": " + uri + " is already in a family";
+                const auto d = std::find_if(changed.begin(), changed.end(), [&](const ModuleDefinition& m) { return m.uri == uri; });
+                if (d == changed.end()) continue;
+                // One card has one category tag and sits under one filter.
+                if (category.empty()) category = d->category;
+                else if (d->category != category) return variant.where + ": " + uri + " is in " + d->category + ", not " + category;
+                d->family = name; d->family_description = description; d->variant = label; d->variant_order = order++;
+            }
+        }
+    }
     // Every module that makes sound has one Output: the plugin's own level
     // control where the overlay names one, the general one otherwise. "none"
     // is for modules that only pass their input on, such as a tuner.

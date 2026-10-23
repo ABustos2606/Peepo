@@ -1614,6 +1614,42 @@ int main(int argc, char** argv) {
             poly_engine.submit(peepo::Disconnect{{50, 52, "pitch_2", "in"}}); step(app, 256); step(app, 256);
             check(voices_now() == 1, "removing the second voice's cable did not set Voices back to 1");
         }
+        // A family is one card in Add with a pill per variant: a tap on the
+        // card picks the variant its pills show, a pill picks another, and a
+        // second tap adds it. The card remembers the variant next time.
+        {
+            peepo::ModuleDefinition mono{"urn:peepo:test:squash-mono", "Squash", "Dynamics", "Mono squash", 0xff8a65,
+                {{"in", peepo::Direction::Input}, {"out", peepo::Direction::Output}}, {}};
+            auto stereo = mono; stereo.uri = "urn:peepo:test:squash-stereo"; stereo.name = "Squash stereo"; stereo.description = "Stereo squash";
+            mono.family = stereo.family = "Squash"; mono.family_description = stereo.family_description = "Evens out the level";
+            mono.variant = "Mono"; stereo.variant = "Stereo"; stereo.variant_order = 2;
+            auto wide = mono; wide.uri = "urn:peepo:test:squash-wide"; wide.name = "Squash wide"; wide.variant = "Mono > stereo"; wide.variant_order = 1;
+            peepo::register_definitions({stereo, wide, mono});
+            peepo::SimulatedEngine family_engine;
+            family_engine.submit(peepo::LoadGraph{peepo::empty_graph("Family")}); family_engine.advance(100);
+            peepo::Application app(family_engine); step(app);
+            const auto modules = app.graph().modules.size();
+            const auto pill = [&](const char* name) { auto* l = exact_label(app.screen(), name); return l ? lv_obj_get_parent(l) : nullptr; };
+            click(app, 490, 36); tap(app, "GAIN"); tap_first(app, "DYNAMICS");
+            check(exact_label(app.screen(), "SQUASH") && !exact_label(app.screen(), "SQUASH STEREO") && text_label(app.screen(), "Evens out the level"), "the family is not one card");
+            check(pill("MONO") && pill("STEREO") && lv_obj_has_state(pill("MONO"), LV_STATE_CHECKED) && !lv_obj_has_state(pill("STEREO"), LV_STATE_CHECKED),
+                  "the family's pills are missing, or the first is not shown chosen");
+            // Three pills, the most a family has, fit inside the card.
+            { lv_area_t card, last; lv_obj_get_coords(lv_obj_get_parent(lv_obj_get_parent(pill("STEREO"))), &card); lv_obj_get_coords(pill("STEREO"), &last);
+              check(pill("MONO > STEREO") && last.x2 <= card.x2 - 12, "a family's pills run past its card"); }
+            tap(app, "SQUASH"); tap(app, "STEREO");
+            check(app.page() == peepo::Page::Browser && app.graph().modules.size() == modules && lv_obj_has_state(pill("STEREO"), LV_STATE_CHECKED) &&
+                  !lv_obj_has_state(pill("MONO"), LV_STATE_CHECKED), "a pill added, or did not choose its variant");
+            capture(app, output / "85-browser-family.bmp");
+            tap(app, "SQUASH");
+            check(app.page() == peepo::Page::Patch && app.graph().modules.size() == modules + 1 && app.graph().modules.back().uri == stereo.uri,
+                  "the card did not add the variant its pills show");
+            click(app, 490, 36); tap(app, "GAIN"); tap_first(app, "DYNAMICS");
+            check(lv_obj_has_state(pill("STEREO"), LV_STATE_CHECKED), "the card forgot the variant last picked");
+            // Encoder 1 steps through the variants as through cards, in pill order.
+            tap(app, "SQUASH"); app.control({peepo::ControlEvent::Type::Turn, "enc1", -1}); step(app);
+            check(lv_obj_has_state(pill("MONO > STEREO"), LV_STATE_CHECKED) && !lv_obj_has_state(pill("STEREO"), LV_STATE_CHECKED), "encoder 1 did not step to the previous variant");
+        }
         // Release the headless devices before the global runtime.
         lv_indev_delete(indev);
         lv_indev_delete(keypad);

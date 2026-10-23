@@ -56,7 +56,7 @@ public:
 private:
     enum class Action { Navigate, Add, Module, Port, SelectCable, DeleteCable, ClearCable, Pan, Home,
                         OpenActions, Edit, Duplicate, Parameter, Bypass, Remove, SaveSession, LoadSession, State, Reject,
-                        NameEntry, NameInput, Keyboard, CommitName, Confirm, CancelReplace, ParameterPage, BrowserGroup, BrowserPick, MissingFixture,
+                        NameEntry, NameInput, Keyboard, CommitName, Confirm, CancelReplace, ParameterPage, BrowserGroup, BrowserPick, BrowserVariant, MissingFixture,
                         ParallelDemo, CvChoice, Slide,
                         SavePatch, LoadStored, DeleteStored, StartupStored, OpenPatch, ConfirmAction, CancelAction,
                         AssignControl, EditControl, ClearControl, PickModule, PickTarget, InvertControl, SwitchModeChoice, PowerOff,
@@ -317,7 +317,10 @@ private:
     std::string browser_category_;
     int browser_scroll_ = 0;
     lv_obj_t *browser_list_ = nullptr, *browser_add_ = nullptr;
-    std::map<std::string, lv_obj_t*> browser_cards_;
+    // Every variant a card offers maps to it; a family's pills, by variant.
+    std::map<std::string, lv_obj_t*> browser_cards_, browser_pills_;
+    // The variant each family's card last picked, kept between visits.
+    std::map<std::string, std::string> browser_variant_;
     // What the encoders step through: groups shown, and usable modules in card order.
     std::vector<std::string> browser_groups_, browser_order_;
     bool renaming_ = false;

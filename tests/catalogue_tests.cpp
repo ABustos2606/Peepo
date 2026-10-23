@@ -198,6 +198,29 @@ void overlay() {
     auto hidden_group = document.modules;
     check(!apply_catalogue_overlay(header + "{" + uri + R"(, "parameters": [{"symbol": "in_gain_param", "hidden": true}], "groups": [{"name": "Hidden", "parameters": ["in_gain_param"]}]}]})", hidden_group).empty(),
           "a group naming a hidden control accepted");
+
+    // Families: one card in Add for plugins of one category, pills in the
+    // listed order; an absent variant is left out, a plugin in two refused.
+    {
+        std::vector<ModuleDefinition> pair{{"urn:test:mono", "Squash", "Dynamics", "Mono", 0, {}, {}}, {"urn:test:stereo", "Squash stereo", "Dynamics", "Stereo", 0, {}, {}},
+                                           {"urn:test:other", "Other", "Delay", "", 0, {}, {}}};
+        const auto family = [](const std::string& variants, const std::string& more = {}) {
+            return R"({"format": "peepo-catalogue-overlay", "version": 1, "rules": [], "families": [{"name": "Squash", "description": "Evens out", "variants": [)" + variants + "]}" + more + "]}";
+        };
+        const std::string listed = R"({"uri": "urn:test:stereo", "label": "Stereo"}, {"uri": "urn:test:mono", "label": "Mono"}, {"uri": "urn:not:installed", "label": "Quad"})";
+        auto applied = pair;
+        check(apply_catalogue_overlay(family(listed), applied).empty(), "a valid family refused");
+        check(applied[0].family == "Squash" && applied[0].variant == "Mono" && applied[0].variant_order == 1 && applied[1].variant_order == 0 &&
+              applied[1].family_description == "Evens out" && applied[2].family.empty(), "family not applied in its listed order");
+        for (const auto& bad : {family(R"({"uri": "urn:test:mono", "label": "Mono"})"),
+                                family(R"({"uri": "urn:test:mono", "label": "Mono"}, {"uri": "urn:test:other", "label": "Other"})"),
+                                family(R"({"uri": "urn:test:mono", "label": "Mono"}, {"uri": "urn:test:stereo", "label": "Mono"})"),
+                                family(listed, R"(, {"name": "Again", "variants": [{"uri": "urn:test:mono", "label": "A"}, {"uri": "urn:x:y", "label": "B"}]})"),
+                                family(R"({"uri": "urn:test:mono", "label": ""}, {"uri": "urn:test:stereo", "label": "Stereo"})")}) {
+            auto refused = pair;
+            check(!apply_catalogue_overlay(bad, refused).empty() && refused[0].family.empty(), "an impossible family accepted");
+        }
+    }
 }
 void fixture(const std::string& folder) {
     std::vector<ModuleDefinition> offered;

@@ -31,7 +31,9 @@ std::string read_catalogue(std::string_view text, CatalogueDocument& out);
 // "availability" with its "reason", module "hidden" (retain identity, omit
 // from Add), and "parameters": per-control "name",
 // "unit", "kind" (continuous, integer or toggle), "default" and "hidden",
-// listed controls first.
+// listed controls first. After the rules, "families" lists plugins offered
+// as one card in Add: a "name", an optional "description" and "variants",
+// each a "uri" and the "label" of its pill, all of one category.
 std::string apply_catalogue_overlay(std::string_view text, std::vector<ModuleDefinition>& modules);
 // Reads `path` and, when given, `overlay_path` (both UTF-8).
 std::string load_catalogue(const std::string& path, const std::string& overlay_path, std::vector<ModuleDefinition>& out);
