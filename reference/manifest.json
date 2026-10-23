@@ -11,9 +11,7 @@
             "role": "Stereo micro-looper and effects sharing one clock",
             "origin": "https://github.com/ABustos2606/aura.git",
             "commit": "82b37d7d2e555d55232f4b238f19b185b0c91842",
-            "private": true,
-            "storage": "external_private_repository",
-            "license": "LicenseRef-Proprietary"
+            "license": "GPL-2.0-or-later"
         },
                          {
                              "name":  "avwlv2",

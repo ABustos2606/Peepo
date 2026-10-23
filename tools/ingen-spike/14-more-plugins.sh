@@ -249,8 +249,7 @@ third midi-cv https://github.com/ABustos2606/midi-cv.git 03ac4344aeae7e49625fb77
 third midi-pc https://github.com/ABustos2606/midi-pc.git cf1f945da9d05cd57ecb4b8d3b59b6e1de9f6a70 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
-# --- Aura: private stereo micro-looper and effects sharing one clock.
-# Requires access to the private source repository; no license is granted.
+# --- Aura (stereo micro-looper and effects sharing one clock), the project's own.
 third aura https://github.com/ABustos2606/aura.git 82b37d7d2e555d55232f4b238f19b185b0c91842 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
