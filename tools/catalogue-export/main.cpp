@@ -217,10 +217,9 @@ Exported export_plugin(const Terms& terms, const LilvPlugin* plugin, double rate
     d.ports.insert(d.ports.end(), audio_out.begin(), audio_out.end());
     d.ports.insert(d.ports.end(), others.begin(), others.end());
     if (blocked.empty() && !sounding && !midi) blocked = "This module has no audio, control or MIDI connectors to patch.";
+    // Instruments and MIDI-only modules are offered like any other: MIDI
+    // cables and the engine's MIDI IN and OUT route their notes.
     if (!blocked.empty()) { d.availability = Availability::Unavailable; d.availability_reason = tidy(blocked, 500); }
-    // Played by notes, or working on MIDI alone: offered once checked with a controller.
-    else if (instrument) { d.availability = Availability::Untested; d.availability_reason = "Played by MIDI notes; not yet checked with a MIDI controller."; }
-    else if (!sounding) { d.availability = Availability::Untested; d.availability_reason = "Works on MIDI only; not yet checked with a MIDI controller."; }
     return out;
 }
 }

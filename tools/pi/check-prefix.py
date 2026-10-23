@@ -7,6 +7,7 @@ otherwise be silently replaced by the next package install (20 October 2026).
 """
 import json
 from pathlib import Path
+import re
 import sys
 
 REPO = Path(__file__).resolve().parents[2]
@@ -18,6 +19,10 @@ def main():
     retired = {Path(m['bundle']).name for m in json.loads((catalogue / 'retired.json').read_text())['modules'] if m.get('bundle')}
     wanted = {p['bundle'] for p in json.loads((catalogue / 'gxplugins.json').read_text())['plugins']}
     wanted |= {p['bundle'] for e in json.loads((catalogue / 'patchstorage.json').read_text())['entries'] for p in e['plugins']}
+    # The project's own plugins, pinned in 14-more-plugins.sh: each repository
+    # installs <name>.lv2. Chamber and Drizzle were on the Pi alone (22 October).
+    pins = (REPO / 'tools/ingen-spike/14-more-plugins.sh').read_text()
+    wanted |= {m + '.lv2' for m in re.findall(r'^third \S+ https://github\.com/ABustos2606/([a-z0-9-]+)\.git', pins, re.M)}
     missing = sorted(b for b in wanted - retired if not (prefix / 'lib/lv2' / b / 'manifest.ttl').is_file())
     problems = ['missing bundle ' + b for b in missing]
     built = prefix / 'src/ingen/build/src/server/libingen_server.so'
@@ -30,7 +35,7 @@ def main():
     if problems:
         print('\n'.join(problems), file=sys.stderr)
         sys.exit(f'{len(problems)} problem(s); the prefix is not packaged')
-    print(f'{len(wanted - retired)} selected Gx/Patchstorage bundles present; engine installed')
+    print(f'{len(wanted - retired)} selected Gx/Patchstorage and own bundles present; engine installed')
 
 
 if __name__ == '__main__':
