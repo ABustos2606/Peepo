@@ -67,7 +67,7 @@ if ! pkg-config --atleast-version=0.24.21 lilv-0; then
 fi
 
 if [ ! -d ingen ]; then
-    git clone -q https://github.com/polyeffects/ingen.git
+    git clone -q https://github.com/peepo-sources/ingen.git
 fi
 if ! git -C ingen rev-parse -q --verify peepo-spike >/dev/null; then
     git -C ingen checkout -q -b peepo-spike "$INGEN_BASE"

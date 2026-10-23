@@ -46,9 +46,9 @@ build() { # dir install-dir
     cp -r "$bundle" "$2/"
 }
 
-fetch https://github.com/mikeoliphant/neural-amp-modeler-lv2.git nam-current "$CURRENT_COMMIT"
+fetch https://github.com/peepo-sources/neural-amp-modeler-lv2.git nam-current "$CURRENT_COMMIT"
 build nam-current "$PREFIX/nam/current"
-fetch https://github.com/polyeffects/neural-amp-modeler-lv2.git nam-poly "$POLY_COMMIT"
+fetch https://github.com/peepo-sources/neural-amp-modeler-lv2-poly.git nam-poly "$POLY_COMMIT"
 build nam-poly "$PREFIX/nam/poly"
 
 echo "--- built"

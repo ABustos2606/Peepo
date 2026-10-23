@@ -92,6 +92,7 @@ Inside Debian under WSL2, as root: `bash tools/pi/build-arm64.sh` builds the eng
 | [Beebo manual gaps](docs/30-beebo-manual-gaps.md) | Features in the Beebo manual that Peepo lacked: looper, set list, MIDI, USB import/export, effects loops; Beebo's Delay, the Foot switch module and assigning stomps from the patch are done |
 | [Module rail, Aura's and Discipline's pages](docs/40-module-rail-and-aura.md) | Smaller bars and a scroll rail so scrolling never sets a value; Aura and Discipline get two tabs: main controls and stomps, then everything else |
 | [MIDI](docs/39-midi.md) | Plan: MIDI in and out over USB and 3.5 mm TRS jacks, MIDI cables and the MIDI modules on the canvas, clock in and out, program change and MIDI learn |
+| [Plugin sources](docs/42-plugin-sources.md) | Plan: what breaks if a plugin's repository disappears, the 22 repositories to fork, and a local source cache for everything forks can't cover |
 
 ## Retrieve the project and reference sources
 

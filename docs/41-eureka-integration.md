@@ -5,7 +5,8 @@
 Eureka adds twelve independent stereo effects: Slowmo, Hush, Bloom, Skip,
 Ripple, Prism, Spool, Granny, Spark, Chime, Flock and Crinkle. Their source is
 pinned in `14-more-plugins.sh` and `reference/manifest.json` to published commit
-`7e7eed329af40438fad148df9c97ed6a2f7dae96`. No commit, push or publication was
+`4b52532c3f0f426a38005c01cee5532e8a15b542` (firmware Size/Time/Rate laws and pedal Mix;
+M6/M7 used `7e7eed3`). No commit, push or publication was
 made during integration; pre-existing Aura pin changes were preserved.
 
 The overlay follows Eureka's indexed contracts and categories. Each has Main,

@@ -23,7 +23,7 @@ dpkg -s mda-lv2 gettext-base >/dev/null 2>&1 || apt-get install -y -q mda-lv2 ge
 mkdir -p "$SRC"
 cd "$SRC"
 if [ ! -d lenticular_lv2 ]; then
-    git clone -q https://github.com/polyeffects/lenticular_lv2.git
+    git clone -q https://github.com/peepo-sources/lenticular_lv2.git
 fi
 git -C lenticular_lv2 checkout -q "$LENTICULAR_COMMIT"
 # Only the DSP libraries the build reads; the firmware bootloaders are not needed.

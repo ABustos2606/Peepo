@@ -61,7 +61,7 @@ step() { # name dir command...
 }
 
 poly() { # repository commit
-    fetch "https://github.com/polyeffects/$1.git" "$1" "$2" || { record "$1" FAILED "clone"; return; }
+    fetch "https://github.com/peepo-sources/$1.git" "$1" "$2" || { record "$1" FAILED "clone"; return; }
     rm -f "$SRC/$1.log"
 }
 
@@ -151,7 +151,7 @@ step PolyMclkIn.lv2 "$SRC/PolyMclkIn.lv2" bash -c mclk && record PolyMclkIn.lv2 
 # with the flags and source lists of its wscript, against LVTK 1.2.0 (not
 # packaged). The GTK interfaces are not built.
 poly avwlv2 bfb2e1f1851bdc6192e0401789a5d62045156d20
-fetch https://github.com/lvtk/lvtk.git lvtk 9cc19eba92dd4e4cfd0e4cb78762fb202e11bbc2
+fetch https://github.com/peepo-sources/lvtk.git lvtk 9cc19eba92dd4e4cfd0e4cb78762fb202e11bbc2
 # The sources include <lvtk-1/lvtk/...>, the installed layout.
 mkdir -p "$SRC/lvtk-include" && ln -sfn "$SRC/lvtk" "$SRC/lvtk-include/lvtk-1"
 avw() { # extra-source plugins...
@@ -192,12 +192,12 @@ export -f dpf dpf_ui copy_bundles
 
 # TAP adds SSE flags to its own unless NOOPT is set; on the Pi it is.
 TAP_NOOPT=false; [ "$(uname -m)" = aarch64 ] && TAP_NOOPT=true
-third tap-lv2 https://github.com/moddevices/tap-lv2.git cab6e0dfb2ce20e4ad34b067d1281ec0b193598a "make" \
+third tap-lv2 https://github.com/peepo-sources/tap-lv2.git cab6e0dfb2ce20e4ad34b067d1281ec0b193598a "make" \
     make -j"$JOBS" NOOPT="$TAP_NOOPT" INSTALL_PATH="$LV2DIR" install
-third stone-phaser https://github.com/jpcima/stone-phaser.git f057ea5c1e368d6cd937f4e359a9514ac72fe902 "DPF, with its Cairo UI" bash -c dpf_ui
-third ykchorus https://github.com/SpotlightKid/ykchorus.git ee0e362f8ef30b55a440715e4da3bfb3dad6a30f "DPF, no UI" bash -c dpf
+third stone-phaser https://github.com/peepo-sources/stone-phaser.git f057ea5c1e368d6cd937f4e359a9514ac72fe902 "DPF, with its Cairo UI" bash -c dpf_ui
+third ykchorus https://github.com/peepo-sources/ykchorus.git ee0e362f8ef30b55a440715e4da3bfb3dad6a30f "DPF, no UI" bash -c dpf
 # MVerb was retired from the curated instrument; do not build it again.
-third infamousPlugins https://github.com/ssj71/infamousPlugins.git 8c0e11ecac624e014caba00e5cf4fb0ca2faa806 "cmake (no NTK, so no UIs)" \
+third infamousPlugins https://github.com/peepo-sources/infamousPlugins.git 8c0e11ecac624e014caba00e5cf4fb0ca2faa806 "cmake (no NTK, so no UIs)" \
     bash -c 'cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX='"$PREFIX"' -DLIBDIR=lib && cmake --build build -j'"$JOBS"' && cmake --install build'
 # Full GxPlugins collection, including the four Beebo modules at their
 # existing revisions. All identities and source pins share one manifest.
@@ -206,20 +206,20 @@ if bash "$HERE/21-gxplugins.sh" >"$SRC/GxPlugins.log" 2>&1; then
 else
     record GxPlugins.lv2 FAILED "see $SRC/GxPlugins.log"
 fi
-third mod-cv-plugins https://github.com/moddevices/mod-cv-plugins.git f0a6b39a5ebb8cf2ab428d76aa8c8262aceb6362 "make" \
+third mod-cv-plugins https://github.com/peepo-sources/mod-cv-plugins.git f0a6b39a5ebb8cf2ab428d76aa8c8262aceb6362 "make" \
     make -j"$JOBS" LV2_DESTDIR="$LV2DIR" install
 # MIDI modules Beebo maps, built since MIDI can be cabled (P12.5): x42's MIDI
 # clock (not in Debian's x42-plugins) and midimsg's controller, modwheel and
 # aftertouch. midimsg's bundled waf cannot run on this Python; its plugins use
 # plain LV2, so each is compiled directly as its wscript would.
-third mclk.lv2 https://github.com/x42/mclk.lv2.git 4f9d423b5d374d4b4a2c1bdd49257f36a77cdb10 "make" \
+third mclk.lv2 https://github.com/peepo-sources/mclk.lv2.git 4f9d423b5d374d4b4a2c1bdd49257f36a77cdb10 "make" \
     make -j"$JOBS" OPTIMIZATIONS="$OPT" PREFIX="$PREFIX" LV2DIR="$LV2DIR" install
 midimsg() {
     mkdir -p "$LV2DIR/midimsg.lv2" && cp midimsg.lv2/*.ttl "$LV2DIR/midimsg.lv2/" || return 1
     for p in controller modwheel aftertouch; do g++ -shared -fPIC $OPT -std=c++11 -I. -Isrc "src/$p.cpp" -o "$LV2DIR/midimsg.lv2/$p.so" || return 1; done
 }
 export -f midimsg
-third midimsg-lv2 https://github.com/blablack/midimsg-lv2.git 46beb4891ac6f223b33b298b96764535d8f80e18 "g++, as its wscript" bash -c midimsg
+third midimsg-lv2 https://github.com/peepo-sources/midimsg-lv2.git 46beb4891ac6f223b33b298b96764535d8f80e18 "g++, as its wscript" bash -c midimsg
 
 # --- Discipline (delay with a scannable memory, and its Return), the
 # project's own. Its Makefile adds -fno-fast-math after OPT: its NaN guards
@@ -254,7 +254,7 @@ third aura https://github.com/ABustos2606/aura.git b9ec1f2866ff13c53ffc541038cb9
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
 # --- Eureka: twelve stereo effects; M6 DSP/ports, M7 integration.
-third eureka https://github.com/ABustos2606/eureka.git 7e7eed329af40438fad148df9c97ed6a2f7dae96 "make" \
+third eureka https://github.com/ABustos2606/eureka.git 4b52532c3f0f426a38005c01cee5532e8a15b542 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix
