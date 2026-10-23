@@ -1,8 +1,8 @@
 # Complete module list
 
-**Updated 22 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
+**Updated 23 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
 
-**358 plugin identities:** 338 installed in the Pi export and 20 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
+**370 plugin identities:** 350 installed in the Pi export and 20 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
 
 **Removed effects:** Bollie Delay XT and Faust Granulator have been removed from Peepo and this inventory. The Granulator - Mono and Granulator - Stereo entries below are separate AVW plugins. [Removal details](35-patchstorage-expansion.md).
 
@@ -14,8 +14,8 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Ready | 281 | Can be added to a patch. This does not imply a guitar listening test of every module. |
-| Needs adaptation | 41 | Installed, but disabled in Add for the stated limitation. |
+| Ready | 331 | Can be added to a patch. This does not imply a guitar listening test of every module. |
+| Needs adaptation | 3 | Installed, but disabled in Add for the stated limitation. |
 | Unavailable | 7 | Present in the Pi export but unusable by the current host; see each reason. |
 | Hidden | 9 | Omitted from Add as a duplicate or redundant module; retained for saved patches. |
 | Not installed | 20 | Selected reference identity without an installed implementation. |
@@ -33,15 +33,15 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 | [Cabinet](#cabinet) | 5 / 5 |
 | [Dynamics](#dynamics) | 14 / 14 |
 | [Filter](#filter) | 23 / 24 |
-| [Modulation](#modulation) | 35 / 35 |
+| [Modulation](#modulation) | 37 / 37 |
 | [Pitch](#pitch) | 8 / 8 |
-| [Delay](#delay) | 18 / 20 |
-| [Reverb](#reverb) | 9 / 9 |
-| [Texture](#texture) | 13 / 13 |
-| [Resonator](#resonator) | 3 / 3 |
-| [Sound source](#sound-source) | 6 / 12 |
-| [Control](#control) | 32 / 34 |
-| [Utility](#utility) | 40 / 77 |
+| [Delay](#delay) | 20 / 22 |
+| [Reverb](#reverb) | 11 / 11 |
+| [Texture](#texture) | 17 / 17 |
+| [Resonator](#resonator) | 4 / 4 |
+| [Sound source](#sound-source) | 11 / 13 |
+| [Control](#control) | 33 / 34 |
+| [Utility](#utility) | 73 / 77 |
 
 Also: [hidden identities](#hidden-identities), [not installed](#not-installed), [fixed endpoints](#fixed-endpoints), [all 43 GxPlugins](32-gxplugins.md#all-43-gxplugins).
 
@@ -194,6 +194,8 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | --- | --- | --- | --- |
 | Chorus | 8 voice multi-dimensional chorus with internal LFO. | audio 1 in / 2 out | Ready |
 | Chorus (CV) | 8 voice multi-dimensional chorus with CV for the LFO. | audio 1 in / 2 out; CV 1 in / 0 out | Ready |
+| Eureka Flock | Stereo chorus and ensemble with up to ten voices. Rate and Depth set the movement; Random motion varies it. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Ripple | Resonant stereo phaser. Pause sweep holds the filter position while audio keeps passing through it. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Flanger | Flanger with internal LFO. | audio 1 in / 1 out | Ready |
 | Flanger (CV) | Flanger with CV for the LFO. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
 | Gx Chorus stereo | Stereo chorus with rate and depth controls. | audio 2 in / 2 out | Ready |
@@ -250,6 +252,8 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
 | Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready |
 | DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready |
+| Eureka Skip | Pitched multi-tap delay. Repeat heads sets tap count. Sync uses BPM and Beat division instead of Delay time. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Spool | Variable-speed stereo tape echo with drift. Sync follows patch tempo; Infinite holds echoes. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Gx Delay stereo | Stereo delay with time, feedback and mix controls. | audio 2 in / 2 out | Ready |
 | Gx Digital delay | Mono digital delay with feedback and mix controls. | audio 1 in / 1 out | Ready |
 | Gx Digital delay stereo | Stereo digital delay with feedback and mix controls. | audio 2 in / 2 out | Ready |
@@ -273,6 +277,8 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Dragonfly Hall | Hall reverb with early and late reflections, modulation, filters and decay controls. | audio 2 in / 2 out | Ready |
 | Dragonfly Plate | Plate reverb with selectable algorithms, damping and decay controls. | audio 2 in / 2 out | Ready |
 | Dragonfly Room | Room reverb with separate early and late levels, size, filters and decay controls. | audio 2 in / 2 out | Ready |
+| Eureka Hush | Diffuse stereo reverb. Spread changes the stereo pattern; Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Slowmo | Long stereo reverb with size and diffusion controls. Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready |
 | Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready |
 | IR Reverb - Mono | IR Reverb from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out | Ready |
@@ -289,6 +295,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Beat Slicer - Mono | Records a few beats and plays back slices of them while the gate is high, optionally reversed. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
 | Beat Slicer - Stereo | Stereo beat slicer: plays back slices of the last few beats while the gate is high. | audio 2 in / 2 out; CV 1 in / 0 out | Ready |
 | Drizzle | Grains of the live input, with reverb; Size at the top makes it a delay. Freeze holds the recording. With Seed lock on grains run at the Density rate; off, they play while Seed is held. | audio 2 in / 2 out; CV 8 in / 1 out | Ready |
+| Eureka Bloom | Swell the guitar into a pitched, diffuse texture. Freeze holds the sound. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Crinkle | Unstable stereo delay with random snags and drift. Tape stop slows the wet sound to silence. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Granny | Two shaped grains tumble through the live input. Infinite holds the recording. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Prism | Spectral gates sweep across the sound with resonance. Pause holds their phase. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Granulator - Mono | Chops the input into short overlapping grains for smeared, cloud-like textures. | audio 1 in / 1 out | Ready |
 | Granulator - Stereo | Stereo granulator: chops the input into overlapping grains for cloud-like textures. | audio 2 in / 2 out | Ready |
 | Mist | Granular texture from the live input. Freeze holds the buffer. Blend mixes in the clean input: all of it up to the middle, none at the top. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
@@ -304,6 +314,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | --- | --- | --- | --- |
 | Bell Resonator | Resonator simulating multiple vibrating structures: strings, modes and more. | audio 1 in / 2 out; CV 7 in / 0 out | Ready |
 | Chamber | A bell, plate or strings that your guitar rings at its own pitch: cable it to Strike in, no gate needed. It starts as a long bell with reverb. Raise Strike, Bow or Blow level to play it with Play or a gate; Blow in sounds only while one is held. | audio 2 in / 2 out; CV 14 in / 0 out | Ready |
+| Eureka Chime | Twelve resonators follow the left input. Pitch freeze holds tuning while new audio still excites them. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Mist Resonestor | Dual voice, four part resonator played by the input. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 
 ## Sound source
@@ -312,11 +323,12 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | --- | --- | --- | --- |
 | BeatBox | Triggers synthesized drum sounds from incoming audio. | audio 2 in / 2 out | Ready |
 | Drizzle Synth | A wavetable voice played as grains, with reverb. Needs no input. Wavetable picks the sound, Osc/grains mixes the plain voice with its grains, and Pitch CV takes volt per octave. | audio 0 in / 2 out; CV 8 in / 1 out | Ready |
-| DX10 | FM synthesizer voice for bells, keys and basses. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Needs adaptation: Played by MIDI notes; not yet checked with a MIDI controller. |
-| ePiano | Electric piano instrument. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Needs adaptation: Played by MIDI notes; not yet checked with a MIDI controller. |
-| JX10 | Polyphonic analog-style synthesizer. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Needs adaptation: Played by MIDI notes; not yet checked with a MIDI controller. |
+| DX10 | FM synthesizer voice for bells, keys and basses. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Ready |
+| ePiano | Electric piano instrument. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Ready |
+| Eureka Spark | Four voices track pitches in the left input. Portamento glides; Infinite holds the sound. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| JX10 | Polyphonic analog-style synthesizer. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Ready |
 | Noise2 - Audio | Noise source: white, random or pink noise as audio. | audio 0 in / 1 out | Ready |
-| Piano | Acoustic piano instrument. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Needs adaptation: Played by MIDI notes; not yet checked with a MIDI controller. |
+| Piano | Acoustic piano instrument. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Ready |
 | TestTone | Generates test tones for checking a patch. | audio 2 in / 2 out | Ready |
 | Tracker | Pitch-tracking oscillator played by incoming audio. | audio 2 in / 2 out | Ready |
 | vco2_audio | Oscillator with several wave shapes, tuned by a pitch control signal. | No patchable connectors | Unavailable: This module has no audio, control or MIDI connectors to patch. |
@@ -346,7 +358,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Lattice Drum Sequencer | Drum trigger explorer for kick, snare and hi-hat. Expects a 4 ppq clock if using external clock. | CV 10 in / 6 out | Ready |
 | LFO - Freq | Low frequency oscillator with several wave shapes, set by rate. Sends a control signal. | CV 1 in / 1 out | Ready |
 | LFO - Tempo | Low frequency oscillator synced to a tempo, with several wave shapes. Sends a control signal. | CV 1 in / 1 out | Ready |
-| MIDI clock | MIDI clock at the patch tempo on a MIDI cable, with start and stop. | MIDI/events 0 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
+| MIDI clock | MIDI clock at the patch tempo on a MIDI cable, with start and stop. | MIDI/events 0 in / 1 out | Ready |
 | MIDI clock in | Follows incoming MIDI clock: tempo, start and pulse outputs. | CV 0 in / 3 out; MIDI/events 1 in / 0 out | Ready |
 | MIDI controller | One MIDI control change as a control value, to cable to any control. | CV 0 in / 1 out; MIDI/events 1 in / 0 out | Ready |
 | MIDI program change | Sends MIDI program changes to switch presets: a chosen program, or the next or previous one on a trigger. | CV 3 in / 0 out; MIDI/events 0 in / 1 out | Ready |
@@ -376,45 +388,45 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | CV to MIDI Note | Converts volt per octave pitch to MIDI notes. Velocity is optional. | CV 3 in / 0 out; MIDI/events 0 in / 1 out | Ready |
 | Difference | a - b for control signals. | CV 2 in / 1 out | Ready |
 | Discipline Return | Brings Discipline's repeats back in when its Modifier is Outside. One per patch. | audio 2 in / 0 out | Ready |
-| Fifths | Adds a fifth above every MIDI note. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
+| Fifths | Adds a fifth above every MIDI note. | MIDI/events 1 in / 1 out | Ready |
 | Hz to VC | Converts a frequency in Hz into a volt per octave pitch signal. | CV 1 in / 1 out | Ready |
 | Image | Adjusts stereo width and the balance of mid and side. | audio 2 in / 2 out | Ready |
 | Inv | Inverts a control signal: up becomes down. | CV 1 in / 1 out | Ready |
 | Maximum | Max of a, b; also logical or. | CV 2 in / 1 out | Ready |
 | Metronome | Metronome click that follows the host tempo. | audio 0 in / 1 out | Ready |
-| MIDI CC Map | Changes one MIDI control message into another. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI CC to Note | Translates MIDI control changes to note on and off messages. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Channel Filter | Discards MIDI messages per channel. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Channel Map | Maps any MIDI channel to another MIDI channel. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Channel Unisono | Duplicates MIDI events from one channel to another. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Choke | Triggers note-off events to create exclusive note groups. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Chord | Creates MIDI chords from a single note in a given musical scale. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Chromatic Transpose | Chromatically transposes MIDI notes. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Delayline | Delays MIDI events, with optional randomization. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Duplicate Blocker | Blocks duplicate MIDI notes. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Enforce Scale | Forces MIDI notes onto a given musical scale. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Event Filter | Notch-style MIDI filter that suppresses specific messages. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
+| MIDI CC Map | Changes one MIDI control message into another. | MIDI/events 1 in / 1 out | Ready |
+| MIDI CC to Note | Translates MIDI control changes to note on and off messages. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Channel Filter | Discards MIDI messages per channel. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Channel Map | Maps any MIDI channel to another MIDI channel. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Channel Unisono | Duplicates MIDI events from one channel to another. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Choke | Triggers note-off events to create exclusive note groups. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Chord | Creates MIDI chords from a single note in a given musical scale. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Chromatic Transpose | Chromatically transposes MIDI notes. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Delayline | Delays MIDI events, with optional randomization. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Duplicate Blocker | Blocks duplicate MIDI notes. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Enforce Scale | Forces MIDI notes onto a given musical scale. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Event Filter | Notch-style MIDI filter that suppresses specific messages. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Gate | Lets audio through only while a MIDI note is held. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
-| MIDI Key-Range Filter | Discards MIDI notes outside a given range. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Keysplit | Changes MIDI channel depending on the note, with optional transpose. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Monophonic Legato | Holds a MIDI note until the next note arrives. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI N-Tap Delay | Repeats MIDI notes a number of times, with tempo ramps. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Note to CC | Converts MIDI note-on messages to control changes. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Note to PC | Converts MIDI notes to program change messages. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Note Toggle | Play a MIDI note to turn it on, play it again to turn it off. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Note Transpose | Flexible 12-tone MIDI note map. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Note/Channel Map | Sends each of the 12 notes to its own MIDI channel. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Quantization | Quantizes live MIDI events to a time grid. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Remove Active Sensing | Strips MIDI active-sensing messages. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Scale CC Value | Scales the value of a MIDI control change. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Simple Channel Filter | Basic MIDI channel filter. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Sostenuto | Delays MIDI note-offs, like a piano sostenuto pedal. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Strum | MIDI arpeggio that simulates strumming a guitar. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Tonal Pedal | Holds the notes being played while the sustain pedal is down. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Velocity Adjust | Scales and offsets MIDI note velocity. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Velocity Gamma | Reshapes the MIDI velocity curve. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Velocity Randomization | Randomly changes the velocity of MIDI notes. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
-| MIDI Velocity-Range Filter | Filters MIDI notes by velocity. | MIDI/events 1 in / 1 out | Needs adaptation: Works on MIDI only; not yet checked with a MIDI controller. |
+| MIDI Key-Range Filter | Discards MIDI notes outside a given range. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Keysplit | Changes MIDI channel depending on the note, with optional transpose. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Monophonic Legato | Holds a MIDI note until the next note arrives. | MIDI/events 1 in / 1 out | Ready |
+| MIDI N-Tap Delay | Repeats MIDI notes a number of times, with tempo ramps. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Note to CC | Converts MIDI note-on messages to control changes. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Note to PC | Converts MIDI notes to program change messages. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Note Toggle | Play a MIDI note to turn it on, play it again to turn it off. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Note Transpose | Flexible 12-tone MIDI note map. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Note/Channel Map | Sends each of the 12 notes to its own MIDI channel. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Quantization | Quantizes live MIDI events to a time grid. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Remove Active Sensing | Strips MIDI active-sensing messages. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Scale CC Value | Scales the value of a MIDI control change. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Simple Channel Filter | Basic MIDI channel filter. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Sostenuto | Delays MIDI note-offs, like a piano sostenuto pedal. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Strum | MIDI arpeggio that simulates strumming a guitar. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Tonal Pedal | Holds the notes being played while the sustain pedal is down. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Velocity Adjust | Scales and offsets MIDI note velocity. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Velocity Gamma | Reshapes the MIDI velocity curve. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Velocity Randomization | Randomly changes the velocity of MIDI notes. | MIDI/events 1 in / 1 out | Ready |
+| MIDI Velocity-Range Filter | Filters MIDI notes by velocity. | MIDI/events 1 in / 1 out | Ready |
 | Minimum | Min of a, b; also logical and. | CV 2 in / 1 out | Ready |
 | Mixer 2 channels - Audio | Mixes two audio signals with a level for each. | audio 2 in / 1 out | Ready |
 | Mixer 2 channels - CV | Mixes two control signals with a level for each. | CV 2 in / 1 out | Ready |
@@ -494,7 +506,7 @@ These are reference identities, not available effects. The installed Foot switch
 
 ## Source and updates
 
-Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261022.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
+Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261023-eureka.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
 
 The older [compatibility matrix](evidence/compatibility-matrix.md) is a historical test record. [GxPlugins results](32-gxplugins.md) supplement it. Availability in this list follows the recorded Pi export and current overlay, not the historical PC matrix.
 

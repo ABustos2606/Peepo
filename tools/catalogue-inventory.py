@@ -32,6 +32,10 @@ PEEPO = ["urn:peepo:lv2:footswitch",
          "https://github.com/ABustos2606/chamber#chamber",
          "https://github.com/ABustos2606/drizzle#drizzle", "https://github.com/ABustos2606/drizzle#synth",
          "https://github.com/ABustos2606/aura#aura"]
+# Eureka: twelve independent effects (M7).
+PEEPO += ['https://github.com/ABustos2606/eureka#slowmo', 'https://github.com/ABustos2606/eureka#hush', 'https://github.com/ABustos2606/eureka#bloom', 'https://github.com/ABustos2606/eureka#skip', 'https://github.com/ABustos2606/eureka#ripple', 'https://github.com/ABustos2606/eureka#prism', 'https://github.com/ABustos2606/eureka#spool', 'https://github.com/ABustos2606/eureka#granny', 'https://github.com/ABustos2606/eureka#spark', 'https://github.com/ABustos2606/eureka#chime', 'https://github.com/ABustos2606/eureka#flock', 'https://github.com/ABustos2606/eureka#crinkle']
+# Preserve selected project-owned identities when regenerating.
+PEEPO += ['https://github.com/ABustos2606/midi-cv#mono', 'https://github.com/ABustos2606/midi-cv#poly', 'https://github.com/ABustos2606/midi-pc#pc']
 EXAMPLES = ["eg-amp", "eg-fifths", "eg-metro", "eg-midigate", "eg-params", "eg-scope#Mono", "eg-scope#Stereo"]
 
 

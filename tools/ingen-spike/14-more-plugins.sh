@@ -250,7 +250,11 @@ third midi-pc https://github.com/ABustos2606/midi-pc.git cf1f945da9d05cd57ecb4b8
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
 # --- Aura (stereo micro-looper and effects sharing one clock), the project's own.
-third aura https://github.com/ABustos2606/aura.git 82b37d7d2e555d55232f4b238f19b185b0c91842 "make" \
+third aura https://github.com/ABustos2606/aura.git b9ec1f2866ff13c53ffc541038cb985e317aa9e4 "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+
+# --- Eureka: twelve stereo effects; M6 DSP/ports, M7 integration.
+third eureka https://github.com/ABustos2606/eureka.git 7e7eed329af40438fad148df9c97ed6a2f7dae96 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix

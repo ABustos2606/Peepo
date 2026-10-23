@@ -6,11 +6,12 @@
     "not_a_build_or_firmware_image":  true,
     "upstream_source_adapted":  false,
     "repositories":  [
+        {"name": "eureka", "role": "Twelve independent stereo effects for Peepo", "origin": "https://github.com/ABustos2606/eureka.git", "commit": "7e7eed329af40438fad148df9c97ed6a2f7dae96", "license": "GPL-2.0-or-later"},
         {
             "name": "aura",
             "role": "Stereo micro-looper and effects sharing one clock",
             "origin": "https://github.com/ABustos2606/aura.git",
-            "commit": "82b37d7d2e555d55232f4b238f19b185b0c91842",
+            "commit": "b9ec1f2866ff13c53ffc541038cb985e317aa9e4",
             "license": "GPL-2.0-or-later"
         },
                          {

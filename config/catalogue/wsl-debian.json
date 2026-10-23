@@ -2,6 +2,8 @@
   "format": "peepo-catalogue",
   "version": 2,
   "provenance": {
+    "eureka_machine": "x86_64",
+    "eureka_commit": "7e7eed329af40438fad148df9c97ed6a2f7dae96",
     "tool": "peepo_catalogue_export",
     "lilv": "0.24.26",
     "machine": "x86_64",
@@ -9,6 +11,1747 @@
     "sample_rate": "48000"
   },
   "modules": [
+    {
+      "uri": "https://github.com/ABustos2606/eureka#bloom",
+      "name": "Eureka Bloom",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "swell_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "pitch_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "feedback_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "swell",
+          "name": "Swell time",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pitch",
+          "name": "Pitch",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback",
+          "name": "Feedback",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "freeze",
+          "name": "Freeze",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#chime",
+      "name": "Eureka Chime",
+      "category": "Filter",
+      "description": "Filter",
+      "color": "#a6c8ec",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Filter; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "onset_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "feedback_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "octave_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "onset",
+          "name": "Onset",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback",
+          "name": "Feedback",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "octave",
+          "name": "Octave",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pitch_freeze",
+          "name": "Pitch freeze",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "voicing",
+          "name": "Voicing",
+          "unit": "",
+          "kind": "enumeration",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0,
+          "logarithmic": false,
+          "choices": [
+            "Hybrid",
+            "Clean",
+            "Clipped"
+          ]
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#crinkle",
+      "name": "Eureka Crinkle",
+      "category": "Modulation",
+      "description": "Modulator",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Modulator; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "rate_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "depth_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "crinkles_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "rate",
+          "name": "Rate",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "depth",
+          "name": "Depth",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "crinkles",
+          "name": "Crinkles",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "stop",
+          "name": "Tape stop",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#flock",
+      "name": "Eureka Flock",
+      "category": "Modulation",
+      "description": "Chorus",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Chorus; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "rate_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "depth_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "voices_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "rate",
+          "name": "Rate",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "depth",
+          "name": "Depth",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "voices",
+          "name": "Voices",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "random",
+          "name": "Random motion",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#granny",
+      "name": "Eureka Granny",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "size_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "feedback_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "shape_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "size",
+          "name": "Grain size",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback",
+          "name": "Feedback",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "shape",
+          "name": "Grain shape",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "infinite",
+          "name": "Infinite",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#hush",
+      "name": "Eureka Hush",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "size_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "decay_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "diffusion_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "size",
+          "name": "Size",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "decay",
+          "name": "Decay",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "diffusion",
+          "name": "Diffusion",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "freeze",
+          "name": "Freeze",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#prism",
+      "name": "Eureka Prism",
+      "category": "Utility",
+      "description": "Spectral",
+      "color": "#93a4b5",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Spectral; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "rate_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "depth_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "resonance_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "rate",
+          "name": "Rate",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "depth",
+          "name": "Depth",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "resonance",
+          "name": "Resonance",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pause",
+          "name": "Pause",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#ripple",
+      "name": "Eureka Ripple",
+      "category": "Modulation",
+      "description": "Phaser",
+      "color": "#f0aa72",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Phaser; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "rate_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "poles_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "resonance_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "rate",
+          "name": "Rate",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "poles",
+          "name": "Poles",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "resonance",
+          "name": "Resonance",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pause",
+          "name": "Pause",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#skip",
+      "name": "Eureka Skip",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "time_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "pitch_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "repeats_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "time",
+          "name": "Delay time",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pitch",
+          "name": "Pitch",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "repeats",
+          "name": "Repeats",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "freeze",
+          "name": "Freeze",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "bpm",
+          "name": "BPM",
+          "unit": "BPM",
+          "kind": "continuous",
+          "minimum": 20,
+          "maximum": 300,
+          "default": 120,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "sync",
+          "name": "Sync",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "division",
+          "name": "Beat division",
+          "unit": "",
+          "kind": "enumeration",
+          "minimum": 0,
+          "maximum": 6,
+          "default": 3,
+          "logarithmic": false,
+          "choices": [
+            "1/8 beat",
+            "1/4 beat",
+            "1/2 beat",
+            "1 beat",
+            "2 beats",
+            "3 beats",
+            "4 beats"
+          ]
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#slowmo",
+      "name": "Eureka Slowmo",
+      "category": "Reverb",
+      "description": "Reverb",
+      "color": "#81c9b8",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Reverb; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "size_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "decay_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "diffusion_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "size",
+          "name": "Size",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "decay",
+          "name": "Decay",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "diffusion",
+          "name": "Diffusion",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "freeze",
+          "name": "Freeze",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#spark",
+      "name": "Eureka Spark",
+      "category": "Sound source",
+      "description": "Generator",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Generator; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "portamento_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "texture_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "envelope_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "portamento",
+          "name": "Portamento",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "texture",
+          "name": "Texture",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "envelope",
+          "name": "Attack/release",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "infinite",
+          "name": "Infinite",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
+    {
+      "uri": "https://github.com/ABustos2606/eureka#spool",
+      "name": "Eureka Spool",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; bundle file:///mnt/c/LV2-own-plugins/eureka/build/m7/lv2/eureka.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in_l",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "in_r",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "time_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "feedback_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "stability_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "mix_cv",
+          "direction": "input",
+          "type": "cv"
+        },
+        {
+          "symbol": "hold_gate",
+          "direction": "input",
+          "type": "cv"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "time",
+          "name": "Delay time",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback",
+          "name": "Feedback",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "stability",
+          "name": "Stability",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.75,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "mix",
+          "name": "Mix",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "spread",
+          "name": "Spread",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "infinite",
+          "name": "Infinite",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "bpm",
+          "name": "BPM",
+          "unit": "BPM",
+          "kind": "continuous",
+          "minimum": 20,
+          "maximum": 300,
+          "default": 120,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "sync",
+          "name": "Sync",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "division",
+          "name": "Beat division",
+          "unit": "",
+          "kind": "enumeration",
+          "minimum": 0,
+          "maximum": 6,
+          "default": 3,
+          "logarithmic": false,
+          "choices": [
+            "1/8 beat",
+            "1/4 beat",
+            "1/2 beat",
+            "1 beat",
+            "2 beats",
+            "3 beats",
+            "4 beats"
+          ]
+        }
+      ]
+    },
     {
       "uri": "http://avwlv2.sourceforge.net/plugins/avw/absolute",
       "name": "Signal Absolute Value",
