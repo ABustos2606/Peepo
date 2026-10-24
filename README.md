@@ -93,6 +93,7 @@ Inside Debian under WSL2, as root: `bash tools/pi/build-arm64.sh` builds the eng
 | [Module rail, Aura's and Discipline's pages](docs/40-module-rail-and-aura.md) | Smaller bars and a scroll rail so scrolling never sets a value; Aura and Discipline get two tabs: main controls and stomps, then everything else |
 | [MIDI](docs/39-midi.md) | Plan: MIDI in and out over USB and 3.5 mm TRS jacks, MIDI cables and the MIDI modules on the canvas, clock in and out, program change and MIDI learn |
 | [Plugin sources](docs/42-plugin-sources.md) | Plan: what breaks if a plugin's repository disappears, the 22 repositories to fork, and a local source cache for everything forks can't cover |
+| [Euclidelay integration](docs/43-euclidelay.md) | The Euclidean-rhythm delay pinned, catalogued and checked: overlay groups, patch tempo to the sample, its module page, and engine patch 0011 for a crash describing a graph whose ports are being created |
 
 ## Retrieve the project and reference sources
 

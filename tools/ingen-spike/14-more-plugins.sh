@@ -257,6 +257,12 @@ third aura https://github.com/ABustos2606/aura.git b9ec1f2866ff13c53ffc541038cb9
 third eureka https://github.com/ABustos2606/eureka.git 4b52532c3f0f426a38005c01cee5532e8a15b542 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
+# --- Euclidelay (delay whose echoes fall on four Euclidean rhythms), the
+# project's own. Its Makefile also adds -fno-fast-math after OPT, so it gets
+# the same flags. Pinned at v0.1.0.
+third euclidelay https://github.com/ABustos2606/euclidelay.git 4ee5c87c266691ba415049885734b297ef327e8f "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix
 # LV2 collection. Artifacts, source rebuilds and metadata repairs are locked.
 if bash "$HERE/22-patchstorage.sh" >"$SRC/Patchstorage.log" 2>&1; then

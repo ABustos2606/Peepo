@@ -2,6 +2,8 @@
   "format": "peepo-catalogue",
   "version": 2,
   "provenance": {
+    "euclidelay_machine": "x86_64",
+    "euclidelay_commit": "4ee5c87c266691ba415049885734b297ef327e8f",
     "eureka_machine": "x86_64",
     "eureka_commit": "7e7eed329af40438fad148df9c97ed6a2f7dae96",
     "tool": "peepo_catalogue_export",
@@ -11,6 +13,407 @@
     "sample_rate": "48000"
   },
   "modules": [
+    {
+      "uri": "https://github.com/ABustos2606/euclidelay#euclidelay",
+      "name": "Euclidelay",
+      "category": "Delay",
+      "description": "Delay",
+      "color": "#7bbaed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Delay; author Alejandro Bustos; bundle file:///var/tmp/m5/lv2/euclidelay.lv2/",
+      "enable": "enabled",
+      "ports": [
+        {
+          "symbol": "in",
+          "direction": "input",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_l",
+          "direction": "output",
+          "type": "audio"
+        },
+        {
+          "symbol": "out_r",
+          "direction": "output",
+          "type": "audio"
+        }
+      ],
+      "parameters": [
+        {
+          "symbol": "bpm",
+          "name": "BPM",
+          "unit": "BPM",
+          "kind": "continuous",
+          "minimum": 30,
+          "maximum": 300,
+          "default": 120,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "step",
+          "name": "Step",
+          "unit": "",
+          "kind": "enumeration",
+          "minimum": 0,
+          "maximum": 6,
+          "default": 2,
+          "logarithmic": false,
+          "choices": [
+            "1/32",
+            "1/16T",
+            "1/16",
+            "1/8T",
+            "1/8",
+            "1/8 dot",
+            "1/4"
+          ]
+        },
+        {
+          "symbol": "dry",
+          "name": "Dry",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "echoes",
+          "name": "Echoes",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "tone",
+          "name": "Tone",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "voice_1",
+          "name": "Voice 1",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "steps_1",
+          "name": "Steps 1",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 8,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "hits_1",
+          "name": "Hits 1",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 3,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "shift_1",
+          "name": "Shift 1",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 15,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback_1",
+          "name": "Feedback 1",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 0.95,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "level_1",
+          "name": "Level 1",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pan_1",
+          "name": "Pan 1",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": -1,
+          "maximum": 1,
+          "default": -0.6,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "voice_2",
+          "name": "Voice 2",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "steps_2",
+          "name": "Steps 2",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "hits_2",
+          "name": "Hits 2",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 2,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "shift_2",
+          "name": "Shift 2",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 15,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback_2",
+          "name": "Feedback 2",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 0.95,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "level_2",
+          "name": "Level 2",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pan_2",
+          "name": "Pan 2",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": -1,
+          "maximum": 1,
+          "default": 0.6,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "voice_3",
+          "name": "Voice 3",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "steps_3",
+          "name": "Steps 3",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 7,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "hits_3",
+          "name": "Hits 3",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 4,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "shift_3",
+          "name": "Shift 3",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 15,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback_3",
+          "name": "Feedback 3",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 0.95,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "level_3",
+          "name": "Level 3",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pan_3",
+          "name": "Pan 3",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": -1,
+          "maximum": 1,
+          "default": -0.2,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "voice_4",
+          "name": "Voice 4",
+          "unit": "",
+          "kind": "toggle",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "steps_4",
+          "name": "Steps 4",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 4,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "hits_4",
+          "name": "Hits 4",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 16,
+          "default": 3,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "shift_4",
+          "name": "Shift 4",
+          "unit": "",
+          "kind": "integer",
+          "minimum": 0,
+          "maximum": 15,
+          "default": 0,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "feedback_4",
+          "name": "Feedback 4",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 0.95,
+          "default": 0.5,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "level_4",
+          "name": "Level 4",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1,
+          "logarithmic": false,
+          "choices": []
+        },
+        {
+          "symbol": "pan_4",
+          "name": "Pan 4",
+          "unit": "",
+          "kind": "continuous",
+          "minimum": -1,
+          "maximum": 1,
+          "default": 0.2,
+          "logarithmic": false,
+          "choices": []
+        }
+      ]
+    },
     {
       "uri": "https://github.com/ABustos2606/eureka#bloom",
       "name": "Eureka Bloom",

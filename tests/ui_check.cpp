@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Peepo contributors
 #include "ui/application.hpp"
+#include "catalogue/catalogue.hpp"
 #include "engine/simulated_engine.hpp"
 #include "core/poly_voices.hpp"
 #include "core/tuning.hpp"
@@ -8,6 +9,7 @@
 #include "src/widgets/buttonmatrix/lv_buttonmatrix_private.h"
 #include <filesystem>
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <fstream>
 #include <functional>
@@ -979,6 +981,49 @@ int main(int argc, char** argv) {
             app.control({peepo::ControlEvent::Type::Turn, "enc1", 1}); step(app, 256);
             app.control({peepo::ControlEvent::Type::Turn, "enc2", 10}); step(app, 256);
             check(value("depth") > 0.5 && value("spare") == 0, "encoder 1 did not move on from Shape to Depth");
+        }
+        // Euclidelay as the WSL export and the overlay give it: every control on
+        // the one page, under Main, a group per voice, then Tempo and output.
+        {
+            const std::string uri = "https://github.com/ABustos2606/euclidelay#euclidelay";
+            const std::filesystem::path config = PEEPO_CATALOGUE_DIR;
+            std::vector<peepo::ModuleDefinition> exported;
+            const auto issue = peepo::load_catalogue((config / "wsl-debian.json").string(), (config / "overlay.json").string(), exported);
+            check(issue.empty(), "the WSL catalogue and overlay did not load");
+            const auto found = std::find_if(exported.begin(), exported.end(), [&](const peepo::ModuleDefinition& d) { return d.uri == uri; });
+            check(found != exported.end() && found->port_bypass && found->tempo_symbol == "bpm", "Euclidelay is not in the WSL catalogue with port bypass and tempo");
+            check(found->parameters.size() == 34, "Euclidelay should show 33 controls and the general Output");
+            peepo::register_definitions({*found});
+            peepo::SimulatedEngine sim;
+            sim.submit(peepo::LoadGraph{peepo::empty_graph("Euclidelay")}); sim.advance(100);
+            sim.submit(peepo::AddModule{uri, 184, 132}); sim.advance(100);
+            peepo::Application app(sim); step(app);
+            click(app, 184 + 48, 132 + 72 + 48);
+            check(app.page() == peepo::Page::Parameters, "Euclidelay's page did not open");
+            for (const char* heading : {"MAIN", "TEMPO AND OUTPUT"})
+                check(exact_label(app.screen(), heading) != nullptr, (std::string("Euclidelay's heading missing: ") + heading).c_str());
+            // Each voice's heading comes before the bar that switches it, which has the same name.
+            for (const char* voice : {"VOICE 1", "VOICE 2", "VOICE 3", "VOICE 4"})
+                check(first_label(app.screen(), voice) && first_label(app.screen(), voice) != exact_label(app.screen(), voice),
+                      (std::string("Euclidelay's heading or switch missing: ") + voice).c_str());
+            check(!exact_label(app.screen(), "MORE") && !exact_label(app.screen(), "ENABLED"), "a Euclidelay control is outside its groups, or Enabled is shown");
+            for (const auto& p : found->parameters) {
+                std::string name = p.name;
+                std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+                check(bar(app, name.c_str()) != nullptr, (std::string("Euclidelay's bar missing: ") + name).c_str());
+            }
+            auto* list = lv_obj_get_parent(lv_obj_get_parent(exact_label(app.screen(), "STEP")));
+            // Where a bar is in the list, whatever it was scrolled to to find it.
+            const auto top = [&](const char* name) { auto* b = bar(app, name); lv_area_t a; lv_obj_get_coords(b, &a); return a.y1 + lv_obj_get_scroll_y(list); };
+            check(top("STEP") < top("VOICE 1") && top("PAN 1") < top("VOICE 2") && top("PAN 3") < top("VOICE 4") && top("PAN 4") < top("BPM"),
+                  "Euclidelay's bars are not in group order");
+            check(bar_value(app, "STEP") == "1/16", "Step does not show its choice");
+            lv_obj_scroll_to_y(list, 0, LV_ANIM_OFF); step(app);
+            capture(app, output / "86-euclidelay.bmp");
+            check(lv_obj_get_scroll_bottom(list) > 0, "Euclidelay's page should scroll");
+            click(app, 28, 72 + 352);
+            check(lv_obj_get_scroll_bottom(list) <= 0, "touching the rail's end did not scroll to Euclidelay's last controls");
+            capture(app, output / "87-euclidelay-end.bmp");
         }
         // MIDI cables: a diamond jack under IN's audio, dragged to a MIDI
         // module's diamond and on to OUT's. Audio never lands on a MIDI jack.

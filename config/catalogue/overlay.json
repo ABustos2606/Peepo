@@ -223,6 +223,15 @@
       {"name": "Memory only", "parameters": ["wipe"]}
     ]},
     {"uri": "https://github.com/ABustos2606/discipline#return", "name": "Discipline Return", "category": "Utility", "description": "Brings Discipline's repeats back in when its Modifier is Outside. One per patch."},
+    {"uri": "https://github.com/ABustos2606/euclidelay#euclidelay", "name": "Euclidelay", "category": "Delay", "description": "Echoes on four Euclidean rhythms. Steps, Hits and Shift set each voice's pattern; each voice loops it with feedback, with its own level and pan.",
+     "bypass": "port", "tempo": "bpm", "groups": [
+      {"name": "Main", "parameters": ["step", "echoes", "dry", "tone"]},
+      {"name": "Voice 1", "parameters": ["voice_1", "steps_1", "hits_1", "shift_1", "feedback_1", "level_1", "pan_1"]},
+      {"name": "Voice 2", "parameters": ["voice_2", "steps_2", "hits_2", "shift_2", "feedback_2", "level_2", "pan_2"]},
+      {"name": "Voice 3", "parameters": ["voice_3", "steps_3", "hits_3", "shift_3", "feedback_3", "level_3", "pan_3"]},
+      {"name": "Voice 4", "parameters": ["voice_4", "steps_4", "hits_4", "shift_4", "feedback_4", "level_4", "pan_4"]},
+      {"name": "Tempo and output", "parameters": ["bpm", "peepo_output"]}
+    ]},
     {"uri": "https://github.com/ABustos2606/chamber#chamber", "name": "Chamber", "category": "Resonator", "description": "A bell, plate or strings that your guitar rings at its own pitch: cable it to Strike in, no gate needed. It starts as a long bell with reverb. Raise Strike, Bow or Blow level to play it with Play or a gate; Blow in sounds only while one is held.",
      "output": "output", "parameters": [{"symbol": "ominous", "hidden": true}], "groups": [
       {"name": "Resonator", "parameters": ["model", "geometry", "brightness", "damping", "position", "space"]},

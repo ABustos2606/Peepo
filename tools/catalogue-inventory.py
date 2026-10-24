@@ -36,6 +36,7 @@ PEEPO = ["urn:peepo:lv2:footswitch",
 PEEPO += ['https://github.com/ABustos2606/eureka#slowmo', 'https://github.com/ABustos2606/eureka#hush', 'https://github.com/ABustos2606/eureka#bloom', 'https://github.com/ABustos2606/eureka#skip', 'https://github.com/ABustos2606/eureka#ripple', 'https://github.com/ABustos2606/eureka#prism', 'https://github.com/ABustos2606/eureka#spool', 'https://github.com/ABustos2606/eureka#granny', 'https://github.com/ABustos2606/eureka#spark', 'https://github.com/ABustos2606/eureka#chime', 'https://github.com/ABustos2606/eureka#flock', 'https://github.com/ABustos2606/eureka#crinkle']
 # Preserve selected project-owned identities when regenerating.
 PEEPO += ['https://github.com/ABustos2606/midi-cv#mono', 'https://github.com/ABustos2606/midi-cv#poly', 'https://github.com/ABustos2606/midi-pc#pc']
+PEEPO += ['https://github.com/ABustos2606/euclidelay#euclidelay']
 EXAMPLES = ["eg-amp", "eg-fifths", "eg-metro", "eg-midigate", "eg-params", "eg-scope#Mono", "eg-scope#Stereo"]
 
 

@@ -140,6 +140,8 @@ if(PEEPO_BUILD_UI)
   endif()
   add_executable(peepo_ui_check tests/ui_check.cpp)
   target_link_libraries(peepo_ui_check PRIVATE peepo_ui)
+  # Euclidelay's page is checked from the exported catalogue and the overlay.
+  target_compile_definitions(peepo_ui_check PRIVATE PEEPO_CATALOGUE_DIR="${CMAKE_SOURCE_DIR}/config/catalogue")
   if(BUILD_TESTING)
     add_test(NAME ui_workflows COMMAND peepo_ui_check "${CMAKE_BINARY_DIR}/screenshots")
     # About 7 s natively; the arm64 build runs it under emulation, several times slower.

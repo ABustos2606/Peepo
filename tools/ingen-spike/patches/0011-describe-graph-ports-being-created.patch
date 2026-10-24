@@ -1,0 +1,66 @@
+diff --git a/src/server/ClientUpdate.cpp b/src/server/ClientUpdate.cpp
+index 008e9843..09578333 100644
+--- a/src/server/ClientUpdate.cpp
++++ b/src/server/ClientUpdate.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include "BlockImpl.hpp"
+ #include "BufferFactory.hpp"
++#include "DuplexPort.hpp"
+ #include "GraphImpl.hpp"
+ #include "PluginImpl.hpp"
+ #include "PortImpl.hpp"
+@@ -40,6 +41,7 @@
+ #include <map>
+ #include <memory>
+ #include <utility>
++#include <vector>
+ 
+ namespace ingen::server {
+ 
+@@ -98,9 +100,22 @@ ClientUpdate::put_graph(const GraphImpl* graph)
+ 		put_block(&b);
+ 	}
+ 
+-	// Enqueue ports
+-	for (uint32_t i = 0; i < graph->num_ports_non_rt(); ++i) {
+-		put_port(graph->port_impl(i));
++	// Enqueue ports, in index order, from the lists the pre-processor keeps.
++	// The ports array belongs to the process thread and grows only when a
++	// port's creation is executed, so a graph described straight after ports
++	// were created (a Get after loading a patch) read past its end.
++	std::vector<const PortImpl*> ports;
++	for (const auto& p : graph->inputs()) {
++		ports.push_back(&p);
++	}
++	for (const auto& p : graph->outputs()) {
++		ports.push_back(&p);
++	}
++	std::sort(ports.begin(), ports.end(), [](const PortImpl* x, const PortImpl* y) {
++		return x->index() < y->index();
++	});
++	for (const auto* p : ports) {
++		put_port(p);
+ 	}
+ 
+ 	// Enqueue arcs
+diff --git a/src/server/GraphImpl.hpp b/src/server/GraphImpl.hpp
+index 6c852106..a0e293ed 100644
+--- a/src/server/GraphImpl.hpp
++++ b/src/server/GraphImpl.hpp
+@@ -149,6 +149,15 @@ public:
+ 		_outputs.push_front(port);
+ 	}
+ 
++	/** The ports as the pre-processing thread knows them.
++	 *
++	 * Unlike the ports array, which the process thread swaps in when a port's
++	 * creation or deletion is executed, these lists already hold every port
++	 * pre-processed so far. Pre-processing thread only.
++	 */
++	const PortList& inputs() const { return _inputs; }
++	const PortList& outputs() const { return _outputs; }
++
+ 	/** Remove port from ports list used in pre-processing thread.
+ 	 *
+ 	 * Port is not removed from ports array for process thread (which could be

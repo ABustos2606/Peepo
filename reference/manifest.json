@@ -6,6 +6,7 @@
     "not_a_build_or_firmware_image":  true,
     "upstream_source_adapted":  false,
     "repositories":  [
+        {"name": "euclidelay", "role": "Delay whose echoes fall on four Euclidean rhythms", "origin": "https://github.com/ABustos2606/euclidelay.git", "commit": "4ee5c87c266691ba415049885734b297ef327e8f", "license": "GPL-2.0-or-later"},
         {"name": "eureka", "role": "Twelve independent stereo effects for Peepo", "origin": "https://github.com/ABustos2606/eureka.git", "commit": "4b52532c3f0f426a38005c01cee5532e8a15b542", "license": "GPL-2.0-or-later"},
         {
             "name": "aura",

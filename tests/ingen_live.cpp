@@ -6,6 +6,8 @@
 // It leaves IN (left) -> amp at +6.02 dB -> OUT (left) for a level measurement.
 // With --survive-restart it instead waits for the engine to be stopped and
 // started again, and reports whether the adapter found its way back.
+// PEEPO_OVERLAY names an overlay to apply to the catalogue, for a module's
+// presentation rules such as the control that follows the patch tempo.
 #include "catalogue/catalogue.hpp"
 #include "engine/ingen/ingen_engine.hpp"
 #include "storage/patch_store.hpp"
@@ -76,7 +78,7 @@ int main(int argc, char** argv) {
     const std::string address = argc > 1 ? argv[1] : "unix:///tmp/peepo-ingen.sock";
     // The catalogue exported from this engine's plugins, not a hand-written entry.
     std::vector<ModuleDefinition> offered;
-    if (const auto issue = load_catalogue(argc > 2 ? argv[2] : "catalogue.json", "", offered); !issue.empty()) { std::cerr << issue << std::endl; return 2; }
+    if (const auto issue = load_catalogue(argc > 2 ? argv[2] : "catalogue.json", std::getenv("PEEPO_OVERLAY") ? std::getenv("PEEPO_OVERLAY") : "", offered); !issue.empty()) { std::cerr << issue << std::endl; return 2; }
     replace_catalogue(std::move(offered));
     auto a = std::make_unique<Client>(address);
     a->engine.connect();
