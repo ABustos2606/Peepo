@@ -16,7 +16,11 @@ start_engine() {
     rm -f /tmp/peepo-ingen.sock
     JACK_NO_AUDIO_RESERVATION=1 nohup jackd -d dummy -r 48000 -p "${PEEPO_PERIOD:-128}" >"$RUN/jackd.log" 2>&1 &
     for _ in $(seq 50); do jack_lsp >/dev/null 2>&1 && break; sleep 0.1; done
-    nohup ingen -e -f -S /tmp/peepo-ingen.sock "$@" >"$RUN/ingen.log" 2>&1 &
+    # -a as the instrument runs it (config/pi/bin/peepo-engine); PEEPO_ATOMIC=0
+    # starts the engine without it, for comparison.
+    local atomic=-a
+    [ "${PEEPO_ATOMIC:-1}" = 0 ] && atomic=
+    nohup ingen -e -f $atomic -S /tmp/peepo-ingen.sock "$@" >"$RUN/ingen.log" 2>&1 &
     for _ in $(seq 50); do [ -S /tmp/peepo-ingen.sock ] && break; sleep 0.1; done
     [ -S /tmp/peepo-ingen.sock ] || { echo "engine did not open its socket"; tail -20 "$RUN/ingen.log"; return 1; }
 }

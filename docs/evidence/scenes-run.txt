@@ -1,0 +1,229 @@
+######## tails: third-party
+== tails, click, replay and side
+round trip without a module: 196 frames
+Bitcrushed delay             Delay    not installed in this engine (status 22)
+Euclidelay                   Delay    not installed in this engine (status 22)
+Eureka Skip                  Delay    not installed in this engine (status 22)
+Eureka Spool                 Delay    not installed in this engine (status 22)
+Gx Delay stereo              Delay    engine tail cut                    on  -40.3 off -180.0 | click  51.3 dB CLICK | replay -180.0, never bypassed -180.0
+Gx Digital delay             Delay    engine tail cut                    on  -36.3 off -180.0 | click  55.3 dB CLICK | replay  -12.2, never bypassed  -48.6 REPLAY
+Gx Digital delay stereo      Delay    engine tail cut                    on  -36.3 off -180.0 | click  55.3 dB CLICK | replay  -12.2, never bypassed  -48.6 REPLAY
+Gx Duck delay                Delay    engine tail cut                    on  -32.7 off -180.0 | click  61.4 dB CLICK | replay   -7.1, never bypassed -180.0 REPLAY
+Gx Duck delay stereo         Delay    engine tail cut                    on  -41.1 off -180.0 | click  50.5 dB CLICK | replay  -14.0, never bypassed -180.0 REPLAY
+Gx Echo Cat                  Delay    engine tail no tail at these values on -180.0 off -180.0 | click  55.2 dB CLICK | replay  -82.4, never bypassed -180.0
+Gx Echo stereo               Delay    engine tail no tail at these values on  -71.7 off -180.0 | click  54.0 dB CLICK | replay  -16.6, never bypassed -180.0 REPLAY
+Gx Multiband delay           Delay    engine tail cut                    on  -34.9 off -180.0 | click  57.8 dB CLICK | replay  -10.4, never bypassed  -35.2 REPLAY
+Gx Multiband echo            Delay    engine tail cut                    on  -46.9 off -180.0 | click  69.2 dB CLICK | replay  -22.2, never bypassed  -54.7 REPLAY
+Gx Tube delay                Delay    engine tail cut                    on  -60.1 off -180.0 | click  73.0 dB CLICK | replay   -2.2, never bypassed -180.0 REPLAY
+MDA DubDelay                 Delay    engine tail no tail at these values on -180.0 off -180.0 | click  42.2 dB CLICK | replay -180.0, never bypassed  -26.7
+Mist Beat Repeat             Delay    engine tail no tail at these values on -180.0 off -180.0 | click  56.9 dB CLICK | replay -180.0, never bypassed -180.0
+Mist Looper                  Delay    engine tail cut                    on  -43.4 off -180.0 | click  53.1 dB CLICK | replay  -15.5, never bypassed  -54.0 REPLAY
+Stereo delay                 Delay    engine tail cut                    on  -43.9 off -180.0 | click  54.3 dB CLICK | replay  -11.4, never bypassed  -69.1 REPLAY
+Tempo delay                  Delay    engine tail cut                    on  -50.6 off -180.0 | click  50.7 dB CLICK | replay  -13.2, never bypassed -120.6 REPLAY
+Dragonfly Hall               Reverb   engine tail cut                    on  -63.8 off -180.0 | click  42.3 dB CLICK | replay  -26.0, never bypassed -127.9 REPLAY
+Dragonfly Plate              Reverb   engine tail no tail at these values on  -98.5 off -180.0 | click  51.0 dB CLICK | replay  -27.9, never bypassed -180.0 REPLAY
+Dragonfly Room               Reverb   engine tail no tail at these values on  -80.5 off -180.0 | click  47.9 dB CLICK | replay  -37.6, never bypassed -180.0 REPLAY
+Eureka Hush                  Reverb   not installed in this engine (status 22)
+Eureka Slowmo                Reverb   not installed in this engine (status 22)
+Gx Multiband reverb          Reverb   engine tail no tail at these values on  -72.7 off -180.0 | click  64.8 dB CLICK | replay  -28.0, never bypassed -159.7 REPLAY
+Gx Shimmizita                Reverb   engine tail cut                    on  -45.0 off -180.0 | click  73.6 dB CLICK | replay  -11.9, never bypassed  -80.3 REPLAY
+IR Reverb - Mono             Reverb   not installed in this engine (status 22)
+IR Reverb - Mono to Stereo   Reverb   not installed in this engine (status 22)
+IR Reverb - Stereo           Reverb   not installed in this engine (status 22)
+Mist Oliverb                 Reverb   engine tail cut                    on  -31.1 off -180.0 | click  68.4 dB CLICK | replay   -7.9, never bypassed  -38.2 REPLAY
+Beat Repeater - Mono         Texture  not installed in this engine (status 22)
+Beat Repeater - Stereo       Texture  not installed in this engine (status 22)
+Beat Slicer - Mono           Texture  not installed in this engine (status 22)
+Beat Slicer - Stereo         Texture  not installed in this engine (status 22)
+Eureka Bloom                 Texture  not installed in this engine (status 22)
+Eureka Crinkle               Texture  not installed in this engine (status 22)
+Eureka Granny                Texture  not installed in this engine (status 22)
+Eureka Prism                 Texture  not installed in this engine (status 22)
+Granulator - Mono            Texture  not installed in this engine (status 22)
+Granulator - Stereo          Texture  not installed in this engine (status 22)
+Mist                         Texture  engine tail cut                    on  -55.2 off -180.0 | click  60.4 dB CLICK | replay  -25.4, never bypassed -180.0 REPLAY
+Mist Spectral                Texture  engine tail cut                    on   -9.0 off -180.0 | click  72.0 dB CLICK | replay   -2.4, never bypassed    3.3
+Power cut                    Texture  not installed in this engine (status 22)
+Reverse (Reflector)          Texture  not installed in this engine (status 22)
+Stuck (freeze)               Texture  not installed in this engine (status 22)
+Vinyl                        Texture  engine tail no tail at these values on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+     25 error: :0:0: Unregistering client <unix:///tmp/peepo-ingen.sock.275>
+      5 fluidsynth: error: requested set value for setting 'synth.midi-channels' out of range
+######## tails: own plugins
+== tails, click, replay and side
+round trip without a module: 196 frames
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click   9.5 dB | replay  -75.4, never bypassed  -75.2
+Discipline                   Delay    port   tail cut                    on  -35.6 off -180.0 | click   8.9 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails on        Delay    port   tail rings on               on  -35.6 off  -35.6 | click   4.8 dB | replay -180.0, never bypassed  -50.7
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  15.4 dB | replay  -24.2, never bypassed  -24.2 | right -2 dB
+Eureka Skip                  Delay    port   tail rings on               on  -42.7 off  -42.7 | click   9.8 dB | replay -180.0, never bypassed -180.0
+Eureka Spool                 Delay    port   tail rings on               on  -42.2 off  -42.2 | click   5.4 dB | replay  -37.6, never bypassed  -37.8
+Loo-pi                       Delay    port   tail looper: mutes on purpose on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+Eureka Hush                  Reverb   port   tail rings on               on  -40.2 off  -40.2 | click  10.7 dB | replay  -47.2, never bypassed  -47.2
+Eureka Slowmo                Reverb   port   tail rings on               on  -39.4 off  -39.4 | click  14.2 dB | replay  -43.5, never bypassed  -43.5
+Drizzle                      Texture  port   tail rings on               on  -53.9 off  -54.0 | click   6.0 dB | replay -180.0, never bypassed -180.0
+Eureka Bloom                 Texture  port   tail no tail at these values on  -76.8 off  -76.8 | click   9.9 dB | replay  -83.4, never bypassed  -83.4
+Eureka Crinkle               Texture  port   tail no tail at these values on -180.0 off -180.0 | click   9.6 dB | replay -180.0, never bypassed -180.0
+Eureka Granny                Texture  port   tail rings on               on  -41.1 off  -41.1 | click  12.7 dB | replay  -29.9, never bypassed  -29.9
+Eureka Prism                 Texture  port   tail no tail at these values on -125.8 off -125.8 | click  23.3 dB CLICK | replay -180.0, never bypassed -180.0
+     15 error: :0:0: Unregistering client <unix:///tmp/peepo-ingen.sock.726>
+      2 error: :0:0: write error (Connection reset by peer)
+######## atomic
+== bundles, engine started plainly
+bypass   : 40 of 40 bundles changed both outputs; 35 in the same frame; largest gap 128 frames
+parameter: 40 of 40 bundles changed both outputs; 0 in the same frame; largest gap 21 frames
+mixed    : 40 of 40 bundles changed both outputs; 0 in the same frame; largest gap 138 frames
+      1 error: :0:0: Unregistering client <unix:///tmp/peepo-ingen.sock.1008>
+== bundles, engine started with --atomic-bundles
+bypass   : 40 of 40 bundles changed both outputs; 40 in the same frame; largest gap 0 frames
+parameter: 40 of 40 bundles changed both outputs; 40 in the same frame; largest gap 0 frames
+mixed    : 40 of 40 bundles changed both outputs; 40 in the same frame; largest gap 0 frames
+######## 07-adapter (engine with -a)
+PASS  the second client followed the rebuild, including values it was never sent directly
+PASS  the patch folder from an earlier run can be cleared -- /tmp/peepo-live-patches
+PASS  patch store opens -- /tmp/peepo-live-patches
+PASS  add a Mutable-derived module to the patch
+PASS  turn one of its controls
+PASS  pin encoder 1 to it
+PASS  the unsaved-changes marker is in the engine: both clients see it
+PASS  the engine saves the patch to disk -- 15.111118 ms; Saved Live "check" é ..
+PASS  what it wrote reads back with the right identity and is published
+PASS  the stored patch lists its name and modules -- 2 blocks
+PASS  replace it with an empty patch
+PASS  load the stored patch -- 87.815331 ms; Loaded Live "check" é ..
+PASS  identity, name, modules, cables, values and positions came back from disk
+PASS  the encoder assignment came back from disk
+PASS  the second client followed the load
+PASS  edit after loading
+PASS  a second save becomes revision 2
+PASS  a patch needing a missing plugin is refused before anything changes
+PASS  a bundle the engine cannot read is a failure, not a silent empty patch -- The engine restored nothing from file:///tmp/peepo-live-nowhere/r000001.ingen. Can the engine see the patch folder at that path?
+PASS  the newest revision loads -- Loaded Live "check" é ..
+PASS  a bundle without project properties is offered
+PASS  it loads with default names and layout, its values, and the folder's identity -- Loaded Untitled.
+PASS  back to the stored patch -- Loaded Live "check" é ..
+PASS  remove the granular module again
+PASS  restore the value
+INFO  edit round trip through the adapter -- median 5.89992 ms, p95 11.1213 ms, max 12.5015 ms (200 edits)
+PASS  a restarted interface recovers the graph under the same identities
+PASS  it also knows which stored patch is playing, and whether it has unsaved edits -- p20261024-234459-2240, unsaved edits
+INFO  engine load reading -- none yet (none at connect)
+PASS  the restarted interface can edit
+SUMMARY all adapter checks passed
+SUMMARY all adapter checks passed
+PASS  the patch the adapter built is what is heard -- left through the amp at +6.02 dB 0.5000 (expected 0.5000), right direct 0.2500 (expected 0.2500); JACK ports ingen:control, ingen:in_l, ingen:in_r, ingen:midi_in, ingen:midi_out, ingen:notify, ingen:out_l, ingen:out_r
+PASS  edit before the engine goes away
+PASS  a stopped engine is noticed and reported -- Engine closed the connection
+PASS  edits are refused and the last graph kept while the engine is away
+PASS  the adapter reconnects by itself when the engine returns
+PASS  the graph shown is the new engine's, not the old one remembered
+PASS  edits work again
+SUMMARY engine restart survived
+exit 0
+######## 23-midi (engine with -a)
+PASS  connect, read the graph and create the audio endpoints -- unix:///tmp/peepo-ingen.sock
+PASS  the catalogue lists x42 MIDI Transpose
+PASS  the export calls its two atom ports MIDI connectors
+PASS  the engine took the MIDI endpoints
+PASS  new patch
+PASS  add MIDI Transpose
+PASS  the engine's description of it has two MIDI connectors -- 2
+PASS  transpose up an octave
+PASS  cable MIDI IN to it
+PASS  cable it to MIDI OUT
+PASS  audio and MIDI are not joined
+PASS  MIDI cables read back from the engine
+PASS  patch store opens -- /tmp/peepo-live-patches/midi
+PASS  the engine saves the patch with its MIDI cables -- Saved MIDI check.
+PASS  the stored patch lists its MIDI cables -- 4 cables
+PASS  replace it with an empty patch
+PASS  the empty patch has no MIDI cable
+PASS  the patch loads with its MIDI cables and value -- Loaded MIDI check.
+PASS  a second client reads the MIDI cables
+SUMMARY MIDI cable checks passed
+PASS  the engine's MIDI endpoints are JACK MIDI ports -- ingen:control (midi), ingen:in_l (audio), ingen:in_r (audio), ingen:midi_in (midi), ingen:midi_out (midi), ingen:notify (midi), ingen:out_l (audio), ingen:out_r (audio)
+PASS  90 3c 64 into MIDI IN comes out of MIDI OUT as 90 48 64 -- saw ['90 48 64']
+PASS  80 3c 00 into MIDI IN comes out of MIDI OUT as 80 48 00 -- saw ['80 48 00']
+      1 lilv_plugin_load_ports_if_necessary(): error: Plugin <file:///opt/peepo/lib/x86_64-linux-gnu/lv2/ingen.lv2/MonoInstrument.ttl> is missing port 2/4
+      1 lilv_plugin_load_ports_if_necessary(): error: Plugin <file:///opt/peepo/lib/x86_64-linux-gnu/lv2/ingen.lv2/StereoInstrument.ttl> is missing port 2/6
+exit 0
+######## 24-clock (engine with -a)
+MIDI clock out and in, Start and Stop, program change and the settings files passed.
+PASS  Start once, with the first clock message -- fa f8 f8 f8
+PASS  Start is sent once
+PASS  the engine plays at 120 BPM
+PASS  120 BPM: clock every 1000.00 frames (120 BPM) -- 95 intervals, 1000 to 1000 frames
+PASS  set the tempo to 30 BPM, as the Tempo page or a tap does
+PASS  tempo change: 120 to 30 BPM from one clock message to the next -- 6 old intervals, then 23 new
+PASS  30 BPM: clock every 4000.00 frames (30 BPM) -- 23 intervals, 4000 to 4000 frames
+PASS  set the tempo to 300 BPM, as the Tempo page or a tap does
+PASS  tempo change: 30 to 300 BPM from one clock message to the next -- 2 old intervals, then 230 new
+PASS  300 BPM: clock every 400.00 frames (300 BPM) -- 239 intervals, 400 to 400 frames
+PASS  set the tempo to 120 BPM, as the Tempo page or a tap does
+PASS  tempo change: 300 to 120 BPM from one clock message to the next -- 15 old intervals, then 95 new
+PASS  120 BPM: clock every 1000.00 frames (120 BPM) -- 95 intervals, 1000 to 1000 frames
+PASS  save a patch at 87 BPM, then play 100 BPM
+PASS  100 BPM: clock every 1200.00 frames (100 BPM) -- 79 intervals, 1200 to 1200 frames
+PASS  load the patch saved at 87 BPM
+PASS  patch change: 100 to 87 BPM from one clock message to the next -- 5 old intervals, then 70 new
+PASS  87 BPM: clock every 1379.31 frames (87 BPM) -- 68 intervals, 1379 to 1380 frames
+PASS  while three interfaces connect and are killed: clock every 1379.31 frames (87 BPM) -- 90 intervals, 1379 to 1380 frames
+PASS  no gap or burst in the whole run -- 1191 intervals, 400 to 4000 frames
+PASS  stopping peepo-midi sends Stop last -- exit 0, last fc
+       | peepo-midi: catalogue: cannot open /tmp/peepo-adapter-build/../share/peepo/catalogue.json; modules will not follow incoming clock
+       | peepo-midi: peepo-midi:clock_out and peepo-midi:midi_in at 48000 Hz; engine unix:///tmp/peepo-ingen.sock
+       | peepo-midi: settings (defaults)
+       | peepo-midi: tempo 120 BPM
+       | peepo-midi: clock out on
+       | peepo-midi: tempo 30 BPM
+       | peepo-midi: tempo 300 BPM
+       | peepo-midi: tempo 120 BPM
+       | peepo-midi: tempo 87 BPM
+       | peepo-midi: tempo 100 BPM
+       | peepo-midi: tempo 87 BPM
+       | peepo-midi: stopped
+INFO  the probe's own xruns: 0; intervals left out around them: 0 (counted once per check)
+SUMMARY MIDI clock checks passed
+exit 0
+######## 25-midi-settings (engine with -a)
+PASS  with Start and Stop off, a restart sends neither
+PASS  clock out off: nothing goes out
+PASS  clock out on again: it begins with Start
+PASS  the patch tempo follows incoming clock at 125 BPM -- 125 (was 110)
+PASS  following the clock does not mark the patch as edited -- {'name': 'Charlie', 'tempo': '125', 'dirty': '0'}
+PASS  while following incoming clock, Peepo sends none of its own
+PASS  the interface is told the clock it hears -- clock_in=125.0
+PASS  and follows a change to 93.5 BPM
+PASS  a clock that stops is no longer reported
+       | PASS  connect, read the graph and create the audio endpoints -- unix:///tmp/peepo-ingen.sock
+       | PASS  new patch
+       | PASS  add a module with a continuous control -- Calf Vinyl
+       | PASS  learn level_in
+       | LEARNING level_in
+       | PASS  a controller moved on a device is learned -- CC 7 / 3
+       | PASS  learning marks the patch
+       | LEARNED CC 7 / 3
+       | PASS  the learned controller sets the control -- 1.000000 -> 0.000000
+       | PASS  save the patch
+       | PASS  play another patch
+       | PASS  load it again -- Loaded Learn.
+       | PASS  the binding is saved with the patch -- CC 7 / 3
+       | PASS  forget it
+       | PASS  forgotten
+PASS  controller 7 on channel 3 learned, sets the control, is saved, loaded and forgotten
+       | peepo-midi: settings changed
+       | peepo-midi: clock out on
+       | peepo-midi: settings changed
+       | peepo-midi: clock out off
+       | peepo-midi: tempo 125 BPM
+       | peepo-midi: tempo 123.3 BPM
+       | peepo-midi: tempo 112.4 BPM
+       | peepo-midi: tempo 102.1 BPM
+       | peepo-midi: tempo 94.5 BPM
+       | peepo-midi: tempo 93.5 BPM
+       | peepo-midi: settings changed
+       | peepo-midi: clock out on
+       | peepo-midi: tempo 120 BPM
+       | peepo-midi: stopped
+SUMMARY MIDI settings checks passed
+exit 0

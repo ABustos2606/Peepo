@@ -54,7 +54,7 @@ start_check() {
     jackd -n $SERVER --no-realtime -d dummy -r 48000 -p "$1" >"$RUN/jackd.log" 2>&1 &
     jack_pid=$!
     for _ in $(seq 50); do jack_lsp >/dev/null 2>&1 && break; sleep 0.1; done
-    ingen -e -f -E 0 -s $SERVER -S "$RUN/ingen.sock" >"$RUN/ingen.log" 2>&1 &
+    ingen -e -f -a -E 0 -s $SERVER -S "$RUN/ingen.sock" >"$RUN/ingen.log" 2>&1 &
     engine_pid=$!
     export PEEPO_ENGINE_PID=$engine_pid
     for _ in $(seq 100); do [ -S "$RUN/ingen.sock" ] && break; sleep 0.1; done

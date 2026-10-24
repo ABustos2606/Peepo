@@ -3,8 +3,10 @@
 # Copyright (C) 2026 Peepo contributors
 # Start Ingen from /opt/peepo with its libraries and plugins, listening only
 # on the instrument's UNIX socket (port 0: no TCP, see patch 0004).
+# -a runs each bundle in one audio cycle, on one frame with patch 0012, so a
+# scene's changes are heard together (docs/44-scenes.md).
 PREFIX=/opt/peepo
 LD_LIBRARY_PATH="$(find "$PREFIX/lib" -maxdepth 2 -name 'libingen*' -printf '%h\n' | sort -u | paste -sd:)"
 LV2_PATH="$(find "$PREFIX/lib" -maxdepth 2 -name lv2 -type d | paste -sd:):$PREFIX/nam/current:/usr/lib/lv2"
 export LD_LIBRARY_PATH LV2_PATH
-exec "$PREFIX/bin/ingen" -e -f -E 0 -S "${PEEPO_SOCKET:-/run/peepo/ingen.sock}" "$@"
+exec "$PREFIX/bin/ingen" -e -f -a -E 0 -S "${PEEPO_SOCKET:-/run/peepo/ingen.sock}" "$@"

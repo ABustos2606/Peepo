@@ -1,0 +1,20 @@
+{
+ "bypass": {
+  "trials": 40,
+  "both_changed": 40,
+  "same_frame": 35,
+  "largest_gap_frames": 128
+ },
+ "parameter": {
+  "trials": 40,
+  "both_changed": 40,
+  "same_frame": 0,
+  "largest_gap_frames": 21
+ },
+ "mixed": {
+  "trials": 40,
+  "both_changed": 40,
+  "same_frame": 0,
+  "largest_gap_frames": 138
+ }
+}

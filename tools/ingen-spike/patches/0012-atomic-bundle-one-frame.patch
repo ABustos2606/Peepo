@@ -1,0 +1,19 @@
+diff --git a/src/server/PreProcessor.cpp b/src/server/PreProcessor.cpp
+index b3bad0b2..476ee12a 100644
+--- a/src/server/PreProcessor.cpp
++++ b/src/server/PreProcessor.cpp
+@@ -113,6 +113,14 @@ PreProcessor::process(RunContext& ctx, PostProcessor& dest, size_t limit)
+ 			break; // Waiting for PRE_UNBLOCKED
+ 		}
+ 
++		// Peepo: everything in an atomic bundle takes effect on the same frame,
++		// the first of this cycle. Each event otherwise keeps the time it
++		// arrived, and a control change is applied at that frame within the
++		// cycle, so a scene's changes landed up to 17 frames apart.
++		if (_block_state == BlockState::PROCESSING) {
++			ev->set_time(ctx.start());
++		}
++
+ 		if (ev->time() < ctx.start()) {
+ 			ev->set_time(ctx.start()); // Too late, nudge to context start
+ 		} else if (_block_state != BlockState::PROCESSING &&
