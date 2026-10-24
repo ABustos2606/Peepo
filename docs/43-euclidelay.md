@@ -1,6 +1,6 @@
 # Euclidelay integration
 
-**23 October 2026. In the inventory, overlay, WSL fixture and module list; patch tempo and the module page checked; engine patch 0011 written. Not yet in the Pi's installed catalogue.**
+**23 October 2026. In the inventory, overlay, WSL fixture and module list; patch tempo and the module page checked; engine patch 0011 written. Installed in the Pi's catalogue on 24 October 2026 (UTC).**
 
 Euclidelay is a delay whose echoes fall on the hits of four Euclidean rhythms, the project's own: https://github.com/ABustos2606/euclidelay, GPL-2.0-or-later, Copyright (c) 2026 Alejandro Bustos. Its spec is the repository's `docs/design.md`; its patterns match the Euclidean module's for the same numbers, tested against `src/core/euclidean.hpp`. This is its milestone 5.
 
@@ -10,7 +10,7 @@ Euclidelay is a delay whose echoes fall on the hits of four Euclidean rhythms, t
 - **Inventory.** `tools/catalogue-inventory.py` lists `https://github.com/ABustos2606/euclidelay#euclidelay`; the inventory has 371 identities.
 - **Overlay.** Name Euclidelay, category Delay, a description of what it does, `"bypass": "port"` (the engine's bypass would cut the echoes and leave the right side silent) and `"tempo": "bpm"`. Groups: Main (Step, Echoes, Dry, Tone), Voice 1 to Voice 4 (the voice's switch, Steps, Hits, Shift, Feedback, Level, Pan) and Tempo and output (BPM and the general Output). Groups are headings on one page with no size limit, so each voice stays one group.
 - **Exports.** Exported alone with `peepo_catalogue_export --only`, in WSL and on the Pi: available, `enable` = `enabled`, 33 controls (Enabled is left to the plugin). The two records are identical apart from the bundle path. `tools/merge-catalogue.py` merged them into `config/catalogue/wsl-debian.json` (339 modules) and into [the Pi evidence export](evidence/catalogue-pi-20261023-euclidelay.json) (351), keeping every other record byte for byte; it refuses an export with other identities or an unavailable one. The [module list](33-module-list.md) was regenerated from that export: Euclidelay is Ready under Delay.
-- **Not done:** the Pi's installed catalogue (`/opt/peepo/share/peepo/catalogue.json`, overlay and inventory) does not list Euclidelay yet, so the instrument does not offer it. Run `python3 tools/source-cache.py save` for the new pin.
+- **On the Pi.** The installed catalogue, overlay and inventory were backed up to `/opt/peepo/share/peepo/backups/euclidelay-20261024T024355Z/`; Euclidelay was exported again there and merged into `catalogue.json` (351 modules) with `tools/merge-catalogue.py`, and the overlay and inventory replaced by this repository's, which differed from the installed ones only by Euclidelay. The running engine predated the bundle, so `peepo-engine` was restarted (the playing patch was a test), then `peepo-ui`, `peepo-route` and `peepo-midi`; all came back active and the UI logged no catalogue error. The engine created a Euclidelay block (status 0) and deleted it again. Still to run: `python3 tools/source-cache.py save` for the new pin.
 
 ## Module page
 
@@ -37,7 +37,6 @@ Euclidelay's milestone 4 found that loading a saved patch whose block fails to `
 
 ## Still to do
 
-- Install the catalogue on the Pi (as for Eureka: back up, merge, restart the UI) and check Euclidelay is offered.
 - Rebuild the engine with patch 0011 in WSL and for the Pi.
 - On the instrument: the page on the touchscreen, a guitar through the default patch, the tempo from the Tempo page and a tap, and bypass leaving trails.
 - Euclidelay's own open items (listening, tuning, the 30-minute Pi run on the new power supply) are in its implementation plan.

@@ -94,6 +94,7 @@ Inside Debian under WSL2, as root: `bash tools/pi/build-arm64.sh` builds the eng
 | [MIDI](docs/39-midi.md) | Plan: MIDI in and out over USB and 3.5 mm TRS jacks, MIDI cables and the MIDI modules on the canvas, clock in and out, program change and MIDI learn |
 | [Plugin sources](docs/42-plugin-sources.md) | Plan: what breaks if a plugin's repository disappears, the 22 repositories to fork, and a local source cache for everything forks can't cover |
 | [Euclidelay integration](docs/43-euclidelay.md) | The Euclidean-rhythm delay pinned, catalogued and checked: overlay groups, patch tempo to the sample, its module page, and engine patch 0011 for a crash describing a graph whose ports are being created |
+| [Scenes](docs/44-scenes.md) | Plan: up to eight saved states in one patch (bypasses and marked parameters), changed in one audio cycle from the screen, stomps and MIDI; why tails are cut today and a spill bypass so delays and reverbs ring on |
 
 ## Retrieve the project and reference sources
 

@@ -504,6 +504,28 @@ See [the plugin catalogue](22-plugin-catalogue.md) and [the compatibility matrix
 
 **Exit check:** on the Pi, a USB controller plays an MDA instrument through a MIDI filter cabled on the canvas; a learned CC moves a control and survives a reload; a program change selects a patch; devices that follow MIDI clock follow Peepo's tempo, a tap and a patch change, also while the interface restarts; and none of it causes xruns.
 
+## Phase 13 — Scenes
+
+**Purpose:** up to eight saved states inside one patch, changed while playing with no gap or click, with the tails of delays and reverbs ringing on. The design, storage format and checks are in [Scenes](44-scenes.md).
+
+**Status — 24 October 2026:** planned, nothing built. Decided with the user: a scene stores every module's bypass plus the parameters marked per scene; 8 scenes per patch; delays and reverbs ring on when bypassed, Discipline's and Aura's by default. Order: measure first, then tails, then the scenes themselves, then the screen, stomps and MIDI.
+
+- [ ] **P13.1 — Measure (WSL):** `tools/ingen-spike/27-scenes.sh` with the tail check for every Delay and Reverb module under its current bypass, recording which cut their tail, click, replay an old buffer or lose a side; and the atomic-change check (two modules switched in one bundle) with and without Ingen's `--atomic-bundles`. Record in `evidence/scenes-results.md`.
+- [ ] **P13.2 — Atomic bundles:** `-a` added to the `peepo-engine` launcher and `tools/ingen-spike/env.sh`; patch loading, the adapter checks (`07-adapter.sh`) and the MIDI checks (`23`–`25`) rerun with it on, with no change in results.
+- [ ] **P13.3 — Spill bypass (engine patch 0012):** in `BlockImpl`, a bypassed block marked spill keeps running on silent inputs, adds its outputs to the dry signal, ramps 5 ms each way, takes the dry signal for an unmatched output from the last input (also in the dumb bypass), and falls back to the dumb bypass after one second below -90 dBFS. Buffers made at instantiation. Built in WSL and the arm64 build root.
+- [ ] **P13.4 — `"bypass": "spill"` in the catalogue:** overlay value, refused beside `"port"`; the adapter sets the block property when adding the module and keeps it in saved patches; `peepo_catalogue_export` and `catalogue_tests` know it. Marked on every Delay and Reverb module that passes the tail check with it; the module list regenerated.
+- [ ] **P13.5 — Our own plugins:** Discipline's Trails default to 1 in its own repository (saved patches keep their value), a new pin in `14-more-plugins.sh` and `reference/manifest.json`; the tail check run on Aura, Eureka, Euclidelay and Drizzle; Loo-pi unchanged.
+- [ ] **P13.6 — Scene model (`src/core`):** scenes, marked parameters (at most 16), names; encode and decode the graph properties; the pure function giving the changes between the live state and a scene; edits on the screen written into the current scene, performance changes not; modules added, removed and duplicated; orphans kept. `peepo_core_tests`.
+- [ ] **P13.7 — Engine command `SelectScene`:** `IngenEngine` sends the changes and `peepo:scene-current` as one bundle; the simulator applies them at once; scene add, rename, copy, reorder, delete and mark/unmark as commands. Session snapshot includes scenes. `peepo_ingen_tests` (a second client sees the change), `peepo_storage_tests` (bundle round trip, loading restores the current scene).
+- [ ] **P13.8 — Screen:** a mockup approved first; then scene pills on the patch page, the Scenes page, the per-scene marker and hold menu on the module page. `peepo_ui_check` screens.
+- [ ] **P13.9 — Stomps and MIDI:** Scene 1–8, Next scene and Previous scene as stomp actions, per patch and for every patch; scene select by CC in `peepo-midi` (setting in Settings → MIDI, default CC 69, on the program-change channel). Core and MIDI tests.
+- [ ] **P13.10 — On the Pi:** the package with engine patch 0012 and `-a`; the tail check and the scene-changes-while-playing check run there; a verse/solo patch played with guitar, changed by stomps and by a MIDI foot controller; the heaviest patch with all modules on measured for CPU.
+- [ ] **P13.11 — Later:** CC messages sent to other gear when a scene is selected.
+
+**Deliverable:** scenes stored in the patch, changed from the screen, stomps and MIDI; delays and reverbs that ring on when bypassed, for third-party modules and our own; each with its record.
+
+**Exit check:** on the Pi, with guitar, a patch with at least three scenes is played through scene changes from a stomp and from a MIDI controller: the changes are heard at once and together, delay and reverb tails ring on across them, nothing clicks or replays an old buffer, no xruns; the scenes survive a save, a reload and an interface restart.
+
 ## Verification strategy and phase records
 
 Use focused automated tests for failure-prone shared logic: graph cycle/channel rules, parameter conversions, protocol parsing, event ordering/reconnect, metadata schemas, assignment pickup and coherent persistence. Use Windows interaction checks for actual view workflows. Use live Pi tests for audio/plugin behaviour, finger operation, GPIO/MIDI, device permissions and boot. Avoid tests that simply mirror widget construction or repeat already passed checks without a new change or unresolved issue.

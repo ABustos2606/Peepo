@@ -100,6 +100,7 @@ The [technical implementation plan](10-technical-implementation-plan.md), prepar
 | D21 | Detailed phase/task implementation plan | Implementation under way since 13 October 2026. Reconciled 14 October with actual task checkboxes, native evidence, partial checks and next actions; the plan is the authoritative progress record ([plan](10-technical-implementation-plan.md)) |
 | D23 | Engine build and protocol | Verified working baseline: upstream Ingen 13a045d0 + Poly MIDI-learn fix + project patches 0001–0005, Turtle protocol. ARM build and Pi guitar/Clouds/save/load/UI-reconnect checks pass; remaining native host/routing cases stay P3.4–P3.7 ([record](23-pi-bring-up.md)) |
 | D22 | Project license | Agreed 13 October 2026: GPL-3.0-or-later for original Peepo files; preserve upstream licenses, including Ingen's AGPL-3.0-or-later |
+| D24 | Scenes | Agreed 24 October 2026: up to 8 scenes per patch; a scene stores every module's bypass plus only the parameters marked per scene (Helix-style), the rest shared; changes sent as one atomic bundle; delays and reverbs ring on when bypassed (engine spill bypass for third-party modules, Trails on by default in our own). Planned as Phase 13 ([scenes](44-scenes.md)) |
 
 ## Remaining information and resolved implementation inputs
 
