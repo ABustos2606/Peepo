@@ -1,6 +1,6 @@
 # Scenes
 
-**Planned 24 October 2026. P13.1 (measurements), P13.2 (atomic bundles, engine patch 0012) and P13.3 (spill bypass, engine patch 0013) done in WSL the same day, P13.4 (`"bypass": "spill"` in the catalogue, 21 modules marked) on 25 October ([record](evidence/scenes-results.md)); nothing of the scenes themselves is built yet.** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
+**Planned 24 October 2026. P13.1 (measurements), P13.2 (atomic bundles, engine patch 0012) and P13.3 (spill bypass, engine patch 0013) done in WSL the same day, P13.4 (`"bypass": "spill"` in the catalogue, 21 modules marked) and P13.5 (our own plugins: Discipline's Trails on by default, the tail check on the rest) on 25 October ([record](evidence/scenes-results.md)); nothing of the scenes themselves is built yet.** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
 
 A scene is a saved state inside one patch. "Verse" can have the chorus on and the drive off, and "Solo" the reverse, so one song is played on one patch by changing scenes. Changing scene must not break the sound: no gap, no click, and the echoes and reverb of what was just switched off ring on.
 
@@ -29,7 +29,7 @@ There are two kinds of bypass ([catalogue export](16-catalogue-export.md)):
 | Euclidelay | Input fades out of the loops; the voices keep repeating (`src/engine.cpp`) | Ring on (measured) |
 | Drizzle | Input to the grains fades out; the wet sound is not faded (`src/drizzle.cpp`) | Ring on (measured) |
 | Aura | Wet sound kept while **Trails** is on, default 1 (`aura.ttl`) | Ring on by default (measured) |
-| Discipline | Echoes dropped unless **Trails** is on, default 0 (`discipline.ttl`) | **Cut by default** (measured); ring on with Trails on |
+| Discipline | Echoes dropped unless **Trails** is on, default 1 from 0.4.1 (`discipline.ttl`; 0 before) | Ring on by default (measured); cut with Trails off |
 | Loo-pi | Each loop mutes with a short ramp (`lv2/stereo_loop.cpp`) | A looper, not a tail: kept as it is |
 
 ## Making every delay and reverb ring on
@@ -54,9 +54,11 @@ With a silent input the plugin's own dry path gives nothing, so what comes out i
 
 ### Our own plugins
 
-- **Discipline:** Trails defaults to 1. Patches saved with Trails at 0 keep it, so their sound does not change.
+- **Discipline:** Trails defaults to 1 (0.4.1). Patches saved with Trails at 0 keep it, so their sound does not change: Ingen saves every control's value, and a patch saved by 0.4.0 loads with Trails 0 (measured).
 - **Aura, Eureka, Euclidelay, Drizzle:** already ring on; each gets the tail check below so it stays that way.
 - **Loo-pi:** unchanged. Bypassing a looper mutes its loops, and a scene that does not change Loo-pi's bypass leaves its loops playing.
+
+*Done 25 October 2026 (P13.5, [record](evidence/scenes-results.md#our-own-plugins-p135)):* `tools/ingen-spike/28-own-tails.sh` builds our plugins at their pins and runs the tail check on them. Every one with a tail rings on, Discipline included, and none replays. Switching off and on again, Aura clicks around 20 dB and Eureka Prism 29 dB while almost silent: for the ear on the Pi (P13.10). Larger clicks now and then (66 to 68 dB) were xruns of WSL's dummy backend, lost cycles in the recording; the check now measures again after an xrun. The module list marks our own modules that ring on. Discipline pinned at 12625b6 in `14-more-plugins.sh` and `reference/manifest.json`.
 
 ## What a scene stores
 
@@ -109,7 +111,7 @@ Built to the [design language](03-interface-and-controls.md): header pills and o
 
 ## Checks
 
-- **Tail check** (`tools/ingen-spike/27-scenes.sh tails`, root, in WSL; `SCENES_LV2` adds bundle directories): for each Delay, Reverb and Texture module, the tail, click, replay and side checks described in the [record](evidence/scenes-results.md). Pass: the tail within 3 dB of the module left on, a click no more than 20 dB above the tone's own variation, no replay, no lost side. The engine's bypass fails all of them, which shows the check works. `27-scenes.sh spill` runs the same with the engine's bypass spilling, the click switching off and on again, and the CPU after the tail.
+- **Tail check** (`tools/ingen-spike/27-scenes.sh tails`, root, in WSL; `SCENES_LV2` adds bundle directories, `SCENES_ON_AGAIN=1` measures the click switching off and on; `28-own-tails.sh` runs it on our own plugins at their pins): for each Delay, Reverb and Texture module, the tail, click, replay and side checks described in the [record](evidence/scenes-results.md). Pass: the tail within 3 dB of the module left on, a click no more than 20 dB above the tone's own variation, no replay, no lost side. The engine's bypass fails all of them, which shows the check works. `27-scenes.sh spill` runs the same with the engine's bypass spilling, the click switching off and on again, and the CPU after the tail.
 - **Atomic change** (`27-scenes.sh atomic`): two modules switched opposite ways in one bundle, by bypass, by parameter and mixed; both outputs must change on the same frame. Run with and without `-a`.
 - **Scene changes while playing:** 8 scenes, 4 modules each changing, switched every 500 ms for a minute: no xrun, no gap, every change read back.
 - **CPU:** the heaviest catalogue patch with all modules on; spill-bypassed delays stop costing CPU after their tail.

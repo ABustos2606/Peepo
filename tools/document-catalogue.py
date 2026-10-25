@@ -36,6 +36,18 @@ MISSING_NAMES = {
 }
 
 
+# Our own modules whose own switch lets the tail ring on, from the tail check
+# (P13.5, docs/evidence/scenes-results.md). Modules with no tail at their
+# defaults (Eureka Bloom, Crinkle, Prism) and Loo-pi, a looper, are not listed.
+OWN_TAILS = {
+    "https://github.com/ABustos2606/aura#aura", "https://github.com/ABustos2606/discipline#discipline",
+    "https://github.com/ABustos2606/drizzle#drizzle", "https://github.com/ABustos2606/euclidelay#euclidelay",
+    "https://github.com/ABustos2606/eureka#skip", "https://github.com/ABustos2606/eureka#spool",
+    "https://github.com/ABustos2606/eureka#hush", "https://github.com/ABustos2606/eureka#slowmo",
+    "https://github.com/ABustos2606/eureka#granny",
+}
+
+
 def read_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
@@ -125,7 +137,7 @@ def main():
              f"| Hidden | {len(hidden)} | Omitted from Add as a duplicate or redundant module; retained for saved patches. |",
              f"| Not installed | {len(missing)} | Selected reference identity without an installed implementation. |", "",
              "**File-based effects:** NAM, Cabinet and IR Reverb have file selectors. Each IR family offers Mono, Mono to Stereo and Stereo configurations. Stereo accepts mono/stereo IRs for separate left/right processing; a four-channel IR adds cross-channel responses. Alternate convolvers remain hidden for older patches. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).", "",
-             "**Tails when bypassed:** a delay or reverb marked *tail rings on when bypassed* keeps sounding its echoes or reverb, without a click, when it is switched off or a scene turns it off; the rest stop at once. Each was marked after passing the tail check. [Scenes](44-scenes.md#spill-bypass-in-the-engine).", "",
+             "**Tails when bypassed:** a delay, reverb or texture module marked *tail rings on when bypassed* keeps sounding its echoes or reverb, without a click, when it is switched off or a scene turns it off; the rest stop at once. Each was marked after passing the tail check, Peepo's own modules through their own switch (Discipline from 0.4.1, with Trails on by default). [Scenes](44-scenes.md#spill-bypass-in-the-engine).", "",
              "**Reading connections:** counts are plugin connectors before Peepo's mono/stereo routing. CV connectors carry modulation. MIDI/events includes LV2 event/message ports, including file-selection messages; it does not imply implemented musical MIDI routing.", "",
              "## Browse by category", "", "| Category | Ready / listed |", "| --- | ---: |"]
     categories = [c for c in CATEGORIES if any(m["category"] == c for m in visible)]
@@ -144,7 +156,7 @@ def main():
             status = state(module)
             if status != "Ready":
                 status += ": " + module.get("reason", "See compatibility record.")
-            elif module.get("bypass") == "spill":
+            elif module.get("bypass") == "spill" or module["uri"] in OWN_TAILS:
                 status += "; tail rings on when bypassed"
             lines.append("| " + " | ".join(map(cell, (name, module.get("description") or "Description not supplied by the plugin.", connections(module), status))) + " |")
         lines.append("")

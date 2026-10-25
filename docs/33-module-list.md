@@ -22,7 +22,7 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 **File-based effects:** NAM, Cabinet and IR Reverb have file selectors. Each IR family offers Mono, Mono to Stereo and Stereo configurations. Stereo accepts mono/stereo IRs for separate left/right processing; a four-channel IR adds cross-channel responses. Alternate convolvers remain hidden for older patches. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).
 
-**Tails when bypassed:** a delay or reverb marked *tail rings on when bypassed* keeps sounding its echoes or reverb, without a click, when it is switched off or a scene turns it off; the rest stop at once. Each was marked after passing the tail check. [Scenes](44-scenes.md#spill-bypass-in-the-engine).
+**Tails when bypassed:** a delay, reverb or texture module marked *tail rings on when bypassed* keeps sounding its echoes or reverb, without a click, when it is switched off or a scene turns it off; the rest stop at once. Each was marked after passing the tail check, Peepo's own modules through their own switch (Discipline from 0.4.1, with Trails on by default). [Scenes](44-scenes.md#spill-bypass-in-the-engine).
 
 **Reading connections:** counts are plugin connectors before Peepo's mono/stereo routing. CV connectors carry modulation. MIDI/events includes LV2 event/message ports, including file-selection messages; it does not imply implemented musical MIDI routing.
 
@@ -249,14 +249,14 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
-| Aura | An always-listening micro-looper and reverb, delay or sampler sharing one clock. Clock slows both together. Stereo Spread and six CV inputs shape the sound. | audio 2 in / 2 out; CV 6 in / 0 out | Ready |
+| Aura | An always-listening micro-looper and reverb, delay or sampler sharing one clock. Clock slows both together. Stereo Spread and six CV inputs shape the sound. | audio 2 in / 2 out; CV 6 in / 0 out | Ready; tail rings on when bypassed |
 | Bitcrushed delay | Flexible delay module with bitcrushed repeats. | audio 1 in / 1 out; CV 6 in / 0 out | Needs adaptation: Has crashed the engine; see docs/22-plugin-catalogue.md. |
 | CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
-| Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready |
+| Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready; tail rings on when bypassed |
 | DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
-| Euclidelay | Echoes on four Euclidean rhythms. Steps, Hits and Shift set each voice's pattern; each voice loops it with feedback, with its own level and pan. | audio 1 in / 2 out | Ready |
-| Eureka Skip | Pitched multi-tap delay. Repeat heads sets tap count. Sync uses BPM and Beat division instead of Delay time. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
-| Eureka Spool | Variable-speed stereo tape echo with drift. Sync follows patch tempo; Infinite holds echoes. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Euclidelay | Echoes on four Euclidean rhythms. Steps, Hits and Shift set each voice's pattern; each voice loops it with feedback, with its own level and pan. | audio 1 in / 2 out | Ready; tail rings on when bypassed |
+| Eureka Skip | Pitched multi-tap delay. Repeat heads sets tap count. Sync uses BPM and Beat division instead of Delay time. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
+| Eureka Spool | Variable-speed stereo tape echo with drift. Sync follows patch tempo; Infinite holds echoes. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
 | Gx Delay stereo | Stereo delay with time, feedback and mix controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Gx Digital delay | Mono digital delay with feedback and mix controls. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
 | Gx Digital delay stereo | Stereo digital delay with feedback and mix controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
@@ -280,8 +280,8 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Dragonfly Hall | Hall reverb with early and late reflections, modulation, filters and decay controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Dragonfly Plate | Plate reverb with selectable algorithms, damping and decay controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Dragonfly Room | Room reverb with separate early and late levels, size, filters and decay controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
-| Eureka Hush | Diffuse stereo reverb. Spread changes the stereo pattern; Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
-| Eureka Slowmo | Long stereo reverb with size and diffusion controls. Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Hush | Diffuse stereo reverb. Spread changes the stereo pattern; Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
+| Eureka Slowmo | Long stereo reverb with size and diffusion controls. Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
 | Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
 | Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | IR Reverb - Mono | IR Reverb from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out | Ready |
@@ -297,10 +297,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Beat Repeater - Stereo | Stereo beat repeater: repeats a slice of the last beat while the gate is high. | audio 2 in / 2 out; CV 1 in / 0 out | Ready |
 | Beat Slicer - Mono | Records a few beats and plays back slices of them while the gate is high, optionally reversed. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
 | Beat Slicer - Stereo | Stereo beat slicer: plays back slices of the last few beats while the gate is high. | audio 2 in / 2 out; CV 1 in / 0 out | Ready |
-| Drizzle | Grains of the live input, with reverb; Size at the top makes it a delay. Freeze holds the recording. With Seed lock on grains run at the Density rate; off, they play while Seed is held. | audio 2 in / 2 out; CV 8 in / 1 out | Ready |
+| Drizzle | Grains of the live input, with reverb; Size at the top makes it a delay. Freeze holds the recording. With Seed lock on grains run at the Density rate; off, they play while Seed is held. | audio 2 in / 2 out; CV 8 in / 1 out | Ready; tail rings on when bypassed |
 | Eureka Bloom | Swell the guitar into a pitched, diffuse texture. Freeze holds the sound. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Eureka Crinkle | Unstable stereo delay with random snags and drift. Tape stop slows the wet sound to silence. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
-| Eureka Granny | Two shaped grains tumble through the live input. Infinite holds the recording. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
+| Eureka Granny | Two shaped grains tumble through the live input. Infinite holds the recording. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
 | Eureka Prism | Spectral gates sweep across the sound with resonance. Pause holds their phase. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Granulator - Mono | Chops the input into short overlapping grains for smeared, cloud-like textures. | audio 1 in / 1 out | Ready |
 | Granulator - Stereo | Stereo granulator: chops the input into overlapping grains for cloud-like textures. | audio 2 in / 2 out | Ready |

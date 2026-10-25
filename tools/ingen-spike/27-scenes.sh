@@ -12,6 +12,10 @@
 # scenes-atomic-a.json.
 # SCENES_LV2 names more bundle directories, searched first (such as our own
 # plugins' build directories, with PEEPO_CATALOGUE a catalogue that lists them).
+# SCENES_ON_AGAIN=1 measures the click switching off and on again in "tails",
+# as "spill" always does. SCENES_DUMP=DIR keeps each click recording over 20 dB
+# there (.npz, with the xruns JACK reported during it). A click recording with
+# an xrun is measured again, up to three times.
 D="$(dirname "$(readlink -f "$0")")"
 . "$D/env.sh"
 [ -n "${SCENES_LV2:-}" ] && export LV2_PATH="$SCENES_LV2:$LV2_PATH"

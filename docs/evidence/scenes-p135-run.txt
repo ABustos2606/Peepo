@@ -1,0 +1,109 @@
+######## P13.5, 25 October 2026: bash tools/ingen-spike/28-own-tails.sh (every plugin at Peepo's pins, Discipline at 12625b6)
+built aura at b9ec1f2866ff13c53ffc541038cb985e317aa9e4
+built eureka at 4b52532c3f0f426a38005c01cee5532e8a15b542
+built euclidelay at 4ee5c87c266691ba415049885734b297ef327e8f
+built drizzle at 8047478a978c8a9117cfb546c4a02b582eddcdc1
+built loo-pi at 45c301f80c1ec63edeb99a45ae0998f01ac424fd
+built discipline at 12625b65f9b4fb6a55169bff3f32dd553d15fb70
+built discipline at 4f68f3b967f8fb92c4968554b44c131adfda3717
+== tails, click switching off
+== tails, click, replay and side
+round trip without a module: 196 frames
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click   8.9 dB | replay  -75.4, never bypassed  -75.4
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   4.8 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   6.1 dB | replay -180.0, never bypassed  -50.7
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  15.4 dB | replay  -24.2, never bypassed  -24.2 | right -2 dB
+Euclidelay, engine bypass    Delay    engine tail cut                    on  -31.2 off -180.0 | click  59.7 dB CLICK | replay   -6.1, never bypassed  -24.2 REPLAY | right +0 dB
+Eureka Skip                  Delay    port   tail rings on               on  -36.7 off  -36.5 | click   3.9 dB | replay -180.0, never bypassed -180.0
+Eureka Spool                 Delay    port   tail rings on               on  -36.5 off  -36.5 | click   1.1 dB | replay  -25.4, never bypassed  -25.0
+Loo-pi                       Delay    port   tail looper: mutes on purpose on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+Eureka Hush                  Reverb   port   tail rings on               on  -35.2 off  -35.2 | click   7.5 dB | replay  -43.0, never bypassed  -42.9
+Eureka Slowmo                Reverb   port   tail rings on               on  -34.6 off  -34.5 | click   5.6 dB | replay  -38.3, never bypassed  -38.3
+Drizzle                      Texture  port   tail rings on               on  -53.9 off  -54.0 | click   7.0 dB | replay -180.0, never bypassed -180.0
+Eureka Bloom                 Texture  port   tail no tail at these values on  -70.6 off  -70.6 | click   6.4 dB | replay  -77.1, never bypassed  -77.4
+Eureka Crinkle               Texture  port   tail no tail at these values on -180.0 off -180.0 | click  10.8 dB | replay -180.0, never bypassed -180.0
+Eureka Granny                Texture  port   tail rings on               on  -35.1 off  -35.1 | click   1.7 dB | replay  -23.9, never bypassed  -23.9
+Eureka Prism                 Texture  port   tail no tail at these values on -110.6 off -110.6 | click  28.6 dB CLICK | replay -180.0, never bypassed -180.0
+     63 error: :0:0: unexpected end of anonymous node
+     11 error: :0:0: Unregistering client <unix:///tmp/peepo-ingen.sock.715>
+    510 error: :0:0: write error (Broken pipe)
+      4 write error (Broken pipe)
+== tails, click switching off and on again
+== tails, click, replay and side
+round trip without a module: 196 frames
+Aura                         xrun during the click recording (18.1 dB): measured again
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click  19.5 dB | replay  -75.4, never bypassed  -74.3
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   8.0 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   4.3 dB | replay -180.0, never bypassed  -50.7
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  14.5 dB | replay  -24.2, never bypassed  -24.2 | right -1 dB
+Euclidelay, engine bypass    Delay    engine tail cut                    on  -31.2 off -180.0 | click  56.9 dB CLICK | replay   -6.1, never bypassed  -24.2 REPLAY | right +0 dB
+Eureka Skip                  Delay    port   tail rings on               on  -36.8 off  -36.5 | click   3.9 dB | replay -180.0, never bypassed -180.0
+Eureka Spool                 Delay    port   tail rings on               on  -36.5 off  -36.5 | click   1.2 dB | replay  -25.4, never bypassed  -25.0
+Loo-pi                       Delay    port   tail looper: mutes on purpose on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+Eureka Hush                  Reverb   port   tail rings on               on  -35.2 off  -35.2 | click   5.5 dB | replay  -42.9, never bypassed  -42.9
+Eureka Slowmo                Reverb   port   tail rings on               on  -34.6 off  -34.6 | click   4.6 dB | replay  -38.5, never bypassed  -38.3
+Drizzle                      Texture  port   tail rings on               on  -53.9 off  -53.9 | click   5.8 dB | replay -180.0, never bypassed -180.0
+Eureka Bloom                 Texture  port   tail no tail at these values on  -70.6 off  -70.6 | click   6.9 dB | replay  -77.1, never bypassed  -77.1
+Eureka Crinkle               Texture  port   tail no tail at these values on -180.0 off -180.0 | click   6.4 dB | replay -180.0, never bypassed -180.0
+Eureka Granny                Texture  port   tail rings on               on  -35.1 off  -35.1 | click   2.6 dB | replay  -23.9, never bypassed  -23.9
+Eureka Prism                 Texture  port   tail no tail at these values on -110.4 off -110.8 | click  29.1 dB CLICK | replay -180.0, never bypassed -180.0
+     70 error: :0:0: unexpected end of anonymous node
+     12 error: :0:0: Unregistering client <unix:///tmp/peepo-ingen.sock.1011>
+    517 error: :0:0: write error (Broken pipe)
+     10 write error (Broken pipe)
+== Trails in a patch saved by Discipline 0.4.0
+PASS  Discipline 0.4.0 added: 
+PASS  its Trails at the old default: 0.0
+PASS  saved: /tmp/peepo-spike/own-tails/old-patch.ingen
+PASS  the bundle holds Trails: 0.0
+PASS  old patch loaded: /tmp/peepo-spike/own-tails/old-patch.ingen
+PASS  its Trails kept: 0.0
+PASS  a new block added: 
+PASS  its Trails at the new default: 1.0
+PASS  saved again: /tmp/peepo-spike/own-tails/old-patch-again.ingen
+PASS  both values saved as they are: (0.0, 1.0)
+
+######## the click switching off and on again, Aura, Euclidelay and Eureka Prism four times more (SCENES_ON_AGAIN=1 27-scenes.sh tails URI, same builds; a recording with an xrun is measured again)
+Aura                         xrun during the click recording (19.4 dB): measured again
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click  21.0 dB CLICK | replay  -74.3, never bypassed  -75.2
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  14.4 dB | replay  -24.2, never bypassed  -24.2 | right -1 dB
+Eureka Prism                 xrun during the click recording (28.6 dB): measured again
+Eureka Prism                 Texture  port   tail no tail at these values on -110.6 off -110.8 | click  29.3 dB CLICK | replay -180.0, never bypassed -180.0
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click  20.5 dB CLICK | replay  -75.4, never bypassed  -75.4
+Euclidelay                   xrun during the click recording (14.6 dB): measured again
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  14.4 dB | replay  -24.2, never bypassed  -24.2 | right -1 dB
+Eureka Prism                 Texture  port   tail no tail at these values on -110.6 off -110.8 | click  26.4 dB CLICK | replay -180.0, never bypassed -180.0
+Aura                         xrun during the click recording (21.4 dB): measured again
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click  17.2 dB | replay  -74.3, never bypassed  -75.2
+Euclidelay                   xrun during the click recording (14.6 dB): measured again
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  14.6 dB | replay  -24.2, never bypassed  -24.2 | right -1 dB
+Eureka Prism                 xrun during the click recording (28.9 dB): measured again
+Eureka Prism                 Texture  port   tail no tail at these values on -110.8 off -110.6 | click  29.0 dB CLICK | replay -180.0, never bypassed -180.0
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click  14.2 dB | replay  -75.4, never bypassed  -75.4
+Euclidelay                   xrun during the click recording (15.2 dB): measured again
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  14.6 dB | replay  -24.2, never bypassed  -24.2 | right -1 dB
+Eureka Prism                 xrun during the click recording (27.8 dB): measured again
+Eureka Prism                 Texture  port   tail no tail at these values on -110.6 off -110.6 | click  29.4 dB CLICK | replay -180.0, never bypassed -180.0
+
+######## Discipline switching off and on, eight runs before the xrun retry, recordings over 20 dB kept (SCENES_DUMP)
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   5.9 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       click 55.9 dB kept as Discipline-Trails-off-1792954029005.npz, xruns during it: 3
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click  55.9 dB CLICK | replay -180.0, never bypassed  -50.7
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   5.9 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   7.9 dB | replay -180.0, never bypassed  -50.7
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   5.9 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   2.4 dB | replay -180.0, never bypassed  -50.7
+Discipline                   click 67.9 dB kept as Discipline-1792954130169.npz, xruns during it: 1
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click  67.9 dB CLICK | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   3.7 dB | replay -180.0, never bypassed  -50.7
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   5.4 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   5.6 dB | replay -180.0, never bypassed  -50.7
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   8.0 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   7.6 dB | replay -180.0, never bypassed  -50.7
+Discipline                   click 66.9 dB kept as Discipline-1792954248081.npz, xruns during it: 3
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click  66.9 dB CLICK | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   2.2 dB | replay -180.0, never bypassed  -50.7
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   5.9 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   2.2 dB | replay -180.0, never bypassed  -50.7
+
+######## where the kept recordings jump: the largest second difference, its time after the switch and its frame in the 128-frame cycle

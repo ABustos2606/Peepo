@@ -225,7 +225,7 @@ third midimsg-lv2 https://github.com/peepo-sources/midimsg-lv2.git 46beb4891ac6f
 # project's own. Its Makefile adds -fno-fast-math after OPT: its NaN guards
 # need IEEE arithmetic, so it gets plain -O2 rather than the shared flags.
 DISCIPLINE_OPT="-O2"; [ "$(uname -m)" = aarch64 ] && DISCIPLINE_OPT="-O2 -mcpu=cortex-a76"
-third discipline https://github.com/ABustos2606/discipline.git 4f68f3b967f8fb92c4968554b44c131adfda3717 "make" \
+third discipline https://github.com/ABustos2606/discipline.git 12625b65f9b4fb6a55169bff3f32dd553d15fb70 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- Loo-pi (multi-loop looper on SooperLooper's core), the project's own.
 # Like Discipline it adds -fno-fast-math after OPT, so it gets the same flags.

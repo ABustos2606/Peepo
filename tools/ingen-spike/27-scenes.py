@@ -87,7 +87,9 @@ class Probe:
         self.phase = 0.0
         self.chunks = []
         self.recording = False
+        self.xruns = 0
         self.client.set_process_callback(self.process)
+        self.client.set_xrun_callback(self.xrun)
         self.client.activate()
         self.rate = self.client.samplerate
 
@@ -108,6 +110,9 @@ class Probe:
             self.frame += frames
         self.send_l.get_array()[:] = out
         self.send_r.get_array()[:] = out
+
+    def xrun(self, delay):
+        self.xruns += 1
 
     def now(self):
         with self.lock:
@@ -209,12 +214,17 @@ SETTINGS = {
         [("ROOMSIZE%d" % b, 0.95) for b in range(1, 6)] + [("WET_DRY%d" % b, 100) for b in range(1, 6)]),
 }
 # Measured a second time with these values, under a name of their own.
+# Discipline's Trails default to 1 from 0.4.1 (P13.5); before, they were 0.
 VARIANTS = {
-    "https://github.com/ABustos2606/discipline#discipline": ("Discipline, Trails on", {"trails": 1}),
+    "https://github.com/ABustos2606/discipline#discipline": ("Discipline, Trails off", {"trails": 0}),
 }
 # Not a tail: bypassing a looper mutes its loops on purpose.
 LOOPERS = ("https://github.com/ABustos2606/loo-pi#loopi",)
 SPILL = os.environ.get("SCENES_SPILL") == "1"
+# The click switching off and on again, as under the spill bypass (P13.5).
+ON_AGAIN = SPILL or os.environ.get("SCENES_ON_AGAIN") == "1"
+# A directory to keep each recording whose click is over 20 dB in.
+DUMP = os.environ.get("SCENES_DUMP")
 # One input and two outputs, measured again under the engine's bypass for the
 # side check.
 MONO_TO_STEREO = {
@@ -294,17 +304,30 @@ def run_tail(probe, module, latency, bypass):
 
 
 def run_click(probe, module):
+    """The click, measured again (at most three times in all) when JACK
+    reported an xrun during the recording: a lost cycle is a jump in the tone
+    on a cycle boundary, not the module's click (P13.5)."""
+    for attempt in range(3):
+        worst, side, xruns = click_once(probe, module)
+        if not xruns:
+            break
+        print("%-28s xrun during the click recording (%.1f dB): measured again" % (module["name"], worst or 0), flush=True)
+    return worst, side
+
+
+def click_once(probe, module):
     block = Block(module)
     if block.create() != 0:
-        return None, None
+        return None, None, 0
     with probe.lock:
         probe.tone, probe.phase = 0.25, 0.0
     time.sleep(0.8)
+    xruns = probe.xruns
     probe.start()
     time.sleep(0.5)
     sent = probe.now()
     block.bypass(True)
-    if SPILL:
+    if ON_AGAIN:
         # Off and on again: both ramps are inside the window measured below.
         time.sleep(0.2)
         block.bypass(False)
@@ -326,11 +349,19 @@ def run_click(probe, module):
         near = peaks[a:a + int(0.4 * rate / size)]
         if len(near):
             worst = max(worst, db(near.max()) - db(usual))
+    if DUMP and worst > 20:
+        # The recording kept, with the xruns JACK reported during it.
+        os.makedirs(DUMP, exist_ok=True)
+        name = re.sub(r"[^A-Za-z0-9]+", "-", module["name"]) + "-%d" % int(time.time() * 1000)
+        numpy.savez(os.path.join(DUMP, name), left=left, right=right, first=first, sent=sent,
+                    xruns=probe.xruns - xruns, click=worst)
+        print("%-28s click %.1f dB kept as %s.npz, xruns during it: %d" % (
+            module["name"], worst, name, probe.xruns - xruns), flush=True)
     side = None
     if len(block.ins) == 1 and len(block.outs) == 2:
         end = int(0.3 * rate)
         side = db(rms(right[-end:])) - db(rms(left[-end:]))
-    return worst, side
+    return worst, side, probe.xruns - xruns
 
 
 def run_replay(probe, module, bypass):

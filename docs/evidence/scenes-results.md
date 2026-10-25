@@ -1,4 +1,4 @@
-# Scenes: bypass tails and atomic changes, measured (P13.1, P13.2), the spill bypass (P13.3) and its marks in the catalogue (P13.4)
+# Scenes: bypass tails and atomic changes, measured (P13.1, P13.2), the spill bypass (P13.3), its marks in the catalogue (P13.4) and our own plugins (P13.5)
 
 24 October 2026, WSL2 Debian, JACK dummy backend, 48 kHz, 128 frames. Engine: upstream Ingen 13a045d0 + Poly's MIDI-learn fix + project patches 0001-0012, rebuilt in `/opt/peepo` for this record (it is the first WSL build with 0011 and 0012). Script: `tools/ingen-spike/27-scenes.sh` / `27-scenes.py`. Raw output: [scenes-run.txt](scenes-run.txt); data: [third-party tails](scenes-tails-thirdparty.json), [own plugins' tails](scenes-tails-own.json), [bundles, plain engine](scenes-atomic-plain.json), [bundles, `-a`](scenes-atomic-a.json).
 
@@ -156,3 +156,35 @@ Against the engine's bypass (P13.1): every module with a tail at its defaults (1
 **Not marked:** our own plugins (`"bypass": "port"`, P13.5); Mist Spectral and Vinyl (they sound, or cost CPU, by themselves); Mist Beat Repeat (no tail without a trigger); CV delay (no audio); and the modules not installed in WSL: Bitcrushed delay, the three IR reverbs, and the AVW, TAP and infamous Texture modules. Those wait for the tail check on the Pi (P13.10).
 
 **Through the engine's own save and load** (`peepo_ingen_live --spill http://drobilla.net/plugins/mda/Delay`, with `PEEPO_OVERLAY`): Stereo delay and an unmarked amplifier added and the delay bypassed; Ingen's `main.ttl` has `peepo:spillBypass true` on the delay's block alone; a copy with the mark removed loads bypassed and unmodified, and saved again has the mark. `07-adapter.sh` passes unchanged (Unix socket, TCP, the audio check and the engine restart). Unit tests: `peepo_catalogue_tests` (the rule, its refusals, and the 21 marks in the fixture, none of them Mist Spectral or Vinyl), `peepo_ingen_tests` (the mark on add, on bypass, after a snapshot restore and after loading an unmarked patch, which stays unmodified), `peepo_storage_tests` (the simulator's bundle). Stopping the engine after the live check ended in a segmentation fault in its exit handler, as already recorded before patches 0012 and 0013 ([NAM](nam-results.txt), [Pi engine check](pi-engine-check-results.txt)).
+
+## Our own plugins (P13.5)
+
+25 October 2026, same WSL setup (engine patches 0001-0013, `-a`). Script: `tools/ingen-spike/28-own-tails.sh`, which builds each of our plugins at the commit `14-more-plugins.sh` pins (Discipline at 12625b6, the rest unchanged), runs `27-scenes.sh tails` on them twice (the click switching off, then off and on again, `SCENES_ON_AGAIN=1`), and checks Trails in saved patches. Raw output: [scenes-p135-run.txt](scenes-p135-run.txt); data: [scenes-p135.json](scenes-p135.json).
+
+**What changed:** Discipline's Trails default to 1 (`discipline.ttl`, and the plugin's own fallback when the port is not connected), LV2 version 0.4.1, its tests passing; no port, symbol or URI changed. Pinned at 12625b6 in `14-more-plugins.sh` and listed in `reference/manifest.json`. `27-scenes.py` measures Discipline at its default and a second time with Trails off. The module list marks our own modules whose tail rings on (`OWN_TAILS` in `tools/document-catalogue.py`), as it marks the spill bypass.
+
+| Module (own switch) | Tail | Click off (dB) | Click off and on (dB) | Replay |
+| --- | --- | --- | --- | --- |
+| Aura (Wet on) | rings on | 8.9 | 19.5 | none |
+| **Discipline** (Trails on, the new default) | **rings on** | 4.8 | 8.0 | none |
+| Discipline, Trails off | cut | 6.1 | 4.3 | none |
+| Euclidelay | rings on | 15.4 | 14.5 | none |
+| Eureka Skip | rings on | 3.9 | 3.9 | none |
+| Eureka Spool | rings on | 1.1 | 1.2 | none |
+| Eureka Hush | rings on | 7.5 | 5.5 | none |
+| Eureka Slowmo | rings on | 5.6 | 4.6 | none |
+| Eureka Granny | rings on | 1.7 | 2.6 | none |
+| Drizzle (Feedback, Reverb) | rings on | 7.0 | 5.8 | none |
+| Eureka Bloom, Crinkle | no tail at their defaults | 6.4, 10.8 | 6.9, 6.4 | none |
+| Eureka Prism | no tail at its defaults (-110.6) | 28.6 | 29.1 | none |
+| Loo-pi | a looper: bypass mutes its loops on purpose, unchanged | - | - | - |
+
+Every module with a tail rings on, within 0.3 dB of the module left on, and none replays. Euclidelay keeps its right side (-1 to -2 dB, its pan); under the engine's bypass it is cut, clicks and replays, as before, so its overlay stays `"bypass": "port"`.
+
+**Xruns, not clicks.** Before the retry below, Discipline switching off and on measured 66 to 68 dB in 4 of 17 runs, Euclidelay 36 and 68 dB in 2 of 9, and Discipline with Trails off 56 dB once in 8. With `SCENES_DUMP` keeping each recording over 20 dB (Discipline's eight runs, three kept), every kept recording had 1 to 3 xruns reported by JACK during it (the WSL dummy backend), and its jump was a step in the 220 Hz tone on the last frame of a 128-frame cycle, where whole cycles were lost from the recording, with no silence around it. Euclidelay's were not kept; with the retry it measured 14.4 to 14.6 dB in all five runs, so they were most likely the same, as was P13.3's 56.5 dB. `27-scenes.py` now counts JACK's xruns and measures the click again, up to three times, when one happened during its recording.
+
+**Clicks over 20 dB, four runs more** (same builds, xruns measured again): switching off and on, **Aura** 21.0, 20.5, 17.2 and 14.2 dB, around the 20 dB mark; **Euclidelay** 14.4 to 14.6 every time; **Eureka Prism** 26.4 to 29.4 dB, also switching off only, while its output is about -110 dBFS, so measured against almost nothing. Eureka Hush and Granny, 20.0 and 22.8 dB switching off and on in P13.3's run (from the repositories' `build/` directories), measured 5.5 and 2.6 at their pins here. Aura and Prism are for the ear on the Pi (P13.10).
+
+**Trails in saved patches** (`28-own-tails.py`): a Discipline 0.4.0 block (4f68f3b, Trails untouched) saved by Ingen holds `ingen:value 0.0` for Trails, since Ingen saves every control's value. Loaded into an engine with 0.4.1 (12625b6), its Trails stay 0; a new block gets 1; saved again, both keep their values. So a patch saved before plays as it did, and only modules added from now on ring on.
+
+**Not covered:** the arm64 builds and the Pi (P13.10).
