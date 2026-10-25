@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Peepo contributors
-"""Scenes, measured before any change (P13.1). Run by 27-scenes.sh.
+"""Scenes, measured (P13.1) and the spill bypass checked (P13.3). Run by
+27-scenes.sh.
 
     python3 27-scenes.py tails  CATALOGUE OVERLAY [URI-SUBSTRING]
+    python3 27-scenes.py spill  CATALOGUE OVERLAY [URI-SUBSTRING]
     python3 27-scenes.py atomic
 
 tails: every Delay, Reverb and Texture module the catalogue offers, under the
@@ -19,7 +21,18 @@ ports, at its default values:
           the peak level in the 0.8 s after switching on, against the same
           moment in a run where the module was never bypassed.
 - side:   for a module with one audio input and two outputs, the right output
-          against the left while bypassed with the tone playing.
+          against the left while bypassed with the tone playing. Euclidelay,
+          the only such module in WSL, is measured once more under the
+          engine's bypass for it (add its build directory to SCENES_LV2).
+
+spill: the same checks with every module that uses the engine's bypass marked
+urn:peepo:ns#spillBypass (engine patch 0013). The click is measured switching
+off and on again, and one more check:
+
+- sleep:  the engine's CPU use (3 s windows) while the module is on, just
+          after bypassing it after a burst, and once its tail has stayed below
+          -90 dBFS for 2.5 s (waiting at most 20 s), against the engine with
+          no module.
 
 atomic: two eg-amp blocks, A from in_l to out_l and B from in_l to out_r, with
 a steady 0.5 on in_l. A scene-like bundle switches them opposite ways (their
@@ -34,6 +47,7 @@ broadcasts, and the engine then stalls.
 import json
 import os
 import re
+import subprocess
 import sys
 import threading
 import time
@@ -190,6 +204,12 @@ VARIANTS = {
 }
 # Not a tail: bypassing a looper mutes its loops on purpose.
 LOOPERS = ("https://github.com/ABustos2606/loo-pi#loopi",)
+SPILL = os.environ.get("SCENES_SPILL") == "1"
+# One input and two outputs, measured again under the engine's bypass for the
+# side check.
+MONO_TO_STEREO = {
+    "https://github.com/ABustos2606/euclidelay#euclidelay": "Euclidelay, engine bypass",
+}
 
 
 class Block:
@@ -212,6 +232,8 @@ class Block:
                 return status
             if self.enable:
                 c.set(self.path + "/" + self.enable, "ingen:value", number(1))
+            if SPILL and not self.by_port:
+                c.set(self.path, "peepo:spillBypass", "true")
             for symbol, value in self.module.get("settings", {}).items():
                 c.set(self.path + "/" + symbol, "ingen:value", number(value))
             for port, symbol in zip(("in_l", "in_r"), self.ins):
@@ -271,6 +293,10 @@ def run_click(probe, module):
     time.sleep(0.5)
     sent = probe.now()
     block.bypass(True)
+    if SPILL:
+        # Off and on again: both ramps are inside the window measured below.
+        time.sleep(0.2)
+        block.bypass(False)
     time.sleep(0.7)
     first, left, right = probe.stop()
     with probe.lock:
@@ -318,6 +344,53 @@ def run_replay(probe, module, bypass):
     return db(max(numpy.abs(window(first, s, first, start + 2.6 * rate, 0.8, rate)).max(initial=0) for s in (left, right)))
 
 
+def cpu_seconds():
+    """The engine's CPU time so far, in seconds."""
+    pid = subprocess.run(["pgrep", "-n", "-x", "ingen"], capture_output=True, text=True).stdout.strip()
+    fields = open("/proc/%s/stat" % pid).read().rsplit(")", 1)[1].split()
+    return (int(fields[11]) + int(fields[12])) / os.sysconf("SC_CLK_TCK")
+
+
+def cpu_over(seconds):
+    """The engine's CPU use over the next `seconds`, in percent of one core."""
+    a = cpu_seconds()
+    time.sleep(seconds)
+    return 100 * (cpu_seconds() - a) / seconds
+
+
+def run_sleep(probe, module):
+    """CPU on, just after a spill bypass, and once the tail has ended."""
+    block = Block(module)
+    if block.create() != 0:
+        return None
+    time.sleep(0.6)
+    on = cpu_over(3.0)
+    probe.start()
+    start = probe.burst()
+    time.sleep(0.1)
+    block.bypass(True)
+    spilling = cpu_over(3.0)
+    rate = probe.rate
+    # Wait for the tail (the dry signal is silent) to fall below -90 dBFS.
+    waited = 3.1
+    quiet_from = None
+    while waited < 20:
+        time.sleep(0.5)
+        waited += 0.5
+        with probe.lock:
+            chunks = list(probe.chunks)
+        loud = [f for f, l, r in chunks if max(numpy.abs(l).max(), numpy.abs(r).max()) >= 3.1623e-5]
+        last = (loud[-1] - start) / rate if loud else 0.0
+        if waited - last > 2.5:
+            quiet_from = last
+            break
+    late = cpu_over(3.0)
+    probe.stop()
+    block.delete()
+    return {"cpu_on": round(on, 1), "cpu_spilling": round(spilling, 1), "cpu_after_tail": round(late, 1),
+            "tail_ends_s": None if quiet_from is None else round(quiet_from, 1)}
+
+
 def tails(catalogue, overlay, only):
     rules = json.load(open(overlay, encoding="utf-8"))["rules"]
     modules = [present(m, rules) for m in json.load(open(catalogue, encoding="utf-8"))["modules"]]
@@ -330,6 +403,8 @@ def tails(catalogue, overlay, only):
         if m["uri"] in VARIANTS:
             name, settings = VARIANTS[m["uri"]]
             modules.append(dict(m, name=name, settings=dict(m["settings"], **settings)))
+        if m["uri"] in MONO_TO_STEREO:
+            modules.append(dict(m, name=MONO_TO_STEREO[m["uri"]], bypass=None))
     modules.sort(key=lambda m: (m["category"], m["name"]))
     probe = Probe()
     graph_ports(probe)
@@ -344,6 +419,9 @@ def tails(catalogue, overlay, only):
     with Engine() as c:
         c.disconnect(MAIN + "in_l", MAIN + "out_l")
     print("round trip without a module: %d frames" % latency, flush=True)
+    idle = cpu_over(3.0) if SPILL else None
+    if SPILL:
+        print("engine CPU with no module: %.1f%%" % idle, flush=True)
 
     results = []
     for m in modules:
@@ -360,6 +438,9 @@ def tails(catalogue, overlay, only):
         click, side = run_click(probe, m)
         before = run_replay(probe, m, False)
         after = run_replay(probe, m, True)
+        if SPILL and r["bypass"] == "engine":
+            r["sleep"] = run_sleep(probe, m)
+            r["sleep"]["cpu_no_module"] = round(idle, 1)
         r.update({"settings": m["settings"], "tail_on_dbfs": round(db(on), 1), "tail_bypassed_dbfs": round(db(off), 1),
                   "click_db": round(click, 1) if click is not None else None,
                   "replay_never_bypassed_dbfs": round(before, 1), "replay_after_dbfs": round(after, 1),
@@ -381,6 +462,10 @@ def tails(catalogue, overlay, only):
             m["name"], m["category"], r["bypass"], r["tail"], db(on), db(off), click or 0,
             " CLICK" if r["click"] else "", after, before, " REPLAY" if r["replay"] else "",
             "" if side is None else " | right %+.0f dB%s" % (side, " LOST" if r["side_lost"] else "")), flush=True)
+        if r.get("sleep"):
+            z = r["sleep"]
+            print("%-28s CPU %%: on %.1f, spilling %.1f, after the tail %.1f (no module %.1f); tail ends %s s" % (
+                "", z["cpu_on"], z["cpu_spilling"], z["cpu_after_tail"], idle, z["tail_ends_s"]), flush=True)
         results.append(r)
     probe.close()
     return results
@@ -497,7 +582,7 @@ def atomic():
 def main():
     mode = sys.argv[1]
     out = os.environ.get("SCENES_RESULTS")
-    if mode == "tails":
+    if mode in ("tails", "spill"):
         results = tails(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "")
     else:
         results = atomic()

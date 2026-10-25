@@ -1,0 +1,366 @@
+diff --git a/src/server/BlockImpl.cpp b/src/server/BlockImpl.cpp
+index 19dd407c..9e3308c3 100644
+--- a/src/server/BlockImpl.cpp
++++ b/src/server/BlockImpl.cpp
+@@ -30,6 +30,7 @@
+ 
+ #include <algorithm>
+ #include <cassert>
++#include <cmath>
+ #include <cstdint>
+ #include <initializer_list>
+ #include <string>
+@@ -210,6 +211,11 @@ BlockImpl::bypass(RunContext& ctx)
+ 				break; // Finished writing all outputs
+ 			}
+ 
++			if (!in && t == PortType::AUDIO) {
++				// Peepo: mono in, stereo out plays the dry signal on both sides.
++				in = dry_input(i);
++			}
++
+ 			if (in) {
+ 				// Copy corresponding input to output
+ 				for (uint32_t v = 0; v < _polyphony; ++v) {
+@@ -231,12 +237,28 @@ BlockImpl::process(RunContext& ctx)
+ {
+ 	pre_process(ctx);
+ 
+-	if (!_enabled) {
++	// Peepo: a spill-bypassed block runs on until its tail has ended, and
++	// ramps in and out of bypass. Without spilling, bypass is immediate.
++	const bool spill = _spill && spill_ready(ctx);
++	if (!spill) {
++		// A block already bypassed the dumb way stays so until switched on:
++		// its frozen buffer must not spill out if it is marked now.
++		_spill_mix    = _enabled ? 0.0f : 1.0f;
++		_spill_asleep = !_enabled;
++		_spill_quiet  = 0;
++	} else if (_enabled) {
++		_spill_asleep = false;
++		_spill_quiet  = 0;
++	}
++
++	if (!_enabled && (!spill || _spill_asleep)) {
+ 		bypass(ctx);
+ 		post_process(ctx);
+ 		return;
+ 	}
+ 
++	_spilling = spill && (!_enabled || _spill_mix > 0.0f);
++
+ 	RunContext subcontext(ctx);
+ 	for (SampleCount offset = 0; offset < ctx.nframes();) {
+ 		// Find earliest offset of a value change
+@@ -266,6 +288,10 @@ BlockImpl::process(RunContext& ctx)
+ 			}
+ 		}
+ 
++		if (_spilling) {
++			spill_inputs(offset, chunk_end);
++		}
++
+ 		// Run the chunk
+ 		run(subcontext);
+ 
+@@ -284,10 +310,161 @@ BlockImpl::process(RunContext& ctx)
+ 		subcontext.slice(offset, chunk_end - offset);
+ 	}
+ 
+-	apply_output_gain(ctx);
++	if (_spilling) {
++		finish_spill(ctx);
++		_spilling = false;
++	} else {
++		apply_output_gain(ctx);
++	}
+ 	post_process(ctx);
+ }
+ 
++/** Peepo: the spill bypass.
++
++    While bypassed, the plugin reads silence and its output (the tail) is
++    added to the dry signal: bypassed output = input + plugin(silence). Going
++    in or out of bypass, the plugin's input fades over 5 ms and the dry signal
++    is crossfaded in the same time, so neither way clicks. Once the tail has
++    stayed below -90 dBFS for a second, the block falls back to the dumb
++    bypass and stops costing CPU; its buffer is silent by then, so switching
++    it on again brings nothing old back. */
++void
++BlockImpl::prepare_spill(SampleCount block_length, SampleRate rate)
++{
++	_spill_slot.assign(num_ports(), -1);
++	int32_t n_inputs = 0;
++	for (uint32_t i = 0; i < num_ports(); ++i) {
++		const PortImpl* const port = _ports->at(i);
++		if (port && port->is_input() && port->type() == PortType::AUDIO) {
++			_spill_slot[i] = n_inputs++;
++		}
++	}
++
++	_spill_frames = block_length;
++	_spill_voices = _polyphony;
++	_spill_step   = 1.0f / (0.005f * static_cast<float>(rate));
++	_spill_sleep  = rate;
++	_spill_buf.assign(static_cast<size_t>(n_inputs) * _spill_voices * _spill_frames, 0.0f);
++}
++
++bool
++BlockImpl::spill_ready(const RunContext& ctx) const
++{
++	return !_spill_buf.empty() && _polyphony <= _spill_voices &&
++	       ctx.nframes() <= _spill_frames;
++}
++
++Sample*
++BlockImpl::spill_input(uint32_t voice, uint32_t port_num)
++{
++	if (!_spilling || port_num >= _spill_slot.size() || _spill_slot[port_num] < 0) {
++		return nullptr;
++	}
++	const size_t slot = static_cast<size_t>(_spill_slot[port_num]);
++	return _spill_buf.data() + ((slot * _spill_voices) + voice) * _spill_frames;
++}
++
++/** The mix at the end of `frame`: 0 when on, 1 when bypassed. */
++float
++BlockImpl::spill_mix_at(SampleCount frame) const
++{
++	const float target = _enabled ? 0.0f : 1.0f;
++	const float moved  = _spill_step * static_cast<float>(frame + 1);
++	return target > _spill_mix ? std::min(target, _spill_mix + moved)
++	                           : std::max(target, _spill_mix - moved);
++}
++
++/** The dry signal for audio output `output`: the matching audio input, else
++    the last one (mono in, stereo out), else none. */
++const PortImpl*
++BlockImpl::dry_input(uint32_t output)
++{
++	const PortImpl* last = nullptr;
++	for (uint32_t i = 0;; ++i) {
++		const PortImpl* const in = nth_port_by_type(i, true, PortType::AUDIO);
++		if (!in) {
++			return last;
++		}
++		if (i == output) {
++			return in;
++		}
++		last = in;
++	}
++}
++
++/** Fill the plugin's inputs from `begin` to `end`, faded by the mix. */
++void
++BlockImpl::spill_inputs(SampleCount begin, SampleCount end)
++{
++	for (uint32_t i = 0; i < _spill_slot.size(); ++i) {
++		if (_spill_slot[i] < 0) {
++			continue;
++		}
++		const PortImpl* const port = _ports->at(i);
++		for (uint32_t v = 0; v < _polyphony; ++v) {
++			const Sample* const in  = port->buffer(v)->samples();
++			Sample* const       out = spill_input(v, i);
++			for (SampleCount f = begin; f < end; ++f) {
++				out[f] = in[f] * (1.0f - spill_mix_at(f));
++			}
++		}
++	}
++}
++
++/** Add the dry signal to the plugin's output, and put the block to sleep once
++    its tail has ended. */
++void
++BlockImpl::finish_spill(RunContext& ctx)
++{
++	const SampleCount n       = ctx.nframes();
++	const bool        settled = !_enabled && _spill_mix >= 1.0f;
++
++	float peak = 0.0f;
++	if (settled) {
++		for (uint32_t i = 0; _ports && i < _ports->size(); ++i) {
++			const PortImpl* const port = _ports->at(i);
++			if (port->type() != PortType::AUDIO || !port->is_output()) {
++				continue;
++			}
++			for (uint32_t v = 0; v < _polyphony; ++v) {
++				const Sample* const s = port->buffer(v)->samples();
++				for (SampleCount f = 0; f < n; ++f) {
++					peak = std::max(peak, std::fabs(s[f]));
++				}
++			}
++		}
++	}
++
++	// The output level applies to the plugin's sound, not to the dry signal.
++	apply_output_gain(ctx);
++
++	for (uint32_t o = 0;; ++o) {
++		const PortImpl* const out = nth_port_by_type(o, false, PortType::AUDIO);
++		if (!out) {
++			break;
++		}
++		const PortImpl* const dry = dry_input(o);
++		if (!dry) {
++			continue;
++		}
++		for (uint32_t v = 0; v < _polyphony; ++v) {
++			Sample* const       s = out->buffer(v)->samples();
++			const Sample* const d = dry->buffer(v)->samples();
++			for (SampleCount f = 0; f < n; ++f) {
++				s[f] += spill_mix_at(f) * d[f];
++			}
++		}
++	}
++
++	if (settled && peak < 3.1623e-5f) { // -90 dBFS
++		_spill_quiet += n;
++		_spill_asleep = _spill_quiet >= _spill_sleep;
++	} else {
++		_spill_quiet = 0;
++	}
++	_spill_mix = spill_mix_at(n - 1);
++}
++
+ /** Peepo: scale the audio outputs to the block's output level, ramping across
+     the cycle so a change never clicks. Not applied while bypassed: a bypassed
+     block passes its input through unchanged. */
+diff --git a/src/server/BlockImpl.hpp b/src/server/BlockImpl.hpp
+index 2c6d7781..279ba571 100644
+--- a/src/server/BlockImpl.hpp
++++ b/src/server/BlockImpl.hpp
+@@ -36,6 +36,7 @@
+ #include <memory>
+ #include <optional>
+ #include <set>
++#include <vector>
+ 
+ namespace raul {
+ class Symbol;
+@@ -110,6 +111,12 @@ public:
+ 	/** Peepo: the gain of this block's audio outputs (urn:peepo:ns#outputLevel). */
+ 	void set_output_gain(float gain) { _output_gain = gain; }
+ 
++	/** Peepo: bypass this block by spilling (urn:peepo:ns#spillBypass): it
++	    keeps running on a silent input and its output is added to the dry
++	    signal, so a delay or reverb rings on when switched off. */
++	void set_spill(bool s) { _spill = s; }
++	bool spill() const { return _spill; }
++
+ 	/** Load a preset from the world for this block. */
+ 	virtual StatePtr load_preset(const URI& uri) { return {}; }
+ 
+@@ -223,6 +230,30 @@ protected:
+ 	float                    _output_gain_now{1.0f};
+ 
+ 	void apply_output_gain(RunContext& ctx);
++
++	/** Peepo: make the spill bypass's input buffers. Not in the audio thread. */
++	void prepare_spill(SampleCount block_length, SampleRate rate);
++
++	/** Peepo: where the plugin reads an audio input while spilling, or null. */
++	Sample* spill_input(uint32_t voice, uint32_t port_num);
++
++	bool                 _spill{false};         ///< Bypass by spilling
++	bool                 _spilling{false};      ///< Plugin reads _spill_buf this cycle
++	bool                 _spill_asleep{false};  ///< Tail ended: dumb bypass until enabled
++	float                _spill_mix{0.0f};      ///< 0 on, 1 bypassed, at the cycle's start
++	float                _spill_step{0.0f};     ///< Ramp step per frame (5 ms)
++	SampleCount          _spill_quiet{0};       ///< Frames the tail has been silent
++	SampleCount          _spill_sleep{0};       ///< Silent frames before sleeping (1 s)
++	SampleCount          _spill_frames{0};      ///< Frames per input buffer
++	uint32_t             _spill_voices{0};      ///< Voices per input
++	std::vector<int32_t> _spill_slot;           ///< Input buffer of each port, or -1
++	std::vector<Sample>  _spill_buf;            ///< Faded inputs the plugin reads
++
++	bool  spill_ready(const RunContext& ctx) const;
++	float spill_mix_at(SampleCount frame) const;
++	void  spill_inputs(SampleCount begin, SampleCount end);
++	void  finish_spill(RunContext& ctx);
++	const PortImpl* dry_input(uint32_t output);
+ };
+ 
+ } // namespace server
+diff --git a/src/server/LV2Block.cpp b/src/server/LV2Block.cpp
+index c08626ad..2bfa807c 100644
+--- a/src/server/LV2Block.cpp
++++ b/src/server/LV2Block.cpp
+@@ -479,6 +479,10 @@ LV2Block::instantiate(BufferFactory& bufs, const LilvState* state)
+ 		apply_state(nullptr, state);
+ 	}
+ 
++	// Peepo: the spill bypass's input buffers, made here and not in the
++	// audio thread.
++	prepare_spill(bufs.engine().block_length(), rate);
++
+ 	// FIXME: Polyphony + worker?
+ 	if (lilv_plugin_has_feature(plug, uris.work_schedule)) {
+ 		_worker_iface = static_cast<const LV2_Worker_Interface*>(
+@@ -555,6 +559,7 @@ LV2Block::duplicate(Engine&             engine,
+ 		return nullptr;
+ 	}
+ 	dup->set_properties(properties());
++	dup->set_spill(_spill);
+ 
+ 	// Set duplicate port values and properties to the same as ours
+ 	for (uint32_t p = 0; p < num_ports(); ++p) {
+@@ -811,10 +816,13 @@ LV2Block::set_port_buffer(uint32_t         voice,
+                           SampleCount      offset)
+ {
+ 	BlockImpl::set_port_buffer(voice, port_num, buf, offset);
++	// Peepo: while spilling, the plugin reads its faded audio inputs.
++	Sample* const spill = spill_input(voice, port_num);
+ 	lilv_instance_connect_port(
+ 		instance(voice),
+ 		port_num,
+-		buf ? buf->port_data(_ports->at(port_num)->type(), offset) : nullptr);
++		spill ? static_cast<void*>(spill + offset)
++		      : buf ? buf->port_data(_ports->at(port_num)->type(), offset) : nullptr);
+ }
+ 
+ } // namespace ingen::server
+diff --git a/src/server/events/Delta.cpp b/src/server/events/Delta.cpp
+index 98e61c17..ee01f916 100644
+--- a/src/server/events/Delta.cpp
++++ b/src/server/events/Delta.cpp
+@@ -364,6 +364,13 @@ Delta::pre_process(PreProcessContext& ctx)
+ 					} else {
+ 						_status = Status::BAD_VALUE_TYPE;
+ 					}
++				} else if (key == URI("urn:peepo:ns#spillBypass")) {
++					// Peepo: bypass by spilling, so the block's tail rings on.
++					if (value.type() == uris.forge.Bool || value.type() == uris.forge.Int) {
++						op = SpecialType::SPILL_BYPASS;
++					} else {
++						_status = Status::BAD_VALUE_TYPE;
++					}
+ 				} else if (key == URI("urn:peepo:ns#outputLevel")) {
+ 					// Peepo: the block's output level in dB, applied by the block.
+ 					if (value.type() == uris.forge.Float || value.type() == uris.forge.Int) {
+@@ -590,6 +597,11 @@ Delta::execute(RunContext& ctx)
+ 				block->set_output_gain(std::pow(10.0f, std::clamp(db, -60.0f, 24.0f) / 20.0f));
+ 			}
+ 			break;
++		case SpecialType::SPILL_BYPASS:
++			if (block) {
++				block->set_spill(value.get<int32_t>() != 0);
++			}
++			break;
+ 		}
+ 	}
+ }
+diff --git a/src/server/events/Delta.hpp b/src/server/events/Delta.hpp
+index bc627db1..41a4fa10 100644
+--- a/src/server/events/Delta.hpp
++++ b/src/server/events/Delta.hpp
+@@ -96,7 +96,8 @@ private:
+ 		CONTROL_BINDING,
+ 		PRESET,
+ 		LOADED_BUNDLE,
+-		OUTPUT_LEVEL
++		OUTPUT_LEVEL,
++		SPILL_BYPASS
+ 	};
+ 
+ 	using SetEvents = std::vector<std::unique_ptr<SetPortValue>>;

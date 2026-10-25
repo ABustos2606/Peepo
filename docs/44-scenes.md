@@ -1,6 +1,6 @@
 # Scenes
 
-**Planned 24 October 2026. P13.1 (measurements) and P13.2 (atomic bundles, engine patch 0012) done in WSL the same day ([record](evidence/scenes-results.md)); nothing of the scenes themselves is built yet.** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
+**Planned 24 October 2026. P13.1 (measurements), P13.2 (atomic bundles, engine patch 0012) and P13.3 (spill bypass, engine patch 0013) done in WSL the same day ([record](evidence/scenes-results.md)); nothing of the scenes themselves is built yet.** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
 
 A scene is a saved state inside one patch. "Verse" can have the chorus on and the drive off, and "Solo" the reverse, so one song is played on one patch by changing scenes. Changing scene must not break the sound: no gap, no click, and the echoes and reverb of what was just switched off ring on.
 
@@ -48,8 +48,9 @@ With a silent input the plugin's own dry path gives nothing, so what comes out i
 - **Mono to stereo.** An output with no matching input takes the dry signal from the last input, so a mono-to-stereo module bypassed plays the dry signal on both sides (fault 4). The same fix applies to the dumb bypass.
 - **Stopping when silent.** Once every output has stayed below -90 dBFS for one second, the block falls back to the dumb bypass and stops using CPU. Its buffer is silent by then, so switching it on again brings nothing back.
 - **Allocation.** The silent input buffers and the ramp state are made when the block is created, never in the audio thread.
-- **Marking.** A new overlay value, `"bypass": "spill"`, for Delay and Reverb modules (and any Texture module with a long memory) after each passes the tail check. The adapter sets it on the block as a property when the module is added, as it does for the block's output level (engine patch 0008), so it is saved with the patch. The rule is refused for a module that already uses `"bypass": "port"`.
-- **Written as** engine patch 0013 in `tools/ingen-spike/patches/`, applied to the build root like the others ([Pi changes go in the build root](19-linux-and-pi.md)).
+- **Marking.** A new overlay value, `"bypass": "spill"`, for Delay and Reverb modules (and any Texture module with a long memory) after each passes the tail check. The adapter sets it on the block as the property `peepo:spillBypass true` (`urn:peepo:ns#spillBypass`, Bool or Int) when the module is added, as it does for the block's output level (engine patch 0008), so it is saved with the patch. The rule is refused for a module that already uses `"bypass": "port"`. Not for a module that makes sound from silence: **Mist Spectral** sustains itself and would keep sounding when bypassed, and **Vinyl** never stopped costing CPU.
+- **Written as** engine patch 0013 (`0013-spill-bypass.patch`), in `BlockImpl` and `LV2Block`. Also: the output level (0008) applies to the tail, not to the dry signal; a block already in the dumb bypass when it is marked stays there until switched on, so a frozen buffer never spills out; a duplicated block keeps the mark; unmarked blocks bypass as before.
+- **Measured in WSL** (`27-scenes.sh spill`, [record](evidence/scenes-results.md#spill-bypass-engine-patch-0013-p133)): every module with a tail rings on, within 0.4 dB of the module left on; no click above 20 dB switching off and on (largest 19.2, was up to 74); none replays; Euclidelay, the one module with one input and two outputs in WSL, keeps both sides under either bypass; the heavier reverbs fall back to the empty engine's CPU after their tail.
 
 ### Our own plugins
 
@@ -108,7 +109,7 @@ Built to the [design language](03-interface-and-controls.md): header pills and o
 
 ## Checks
 
-- **Tail check** (`tools/ingen-spike/27-scenes.sh tails`, root, in WSL; `SCENES_LV2` adds bundle directories): for each Delay, Reverb and Texture module, the tail, click, replay and side checks described in the [record](evidence/scenes-results.md). Pass: the tail within 3 dB of the module left on, a click no more than 20 dB above the tone's own variation, no replay, no lost side. The engine's bypass fails all of them, which shows the check works.
+- **Tail check** (`tools/ingen-spike/27-scenes.sh tails`, root, in WSL; `SCENES_LV2` adds bundle directories): for each Delay, Reverb and Texture module, the tail, click, replay and side checks described in the [record](evidence/scenes-results.md). Pass: the tail within 3 dB of the module left on, a click no more than 20 dB above the tone's own variation, no replay, no lost side. The engine's bypass fails all of them, which shows the check works. `27-scenes.sh spill` runs the same with the engine's bypass spilling, the click switching off and on again, and the CPU after the tail.
 - **Atomic change** (`27-scenes.sh atomic`): two modules switched opposite ways in one bundle, by bypass, by parameter and mixed; both outputs must change on the same frame. Run with and without `-a`.
 - **Scene changes while playing:** 8 scenes, 4 modules each changing, switched every 500 ms for a minute: no xrun, no gap, every change read back.
 - **CPU:** the heaviest catalogue patch with all modules on; spill-bypassed delays stop costing CPU after their tail.
