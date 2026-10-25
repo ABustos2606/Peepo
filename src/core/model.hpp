@@ -3,8 +3,10 @@
 #pragma once
 #include <cstdint>
 #include <deque>
+#include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace peepo {
@@ -161,6 +163,60 @@ inline constexpr std::size_t max_load_messages = 6;
 std::string encode_control_changes(const std::vector<ControlChange>&);
 // Empty when the text is not such a list, or holds too many.
 std::optional<std::vector<ControlChange>> decode_control_changes(const std::string&);
+// Scenes (docs/44-scenes.md): saved states inside one patch. A scene holds
+// every module's bypass and the value of each parameter marked per scene; the
+// marked list is the patch's, the same for every scene.
+inline constexpr std::size_t max_scenes = 8, max_scene_parameters = 16, max_scene_name = 12;
+// A module a scene names. Like an assignment, it keeps the module's plugin, so
+// a different module that later holds the same identity is never changed; an
+// entry whose module is gone or holds another plugin is an orphan, kept and
+// never applied. `block` is the engine's block symbol as read, kept for an
+// orphan whose module is 0 so it is written back unchanged.
+struct SceneTarget {
+    InstanceId module = 0;
+    std::string block, plugin;
+    // The parameter, or empty for the module's bypass.
+    std::string symbol;
+    // The same target: by module, or by block for two orphans whose module is 0.
+    bool same(const SceneTarget& o) const { return (module || o.module ? module == o.module : block == o.block) && plugin == o.plugin && symbol == o.symbol; }
+    bool operator==(const SceneTarget&) const = default;
+};
+struct SceneEntry {
+    SceneTarget target;
+    // 1 when bypassed, for a bypass entry.
+    double value = 0;
+    bool operator==(const SceneEntry&) const = default;
+};
+struct Scene {
+    std::string name;
+    std::vector<SceneEntry> entries;
+};
+struct Scenes {
+    std::vector<SceneTarget> parameters;
+    std::vector<Scene> scenes;
+    // The scene the live state was last set from, counted from 0; unused when
+    // there are no scenes.
+    std::size_t current = 0;
+};
+// "Scene 1" to "Scene 8".
+std::string default_scene_name(std::size_t index);
+// Empty when acceptable: 1 to 12 printable ASCII characters.
+std::string validate_scene_name(const std::string&);
+// The graph properties scenes are kept in: peepo:scene-count, -current
+// (counted from 1, 0 with no scenes), -params, and -N-name and -N for each.
+// Entries are separated by spaces, fields by '|'; plugin URIs hold neither.
+struct SceneProperties {
+    int count = 0, current = 0;
+    std::string parameters;
+    // Each scene's name and entries, in order.
+    std::vector<std::pair<std::string, std::string>> scenes;
+};
+// `block_of` gives the engine's block symbol for a module (m3), `id_of` the
+// module a block symbol names (0 when none does).
+SceneProperties encode_scenes(const Scenes&, const std::function<std::string(InstanceId)>& block_of);
+// Never fails: a malformed entry is dropped, a count over 8 cut, a missing or
+// bad name replaced by the default, and the current scene kept in range.
+Scenes decode_scenes(const SceneProperties&, const std::function<InstanceId(const std::string&)>& id_of);
 struct Graph {
     std::string name = "First light";
     // The stored patch this graph was loaded from or last saved as; empty
@@ -174,7 +230,60 @@ struct Graph {
     double tempo = default_tempo;
     // Sent to every MIDI device when the patch loads.
     std::vector<ControlChange> load_messages;
+    // None for a patch without scenes, which behaves as before them.
+    Scenes scenes;
 };
+// The module a scene entry or marked parameter names, or null when it is an
+// orphan: its module is gone, holds another plugin, or lacks the parameter.
+const Module* scene_target(const Graph&, const SceneTarget&);
+bool scene_parameter_marked(const Graph&, InstanceId, const std::string& symbol);
+// One change selecting a scene makes: a module's bypass, or a parameter.
+struct SceneChange {
+    InstanceId module = 0;
+    // Empty for the bypass.
+    std::string symbol;
+    double value = 0;
+    bool operator==(const SceneChange&) const = default;
+};
+// What differs between the live state and a scene: bypasses and marked
+// parameters only, in the scene's order, orphans left out. Empty when the
+// scene does not exist.
+std::vector<SceneChange> scene_changes(const Graph&, std::size_t scene);
+// The live state as a scene: every module's bypass and each marked parameter.
+Scene capture_scene(const Graph&, std::string name);
+// Scene management. Each returns an error, or empty when done; the graph is
+// unchanged on an error. Adding copies the live state into the new scene,
+// placed last and made current. Deleting the current scene is refused while
+// others exist; deleting the only one returns the patch to no scenes, its
+// marked parameters unmarked.
+std::string add_scene(Graph&);
+std::string rename_scene(Graph&, std::size_t scene, const std::string& name);
+// The entries of `from` over those of `to`; the name stays.
+std::string copy_scene(Graph&, std::size_t from, std::size_t to);
+// The current scene stays current wherever it moves.
+std::string move_scene(Graph&, std::size_t from, std::size_t to);
+std::string delete_scene(Graph&, std::size_t scene);
+// Marking copies the parameter's live value into every scene; unmarking
+// leaves its live value for all of them.
+std::string mark_scene_parameter(Graph&, InstanceId, const std::string& symbol);
+std::string unmark_scene_parameter(Graph&, InstanceId, const std::string& symbol);
+// An edit on the touch screen is written into the current scene: a bypass
+// always, a parameter when it is marked. Returns whether the scene changed.
+// Stomps, knobs, MIDI and learned controls are performance changes, which
+// change the sound but never the stored scene, and do not call these.
+bool record_scene_bypass(Graph&, InstanceId, bool bypassed);
+bool record_scene_parameter(Graph&, InstanceId, const std::string& symbol, double value);
+// Keeping the scenes in step with the modules. Call after the module is added
+// to the graph: its bypass is written into every scene. After a duplicate is
+// added: the original's entries are copied to it in every scene, and its
+// marked parameters marked on the copy when they fit in the 16. Before or
+// after a module is removed: its entries leave every scene. Orphans stay.
+void scenes_module_added(Graph&, InstanceId);
+void scenes_module_duplicated(Graph&, InstanceId original, InstanceId copy);
+void scenes_module_removed(Graph&, const Module&);
+// Empty when acceptable. Orphan entries are accepted; live ones must be in
+// range, and each module and parameter appears once per scene.
+std::string validate_scenes(const Graph&);
 // The value a module's tempo control takes for a tempo: the tempo, inside the
 // control's own range.
 double tempo_value(const Parameter&, double tempo);

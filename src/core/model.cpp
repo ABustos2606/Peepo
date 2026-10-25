@@ -369,7 +369,7 @@ std::string validate_graph(const Graph& g) {
         // An orphan is kept for repair; it is never applied, so its range is not checked.
         if (const auto* p = assignment_parameter(g, a); p && (a.minimum < p->minimum || a.maximum > p->maximum)) return "Invalid assignment parameter range";
     }
-    return {};
+    return validate_scenes(g);
 }
 RoutingPlan expand_connection(const Graph& g, const Connection& c) {
     // Existing cables may be expanded; ignore just this edge for duplicate checking.
@@ -434,6 +434,294 @@ std::optional<std::vector<ControlChange>> decode_control_changes(const std::stri
     }
     if (out.size() > max_load_messages) return std::nullopt;
     return out;
+}
+std::string default_scene_name(std::size_t index) { return "Scene " + std::to_string(index + 1); }
+std::string validate_scene_name(const std::string& name) {
+    if (name.empty() || name.find_first_not_of(' ') == std::string::npos) return "Enter a scene name.";
+    if (name.size() > max_scene_name) return "Scene name is too long (maximum 12 characters).";
+    for (unsigned char c : name) if (c < 32 || c > 126) return "Scene names use plain letters, digits and punctuation.";
+    return {};
+}
+namespace {
+std::vector<std::string> split(const std::string& text, char separator) {
+    std::vector<std::string> fields;
+    for (std::size_t start = 0;;) {
+        const auto at = text.find(separator, start);
+        fields.push_back(text.substr(start, at == std::string::npos ? std::string::npos : at - start));
+        if (at == std::string::npos) return fields;
+        start = at + 1;
+    }
+}
+bool read_number(const std::string& field, double& out) {
+    const auto result = std::from_chars(field.data(), field.data() + field.size(), out);
+    return !field.empty() && result.ec == std::errc{} && result.ptr == field.data() + field.size() && std::isfinite(out);
+}
+// No field may hold an entry or field separator.
+bool scene_field(const std::string& field) { return field.find_first_of(" |") == std::string::npos; }
+const Parameter* scene_parameter(const Graph& g, const SceneTarget& t) {
+    const auto* m = scene_target(g, t);
+    if (!m || t.symbol.empty()) return nullptr;
+    return &*std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == t.symbol; });
+}
+bool marked(const Scenes& s, const SceneTarget& t) {
+    return std::any_of(s.parameters.begin(), s.parameters.end(), [&](const SceneTarget& p) { return p.same(t); });
+}
+SceneTarget live_target(const Module& m, const std::string& symbol) { return {m.id, {}, m.uri, symbol}; }
+// Writes the entry's value, adding the entry when the scene lacks it.
+bool put_entry(Scene& scene, const SceneEntry& entry) {
+    for (auto& e : scene.entries)
+        if (e.target.same(entry.target)) {
+            if (e.value == entry.value) return false;
+            e.value = entry.value;
+            return true;
+        }
+    scene.entries.push_back(entry);
+    return true;
+}
+}
+SceneProperties encode_scenes(const Scenes& s, const std::function<std::string(InstanceId)>& block_of) {
+    SceneProperties out;
+    out.count = static_cast<int>(s.scenes.size());
+    out.current = s.scenes.empty() ? 0 : static_cast<int>(s.current) + 1;
+    // A module the engine does not hold keeps the block it was read with.
+    auto block = [&](const SceneTarget& t) {
+        auto symbol = t.module ? block_of(t.module) : std::string();
+        return symbol.empty() ? t.block : symbol;
+    };
+    auto join = [](std::string& text, const std::string& part) { text += (text.empty() ? "" : " ") + part; };
+    for (const auto& p : s.parameters)
+        if (const auto b = block(p); !b.empty()) join(out.parameters, b + "|" + p.plugin + "|" + p.symbol);
+    for (const auto& scene : s.scenes) {
+        std::string text;
+        for (const auto& e : scene.entries) {
+            const auto b = block(e.target);
+            if (b.empty()) continue;
+            if (e.target.symbol.empty()) join(text, "b|" + b + "|" + e.target.plugin + "|" + (e.value != 0 ? "1" : "0"));
+            else join(text, "p|" + b + "|" + e.target.plugin + "|" + e.target.symbol + "|" + number_text(e.value));
+        }
+        out.scenes.emplace_back(scene.name, std::move(text));
+    }
+    return out;
+}
+Scenes decode_scenes(const SceneProperties& in, const std::function<InstanceId(const std::string&)>& id_of) {
+    Scenes s;
+    const auto count = std::min({static_cast<std::size_t>(std::max(in.count, 0)), max_scenes, in.scenes.size()});
+    if (!count) return s;
+    auto target = [&](const std::string& block, const std::string& plugin, const std::string& symbol) {
+        return SceneTarget{id_of(block), block, plugin, symbol};
+    };
+    for (const auto& part : assignment_parts(in.parameters)) {
+        const auto f = split(part, '|');
+        if (f.size() != 3 || f[0].empty() || f[1].empty() || f[2].empty() || s.parameters.size() == max_scene_parameters) continue;
+        auto t = target(f[0], f[1], f[2]);
+        if (!marked(s, t)) s.parameters.push_back(std::move(t));
+    }
+    for (std::size_t i = 0; i < count; ++i) {
+        const auto& [name, text] = in.scenes[i];
+        Scene scene{validate_scene_name(name).empty() ? name : default_scene_name(i), {}};
+        for (const auto& part : assignment_parts(text)) {
+            const auto f = split(part, '|');
+            if (f.size() < 4 || f[1].empty() || f[2].empty()) continue;
+            SceneEntry e;
+            if (f.size() == 4 && f[0] == "b" && (f[3] == "0" || f[3] == "1")) e = {target(f[1], f[2], {}), f[3] == "1" ? 1.0 : 0.0};
+            else if (f.size() == 5 && f[0] == "p" && !f[3].empty() && read_number(f[4], e.value) && marked(s, target(f[1], f[2], f[3])))
+                e.target = target(f[1], f[2], f[3]);
+            else continue;
+            if (std::none_of(scene.entries.begin(), scene.entries.end(), [&](const SceneEntry& o) { return o.target.same(e.target); }))
+                scene.entries.push_back(std::move(e));
+        }
+        s.scenes.push_back(std::move(scene));
+    }
+    s.current = in.current >= 1 ? std::min(static_cast<std::size_t>(in.current) - 1, count - 1) : 0;
+    return s;
+}
+const Module* scene_target(const Graph& g, const SceneTarget& t) {
+    const auto* m = find_module(g, t.module);
+    if (!m || m->fixed || !module_available(*m) || t.plugin != m->uri) return nullptr;
+    if (!t.symbol.empty() && std::none_of(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == t.symbol; })) return nullptr;
+    return m;
+}
+bool scene_parameter_marked(const Graph& g, InstanceId id, const std::string& symbol) {
+    const auto* m = find_module(g, id);
+    return m && !symbol.empty() && marked(g.scenes, live_target(*m, symbol));
+}
+std::vector<SceneChange> scene_changes(const Graph& g, std::size_t index) {
+    std::vector<SceneChange> changes;
+    if (index >= g.scenes.scenes.size()) return changes;
+    for (const auto& e : g.scenes.scenes[index].entries) {
+        const auto* m = scene_target(g, e.target);
+        if (!m) continue;
+        if (e.target.symbol.empty()) {
+            if (m->bypassed != (e.value != 0)) changes.push_back({m->id, {}, e.value != 0 ? 1.0 : 0.0});
+            continue;
+        }
+        if (!marked(g.scenes, e.target)) continue;
+        const auto& p = *scene_parameter(g, e.target);
+        auto value = std::clamp(e.value, p.minimum, p.maximum);
+        if (p.kind != ParameterKind::Continuous) value = std::round(value);
+        if (value != p.value) changes.push_back({m->id, p.symbol, value});
+    }
+    return changes;
+}
+Scene capture_scene(const Graph& g, std::string name) {
+    Scene scene{std::move(name), {}};
+    for (const auto& m : g.modules)
+        if (!m.fixed) scene.entries.push_back({live_target(m, {}), m.bypassed ? 1.0 : 0.0});
+    for (const auto& t : g.scenes.parameters)
+        if (const auto* p = scene_parameter(g, t)) scene.entries.push_back({live_target(*scene_target(g, t), t.symbol), p->value});
+    return scene;
+}
+std::string add_scene(Graph& g) {
+    auto& s = g.scenes;
+    if (s.scenes.size() >= max_scenes) return "A patch holds at most 8 scenes.";
+    // The lowest default name no scene has.
+    std::size_t number = 0;
+    while (std::any_of(s.scenes.begin(), s.scenes.end(), [&](const Scene& scene) { return scene.name == default_scene_name(number); })) ++number;
+    s.scenes.push_back(capture_scene(g, default_scene_name(number)));
+    s.current = s.scenes.size() - 1;
+    return {};
+}
+std::string rename_scene(Graph& g, std::size_t index, const std::string& name) {
+    if (index >= g.scenes.scenes.size()) return "No such scene.";
+    if (auto issue = validate_scene_name(name); !issue.empty()) return issue;
+    g.scenes.scenes[index].name = name;
+    return {};
+}
+std::string copy_scene(Graph& g, std::size_t from, std::size_t to) {
+    auto& scenes = g.scenes.scenes;
+    if (from >= scenes.size() || to >= scenes.size()) return "No such scene.";
+    if (from != to) scenes[to].entries = scenes[from].entries;
+    return {};
+}
+std::string move_scene(Graph& g, std::size_t from, std::size_t to) {
+    auto& s = g.scenes;
+    if (from >= s.scenes.size() || to >= s.scenes.size()) return "No such scene.";
+    auto moved = std::move(s.scenes[from]);
+    s.scenes.erase(s.scenes.begin() + static_cast<std::ptrdiff_t>(from));
+    s.scenes.insert(s.scenes.begin() + static_cast<std::ptrdiff_t>(to), std::move(moved));
+    if (s.current == from) s.current = to;
+    else if (from < s.current && to >= s.current) --s.current;
+    else if (from > s.current && to <= s.current) ++s.current;
+    return {};
+}
+std::string delete_scene(Graph& g, std::size_t index) {
+    auto& s = g.scenes;
+    if (index >= s.scenes.size()) return "No such scene.";
+    if (s.scenes.size() == 1) {
+        s = {};
+        return {};
+    }
+    if (index == s.current) return "Select another scene before deleting this one.";
+    s.scenes.erase(s.scenes.begin() + static_cast<std::ptrdiff_t>(index));
+    if (index < s.current) --s.current;
+    return {};
+}
+std::string mark_scene_parameter(Graph& g, InstanceId id, const std::string& symbol) {
+    auto& s = g.scenes;
+    if (s.scenes.empty()) return "Add a scene first.";
+    const auto* m = find_module(g, id);
+    if (!m || m->fixed) return "No such module.";
+    const auto t = live_target(*m, symbol);
+    const auto* p = scene_parameter(g, t);
+    if (!p) return "No such parameter.";
+    if (marked(s, t)) return {};
+    if (s.parameters.size() >= max_scene_parameters) return "At most 16 parameters change per scene.";
+    s.parameters.push_back(t);
+    for (auto& scene : s.scenes) put_entry(scene, {t, p->value});
+    return {};
+}
+std::string unmark_scene_parameter(Graph& g, InstanceId id, const std::string& symbol) {
+    auto& s = g.scenes;
+    if (!scene_parameter_marked(g, id, symbol)) return "The parameter is not per scene.";
+    const auto t = live_target(*find_module(g, id), symbol);
+    std::erase_if(s.parameters, [&](const SceneTarget& p) { return p.same(t); });
+    for (auto& scene : s.scenes) std::erase_if(scene.entries, [&](const SceneEntry& e) { return e.target.same(t); });
+    return {};
+}
+bool record_scene_bypass(Graph& g, InstanceId id, bool bypassed) {
+    auto& s = g.scenes;
+    const auto* m = find_module(g, id);
+    if (s.scenes.empty() || !m || m->fixed) return false;
+    return put_entry(s.scenes[s.current], {live_target(*m, {}), bypassed ? 1.0 : 0.0});
+}
+bool record_scene_parameter(Graph& g, InstanceId id, const std::string& symbol, double value) {
+    auto& s = g.scenes;
+    if (s.scenes.empty() || !scene_parameter_marked(g, id, symbol)) return false;
+    return put_entry(s.scenes[s.current], {live_target(*find_module(g, id), symbol), value});
+}
+void scenes_module_added(Graph& g, InstanceId id) {
+    const auto* m = find_module(g, id);
+    if (!m || m->fixed) return;
+    for (auto& scene : g.scenes.scenes) put_entry(scene, {live_target(*m, {}), m->bypassed ? 1.0 : 0.0});
+}
+void scenes_module_duplicated(Graph& g, InstanceId original, InstanceId copy) {
+    auto& s = g.scenes;
+    const auto* from = find_module(g, original);
+    const auto* to = find_module(g, copy);
+    if (!from || !to || from->fixed || to->fixed || s.scenes.empty()) return;
+    auto own = [&](const SceneTarget& t) { return t.module == original && t.plugin == from->uri; };
+    auto moved = [&](SceneTarget t) { t.module = copy; t.block.clear(); t.plugin = to->uri; return t; };
+    // The copy's parameters follow the scenes only if all of them fit.
+    std::vector<SceneTarget> marks;
+    for (const auto& p : s.parameters) if (own(p) && scene_parameter(g, moved(p))) marks.push_back(moved(p));
+    const bool fit = s.parameters.size() + marks.size() <= max_scene_parameters;
+    if (fit) s.parameters.insert(s.parameters.end(), marks.begin(), marks.end());
+    for (auto& scene : s.scenes) {
+        std::vector<SceneEntry> copied;
+        for (const auto& e : scene.entries)
+            if (own(e.target) && (e.target.symbol.empty() || (fit && marked(s, moved(e.target))))) copied.push_back({moved(e.target), e.value});
+        for (const auto& e : copied) put_entry(scene, e);
+    }
+    // The copy's live values, in a scene that lacks the original's.
+    for (auto& scene : s.scenes) {
+        if (std::none_of(scene.entries.begin(), scene.entries.end(), [&](const SceneEntry& e) { return e.target.same(live_target(*to, {})); }))
+            put_entry(scene, {live_target(*to, {}), to->bypassed ? 1.0 : 0.0});
+        if (fit)
+            for (const auto& t : marks)
+                if (std::none_of(scene.entries.begin(), scene.entries.end(), [&](const SceneEntry& e) { return e.target.same(t); }))
+                    put_entry(scene, {t, scene_parameter(g, t)->value});
+    }
+}
+void scenes_module_removed(Graph& g, const Module& m) {
+    auto& s = g.scenes;
+    auto own = [&](const SceneTarget& t) { return t.module == m.id && t.plugin == m.uri; };
+    std::erase_if(s.parameters, own);
+    for (auto& scene : s.scenes) std::erase_if(scene.entries, [&](const SceneEntry& e) { return own(e.target); });
+}
+std::string validate_scenes(const Graph& g) {
+    const auto& s = g.scenes;
+    if (s.scenes.size() > max_scenes) return "Too many scenes";
+    if (s.scenes.empty()) return s.parameters.empty() ? std::string() : "Parameters marked per scene without scenes";
+    if (s.current >= s.scenes.size()) return "Invalid current scene";
+    if (s.parameters.size() > max_scene_parameters) return "Too many parameters per scene";
+    auto valid = [](const SceneTarget& t) {
+        return (t.module || !t.block.empty()) && !t.plugin.empty() && scene_field(t.block) && scene_field(t.plugin) && scene_field(t.symbol);
+    };
+    for (std::size_t i = 0; i < s.parameters.size(); ++i) {
+        const auto& p = s.parameters[i];
+        if (!valid(p) || p.symbol.empty()) return "Invalid scene parameter";
+        for (std::size_t j = 0; j < i; ++j) if (s.parameters[j].same(p)) return "Scene parameter marked twice";
+    }
+    for (const auto& scene : s.scenes) {
+        if (!validate_scene_name(scene.name).empty()) return "Invalid scene name";
+        for (std::size_t i = 0; i < scene.entries.size(); ++i) {
+            const auto& e = scene.entries[i];
+            if (!valid(e.target) || !std::isfinite(e.value)) return "Invalid scene entry";
+            for (std::size_t j = 0; j < i; ++j) if (scene.entries[j].target.same(e.target)) return "Scene entry repeated";
+            if (e.target.symbol.empty()) {
+                if (e.value != 0 && e.value != 1) return "Invalid scene bypass";
+                continue;
+            }
+            if (!marked(s, e.target)) return "Scene entry for a parameter not marked per scene";
+            // An orphan is kept for repair; it is never applied, so its value is not checked.
+            if (const auto* p = scene_parameter(g, e.target)) {
+                auto probe = *p;
+                probe.value = e.value;
+                if (!validate_parameter(probe).empty()) return "Scene value out of range";
+            }
+        }
+    }
+    return {};
 }
 std::string midi_binding_text(const MidiBinding& b) {
     const auto channel = " / " + std::to_string(b.channel);

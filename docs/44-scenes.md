@@ -1,6 +1,6 @@
 # Scenes
 
-**Planned 24 October 2026. P13.1 (measurements), P13.2 (atomic bundles, engine patch 0012) and P13.3 (spill bypass, engine patch 0013) done in WSL the same day, P13.4 (`"bypass": "spill"` in the catalogue, 21 modules marked) and P13.5 (our own plugins: Discipline's Trails on by default, the tail check on the rest) on 25 October ([record](evidence/scenes-results.md)); nothing of the scenes themselves is built yet.** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
+**Planned 24 October 2026. P13.1 (measurements), P13.2 (atomic bundles, engine patch 0012) and P13.3 (spill bypass, engine patch 0013) done in WSL the same day, P13.4 (`"bypass": "spill"` in the catalogue, 21 modules marked) and P13.5 (our own plugins: Discipline's Trails on by default, the tail check on the rest) on 25 October ([record](evidence/scenes-results.md)), and P13.6 (the scene model in `src/core`) the same day; scenes are not yet sent to the engine, stored or shown.** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
 
 A scene is a saved state inside one patch. "Verse" can have the chorus on and the drive off, and "Solo" the reverse, so one song is played on one patch by changing scenes. Changing scene must not break the sound: no gap, no click, and the echoes and reverb of what was just switched off ring on.
 
@@ -67,7 +67,7 @@ With a silent input the plugin's own dry path gives nothing, so what comes out i
 - **A name**, up to 12 characters, default "Scene 1" to "Scene 8".
 - **Not stored per scene:** tempo, routing, cables, modules, assignments, the CC list sent on load, file choices (models, IRs, samples). These stay patch-wide.
 
-A patch with no scenes behaves as today. Adding the first scene copies the current state into it; scenes are added up to 8 and can be renamed, copied over another, reordered and deleted (the last one cannot be deleted while others exist; deleting all of them returns the patch to no scenes).
+A patch with no scenes behaves as today. Adding a scene copies the current state into it, places it last and makes it current; scenes are added up to 8 and can be renamed, copied over another, reordered and deleted. The current scene cannot be deleted while others exist; deleting the only one returns the patch to no scenes, its marked parameters unmarked. A new scene takes the lowest default name no other scene has.
 
 ### Storage
 
@@ -84,6 +84,8 @@ peepo:scene-2       "b|m3|<plugin>|1 b|m4|<plugin>|0 p|m4|<plugin>|gain|0.8 p|m7
 ```
 
 `b` entries hold 1 when bypassed. As with assignments, each entry keeps its module's plugin, so a different module that later holds the same identity is never changed by mistake; an entry whose module is gone or holds another plugin is kept as an orphan, which validation accepts and nothing applies. Duplicating a module copies its scene entries to the copy. The interface's session snapshot (Save snapshot / Load) includes the scene properties.
+
+*The model (P13.6, 25 October 2026):* `Graph::scenes` in `src/core/model.hpp`. `encode_scenes` and `decode_scenes` give the properties above and read them back; reading never fails: a malformed entry is dropped, as is a parameter entry for a parameter not marked, a count over 8 is cut, a bad name gets the default and the current scene is kept in range. An orphan keeps the block symbol it was read with, so it is written back unchanged. Duplicating a module marks the copy's parameters only when all of them fit in the 16; its bypass follows the original's in every scene either way. Tested in `peepo_core_tests`.
 
 Loading a patch restores the scene that was current when it was saved: the saved block values already are that scene, so nothing extra is sent.
 
