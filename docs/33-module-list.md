@@ -1,6 +1,6 @@
 # Complete module list
 
-**Updated 23 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
+**Updated 25 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
 
 **371 plugin identities:** 351 installed in the Pi export and 20 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
 
@@ -21,6 +21,8 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 | Not installed | 20 | Selected reference identity without an installed implementation. |
 
 **File-based effects:** NAM, Cabinet and IR Reverb have file selectors. Each IR family offers Mono, Mono to Stereo and Stereo configurations. Stereo accepts mono/stereo IRs for separate left/right processing; a four-channel IR adds cross-channel responses. Alternate convolvers remain hidden for older patches. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).
+
+**Tails when bypassed:** a delay or reverb marked *tail rings on when bypassed* keeps sounding its echoes or reverb, without a click, when it is switched off or a scene turns it off; the rest stop at once. Each was marked after passing the tail check. [Scenes](44-scenes.md#spill-bypass-in-the-engine).
 
 **Reading connections:** counts are plugin connectors before Peepo's mono/stereo routing. CV connectors carry modulation. MIDI/events includes LV2 event/message ports, including file-selection messages; it does not imply implemented musical MIDI routing.
 
@@ -251,41 +253,41 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Bitcrushed delay | Flexible delay module with bitcrushed repeats. | audio 1 in / 1 out; CV 6 in / 0 out | Needs adaptation: Has crashed the engine; see docs/22-plugin-catalogue.md. |
 | CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
 | Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready |
-| DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready |
+| DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Euclidelay | Echoes on four Euclidean rhythms. Steps, Hits and Shift set each voice's pattern; each voice loops it with feedback, with its own level and pan. | audio 1 in / 2 out | Ready |
 | Eureka Skip | Pitched multi-tap delay. Repeat heads sets tap count. Sync uses BPM and Beat division instead of Delay time. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Eureka Spool | Variable-speed stereo tape echo with drift. Sync follows patch tempo; Infinite holds echoes. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
-| Gx Delay stereo | Stereo delay with time, feedback and mix controls. | audio 2 in / 2 out | Ready |
-| Gx Digital delay | Mono digital delay with feedback and mix controls. | audio 1 in / 1 out | Ready |
-| Gx Digital delay stereo | Stereo digital delay with feedback and mix controls. | audio 2 in / 2 out | Ready |
-| Gx Duck delay | Mono delay that reduces the repeats while the input is playing. | audio 1 in / 1 out | Ready |
-| Gx Duck delay stereo | Stereo delay that reduces the repeats while the input is playing. | audio 2 in / 2 out | Ready |
-| Gx Echo Cat | Echo effect with controls for its repeat character. | audio 1 in / 1 out | Ready |
-| Gx Echo stereo | Stereo echo effect with feedback and level controls. | audio 2 in / 2 out | Ready |
-| Gx Multiband delay | Applies delay to separate frequency bands. | audio 1 in / 1 out | Ready |
-| Gx Multiband echo | Echo processing with separate frequency bands. | audio 1 in / 1 out | Ready |
-| Gx Tube delay | Tube-style delay effect. | audio 1 in / 1 out | Ready |
+| Gx Delay stereo | Stereo delay with time, feedback and mix controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
+| Gx Digital delay | Mono digital delay with feedback and mix controls. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
+| Gx Digital delay stereo | Stereo digital delay with feedback and mix controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
+| Gx Duck delay | Mono delay that reduces the repeats while the input is playing. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
+| Gx Duck delay stereo | Stereo delay that reduces the repeats while the input is playing. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
+| Gx Echo Cat | Echo effect with controls for its repeat character. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
+| Gx Echo stereo | Stereo echo effect with feedback and level controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
+| Gx Multiband delay | Applies delay to separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
+| Gx Multiband echo | Echo processing with separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
+| Gx Tube delay | Tube-style delay effect. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
 | Loo-pi | Eight stereo loops: record, overdub, multiply, insert, reverse, half and double speed, sync to the tempo or a loop. Open its page for loop cards and commands. | audio 2 in / 2 out; CV 0 in / 2 out | Ready |
 | Mist Beat Repeat | Clocked beat repeat: loops and slices recent audio, with pitch and feedback. | audio 2 in / 2 out; CV 12 in / 0 out | Needs adaptation: Most controls do nothing in this port: its beat-repeat settings are never set (see docs/20-clouds.md, the Mist modules). |
-| Mist Looper | Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
-| Stereo delay | Stereo echo with independent left/right delay times, feedback and filtering. | audio 2 in / 2 out | Ready |
-| Tempo delay | Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
+| Mist Looper | Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer. | audio 2 in / 2 out; CV 12 in / 0 out | Ready; tail rings on when bypassed |
+| Stereo delay | Stereo echo with independent left/right delay times, feedback and filtering. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
+| Tempo delay | Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready; tail rings on when bypassed |
 
 ## Reverb
 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
-| Dragonfly Hall | Hall reverb with early and late reflections, modulation, filters and decay controls. | audio 2 in / 2 out | Ready |
-| Dragonfly Plate | Plate reverb with selectable algorithms, damping and decay controls. | audio 2 in / 2 out | Ready |
-| Dragonfly Room | Room reverb with separate early and late levels, size, filters and decay controls. | audio 2 in / 2 out | Ready |
+| Dragonfly Hall | Hall reverb with early and late reflections, modulation, filters and decay controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
+| Dragonfly Plate | Plate reverb with selectable algorithms, damping and decay controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
+| Dragonfly Room | Room reverb with separate early and late levels, size, filters and decay controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Eureka Hush | Diffuse stereo reverb. Spread changes the stereo pattern; Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Eureka Slowmo | Long stereo reverb with size and diffusion controls. Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
-| Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready |
-| Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready |
+| Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
+| Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | IR Reverb - Mono | IR Reverb from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out | Ready |
 | IR Reverb - Mono to Stereo | IR Reverb from an impulse response file. Mono input and stereo output; use a stereo IR. | audio 1 in / 2 out | Ready |
 | IR Reverb - Stereo | IR Reverb from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses. | audio 2 in / 2 out | Ready |
-| Mist Oliverb | A special effects reverb with pitch-shifted, modulated tails. Hold sustains the tail. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
+| Mist Oliverb | A special effects reverb with pitch-shifted, modulated tails. Hold sustains the tail. | audio 2 in / 2 out; CV 12 in / 0 out | Ready; tail rings on when bypassed |
 
 ## Texture
 
@@ -302,7 +304,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Eureka Prism | Spectral gates sweep across the sound with resonance. Pause holds their phase. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Granulator - Mono | Chops the input into short overlapping grains for smeared, cloud-like textures. | audio 1 in / 1 out | Ready |
 | Granulator - Stereo | Stereo granulator: chops the input into overlapping grains for cloud-like textures. | audio 2 in / 2 out | Ready |
-| Mist | Granular texture from the live input. Freeze holds the buffer. Blend mixes in the clean input: all of it up to the middle, none at the top. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
+| Mist | Granular texture from the live input. Freeze holds the buffer. Blend mixes in the clean input: all of it up to the middle, none at the top. | audio 2 in / 2 out; CV 12 in / 0 out | Ready; tail rings on when bypassed |
 | Mist Spectral | Spectral processor that blurs, freezes and reshapes the input in the frequency domain. | audio 2 in / 2 out; CV 12 in / 0 out | Ready |
 | Power cut | Simulates turning off a turntable: the sound slows down and stops. | audio 1 in / 1 out | Ready |
 | Reverse (Reflector) | Reverse effect. Try a short fragment length for a weird tremolo. | audio 1 in / 1 out | Ready |

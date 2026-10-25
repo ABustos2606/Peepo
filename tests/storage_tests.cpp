@@ -214,6 +214,20 @@ void bundles() {
         Bundle with_self;
         check(read_bundle(selfish_text, with_self).empty() && find_module(bundle_graph(with_self), 90)->bypassed, "a self-bypassed module came back on");
     }
+    // A module that spills is saved with the engine's bypass and its mark, as the engine saves it.
+    {
+        ModuleDefinition reverb{"urn:test:spilled", "Spill", "Reverb", "", 0x81c9b8, {{"in", Direction::Input}, {"out", Direction::Output}}, {}};
+        reverb.spill_bypass = true;
+        register_definitions({reverb});
+        auto spilling = demo;
+        spilling.modules.push_back({91, reverb.uri, "Spill", 600, 24, false, true, {}, reverb.ports, {}});
+        const auto text = write_main_ttl(spilling);
+        const auto at = text.find("<m91>"), end = text.find(" .\n", at);
+        check(at != std::string::npos && text.find("ingen:enabled false", at) < end && text.find("peepo:spillBypass true", at) < end &&
+              text.find("peepo:spillBypass") == text.rfind("peepo:spillBypass"), "a spilling module was saved without its mark, or another module with one");
+        Bundle with_spill;
+        check(read_bundle(text, with_spill).empty() && find_module(bundle_graph(with_spill), 91)->bypassed, "a spilling module came back on");
+    }
     // Files are listed from the store's folder, by name, with the extension asked for.
     const auto files_root = fs::temp_directory_path() / "peepo-file-store-tests";
     fs::remove_all(files_root);

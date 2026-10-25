@@ -232,7 +232,8 @@ std::string write_main_ttl(const Graph& graph) {
         std::string level;
         for (const auto& p : m.parameters) if (p.symbol == general_output_symbol) level = " ;\n\tpeepo:outputLevel " + literal_number(p.value);
         text += iri(symbol) + "\n\ta ingen:Block ;\n\tlv2:prototype " + iri(m.uri) + " ;\n\tingen:canvasX " + literal_number(m.x) + " ;\n\tingen:canvasY " +
-                literal_number(m.y) + " ;\n\tpeepo:displayName " + ingen::string_literal(m.name) + (m.bypassed && !by_port ? " ;\n\tingen:enabled false" : "") + level +
+                literal_number(m.y) + " ;\n\tpeepo:displayName " + ingen::string_literal(m.name) + (m.bypassed && !by_port ? " ;\n\tingen:enabled false" : "") +
+                (known && known->spill_bypass ? " ;\n\tpeepo:spillBypass true" : "") + level +
                 (m.file.empty() ? std::string() : " ;\n\tpeepo:file " + ingen::string_literal(m.file)) + " .\n\n";
         // A plugin that bypasses itself is saved with its switch off instead.
         if (own_switch) text += iri(symbol + "/" + known->enable_symbol) + "\n\tingen:value " + literal_number(by_port && m.bypassed ? 0 : 1) + " .\n\n";

@@ -6,7 +6,8 @@
     python tools/document-catalogue.py --catalogue path/to/pi-export.json --date YYYY-MM-DD
 
 Only module presentation fields are interpreted here, in the same order as
-apply_catalogue_overlay: names, descriptions, categories, hidden and availability.
+apply_catalogue_overlay: names, descriptions, categories, hidden, availability and
+the spill bypass.
 No plugin compatibility or control definitions are inferred by this documenter.
 """
 import argparse
@@ -52,7 +53,7 @@ def present(module, rules):
         prefix = rule.get("strip_prefix", "")
         if prefix and len(module["name"]) > len(prefix) and module["name"].startswith(prefix):
             module["name"] = module["name"][len(prefix):]
-        for key in ("name", "description", "category"):
+        for key in ("name", "description", "category", "bypass"):
             if rule.get(key):
                 module[key] = rule[key]
         if "hidden" in rule:
@@ -124,6 +125,7 @@ def main():
              f"| Hidden | {len(hidden)} | Omitted from Add as a duplicate or redundant module; retained for saved patches. |",
              f"| Not installed | {len(missing)} | Selected reference identity without an installed implementation. |", "",
              "**File-based effects:** NAM, Cabinet and IR Reverb have file selectors. Each IR family offers Mono, Mono to Stereo and Stereo configurations. Stereo accepts mono/stereo IRs for separate left/right processing; a four-channel IR adds cross-channel responses. Alternate convolvers remain hidden for older patches. [File handling](29-parameters-files-tempo.md#model-and-ir-files-p83).", "",
+             "**Tails when bypassed:** a delay or reverb marked *tail rings on when bypassed* keeps sounding its echoes or reverb, without a click, when it is switched off or a scene turns it off; the rest stop at once. Each was marked after passing the tail check. [Scenes](44-scenes.md#spill-bypass-in-the-engine).", "",
              "**Reading connections:** counts are plugin connectors before Peepo's mono/stereo routing. CV connectors carry modulation. MIDI/events includes LV2 event/message ports, including file-selection messages; it does not imply implemented musical MIDI routing.", "",
              "## Browse by category", "", "| Category | Ready / listed |", "| --- | ---: |"]
     categories = [c for c in CATEGORIES if any(m["category"] == c for m in visible)]
@@ -142,6 +144,8 @@ def main():
             status = state(module)
             if status != "Ready":
                 status += ": " + module.get("reason", "See compatibility record.")
+            elif module.get("bypass") == "spill":
+                status += "; tail rings on when bypassed"
             lines.append("| " + " | ".join(map(cell, (name, module.get("description") or "Description not supplied by the plugin.", connections(module), status))) + " |")
         lines.append("")
     lines += ["## Hidden identities", "", "| Module | Category | Why it is hidden | Plugin identity |", "| --- | --- | --- | --- |"]

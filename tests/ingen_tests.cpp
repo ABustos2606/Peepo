@@ -23,6 +23,8 @@ const std::string switched = "urn:test:switched";
 const std::string self_bypassed = "urn:test:self-bypassed";
 // Reads a file and follows the tempo: it has an atom input for patch messages.
 const std::string filed = "urn:test:filed";
+// A reverb whose tail rings on through the engine's spill bypass.
+const std::string spilled = "urn:test:spilled";
 const std::string rdf_type(uri::rdf_type);
 std::string full(std::string_view space, std::string_view local) { return std::string(space) + std::string(local); }
 Value iri_value(std::string text) { return {Value::Kind::Uri, 0, false, std::move(text)}; }
@@ -46,7 +48,7 @@ struct FakeTransport final : Transport {
 struct FakeEngine {
     std::map<std::string, Properties> objects{{"ingen:/main", {}}};
     std::vector<std::pair<std::string, std::string>> arcs;
-    std::set<std::string> plugins{amp, switched, self_bypassed, filed};
+    std::set<std::string> plugins{amp, switched, self_bypassed, filed, spilled};
     std::vector<FakeTransport*> clients;
     bool reachable = true, fail_saves = false;
     // Write paths relative to <ingen:/>, as the engine does when built with serd 0.30 (Debian 12).
@@ -808,6 +810,44 @@ void relative_paths() {
     check(rig.result(Connect{{1, 3, "out", "in"}}).accepted && rig.graph().connections.size() == 3, "relative engine's new cable not seen");
     check(rig.result(NewPatch{"Again"}).accepted && rig.graph().modules.size() == 2 && rig.graph().connections.size() == 2, "replacing a patch on a relative engine failed");
 }
+// A module the catalogue marks "bypass": "spill" carries peepo:spillBypass on
+// its block however it got into the engine, so a save always keeps it; the
+// bypass itself stays the engine's.
+void spill_bypass() {
+    ModuleDefinition reverb{spilled, "Spill", "Reverb", "", 0x81c9b8, {{"in", Direction::Input}, {"out", Direction::Output}},
+                            {{"gain", "Gain", "dB", ParameterKind::Continuous, -90, 24, 0}}};
+    reverb.spill_bypass = true;
+    register_definitions({{amp, "Amp", "Utility", "Amplifier", 0x93a4b5, {{"in", Direction::Input}, {"out", Direction::Output}},
+                           {{"gain", "Gain", "dB", ParameterKind::Continuous, -90, 24, 0}}}, reverb});
+    FakeEngine fake;
+    Rig rig(fake);
+    rig.engine->connect(); rig.settle();
+    const auto mark = full(uri::peepo, "spillBypass");
+    const auto marked = [&](InstanceId id) {
+        const auto* value = property(fake, "ingen:/main/m" + std::to_string(id), mark);
+        return value && (value->kind == Value::Kind::Boolean ? value->boolean : value->number != 0);
+    };
+    check(rig.result(NewPatch{"Spill"}).accepted && rig.result(AddModule{spilled, 240, 24}).accepted && rig.result(AddModule{amp, 240, 144}).accepted, "modules refused");
+    const auto reverb_id = rig.graph().modules[2].id, amp_id = rig.graph().modules[3].id;
+    check(marked(reverb_id) && !property(fake, "ingen:/main/m" + std::to_string(amp_id), mark), "the mark is not on the spilling block alone");
+    check(rig.result(SetBypass{reverb_id, true}).accepted && find_module(rig.graph(), reverb_id)->bypassed &&
+          !property(fake, "ingen:/main/m" + std::to_string(reverb_id), full(uri::ingen, "enabled"))->boolean && marked(reverb_id),
+          "a spilling module is not bypassed by the engine, or lost its mark");
+    // The session snapshot builds its blocks again, marked.
+    check(rig.result(SaveGraph{}).accepted && rig.result(NewPatch{"Empty"}).accepted && rig.result(LoadSession{}).accepted, "snapshot round trip failed");
+    check(marked(reverb_id) && find_module(rig.graph(), reverb_id)->bypassed, "the restored block lost its mark or its bypass");
+    // A patch saved before the module spilled is marked as it loads.
+    const std::string bundle = "file:///patches/p-spill/r000001.ingen";
+    check(rig.result(SaveGraph{SaveScope::Persistent, true, bundle, "p-spill"}).accepted, "save failed");
+    auto& saved = fake.files.at(bundle).first.at("ingen:/main/m" + std::to_string(reverb_id));
+    check(std::erase_if(saved, [&](const auto& e) { return e.first == mark; }) == 1, "the saved patch lacks the mark");
+    std::vector<SavedBlock> blocks;
+    for (const auto& m : rig.graph().modules) if (!m.fixed) blocks.push_back({"m" + std::to_string(m.id), m.uri, m.name});
+    check(rig.result(NewPatch{"Elsewhere"}).accepted, "new patch failed");
+    const auto loaded = rig.result(LoadPatch{bundle, blocks, "p-spill"});
+    check(loaded.accepted && marked(reverb_id) && !property(fake, "ingen:/main/m" + std::to_string(amp_id), mark) && !rig.graph().dirty,
+          "an old patch was not marked as it loaded, or the load left it modified");
+}
 void tuner_monitor() {
     using namespace peepo;
     using namespace peepo::ingen;
@@ -1020,6 +1060,7 @@ int main() {
         turtle_and_protocol();
         adapter();
         relative_paths();
+        spill_bypass();
         midi_cables();
         midi_learn();
         tuner_monitor();

@@ -298,7 +298,7 @@ std::string apply_catalogue_overlay(std::string_view text, std::vector<ModuleDef
         if (!rule.issue.empty()) return rule.issue;
         if (!color.empty() && !parse_color(color, parsed)) return rule.where + ": \"color\" must look like #a6c8ec";
         if (category == "Endpoint") return rule.where + ": that category is reserved";
-        if (!bypass.empty() && bypass != "engine" && bypass != "port") return rule.where + ": \"bypass\" must be engine or port";
+        if (!bypass.empty() && bypass != "engine" && bypass != "port" && bypass != "spill") return rule.where + ": \"bypass\" must be engine, port or spill";
         // A rule may not hand out what the export withheld: only the engine's
         // own metadata can say a plugin is loadable.
         if (has_availability && availability == Availability::Available) return rule.where + ": an overlay can restrict availability, not grant it";
@@ -367,7 +367,12 @@ std::string apply_catalogue_overlay(std::string_view text, std::vector<ModuleDef
             if (!output.empty()) d.output_symbol = output;
             if (file_entry) d.file = file;
             if (!tempo.empty()) d.tempo_symbol = tempo;
-            if (!bypass.empty()) d.port_bypass = bypass == "port";
+            // A module bypasses through its own switch or spills through the
+            // engine's, never both: "engine" clears either, but one rule may
+            // not turn the one into the other.
+            if ((bypass == "spill" && d.port_bypass) || (bypass == "port" && d.spill_bypass))
+                return rule.where + ": " + d.uri + " cannot be bypassed both through its own switch and by spilling";
+            if (!bypass.empty()) { d.port_bypass = bypass == "port"; d.spill_bypass = bypass == "spill"; }
         }
     }
     // Families: plugins doing one job, offered in Add as one card with a pill
@@ -419,6 +424,9 @@ std::string apply_catalogue_overlay(std::string_view text, std::vector<ModuleDef
             d.parameters.push_back(general_output_parameter());
         }
         if (d.port_bypass && d.enable_symbol.empty()) return d.uri + ": it is bypassed through its own switch but has none";
+        // Spilling adds the plugin's audio to the dry signal; it needs some.
+        if (d.spill_bypass && std::none_of(d.ports.begin(), d.ports.end(), [](const Port& p) { return p.type == PortType::Audio && p.direction == Direction::Output; }))
+            return d.uri + ": it spills when bypassed but has no audio output";
         // A tempo control: a shown number whose range reaches into the tempo range.
         if (!d.tempo_symbol.empty()) {
             const auto it = std::find_if(d.parameters.begin(), d.parameters.end(), [&](const Parameter& p) { return p.symbol == d.tempo_symbol; });

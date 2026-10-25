@@ -30,7 +30,7 @@ The stand-in engine in `tests/ingen_tests.cpp` covers what a live run cannot pro
 | IN and OUT modules | The graph's own audio ports `in_l`, `in_r`, `out_l`, `out_r`, created on first connection. They appear to JACK as `ingen:in_l` and so on. |
 | Module with ID *n* | Block `ingen:/main/m`*n*. A block with any other name gets an unused number for as long as it exists. |
 | Module name, position | `urn:peepo:ns#displayName`, `ingen:canvasX`, `ingen:canvasY` on the block |
-| Software bypass | `ingen:enabled false` on the block, with a plugin's own on/off control kept at 1; for a plugin the overlay marks `"bypass": "port"`, that control at 0 and the block left enabled (see [catalogue export](16-catalogue-export.md)) |
+| Software bypass | `ingen:enabled false` on the block, with a plugin's own on/off control kept at 1; for a plugin the overlay marks `"bypass": "port"`, that control at 0 and the block left enabled (see [catalogue export](16-catalogue-export.md)). A plugin marked `"bypass": "spill"` has `urn:peepo:ns#spillBypass true` on its block from the moment it is added, restored or loaded, and the engine's bypass then lets its tail ring on (engine patch 0013) |
 | Parameter | `ingen:value` on a control input port. Name, unit and range come from the catalogue; the engine supplies only the value. |
 | Cable | One `ingen:Arc` between two ports |
 | Patch name | `urn:peepo:ns#patchName` on the graph, set with `patch:context ingen:internalContext` |

@@ -125,6 +125,61 @@ int main(int argc, char** argv) {
         const auto event = a->result(LoadPatch{stored.location, saved_blocks(stored.bundle), stored.id, stored.bundle.tempo});
         return check(event.accepted, "load it", event.message) ? 0 : 1;
     }
+    // For the spill bypass (P13.4), with PEEPO_OVERLAY marking the module named
+    // "bypass": "spill": the engine saves the adapter's mark, and a patch saved
+    // without it is marked as it loads.
+    if (mode == "--spill" && argc > 4) {
+        const auto* known = definition(argv[4]);
+        if (!check(known && known->spill_bypass, "the overlay marks the module to spill", argv[4])) return 1;
+        const std::filesystem::path root = std::filesystem::temp_directory_path() / "peepo-live-patches" / "spill";
+        std::error_code cleared;
+        std::filesystem::remove_all(root, cleared);
+        PatchStore store(root);
+        if (!check(store.open().empty(), "patch store opens")) return 1;
+        a->ok(NewPatch{"Spill"}, "new patch");
+        a->ok(AddModule{argv[4], 240, 24}, "add the spilling module");
+        a->ok(AddModule{amp, 240, 144}, "and one that does not spill");
+        const auto spilling = [&]() { const auto& ms = a->graph().modules; return std::find_if(ms.begin(), ms.end(), [&](const Module& m) { return m.uri == argv[4]; }); };
+        a->ok(SetBypass{spilling()->id, true}, "bypass it");
+        const auto marks = [](const std::filesystem::path& bundle) {
+            std::ifstream in(bundle / "main.ttl");
+            unsigned found = 0;
+            for (std::string line; std::getline(in, line);) found += line.find("spillBypass") != std::string::npos;
+            return found;
+        };
+        const auto save = [&](const std::string& id) {
+            std::string issue;
+            auto staging = store.stage(id, issue);
+            return staging && a->result(SaveGraph{SaveScope::Persistent, true, staging->location, id}).accepted && store.publish(*staging).empty();
+        };
+        const auto id = store.new_id();
+        const auto found = save(id) ? marks(store.find(id)->path) : 0;
+        check(found == 1, "the engine saves the mark on the spilling block alone", std::to_string(found) + " marked");
+        // The same patch as saved before the module spilled.
+        {
+            const auto source = store.find(id)->path;
+            const auto old = root / "p-unmarked" / "r000001.ingen";
+            std::filesystem::create_directories(old.parent_path());
+            std::filesystem::copy(source, old, std::filesystem::copy_options::recursive);
+            std::ifstream in(source / "main.ttl");
+            std::vector<std::string> kept;
+            for (std::string line; std::getline(in, line);) {
+                // Its identity goes too: the copy is a patch of its own.
+                if (line.find("spillBypass") == std::string::npos && line.find("patchId") == std::string::npos) { kept.push_back(line); continue; }
+                if (line.ends_with(" .") && !kept.empty() && kept.back().ends_with(" ;")) kept.back().replace(kept.back().size() - 2, 2, " .");
+            }
+            std::ofstream out(old / "main.ttl", std::ios::trunc);
+            for (const auto& line : kept) out << line << "\n";
+        }
+        const auto unmarked = store.find("p-unmarked");
+        check(unmarked && unmarked->issue.empty() && marks(unmarked->path) == 0, "a copy without the mark is stored", unmarked ? unmarked->issue : "missing");
+        a->ok(NewPatch{"Elsewhere"}, "another patch");
+        const auto loaded = a->result(LoadPatch{unmarked->location, saved_blocks(unmarked->bundle), "p-unmarked"});
+        check(loaded.accepted && !a->graph().dirty && a->graph().modules.size() == 4 && spilling() != a->graph().modules.end() && spilling()->bypassed, "it loads, bypassed and unmodified", loaded.message);
+        check(save("p-unmarked") && marks(store.find("p-unmarked")->path) == 1, "saved again, it carries the mark");
+        std::cout << "SUMMARY " << (failures ? std::to_string(failures) + " failed" : std::string("spill bypass checks passed")) << std::endl;
+        return failures ? 1 : 0;
+    }
     // For the MIDI settings check: what plays now; stored patches for program
     // change; and MIDI learn, waiting for a probe to move a controller.
     if (mode == "--state") {

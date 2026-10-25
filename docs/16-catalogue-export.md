@@ -27,6 +27,8 @@ The catalogue now records such a control as the module's on/off switch. Adding t
 
 **A plugin that bypasses itself.** The engine's bypass copies input to output and stops calling the plugin. A plugin that keeps working while bypassed (a delay whose echoes ring on, or whose memory keeps recording, such as Discipline) needs the opposite. An overlay rule with `"bypass": "port"` marks it: software bypass, stomp bypass and saved patches then set the plugin's own switch to 0, and the block stays enabled. The rule is refused for a plugin with no such switch. `"bypass": "engine"` restores the usual behaviour.
 
+**A delay or reverb whose tail rings on.** `"bypass": "spill"` keeps the engine's bypass but makes it spill (engine patch 0013, [Scenes](44-scenes.md#spill-bypass-in-the-engine)): the plugin keeps running on silence and its tail is added to the dry signal until it has died away. The adapter puts `peepo:spillBypass true` on the block when it adds the module, rebuilds a snapshot or loads a stored patch, so the engine saves it with the patch. The rule is refused for a module with no audio output, and beside `"bypass": "port"`, from the same rule list or another rule; `"bypass": "engine"` clears either. Marked on the 21 delays and reverbs that passed the tail check in WSL (25 October 2026, [record](evidence/scenes-results.md#spill-bypass-in-the-catalogue-p134)); the [module list](33-module-list.md) says *tail rings on when bypassed* for each.
+
 ## How it works
 
 | Part | Role |

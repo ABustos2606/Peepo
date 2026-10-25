@@ -1,4 +1,4 @@
-# Scenes: bypass tails and atomic changes, measured (P13.1, P13.2), and the spill bypass (P13.3)
+# Scenes: bypass tails and atomic changes, measured (P13.1, P13.2), the spill bypass (P13.3) and its marks in the catalogue (P13.4)
 
 24 October 2026, WSL2 Debian, JACK dummy backend, 48 kHz, 128 frames. Engine: upstream Ingen 13a045d0 + Poly's MIDI-learn fix + project patches 0001-0012, rebuilt in `/opt/peepo` for this record (it is the first WSL build with 0011 and 0012). Script: `tools/ingen-spike/27-scenes.sh` / `27-scenes.py`. Raw output: [scenes-run.txt](scenes-run.txt); data: [third-party tails](scenes-tails-thirdparty.json), [own plugins' tails](scenes-tails-own.json), [bundles, plain engine](scenes-atomic-plain.json), [bundles, `-a`](scenes-atomic-a.json).
 
@@ -136,3 +136,23 @@ Against the engine's bypass (P13.1): every module with a tail at its defaults (1
 **Our plugins' own switch, off and on:** measured in the same run (their bypass is unchanged by 0013). Tails ring on and nothing replays, but switching back on adds to the click: Eureka Hush 20.0 dB, Granny 22.8 dB, Prism 27.9 dB (was 10.7, 12.7 and 23.3 switching off only); the others stay at 13 to 15 dB. Euclidelay measured 56.5 dB once and 14.4 dB in the full run. For P13.5, by ear on the Pi.
 
 **Not covered:** the modules not installed in WSL (listed above) and the arm64 build's behaviour; both in P13.10.
+
+## Spill bypass in the catalogue (P13.4)
+
+25 October 2026, same WSL setup (engine patches 0001-0013, `-a`). Raw output: [scenes-p134-run.txt](scenes-p134-run.txt); data: [scenes-p134.json](scenes-p134.json).
+
+**What changed:** the overlay accepts `"bypass": "spill"` (`ModuleDefinition::spill_bypass`). It is refused for a module with no audio output, and beside `"bypass": "port"`, whether the two come from one rule list or from two rules; `"bypass": "engine"` clears either. The adapter puts `peepo:spillBypass true` on the block when it adds the module and when it rebuilds a session snapshot, and sets it on every marked block after a stored patch loads, before reading the graph back, so a patch saved before its module was marked carries the mark from its next save. The simulator's bundle writes it too. The bypass itself is unchanged: `ingen:enabled false`, which the engine now spills.
+
+**Settings for the modules silent at their defaults** (now in `27-scenes.py`'s `SETTINGS`): Gx Echo Cat Head 1 and 2 on, Swell 0.8, Sustain 0.3; Gx Echo stereo both levels 60 and times 400 ms; MDA DubDelay Delay 0.3 and FX Mix 0.6 (at 0.1 it measured nothing in the window: the delay glides from its default); Dragonfly Plate Decay 3 s, Wet 50; Dragonfly Room Decay 3 s, Late 50; Gx Multiband reverb every room size 0.95 and wet 100. With Sustain 0.6 Echo Cat's echoes outlasted the 20 s wait, so it never slept within it; at 0.3 they end after 3 s and it sleeps. **Mist Beat Repeat** repeats only on a trigger at its CV input, so a burst gives it no tail at any setting tried; it is not marked.
+
+**The tail check, with the overlay's marks:** `27-scenes.sh tails`, which now marks a block exactly when the overlay says `"spill"`, as the adapter does. Every one of the 21 marked modules rings on (within 0.7 dB of the module left on), clicks at most 18.4 dB switching off and on (Gx Tube delay; Gx Multiband echo, Multiband reverb and Shimmizita 16 dB), never replays, and falls back to about the empty engine's CPU after its tail. Mist Spectral (unmarked) still cuts and clicks under the dumb bypass, as before; Vinyl makes nothing at its defaults.
+
+| Marked `"bypass": "spill"` | Modules |
+| --- | --- |
+| Delay (14) | Stereo delay, MDA DubDelay, Tempo delay, Mist Looper, Gx Delay stereo, Gx Digital delay (mono and stereo), Gx Duck delay (mono and stereo), Gx Echo stereo, Gx Echo Cat, Gx Multiband delay, Gx Multiband echo, Gx Tube delay |
+| Reverb (6) | Dragonfly Hall, Plate and Room, Gx Multiband reverb, Gx Shimmizita, Mist Oliverb |
+| Texture (1) | Mist: a long memory and its own reverb; rings on like the reverbs |
+
+**Not marked:** our own plugins (`"bypass": "port"`, P13.5); Mist Spectral and Vinyl (they sound, or cost CPU, by themselves); Mist Beat Repeat (no tail without a trigger); CV delay (no audio); and the modules not installed in WSL: Bitcrushed delay, the three IR reverbs, and the AVW, TAP and infamous Texture modules. Those wait for the tail check on the Pi (P13.10).
+
+**Through the engine's own save and load** (`peepo_ingen_live --spill http://drobilla.net/plugins/mda/Delay`, with `PEEPO_OVERLAY`): Stereo delay and an unmarked amplifier added and the delay bypassed; Ingen's `main.ttl` has `peepo:spillBypass true` on the delay's block alone; a copy with the mark removed loads bypassed and unmodified, and saved again has the mark. `07-adapter.sh` passes unchanged (Unix socket, TCP, the audio check and the engine restart). Unit tests: `peepo_catalogue_tests` (the rule, its refusals, and the 21 marks in the fixture, none of them Mist Spectral or Vinyl), `peepo_ingen_tests` (the mark on add, on bypass, after a snapshot restore and after loading an unmarked patch, which stays unmodified), `peepo_storage_tests` (the simulator's bundle). Stopping the engine after the live check ended in a segmentation fault in its exit handler, as already recorded before patches 0012 and 0013 ([NAM](nam-results.txt), [Pi engine check](pi-engine-check-results.txt)).

@@ -97,6 +97,11 @@ struct ModuleDefinition {
     // echoes ring on or whose memory keeps recording, which the engine's
     // bypass would stop.
     bool port_bypass = false;
+    // Bypassed by the engine, which keeps the plugin running on silence and
+    // adds its tail to the dry signal (urn:peepo:ns#spillBypass, engine patch
+    // 0013): for a delay or reverb whose tail should ring on. Never beside
+    // port_bypass.
+    bool spill_bypass = false;
     // One card in Add for several plugins that do the same job, such as a
     // mono and a stereo compressor: the card's name and text, and this
     // plugin's pill on it, in the order the overlay lists them. Empty for a

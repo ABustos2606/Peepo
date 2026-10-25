@@ -197,6 +197,16 @@ def present(module, rules):
 SETTINGS = {
     "https://github.com/ABustos2606/aura#aura": {"wet_on": 1},
     "https://github.com/ABustos2606/drizzle#drizzle": {"feedback": 0.6, "reverb": 0.5},
+    # Third-party modules with no tail at their defaults, for the tail check
+    # before each is marked "bypass": "spill" (P13.4).
+    "http://guitarix.sourceforge.net/plugins/gxechocat#echocat": {"head1": 1, "head2": 1, "swell": 0.8, "sustain": 0.3},
+    "http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo": {"level_l": 60, "level_r": 60, "timt_l": 400, "timt_r": 400},
+    "http://drobilla.net/plugins/mda/DubDelay": {"delay": 0.3, "fx_mix": 0.6},
+    "http://polyeffects.com/lv2/polyclouds#beat_repeat": {"reverb_param": 0.9},
+    "urn:dragonfly:plate": {"decay": 3, "early_level": 50},
+    "urn:dragonfly:room": {"decay": 3, "late_level": 50},
+    "http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_": dict(
+        [("ROOMSIZE%d" % b, 0.95) for b in range(1, 6)] + [("WET_DRY%d" % b, 100) for b in range(1, 6)]),
 }
 # Measured a second time with these values, under a name of their own.
 VARIANTS = {
@@ -232,7 +242,8 @@ class Block:
                 return status
             if self.enable:
                 c.set(self.path + "/" + self.enable, "ingen:value", number(1))
-            if SPILL and not self.by_port:
+            # As the adapter does for a module the overlay marks "spill".
+            if (SPILL and not self.by_port) or self.module.get("bypass") == "spill":
                 c.set(self.path, "peepo:spillBypass", "true")
             for symbol, value in self.module.get("settings", {}).items():
                 c.set(self.path + "/" + symbol, "ingen:value", number(value))
@@ -419,14 +430,15 @@ def tails(catalogue, overlay, only):
     with Engine() as c:
         c.disconnect(MAIN + "in_l", MAIN + "out_l")
     print("round trip without a module: %d frames" % latency, flush=True)
-    idle = cpu_over(3.0) if SPILL else None
-    if SPILL:
+    spilling = SPILL or any(m.get("bypass") == "spill" for m in modules)
+    idle = cpu_over(3.0) if spilling else None
+    if spilling:
         print("engine CPU with no module: %.1f%%" % idle, flush=True)
 
     results = []
     for m in modules:
         r = {"uri": m["uri"], "name": m["name"], "category": m["category"],
-             "bypass": "port" if m.get("bypass") == "port" else "engine",
+             "bypass": m.get("bypass") if m.get("bypass") in ("port", "spill") else "spill" if SPILL else "engine",
              "audio": "%d in / %d out" % (len(Block(m).ins), len(Block(m).outs))}
         on, status = run_tail(probe, m, latency, False)
         if on is None:
@@ -438,7 +450,7 @@ def tails(catalogue, overlay, only):
         click, side = run_click(probe, m)
         before = run_replay(probe, m, False)
         after = run_replay(probe, m, True)
-        if SPILL and r["bypass"] == "engine":
+        if r["bypass"] == "spill":
             r["sleep"] = run_sleep(probe, m)
             r["sleep"]["cpu_no_module"] = round(idle, 1)
         r.update({"settings": m["settings"], "tail_on_dbfs": round(db(on), 1), "tail_bypassed_dbfs": round(db(off), 1),

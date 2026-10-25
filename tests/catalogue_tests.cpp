@@ -117,7 +117,7 @@ void overlay() {
 
     // A plugin that bypasses itself is bypassed through its own switch, which it must have.
     {
-        std::vector<ModuleDefinition> own{{"urn:test:self", "Self", "Delay", "", 0x7bbaed, {}, {}}, {"urn:test:plain", "Plain", "Delay", "", 0x7bbaed, {}, {}}};
+        std::vector<ModuleDefinition> own{{"urn:test:self", "Self", "Delay", "", 0x7bbaed, {}, {}}, {"urn:test:plain", "Plain", "Delay", "", 0x7bbaed, {{"out", Direction::Output}}, {}}};
         own[0].enable_symbol = "enabled";
         const auto bypass = [](const char* uri, const char* how) {
             return std::string(R"({"format": "peepo-catalogue-overlay", "version": 1, "rules": [{"uri": ")") + uri + R"(", "bypass": ")" + how + R"("}]})";
@@ -126,6 +126,21 @@ void overlay() {
         check(apply_catalogue_overlay(bypass("urn:test:self", "engine"), own).empty() && !own[0].port_bypass, "bypass could not be given back to the engine");
         check(!apply_catalogue_overlay(bypass("urn:test:plain", "port"), own).empty() && !apply_catalogue_overlay(bypass("urn:test:self", "both"), own).empty() && !own[0].port_bypass,
               "an impossible bypass accepted");
+        // Spilling keeps the engine's bypass, so a plugin with no switch of its own may spill.
+        check(apply_catalogue_overlay(bypass("urn:test:plain", "spill"), own).empty() && own[1].spill_bypass && !own[1].port_bypass && !own[0].spill_bypass,
+              "a spill bypass not applied");
+        check(apply_catalogue_overlay(bypass("urn:test:plain", "engine"), own).empty() && !own[1].spill_bypass, "a spill bypass could not be given back to the engine");
+        // Never beside the plugin's own switch, in one rule list or across two.
+        const auto both = [](const char* first, const char* second) {
+            return std::string(R"({"format": "peepo-catalogue-overlay", "version": 1, "rules": [{"uri": "urn:test:self", "bypass": ")") + first +
+                   R"("}, {"match": "urn:test:", "bypass": ")" + second + R"("}]})";
+        };
+        check(!apply_catalogue_overlay(both("port", "spill"), own).empty() && !apply_catalogue_overlay(both("spill", "port"), own).empty() &&
+              !own[0].port_bypass && !own[0].spill_bypass && !own[1].spill_bypass, "a spill bypass accepted beside the plugin's own switch");
+        check(apply_catalogue_overlay(both("port", "engine"), own).empty() && !own[0].port_bypass, "the engine's bypass could not replace the plugin's own switch");
+        // Spilling adds the plugin's audio to the dry signal: it needs an audio output.
+        std::vector<ModuleDefinition> silent{{"urn:test:cv", "CV", "Control", "", 0xe3c770, {{"cv", Direction::Output, 1, PortType::Cv}}, {}}};
+        check(!apply_catalogue_overlay(bypass("urn:test:cv", "spill"), silent).empty() && !silent[0].spill_bypass, "a module with no audio output accepted as spilling");
     }
 
     // Per-control rules: listed controls first, the rest in their own order.
@@ -282,6 +297,15 @@ void fixture(const std::string& folder) {
                   d.parameters[12].symbol == "is_enabled4" && d.parameters[12].kind == ParameterKind::Toggle, "Euclidean loops not ordered or switches not marked");
         }
     }
+    // Delays and reverbs whose tails passed the check ring on when bypassed
+    // (P13.4); never a module that sounds from silence or keeps costing CPU.
+    unsigned spilling = 0;
+    for (const auto& d : offered) if (d.spill_bypass) {
+        ++spilling;
+        check((d.category == "Delay" || d.category == "Reverb" || d.category == "Texture") && !d.port_bypass, ("a module spills that is not a delay or reverb: " + d.uri).c_str());
+        check(d.uri != "http://polyeffects.com/lv2/polyclouds#spectral" && d.uri != "http://calf.sourceforge.net/plugins/Vinyl", ("a module that sounds by itself spills: " + d.uri).c_str());
+    }
+    check(spilling == 21, ("the overlay should mark 21 modules to spill, not " + std::to_string(spilling)).c_str());
     for (const auto& d : offered)
         if (d.uri.find("polyclouds#") != std::string::npos)
             check(d.parameters.size() == 12 && std::none_of(d.parameters.begin(), d.parameters.end(), [](const Parameter& p) { return p.kind == ParameterKind::Continuous && (p.symbol == "freeze_param" || p.symbol == "pitch_param"); }),

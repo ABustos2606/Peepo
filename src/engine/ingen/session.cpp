@@ -100,9 +100,11 @@ std::string binding_literal(const MidiBinding& b) {
     const char* field = b.kind == MidiBinding::Kind::Controller ? "controllerNumber" : b.kind == MidiBinding::Kind::Note ? "noteNumber" : "channel";
     return "[\n\t\ta <" + value.text + "> ;\n\t\tmidi:" + field + " \"" + std::to_string(static_cast<int>(value.number)) + "\"^^xsd:int\n\t]";
 }
-std::string block(const std::string& plugin, const std::string& name, int x, int y, bool bypassed) {
+// A block whose plugin spills when bypassed carries the mark from the start,
+// so the engine saves it with the patch.
+std::string block(const std::string& plugin, const std::string& name, int x, int y, bool bypassed, bool spill) {
     return "a ingen:Block ;\n\t\tlv2:prototype <" + plugin + "> ;\n\t\t" + position(x, y) + " ;\n\t\tpeepo:displayName " + string_literal(name) +
-           (bypassed ? " ;\n\t\tingen:enabled false" : "");
+           (bypassed ? " ;\n\t\tingen:enabled false" : "") + (spill ? " ;\n\t\tpeepo:spillBypass true" : "");
 }
 }
 Session::Session(Options options) : options_(std::move(options)) { rebuild(); }
@@ -742,6 +744,13 @@ void Session::proceed(Transaction& done) {
     if (done.next == Transaction::Next::Loaded) {
         // A load is answered before the loaded graph is announced. A Get sent
         // now is queued behind it, so its answer is the loaded graph.
+        // A patch saved before its modules spilled is marked now, before the
+        // Get, so what is read back is what the next save writes.
+        for (const auto& block : next.expected)
+            if (const auto* known = definition(block.plugin); known && known->spill_bypass) {
+                const auto number = sequence();
+                send(next, set(number, child(main_path, block.symbol), "peepo:spillBypass", "true"), number);
+            }
         next.replaces = next_sequence_;
         send(next, get, main_path);
         next.verify = true;
@@ -802,7 +811,7 @@ std::string Session::create_graph(const Graph& graph, Transaction& to) {
         const auto number = sequence();
         const auto* known = definition(m.uri);
         const bool own_switch = known && !known->enable_symbol.empty(), by_port = own_switch && known->port_bypass;
-        send(to, put(number, path, block(m.uri, m.name, m.x, m.y, m.bypassed && !by_port)), number);
+        send(to, put(number, path, block(m.uri, m.name, m.x, m.y, m.bypassed && !by_port, known && known->spill_bypass)), number);
         if (own_switch) {
             const double on = by_port && m.bypassed ? 0 : 1;
             set_local(child(path, known->enable_symbol), "ingen:value", value_key, float_literal(on), ingen::number(on));
@@ -872,7 +881,7 @@ std::string Session::plan(const Command& command, Transaction& to) {
             if (next_instance_ == std::numeric_limits<InstanceId>::max()) return "Instance ID space exhausted";
             const auto number = sequence();
             const auto path = child(main_path, "m" + std::to_string(next_instance_++));
-            send(to, put(number, path, block(c.uri, numbered_name(graph_, known->name), c.x, c.y, false)), number);
+            send(to, put(number, path, block(c.uri, numbered_name(graph_, known->name), c.x, c.y, false, known->spill_bypass)), number);
             // Some plugins start switched off and stay silent until told otherwise.
             if (!known->enable_symbol.empty()) set_local(child(path, known->enable_symbol), "ingen:value", value_key, float_literal(1), ingen::number(1));
             for (const auto& symbol : known->project_defaults)
