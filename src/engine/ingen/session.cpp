@@ -37,6 +37,8 @@ const std::string file_key = iri(uri::peepo, "file");
 const std::string binding_key = iri(uri::midi, "binding");
 // One graph property per pinned control: peepo:control-enc1 "parameter|m3|...".
 const std::string control_prefix = iri(uri::peepo, "control-");
+// Scenes (docs/44-scenes.md): peepo:scene-count, -current, -params, and -N-name and -N for each.
+const std::string scene_prefix = iri(uri::peepo, "scene-");
 // Where the engine may write or read a bundle: a plain file URI to a .ingen
 // directory. Ingen does not decode escaped characters consistently.
 bool bundle_location(const std::string& location) {
@@ -133,7 +135,7 @@ void Session::closed(std::string reason, bool retrying) {
     // A lost connection cancels requests; reconnecting never applies stale edits.
     fail_edits("Engine disconnected");
     transactions_.clear(); sequences_.clear(); outgoing_.clear(); buffer_.clear(); expected_copies_.clear();
-    depth_ = 0; cpu_.reset(); fault_.reset(); sent_modified_.reset();
+    depth_ = 0; cpu_.reset(); fault_.reset(); sent_modified_.reset(); sent_scenes_.clear();
     tuner_.reset(); tuner_port_.clear(); tuner_frequency_.reset();
     looper_.reset(); looper_ports_ = {}; looper_status_ = {};
     learning_.clear(); cancelled_learn_.clear();
@@ -499,7 +501,10 @@ void Session::finish(Transaction& done) {
         emit(done.request, ok, std::move(message), ok && done.snapshot);
         // Once nothing is in flight the mirror says what the engine holds,
         // including a marker another client changed.
-        if (std::none_of(transactions_.begin(), transactions_.end(), [](const auto& t) { return t.second.purpose == Purpose::Edit; })) sent_modified_.reset();
+        if (std::none_of(transactions_.begin(), transactions_.end(), [](const auto& t) { return t.second.purpose == Purpose::Edit; })) {
+            sent_modified_.reset();
+            sent_scenes_.clear();
+        }
         break;
     }
     case Purpose::Sync:
@@ -689,6 +694,27 @@ void Session::rebuild() {
                 graph.assignments.push_back(std::move(a));
             }
         }
+    if (const auto root = objects_.find(main_path); root != objects_.end()) {
+        SceneProperties stored;
+        auto text = [&](const std::string& local) {
+            const auto* value = find(root->second, scene_prefix + local);
+            return value && value->kind == Value::Kind::String ? value->text : std::string();
+        };
+        auto whole = [&](const std::string& local) {
+            const auto value = finite(find(root->second, scene_prefix + local));
+            return value && *value >= 0 ? static_cast<int>(std::min(*value, double(max_scenes))) : 0;
+        };
+        stored.count = whole("count");
+        stored.current = whole("current");
+        stored.parameters = text("params");
+        for (int i = 1; i <= stored.count; ++i) stored.scenes.emplace_back(text(std::to_string(i) + "-name"), text(std::to_string(i)));
+        // An entry whose block is gone is an orphan: kept, never applied.
+        graph.scenes = decode_scenes(stored, [&](const std::string& block) {
+            const auto id = ids_.find(child(main_path, block));
+            return id == ids_.end() ? InstanceId{0} : id->second;
+        });
+        fit_scenes(graph);
+    }
     graph_ = std::move(graph);
 }
 
@@ -731,6 +757,68 @@ std::string Session::control_text(const std::vector<Assignment>& held) const {
         if (const auto path = paths_.find(a.module); path != paths_.end())
             text += (text.empty() ? "" : " ") + encode_assignment(a, symbol_of(path->second));
     return text;
+}
+void Session::bypass_block(Transaction& to, const Module& m, const std::string& path, bool bypassed) {
+    // The engine's bypass passes each input to its output. A plugin's own
+    // switch would only mute it, so that stays on, unless the plugin bypasses
+    // itself: then the switch is the bypass, and the block keeps running.
+    const auto* known = definition(m.uri);
+    const bool by_port = known && !known->enable_symbol.empty() && known->port_bypass;
+    if (known && !known->enable_symbol.empty()) set_value(to, path, known->enable_symbol, by_port && bypassed ? 0 : 1);
+    const bool enabled = by_port || !bypassed;
+    const auto number = sequence();
+    send(to, set(number, path, "ingen:enabled", enabled ? "true" : "false"), number);
+    to.local.push_back({path, enabled_key, {Value::Kind::Boolean, 0, enabled, {}}});
+}
+void Session::set_value(Transaction& to, const std::string& path, const std::string& symbol, double value) {
+    const auto number = sequence();
+    if (symbol == general_output_symbol) {
+        send(to, set(number, path, "peepo:outputLevel", float_literal(value)), number);
+        to.local.push_back({path, output_level_key, ingen::number(value)});
+    } else {
+        send(to, set(number, child(path, symbol), "ingen:value", float_literal(value)), number);
+        to.local.push_back({child(path, symbol), value_key, ingen::number(value)});
+    }
+}
+void Session::write_scenes(Transaction& to, const Scenes& scenes, bool current) {
+    auto block_of = [&](InstanceId id) {
+        if (current)
+            if (const auto path = paths_.find(id); path != paths_.end()) return symbol_of(path->second);
+        return "m" + std::to_string(id);
+    };
+    const auto wanted = encode_scenes(scenes, block_of);
+    const auto root = objects_.find(main_path);
+    // Each property is sent when it differs from what the engine holds, or was
+    // last sent; one not held needs no emptying.
+    auto put = [&](const std::string& local, Value value) {
+        const auto key = scene_prefix + local;
+        const Value* held = nullptr;
+        if (const auto sent = sent_scenes_.find(key); sent != sent_scenes_.end()) held = &sent->second;
+        else if (root != objects_.end()) held = find(root->second, key);
+        const bool empty = value.kind == Value::Kind::String ? value.text.empty() : value.number == 0;
+        if (held ? *held == value : empty) return;
+        const auto literal = value.kind == Value::Kind::String ? string_literal(value.text) : "\"" + std::to_string(static_cast<int>(value.number)) + "\"^^xsd:int";
+        const auto number = sequence();
+        send(to, set_on_graph(number, main_path, "peepo:scene-" + local, literal), number);
+        to.local.push_back({main_path, key, value});
+        sent_scenes_[key] = std::move(value);
+    };
+    auto text = [](std::string t) { return Value{Value::Kind::String, 0, false, std::move(t)}; };
+    put("count", ingen::number(wanted.count));
+    put("current", ingen::number(wanted.current));
+    put("params", text(wanted.parameters));
+    // Every slot, so one a deleted scene used is emptied, and an emptied scene is never stale.
+    for (std::size_t i = 0; i < max_scenes; ++i) {
+        const auto n = std::to_string(i + 1);
+        put(n + "-name", text(i < wanted.scenes.size() ? wanted.scenes[i].first : ""));
+        put(n, text(i < wanted.scenes.size() ? wanted.scenes[i].second : ""));
+    }
+}
+std::string Session::edit_scenes(Transaction& to, const std::function<std::string(Graph&)>& change) {
+    auto edited = graph_;
+    if (auto issue = change(edited); !issue.empty()) return issue;
+    write_scenes(to, edited.scenes);
+    return {};
 }
 void Session::proceed(Transaction& done) {
     // The engine has answered the save or load itself. Its identity steps
@@ -841,6 +929,7 @@ std::string Session::create_graph(const Graph& graph, Transaction& to) {
         text += (text.empty() ? "" : " ") + encode_assignment(a, "m" + std::to_string(a.module));
     }
     for (const auto& [control, text] : controls) control_property(to, control, text);
+    write_scenes(to, graph.scenes, false);
     return {};
 }
 void Session::set_tempo(Transaction& to, double bpm) {
@@ -880,8 +969,16 @@ std::string Session::plan(const Command& command, Transaction& to) {
             if (!safe_iri(c.uri) || !plugins_.contains(c.uri)) return status_text(22);
             if (next_instance_ == std::numeric_limits<InstanceId>::max()) return "Instance ID space exhausted";
             const auto number = sequence();
-            const auto path = child(main_path, "m" + std::to_string(next_instance_++));
+            const auto id = next_instance_++;
+            const auto path = child(main_path, "m" + std::to_string(id));
             send(to, put(number, path, block(c.uri, numbered_name(graph_, known->name), c.x, c.y, false, known->spill_bypass)), number);
+            // Every scene holds the new module's bypass.
+            if (!graph_.scenes.scenes.empty())
+                edit_scenes(to, [&](Graph& g) {
+                    g.modules.push_back({id, c.uri, {}, c.x, c.y, false, false, known->parameters, known->ports});
+                    scenes_module_added(g, id);
+                    return std::string();
+                });
             // Some plugins start switched off and stay silent until told otherwise.
             if (!known->enable_symbol.empty()) set_local(child(path, known->enable_symbol), "ingen:value", value_key, float_literal(1), ingen::number(1));
             for (const auto& symbol : known->project_defaults)
@@ -933,6 +1030,7 @@ std::string Session::plan(const Command& command, Transaction& to) {
             clear_engine_graph(to);
             set_tempo(to, default_tempo);
             load_messages(to, {});
+            write_scenes(to, {});
             for (const char* side : {"l", "r"}) {
                 const auto number = sequence();
                 send(to, put_arc(number, main_path + "/", main_path + "/in_" + side, main_path + "/out_" + side), number);
@@ -979,6 +1077,40 @@ std::string Session::plan(const Command& command, Transaction& to) {
             std::vector<Assignment> kept;
             for (const auto& a : graph_.assignments) if (a.control == c.control && !cleared(a)) kept.push_back(a);
             control_property(to, c.control, control_text(kept));
+        } else if constexpr (std::is_same_v<T, SelectScene>) {
+            if (c.scene >= graph_.scenes.scenes.size()) return "No such scene.";
+            // Playing, not editing: the marker is left alone.
+            to.dirty.reset();
+            const auto changes = scene_changes(graph_, c.scene);
+            if (changes.empty() && c.scene == graph_.scenes.current) return {};
+            // One bundle: with the engine's atomic bundles, every change lands on one frame.
+            auto number = sequence();
+            send(to, bundle(number, true), number);
+            for (const auto& change : changes) {
+                const auto* m = find_module(graph_, change.module);
+                const auto found = paths_.find(change.module);
+                if (!m || found == paths_.end()) continue;
+                if (change.symbol.empty()) bypass_block(to, *m, found->second, change.value != 0);
+                else set_value(to, found->second, change.symbol, change.value);
+            }
+            auto selected = graph_.scenes;
+            selected.current = c.scene;
+            write_scenes(to, selected);
+            number = sequence();
+            send(to, bundle(number, false), number);
+        } else if constexpr (std::is_same_v<T, AddScene>) {
+            result = edit_scenes(to, [](Graph& g) { return add_scene(g); });
+        } else if constexpr (std::is_same_v<T, RenameScene>) {
+            result = edit_scenes(to, [&](Graph& g) { return rename_scene(g, c.scene, c.name); });
+        } else if constexpr (std::is_same_v<T, CopyScene>) {
+            result = edit_scenes(to, [&](Graph& g) { return copy_scene(g, c.from, c.to); });
+        } else if constexpr (std::is_same_v<T, MoveScene>) {
+            result = edit_scenes(to, [&](Graph& g) { return move_scene(g, c.from, c.to); });
+        } else if constexpr (std::is_same_v<T, DeleteScene>) {
+            result = edit_scenes(to, [&](Graph& g) { return delete_scene(g, c.scene); });
+        } else if constexpr (std::is_same_v<T, MarkSceneParameter>) {
+            if (!paths_.contains(c.id)) return "No such module.";
+            result = edit_scenes(to, [&](Graph& g) { return c.marked ? mark_scene_parameter(g, c.id, c.symbol) : unmark_scene_parameter(g, c.id, c.symbol); });
         } else if constexpr (std::is_same_v<T, LoadPatch>) {
             if (!bundle_location(c.location)) return "Invalid patch location";
             std::vector<std::string> absent;
@@ -1000,6 +1132,8 @@ std::string Session::plan(const Command& command, Transaction& to) {
             identify(to, "");
             name_patch(to, "");
             load_messages(to, {});
+            // A bundle's scenes come with it: the current one is what its values already are.
+            write_scenes(to, {});
             // The bundle's own tempo, which it then sets again; one from before
             // tempo was saved plays at the default.
             const auto tempo = c.tempo.value_or(default_tempo);
@@ -1023,6 +1157,8 @@ std::string Session::plan(const Command& command, Transaction& to) {
                     for (const auto& a : graph_.assignments) if (a.control == control && a.module != c.id) kept.push_back(a);
                     control_property(to, control, control_text(kept));
                 }
+                // So do its scene entries.
+                edit_scenes(to, [&](Graph& g) { scenes_module_removed(g, *m); return std::string(); });
             } else if constexpr (std::is_same_v<T, MoveModule>) {
                 if (m->fixed) return "Endpoints are fixed";
                 const auto number = sequence();
@@ -1035,7 +1171,8 @@ std::string Session::plan(const Command& command, Transaction& to) {
                 if (next_instance_ == std::numeric_limits<InstanceId>::max()) return "Instance ID space exhausted";
                 // The engine copies the block with its values,
                 // announces the copy without its contents, and leaves it in place.
-                const auto copy_path = child(main_path, "m" + std::to_string(next_instance_++));
+                const auto made = next_instance_++;
+                const auto copy_path = child(main_path, "m" + std::to_string(made));
                 expected_copies_.insert(copy_path);
                 auto number = sequence();
                 send(to, copy(number, found->second, copy_path), number);
@@ -1049,21 +1186,21 @@ std::string Session::plan(const Command& command, Transaction& to) {
                 // Nor does it copy the plugin's file: the copy is given it again.
                 if (known && !m->file.empty()) give_file(to, copy_path, *known, m->file);
                 send(to, get, copy_path);
+                // The copy follows the original in every scene.
+                if (!graph_.scenes.scenes.empty())
+                    edit_scenes(to, [&](Graph& g) {
+                        auto copied = *find_module(g, c.id);
+                        copied.id = made;
+                        g.modules.push_back(std::move(copied));
+                        scenes_module_duplicated(g, c.id, made);
+                        return std::string();
+                    });
             } else if constexpr (std::is_same_v<T, SetBypass>) {
                 if (m->fixed) return "Endpoints cannot be bypassed";
                 if (!module_available(*m)) return "Module is unavailable";
-                // The engine's bypass passes each input to its output. A plugin's
-                // own switch would only mute it, so that stays on, unless the
-                // plugin bypasses itself: then the switch is the bypass, and the
-                // block keeps running.
-                const auto* known = definition(m->uri);
-                const bool by_port = known && !known->enable_symbol.empty() && known->port_bypass;
-                if (known && !known->enable_symbol.empty()) {
-                    const double on = by_port && c.value ? 0 : 1;
-                    set_local(child(found->second, known->enable_symbol), "ingen:value", value_key, float_literal(on), ingen::number(on));
-                }
-                const bool enabled = by_port || !c.value;
-                set_local(found->second, "ingen:enabled", enabled_key, enabled ? "true" : "false", {Value::Kind::Boolean, 0, enabled, {}});
+                bypass_block(to, *m, found->second, c.value);
+                // From the screen, into the current scene in the same group.
+                if (c.scene) edit_scenes(to, [&](Graph& g) { record_scene_bypass(g, c.id, c.value); return std::string(); });
             } else if constexpr (std::is_same_v<T, SetFile>) {
                 if (m->fixed || !module_available(*m)) return "Module is unavailable";
                 const auto* known = definition(m->uri);
@@ -1097,8 +1234,8 @@ std::string Session::plan(const Command& command, Transaction& to) {
                 // The engine stores whatever it is sent, so the range is enforced here.
                 if (!std::isfinite(c.value) || c.value < it->minimum || c.value > it->maximum) return "Value is outside the parameter range";
                 if (it->kind != ParameterKind::Continuous && c.value != std::round(c.value)) return "Parameter requires a discrete value";
-                if (c.symbol == general_output_symbol) set_local(found->second, "peepo:outputLevel", output_level_key, float_literal(c.value), ingen::number(c.value));
-                else set_local(child(found->second, c.symbol), "ingen:value", value_key, float_literal(c.value), ingen::number(c.value));
+                set_value(to, found->second, c.symbol, c.value);
+                if (c.scene) edit_scenes(to, [&](Graph& g) { record_scene_parameter(g, c.id, c.symbol, c.value); return std::string(); });
             }
         }
         return result;
@@ -1111,11 +1248,13 @@ RequestId Session::submit(Command command) {
     if (transactions_.size() >= options_.max_pending) { reject(id, "Engine is busy; the edit was not sent"); return id; }
     const auto written = outgoing_.size();
     const auto marked = sent_modified_;
+    const auto scenes_sent = sent_scenes_;
     auto& pending = begin(id, Purpose::Edit);
     if (auto issue = plan(command, pending); !issue.empty()) {
         for (const auto number : pending.sequences) sequences_.erase(number);
         outgoing_.resize(written);
         sent_modified_ = marked;
+        sent_scenes_ = scenes_sent;
         transactions_.erase(pending.id);
         reject(id, std::move(issue));
         return id;

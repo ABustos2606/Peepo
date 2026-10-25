@@ -86,6 +86,7 @@ std::string SimulatedEngine::apply(const Command& command) {
             graph_.modules.push_back({next_instance_++, d->uri, numbered_name(graph_, d->name), std::clamp(c.x, module_min_x, module_max_x),
                 std::clamp(c.y, module_min_y, module_max_y), false, false, d->parameters, d->ports});
             for (auto& p : graph_.modules.back().parameters) if (p.symbol == d->tempo_symbol) p.value = tempo_value(p, graph_.tempo);
+            scenes_module_added(graph_, graph_.modules.back().id);
         } else if constexpr (std::is_same_v<T, Connect>) {
             auto issue = validate_connection(graph_, c.connection);
             if (!issue.empty()) return issue;
@@ -149,6 +150,28 @@ std::string SimulatedEngine::apply(const Command& command) {
         } else if constexpr (std::is_same_v<T, Unassign>) {
             if (!std::erase_if(graph_.assignments, [&](const Assignment& old) { return old.control == c.control && (!c.module || old.module == c.module); }))
                 return "Control is not assigned";
+        } else if constexpr (std::is_same_v<T, SelectScene>) {
+            if (c.scene >= graph_.scenes.scenes.size()) return "No such scene.";
+            // All at once, as the engine's atomic bundle; playing, so not an edit.
+            for (const auto& change : scene_changes(graph_, c.scene)) {
+                auto* m = find_module(graph_, change.module);
+                if (change.symbol.empty()) m->bypassed = change.value != 0;
+                else for (auto& p : m->parameters) if (p.symbol == change.symbol) p.value = change.value;
+            }
+            graph_.scenes.current = c.scene;
+            following = true;
+        } else if constexpr (std::is_same_v<T, AddScene>) {
+            if (auto issue = add_scene(graph_); !issue.empty()) return issue;
+        } else if constexpr (std::is_same_v<T, RenameScene>) {
+            if (auto issue = rename_scene(graph_, c.scene, c.name); !issue.empty()) return issue;
+        } else if constexpr (std::is_same_v<T, CopyScene>) {
+            if (auto issue = copy_scene(graph_, c.from, c.to); !issue.empty()) return issue;
+        } else if constexpr (std::is_same_v<T, MoveScene>) {
+            if (auto issue = move_scene(graph_, c.from, c.to); !issue.empty()) return issue;
+        } else if constexpr (std::is_same_v<T, DeleteScene>) {
+            if (auto issue = delete_scene(graph_, c.scene); !issue.empty()) return issue;
+        } else if constexpr (std::is_same_v<T, MarkSceneParameter>) {
+            if (auto issue = c.marked ? mark_scene_parameter(graph_, c.id, c.symbol) : unmark_scene_parameter(graph_, c.id, c.symbol); !issue.empty()) return issue;
         } else if constexpr (std::is_same_v<T, LoadPatch>) {
             const auto path = local_path(c.location);
             std::ifstream in(path / "main.ttl", std::ios::binary);
@@ -181,6 +204,7 @@ std::string SimulatedEngine::apply(const Command& command) {
                 if (m->fixed) return "Endpoints cannot be deleted";
                 std::erase_if(graph_.connections, [&](const Connection& edge) { return edge.from == c.id || edge.to == c.id; });
                 std::erase_if(graph_.assignments, [&](const Assignment& a) { return a.module == c.id; });
+                scenes_module_removed(graph_, *m);
                 std::erase_if(graph_.modules, [&](const Module& item) { return item.id == c.id; });
             } else if constexpr (std::is_same_v<T, MoveModule>) {
                 if (m->fixed) return "Endpoints are fixed";
@@ -196,11 +220,14 @@ std::string SimulatedEngine::apply(const Command& command) {
                 copy.name = numbered_name(graph_, d ? d->name : m->name);
                 copy.x = std::clamp(c.x, module_min_x, module_max_x);
                 copy.y = std::clamp(c.y, module_min_y, module_max_y);
+                const auto original = m->id, made = copy.id;
                 graph_.modules.push_back(std::move(copy));
+                scenes_module_duplicated(graph_, original, made);
             } else if constexpr (std::is_same_v<T, SetBypass>) {
                 if (m->fixed) return "Endpoints cannot be bypassed";
                 if (!module_available(*m)) return "Module is unavailable";
                 m->bypassed = c.value;
+                if (c.scene) record_scene_bypass(graph_, c.id, c.value);
             } else if constexpr (std::is_same_v<T, SetFile>) {
                 // No audio here: the file is only recorded, as the engine records it.
                 if (!module_available(*m)) return "Module is unavailable";
@@ -222,6 +249,7 @@ std::string SimulatedEngine::apply(const Command& command) {
                 if (!std::isfinite(c.value) || c.value < it->minimum || c.value > it->maximum) return "Value is outside the parameter range";
                 if (it->kind != ParameterKind::Continuous && c.value != std::round(c.value)) return "Parameter requires a discrete value";
                 it->value = c.value;
+                if (c.scene) record_scene_parameter(graph_, c.id, c.symbol, c.value);
             }
         }
         return {};

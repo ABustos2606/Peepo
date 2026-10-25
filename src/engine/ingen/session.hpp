@@ -109,6 +109,15 @@ private:
     void control_property(Transaction&, const std::string& control, const std::string& text);
     // A control's assignments as its property value; those whose block is gone are left out.
     std::string control_text(const std::vector<Assignment>&) const;
+    // A block's bypass and a control's value, as SetBypass and SetParameter send them.
+    void bypass_block(Transaction&, const Module&, const std::string& path, bool bypassed);
+    void set_value(Transaction&, const std::string& path, const std::string& symbol, double value);
+    // The scene properties, those that differ from the engine's; the slots
+    // these scenes do not use are emptied. A module's block is its path's
+    // symbol (`current`) or m<id>, as for a module the engine has yet to make.
+    void write_scenes(Transaction&, const Scenes&, bool current = true);
+    // Scene edits are made on a copy of the graph, then written.
+    std::string edit_scenes(Transaction&, const std::function<std::string(Graph&)>&);
     void proceed(Transaction&);
     // What a load restored; `failed` when it restored nothing it should have.
     std::string verified(const Transaction&, bool& failed);
@@ -123,6 +132,8 @@ private:
     // The unsaved-changes marker is a property of the engine's graph, so a
     // restarted interface sees it. The last value sent, until it is echoed.
     std::optional<bool> sent_modified_;
+    // Likewise each scene property, so edits in flight build on one another.
+    std::map<std::string, Value> sent_scenes_;
     std::optional<double> cpu_;
     std::optional<InstanceId> tuner_;
     std::string tuner_port_;

@@ -122,6 +122,9 @@ std::string prefixes() {
         text += "@prefix " + std::string(prefix) + ": <" + std::string(space) + "> .\n";
     return text;
 }
+std::string bundle(int sequence, bool start) {
+    return "[]\n\ta ingen:Bundle" + std::string(start ? "Start" : "End") + " ;\n\tpatch:sequenceNumber \"" + std::to_string(sequence) + "\"^^xsd:int .\n";
+}
 std::string get(int sequence, std::string_view subject) {
     return header(sequence, "Get") + "\tpatch:subject " + reference(subject) + " .\n";
 }

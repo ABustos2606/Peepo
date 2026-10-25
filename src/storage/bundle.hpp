@@ -38,6 +38,8 @@ struct Bundle {
     std::vector<std::pair<std::string, std::string>> arcs;
     // Control assignments by control identity, as stored (see encode_assignment).
     std::map<std::string, std::string> controls;
+    // The scene properties as stored (see encode_scenes); none before scenes.
+    SceneProperties scenes;
 };
 // Read main.ttl. Returns what was wrong, or an empty string.
 std::string read_bundle(std::string_view main_ttl, Bundle&);

@@ -67,6 +67,9 @@ std::string remove(int sequence, std::string_view subject);
 std::string put_arc(int sequence, std::string_view parent, std::string_view tail, std::string_view head);
 std::string remove_arc(int sequence, std::string_view tail, std::string_view head);
 std::string copy(int sequence, std::string_view subject, std::string_view destination);
+// Opens or closes a group of requests. With --atomic-bundles (and engine patch
+// 0012), everything between takes effect on one audio frame.
+std::string bundle(int sequence, bool start);
 // Drop every value of `property` (a patch:wildcard remove), adding nothing.
 std::string remove_property(int sequence, std::string_view subject, std::string_view property);
 // Literal forms. A string that cannot be an IRI or symbol must not be sent.

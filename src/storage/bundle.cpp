@@ -45,6 +45,22 @@ std::string literal_number(double value) {
     return "\"" + std::string(buffer, result.ptr) + "\"^^xsd:double";
 }
 std::string iri(const std::string& text) { return "<" + text + ">"; }
+// One scene property: count, current, params, N-name or N, with N from 1 to 8.
+void read_scene(const std::string& local, const Term& object, SceneProperties& out) {
+    if (local == "count" || local == "current") {
+        const auto value = number(object);
+        if (value && *value >= 0) (local == "count" ? out.count : out.current) = static_cast<int>(std::min(*value, double(max_scenes)));
+        return;
+    }
+    if (object.kind != Term::Kind::Literal) return;
+    if (local == "params") { out.parameters = object.value; return; }
+    const bool name = local.ends_with("-name");
+    const auto digits = name ? local.substr(0, local.size() - 5) : local;
+    if (digits.size() != 1 || digits[0] < '1' || digits[0] > char('0' + max_scenes)) return;
+    const auto index = static_cast<std::size_t>(digits[0] - '1');
+    if (out.scenes.size() <= index) out.scenes.resize(index + 1);
+    (name ? out.scenes[index].first : out.scenes[index].second) = object.value;
+}
 }
 
 std::string read_bundle(std::string_view text, Bundle& out) {
@@ -77,6 +93,7 @@ std::string read_bundle(std::string_view text, Bundle& out) {
         }
         else if (predicate.starts_with(peepo_ns + "control-") && object.kind == Term::Kind::Literal && !object.value.empty())
             out.controls[predicate.substr(peepo_ns.size() + 8)] = object.value;
+        else if (predicate.starts_with(peepo_ns + "scene-")) read_scene(predicate.substr(peepo_ns.size() + 6), object, out.scenes);
         else if (predicate == ingen_ns + "arc" && object.kind == Term::Kind::Blank) {
             std::string tail, head;
             const auto arc = subjects.find("_:" + object.value);
@@ -213,6 +230,14 @@ Graph bundle_graph(const Bundle& bundle) {
             if (const auto id = ids.find(block); id != ids.end()) a.module = id->second;
             graph.assignments.push_back(std::move(a));
         }
+    // The scene current when saved is what the saved values already are.
+    auto scenes = bundle.scenes;
+    if (scenes.scenes.size() < static_cast<std::size_t>(scenes.count)) scenes.scenes.resize(static_cast<std::size_t>(scenes.count));
+    graph.scenes = decode_scenes(scenes, [&](const std::string& block) {
+        const auto id = ids.find(block);
+        return id == ids.end() ? InstanceId{0} : id->second;
+    });
+    fit_scenes(graph);
     return graph;
 }
 
@@ -259,6 +284,14 @@ std::string write_main_ttl(const Graph& graph) {
         value += (value.empty() ? "" : " ") + encode_assignment(a, "m" + std::to_string(a.module));
     }
     for (const auto& [control, value] : controls) text += " ;\n\tpeepo:control-" + control + " " + ingen::string_literal(value);
+    if (!graph.scenes.scenes.empty()) {
+        const auto scenes = encode_scenes(graph.scenes, [](InstanceId id) { return "m" + std::to_string(id); });
+        text += " ;\n\tpeepo:scene-count " + std::to_string(scenes.count) + " ;\n\tpeepo:scene-current " + std::to_string(scenes.current) +
+                " ;\n\tpeepo:scene-params " + ingen::string_literal(scenes.parameters);
+        for (std::size_t i = 0; i < scenes.scenes.size(); ++i)
+            text += " ;\n\tpeepo:scene-" + std::to_string(i + 1) + "-name " + ingen::string_literal(scenes.scenes[i].first) + " ;\n\tpeepo:scene-" +
+                    std::to_string(i + 1) + " " + ingen::string_literal(scenes.scenes[i].second);
+    }
     text += " ;\n\tpeepo:patchName " + ingen::string_literal(graph.name);
     text += " ;\n\tpeepo:tempo " + literal_number(graph.tempo);
     if (!graph.load_messages.empty()) text += " ;\n\tpeepo:midiOnLoad " + ingen::string_literal(encode_control_changes(graph.load_messages));

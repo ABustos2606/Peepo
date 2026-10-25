@@ -58,6 +58,9 @@ struct FakeEngine {
     std::vector<double> tempos;
     // The control port waiting for MIDI learn, as Ingen keeps one.
     std::string learning;
+    // Each bundle a client sent: the subject and property of every Set in it.
+    std::vector<std::vector<std::string>> bundles;
+    int open_bundles = 0;
     // Saved bundles by file URI: the objects under ingen:/main and the cables.
     std::map<std::string, std::pair<std::map<std::string, Properties>, std::vector<std::pair<std::string, std::string>>>> files;
 
@@ -142,6 +145,12 @@ struct FakeEngine {
         std::string subject, all, others;
         auto end_of = [&](const char* local) { const auto* end = find(m.body, full(uri::ingen, local)); return end ? normal_path(end->text) : std::string(); };
         switch (m.type) {
+        case Message::Type::BundleStart:
+            if (open_bundles++ == 0) bundles.emplace_back();
+            break;
+        case Message::Type::BundleEnd:
+            open_bundles = std::max(0, open_bundles - 1);
+            break;
         case Message::Type::Get:
             if (m.subject == "ingen:/plugins") {
                 auto text = bundle(true) + response(m.sequence, 0) + bundle(true);
@@ -182,6 +191,7 @@ struct FakeEngine {
             break;
         case Message::Type::Set:
             subject = m.subject;
+            if (open_bundles) bundles.back().push_back(m.subject + " " + m.property);
             if (!objects.contains(m.subject)) status = 16;
             else {
                 // MIDI learn waits for a message; nothing is stored until then.
@@ -1055,6 +1065,101 @@ void midi_learn() {
     check(!rig.result(SetLoadMessages{{{0, 7, 100}}}).accepted, "a control change on channel 0 accepted");
     check(rig.result(NewPatch{"Plain"}).accepted && rig.graph().load_messages.empty() && property(fake, "ingen:/main", on_load)->text.empty(), "a new patch kept the control changes");
 }
+bool same_scenes(const Scenes& a, const Scenes& b) {
+    auto entries = [](const Scene& x, const Scene& y) {
+        return x.name == y.name && x.entries.size() == y.entries.size() &&
+               std::equal(x.entries.begin(), x.entries.end(), y.entries.begin(), [](const SceneEntry& e, const SceneEntry& f) { return e.target.same(f.target) && e.value == f.value; });
+    };
+    return a.current == b.current && a.parameters.size() == b.parameters.size() && a.scenes.size() == b.scenes.size() &&
+           std::equal(a.parameters.begin(), a.parameters.end(), b.parameters.begin(), [](const SceneTarget& s, const SceneTarget& t) { return s.same(t); }) &&
+           std::equal(a.scenes.begin(), a.scenes.end(), b.scenes.begin(), entries);
+}
+void scenes() {
+    // Scenes are graph properties; selecting one is a single bundle.
+    register_definitions({{amp, "Amp", "Utility", "Amplifier", 0x93a4b5, {{"in", Direction::Input}, {"out", Direction::Output}},
+                           {{"gain", "Gain", "dB", ParameterKind::Continuous, -90, 24, 0}}}});
+    FakeEngine fake;
+    Rig rig(fake), other(fake);
+    rig.engine->connect(); other.engine->connect(); rig.settle(); other.settle();
+    check(rig.result(NewPatch{"Scenes"}).accepted && rig.result(AddModule{amp, 240, 24}).accepted && rig.result(AddModule{amp, 240, 144}).accepted, "modules refused");
+    const auto a = rig.graph().modules[2].id, b = rig.graph().modules[3].id;
+    const auto pa = "ingen:/main/m" + std::to_string(a), pb = "ingen:/main/m" + std::to_string(b);
+    auto scene_key = [](const std::string& local) { return full(uri::peepo, "scene-" + local); };
+    auto gain = [](const Rig& r, InstanceId id) { return find_module(r.graph(), id)->parameters.at(0).value; };
+    check(!rig.result(SelectScene{0}).accepted && !rig.result(MarkSceneParameter{b, "gain"}).accepted, "a patch without scenes took a scene command");
+    check(rig.result(AddScene{}).accepted && rig.graph().scenes.scenes.size() == 1 && property(fake, "ingen:/main", scene_key("count"))->number == 1 &&
+          property(fake, "ingen:/main", scene_key("1-name"))->text == "Scene 1", "the first scene is not on the engine's graph");
+    check(rig.result(MarkSceneParameter{b, "gain"}).accepted && scene_parameter_marked(rig.graph(), b, "gain") &&
+          property(fake, "ingen:/main", scene_key("params"))->text == "m" + std::to_string(b) + "|" + amp + "|gain", "parameter not marked per scene");
+    check(rig.result(AddScene{}).accepted && rig.graph().scenes.current == 1, "second scene");
+    // Edits on the screen go into the current scene; a performance change does not.
+    check(rig.result(SetBypass{a, true, true}).accepted && rig.result(SetParameter{b, "gain", -12, true}).accepted, "screen edits refused");
+    check(scene_changes(rig.graph(), 1).empty() && (scene_changes(rig.graph(), 0) == std::vector<SceneChange>{{a, "", 0}, {b, "gain", 0}}),
+          "screen edits not written into the current scene");
+    check(rig.result(SetParameter{b, "gain", 6}).accepted && (scene_changes(rig.graph(), 1) == std::vector<SceneChange>{{b, "gain", -12}}),
+          "a performance change was written into the scene");
+    const std::string saved = "file:///patches/p-scenes/r000001.ingen";
+    check(rig.result(SaveGraph{SaveScope::Persistent, true, saved, "p-scenes"}).accepted && !rig.graph().dirty, "save failed");
+    // Selecting: the changes and the current scene in one bundle, and the patch not marked.
+    fake.bundles.clear();
+    check(rig.result(SelectScene{0}).accepted, "scene not selected");
+    check((fake.bundles == std::vector<std::vector<std::string>>{{pa + " " + full(uri::ingen, "enabled"), pb + "/gain " + full(uri::ingen, "value"),
+                                                                  "ingen:/main " + scene_key("current")}}),
+          "the scene's changes were not sent as one bundle");
+    check(!find_module(rig.graph(), a)->bypassed && gain(rig, b) == 0 && rig.graph().scenes.current == 0, "the scene was not applied");
+    check(!rig.graph().dirty && !property(fake, "ingen:/main", full(uri::peepo, "modified"))->boolean, "selecting a scene marked the patch");
+    other.settle();
+    check(other.graph().scenes.current == 0 && !find_module(other.graph(), a)->bypassed && gain(other, b) == 0 && same_scenes(other.graph().scenes, rig.graph().scenes),
+          "a second client did not see the scene change");
+    // Selecting the current scene again brings back its saved state; with nothing to change, nothing is sent.
+    check(rig.result(SetBypass{a, true}).accepted && rig.result(SelectScene{0}).accepted && !find_module(rig.graph(), a)->bypassed, "the scene was not restored");
+    auto before = fake.requests;
+    check(rig.result(SelectScene{0}).accepted && fake.requests == before && !rig.result(SelectScene{5}).accepted && fake.requests == before, "a needless or missing scene was sent");
+    // Rename, reorder, copy, delete.
+    check(rig.result(RenameScene{0, "Verse"}).accepted && rig.result(RenameScene{1, "Solo"}).accepted && property(fake, "ingen:/main", scene_key("1-name"))->text == "Verse",
+          "rename not stored");
+    check(!rig.result(RenameScene{0, "Far too long a name"}).accepted && !rig.result(RenameScene{4, "Gone"}).accepted, "a bad rename accepted");
+    check(rig.result(MoveScene{1, 0}).accepted && rig.graph().scenes.scenes[0].name == "Solo" && rig.graph().scenes.current == 1 &&
+          property(fake, "ingen:/main", scene_key("current"))->number == 2, "move lost the current scene");
+    check(rig.result(AddScene{}).accepted && rig.result(CopyScene{0, 2}).accepted && rig.graph().scenes.scenes[2].entries == rig.graph().scenes.scenes[0].entries &&
+          rig.graph().scenes.scenes[2].name == "Scene 1", "copy");
+    check(!rig.result(DeleteScene{2}).accepted && rig.result(SelectScene{1}).accepted && rig.result(DeleteScene{2}).accepted && rig.graph().scenes.scenes.size() == 2 &&
+          property(fake, "ingen:/main", scene_key("count"))->number == 2 && property(fake, "ingen:/main", scene_key("3-name"))->text.empty() &&
+          property(fake, "ingen:/main", scene_key("3"))->text.empty(), "delete left the scene on the engine's graph");
+    // A new module joins every scene, a copy follows its original, a removed one leaves.
+    auto in_every = [&](InstanceId id) {
+        const auto& all = rig.graph().scenes.scenes;
+        return std::all_of(all.begin(), all.end(), [&](const Scene& s) { return std::any_of(s.entries.begin(), s.entries.end(), [&](const SceneEntry& e) { return e.target.module == id; }); });
+    };
+    check(rig.result(AddModule{amp, 400, 24}).accepted && in_every(rig.graph().modules.back().id), "a new module is not in every scene");
+    const auto added = rig.graph().modules.back().id;
+    check(rig.result(DuplicateModule{b, 400, 144}).accepted && in_every(rig.graph().modules.back().id) && scene_parameter_marked(rig.graph(), rig.graph().modules.back().id, "gain"),
+          "a copy did not follow its original");
+    check(rig.result(RemoveModule{added}).accepted && !in_every(added) && validate_graph(rig.graph()).empty(), "a removed module stayed in the scenes");
+    check(rig.result(MarkSceneParameter{b, "gain", false}).accepted && !scene_parameter_marked(rig.graph(), b, "gain") && rig.result(MarkSceneParameter{b, "gain"}).accepted,
+          "unmark");
+    other.settle();
+    check(same_scenes(other.graph().scenes, rig.graph().scenes), "a second client's scenes differ");
+    const auto kept = rig.graph().scenes;
+    {
+        Rig fresh(fake);
+        fresh.engine->connect(); fresh.settle();
+        check(same_scenes(fresh.graph().scenes, kept) && fresh.graph().scenes.scenes[0].name == "Solo", "a restarted interface lost the scenes");
+    }
+    // The session snapshot holds them; a new patch has none.
+    check(rig.result(SaveGraph{}).accepted && rig.result(NewPatch{"Plain"}).accepted && rig.graph().scenes.scenes.empty() &&
+          property(fake, "ingen:/main", scene_key("count"))->number == 0 && property(fake, "ingen:/main", scene_key("1"))->text.empty(), "a new patch kept the scenes");
+    check(rig.result(LoadSession{}).accepted && same_scenes(rig.graph().scenes, kept), "the session snapshot lost the scenes");
+    // Saved and loaded with the patch: the current scene is the one saved, its values the saved ones.
+    check(rig.result(SelectScene{0}).accepted && rig.result(SaveGraph{SaveScope::Persistent, true, saved, "p-scenes"}).accepted, "save failed");
+    const auto playing = rig.graph();
+    check(find(fake.files.at(saved).first.at("ingen:/main"), scene_key("count"))->number == 2, "the bundle lacks its scenes");
+    std::vector<SavedBlock> blocks;
+    for (const auto& m : playing.modules) if (!m.fixed) blocks.push_back({"m" + std::to_string(m.id), m.uri, m.name});
+    check(rig.result(NewPatch{"Elsewhere"}).accepted && rig.result(LoadPatch{saved, blocks, "p-scenes"}).accepted, "load failed");
+    check(same_scenes(rig.graph().scenes, playing.scenes) && rig.graph().scenes.current == 0 && scene_changes(rig.graph(), 0).empty() && !rig.graph().dirty,
+          "the load did not restore the current scene");
+}
 int main() {
     try {
         turtle_and_protocol();
@@ -1063,9 +1168,10 @@ int main() {
         spill_bypass();
         midi_cables();
         midi_learn();
+        scenes();
         tuner_monitor();
         euclidean_monitor();
         looper_monitor();
-        std::cout << "Ingen protocol reading, command mapping, acknowledgment, second client, timeout, reconnect and restart passed.\n";
+        std::cout << "Ingen protocol reading, command mapping, acknowledgment, second client, scenes, timeout, reconnect and restart passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

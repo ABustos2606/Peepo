@@ -688,6 +688,14 @@ void scenes_module_removed(Graph& g, const Module& m) {
     std::erase_if(s.parameters, own);
     for (auto& scene : s.scenes) std::erase_if(scene.entries, [&](const SceneEntry& e) { return own(e.target); });
 }
+void fit_scenes(Graph& g) {
+    for (auto& scene : g.scenes.scenes)
+        for (auto& e : scene.entries)
+            if (const auto* p = scene_parameter(g, e.target)) {
+                e.value = std::clamp(e.value, p->minimum, p->maximum);
+                if (p->kind != ParameterKind::Continuous) e.value = std::round(e.value);
+            }
+}
 std::string validate_scenes(const Graph& g) {
     const auto& s = g.scenes;
     if (s.scenes.size() > max_scenes) return "Too many scenes";

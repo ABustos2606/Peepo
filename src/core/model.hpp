@@ -284,6 +284,10 @@ void scenes_module_removed(Graph&, const Module&);
 // Empty when acceptable. Orphan entries are accepted; live ones must be in
 // range, and each module and parameter appears once per scene.
 std::string validate_scenes(const Graph&);
+// Scenes read from the engine or a bundle, made to fit the modules: each live
+// parameter value brought inside its range, and rounded for a discrete one,
+// as the live values read with them are.
+void fit_scenes(Graph&);
 // The value a module's tempo control takes for a tempo: the tempo, inside the
 // control's own range.
 double tempo_value(const Parameter&, double tempo);

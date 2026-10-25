@@ -27,8 +27,11 @@ struct AddModule { std::string uri; int x, y; };
 struct RemoveModule { InstanceId id; };
 struct MoveModule { InstanceId id; int x, y; };
 struct DuplicateModule { InstanceId id; int x, y; };
-struct SetParameter { InstanceId id; std::string symbol; double value; };
-struct SetBypass { InstanceId id; bool value; };
+// `scene`: an edit on the touch screen, also written into the current scene
+// (a bypass always, a parameter when it is marked per scene). Stomps, knobs,
+// MIDI and learned controls are performance changes and leave it false.
+struct SetParameter { InstanceId id; std::string symbol; double value; bool scene = false; };
+struct SetBypass { InstanceId id; bool value; bool scene = false; };
 // The patch tempo: stored with the patch, and given to every module that follows it.
 // `follow` is a tempo taken from incoming MIDI clock: it follows the playing
 // rather than editing the patch, so the unsaved marker is left alone.
@@ -80,8 +83,23 @@ struct Unassign { std::string control; InstanceId module = 0; };
 struct LearnMidi { InstanceId id; std::string symbol; bool forget = false; };
 // The control changes the patch sends to every MIDI device as it loads; saved with it.
 struct SetLoadMessages { std::vector<ControlChange> messages; };
+// Scenes (docs/44-scenes.md), counted from 0. Selecting one sets the
+// bypasses and marked parameters that differ from it, on one audio frame, and
+// makes it current; selecting the current one again brings back its saved
+// state. Selecting is playing, not editing: the unsaved marker is left alone.
+struct SelectScene { std::size_t scene; };
+// The live state copied into a new scene, placed last and made current.
+struct AddScene {};
+struct RenameScene { std::size_t scene; std::string name; };
+// The bypasses and values of `from` over those of `to`; the name stays.
+struct CopyScene { std::size_t from, to; };
+struct MoveScene { std::size_t from, to; };
+struct DeleteScene { std::size_t scene; };
+// Per scene, or with `marked` false, the same in every scene again.
+struct MarkSceneParameter { InstanceId id; std::string symbol; bool marked = true; };
 using Command = std::variant<AddModule, RemoveModule, MoveModule, DuplicateModule, SetParameter, SetBypass, SetFile, SetTempo, Connect, Disconnect,
-                             LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, LoadPatch, Assign, Unassign, LearnMidi, SetLoadMessages>;
+                             LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, LoadPatch, Assign, Unassign, LearnMidi, SetLoadMessages,
+                             SelectScene, AddScene, RenameScene, CopyScene, MoveScene, DeleteScene, MarkSceneParameter>;
 struct EngineEvent {
     RequestId request = 0;
     bool accepted = true;

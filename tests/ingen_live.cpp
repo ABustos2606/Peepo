@@ -180,6 +180,68 @@ int main(int argc, char** argv) {
         std::cout << "SUMMARY " << (failures ? std::to_string(failures) + " failed" : std::string("spill bypass checks passed")) << std::endl;
         return failures ? 1 : 0;
     }
+    // Scenes (P13.7): selected as one bundle, seen by a second client and by an
+    // interface that restarts, and saved and loaded by the engine itself with
+    // the patch, the current scene with it.
+    if (mode == "--scenes") {
+        const std::filesystem::path root = std::filesystem::temp_directory_path() / "peepo-live-patches" / "scenes";
+        std::error_code cleared;
+        std::filesystem::remove_all(root, cleared);
+        PatchStore store(root);
+        if (!check(store.open().empty(), "patch store opens")) return 1;
+        a->ok(NewPatch{"Scenes"}, "new patch");
+        a->ok(AddModule{amp, 240, 24}, "add an amplifier");
+        a->ok(AddModule{amp, 240, 144}, "and another");
+        const auto first = a->graph().modules[2].id, second = a->graph().modules[3].id;
+        a->ok(AddScene{}, "add a scene");
+        a->ok(MarkSceneParameter{second, "gain"}, "mark the second's gain per scene");
+        a->ok(AddScene{}, "add another scene");
+        a->ok(SetBypass{first, true, true}, "in it, bypass the first from the screen");
+        a->ok(SetParameter{second, "gain", -12, true}, "and turn the second down");
+        const auto id = store.new_id();
+        const auto save = [&]() {
+            std::string issue;
+            auto staging = store.stage(id, issue);
+            return staging && a->result(SaveGraph{SaveScope::Persistent, true, staging->location, id}).accepted && store.publish(*staging).empty();
+        };
+        check(save() && !a->graph().dirty, "save the patch");
+        Client b(address);
+        b.engine.connect();
+        check(b.ready(), "a second client connects");
+        const std::vector<SceneChange> to_first{{first, "", 0}, {second, "gain", 0}};
+        check(scene_changes(b.graph(), 0) == to_first && b.graph().scenes.current == 1, "it reads the scenes from the engine");
+        a->ok(SelectScene{0}, "select the first scene");
+        b.pump(300);
+        const auto* seen = find_module(b.graph(), first);
+        check(b.graph().scenes.current == 0 && seen && !seen->bypassed && gain_of(b.graph(), second) == 0 && scene_changes(b.graph(), 0).empty(),
+              "the second client sees the scene change");
+        check(!a->graph().dirty && !b.graph().dirty, "selecting a scene leaves the patch unmodified");
+        a->ok(SelectScene{1}, "select the second again");
+        check(save(), "save it with the second scene current");
+        unsigned found = 0;
+        {
+            std::ifstream in(store.find(id)->path / "main.ttl");
+            for (std::string line; std::getline(in, line);) found += line.find("scene-") != std::string::npos;
+        }
+        check(found >= 7, "the engine saves the scene properties", std::to_string(found) + " lines");
+        a->ok(NewPatch{"Elsewhere"}, "another patch");
+        check(a->graph().scenes.scenes.empty(), "a new patch has no scenes");
+        const auto stored = store.find(id);
+        const auto loaded = a->result(LoadPatch{stored->location, saved_blocks(stored->bundle), id});
+        check(loaded.accepted && a->graph().scenes.scenes.size() == 2 && a->graph().scenes.current == 1 && scene_changes(a->graph(), 1).empty() &&
+              scene_changes(a->graph(), 0) == to_first && !a->graph().dirty, "loading restores the scenes and the current one", loaded.message);
+        {
+            Client fresh(address);
+            fresh.engine.connect();
+            check(fresh.ready() && fresh.graph().scenes.scenes.size() == 2 && fresh.graph().scenes.current == 1, "a restarted interface finds them");
+        }
+        a->ok(SaveGraph{}, "session snapshot");
+        a->ok(NewPatch{"Blank"}, "another patch");
+        a->ok(LoadSession{}, "the snapshot back");
+        check(a->graph().scenes.scenes.size() == 2 && scene_changes(a->graph(), 0) == to_first, "the snapshot keeps the scenes");
+        std::cout << "SUMMARY " << (failures ? std::to_string(failures) + " failed" : std::string("scene checks passed")) << std::endl;
+        return failures ? 1 : 0;
+    }
     // For the MIDI settings check: what plays now; stored patches for program
     // change; and MIDI learn, waiting for a probe to move a controller.
     if (mode == "--state") {

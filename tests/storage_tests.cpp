@@ -199,6 +199,28 @@ void bundles() {
     const auto stomp_back = bundle_graph(with_stomp);
     check(bypass_assignments(stomp_back, "stomp1").size() == 2 && stomp_back.assignments[0].module == one.module && stomp_back.assignments[1].module == two.module &&
           validate_graph(stomp_back).empty(), "a shared stomp did not come back with both modules");
+    // Scenes are graph properties: they come back with their current scene, an orphan kept.
+    {
+        auto staged = demo;
+        const auto marked = staged.modules[3].id;
+        const auto symbol = staged.modules[3].parameters[0].symbol;
+        check(add_scene(staged).empty() && mark_scene_parameter(staged, marked, symbol).empty() && add_scene(staged).empty() &&
+              rename_scene(staged, 1, "Solo \"loud\"").empty(), "scenes not made");
+        check(record_scene_bypass(staged, staged.modules[2].id, false) && record_scene_parameter(staged, marked, symbol, 40), "scene edits not recorded");
+        staged.scenes.scenes[0].entries.push_back({{0, "m77", "urn:gone", {}}, 1});
+        staged.scenes.current = 0;
+        Bundle with_scenes;
+        check(read_bundle(write_main_ttl(staged), with_scenes).empty() && with_scenes.scenes.count == 2 && with_scenes.scenes.current == 1, "scenes not written to the bundle");
+        const auto scenes_back = bundle_graph(with_scenes);
+        auto block_of = [](InstanceId id) { return "m" + std::to_string(id); };
+        const auto before = encode_scenes(staged.scenes, block_of), after = encode_scenes(scenes_back.scenes, block_of);
+        check(before.count == after.count && before.current == after.current && before.parameters == after.parameters && before.scenes == after.scenes &&
+              scenes_back.scenes.scenes[1].name == "Solo \"loud\"" && validate_graph(scenes_back).empty(), "scenes lost in a round trip");
+        check(scene_changes(scenes_back, 0).empty() && scene_changes(scenes_back, 1).size() == 2, "the saved current scene is not what the saved values are");
+        Bundle without;
+        check(write_main_ttl(demo).find("peepo:scene-") == std::string::npos && read_bundle(write_main_ttl(demo), without).empty() && bundle_graph(without).scenes.scenes.empty(),
+              "a patch without scenes came back with some");
+    }
     // A plugin that bypasses itself is saved with its own switch off and its block on.
     {
         ModuleDefinition own{"urn:test:self-bypassed", "Self", "Delay", "", 0x7bbaed, {{"in", Direction::Input}, {"out", Direction::Output}}, {}};
@@ -382,6 +404,13 @@ void simulated(const fs::path& root) {
     check(graph.patch_id.empty(), "a fresh graph claimed an identity");
     run(engine, SetParameter{3, "drive", 80});
     check(engine.snapshot().dirty, "edit did not mark the graph");
+    // Two scenes, the second current when saved: drive 20 in the first, 80 in the second.
+    for (Command c : {Command{AddScene{}}, Command{MarkSceneParameter{3, "drive"}}, Command{AddScene{}}, Command{SelectScene{0}},
+                      Command{SetParameter{3, "drive", 20, true}}, Command{SelectScene{1}}})
+        check(run(engine, c)[0].accepted, "simulated scene command refused");
+    check(find_module(engine.snapshot(), 3)->parameters[0].value == 80 && engine.snapshot().scenes.current == 1 &&
+          (scene_changes(engine.snapshot(), 0) == std::vector<SceneChange>{{3, "drive", 20}}), "simulated scenes wrong");
+    graph = engine.snapshot();
     const auto id = patches.new_id();
     auto staging = patches.stage(id, issue);
     auto events = run(engine, SaveGraph{SaveScope::Persistent, false, staging->location, id});
@@ -398,6 +427,9 @@ void simulated(const fs::path& root) {
     const auto& loaded = engine.snapshot();
     check(loaded.patch_id == id && !loaded.dirty && loaded.modules.size() == graph.modules.size() && loaded.connections.size() == graph.connections.size(), "loaded graph differs");
     check(find_module(loaded, 3)->parameters[0].value == 80, "loaded value differs");
+    // Loading restores the scene current when saved; its values are the saved ones.
+    check(loaded.scenes.scenes.size() == 2 && loaded.scenes.current == 1 && scene_changes(loaded, 1).empty() &&
+          (scene_changes(loaded, 0) == std::vector<SceneChange>{{3, "drive", 20}}), "loading did not restore the current scene");
 
     // A plugin the engine lacks: refused before anything changes, as Ingen would load none of it.
     auto foreign = engine.snapshot();
@@ -422,6 +454,6 @@ int main() {
         simulated(root / "simulated");
         foreign_bundles(root / "foreign");
         fs::remove_all(root);
-        std::cout << "Bundles, revisions, interrupted saves, fallback, startup choice, foreign bundles, missing files and simulated save/load passed.\n";
+        std::cout << "Bundles, revisions, interrupted saves, fallback, startup choice, foreign bundles, missing files, scenes and simulated save/load passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

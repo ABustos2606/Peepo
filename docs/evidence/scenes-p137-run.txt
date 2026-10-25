@@ -1,0 +1,29 @@
+# peepo_ingen_live --scenes, 2026-10-25T20:54Z, WSL Debian, engine: ingen -e -f -a -S /tmp/peepo-ingen.sock
+PASS  connect, read the graph and create the audio endpoints -- unix:///tmp/peepo-ingen.sock
+PASS  patch store opens
+PASS  new patch
+PASS  add an amplifier
+PASS  and another
+PASS  add a scene
+PASS  mark the second's gain per scene
+PASS  add another scene
+PASS  in it, bypass the first from the screen
+PASS  and turn the second down
+PASS  save the patch
+PASS  a second client connects
+PASS  it reads the scenes from the engine
+PASS  select the first scene
+PASS  the second client sees the scene change
+PASS  selecting a scene leaves the patch unmodified
+PASS  select the second again
+PASS  save it with the second scene current
+PASS  the engine saves the scene properties -- 7 lines
+PASS  another patch
+PASS  a new patch has no scenes
+PASS  loading restores the scenes and the current one -- Loaded Scenes.
+PASS  a restarted interface finds them
+PASS  session snapshot
+PASS  another patch
+PASS  the snapshot back
+PASS  the snapshot keeps the scenes
+SUMMARY scene checks passed
