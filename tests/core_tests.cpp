@@ -290,6 +290,10 @@ int main() {
             const auto again = encode_scenes(read.scenes, block_of);
             check(again.count == stored.count && again.current == stored.current && again.parameters == stored.parameters && again.scenes == stored.scenes &&
                   scene_changes(read, 0) == scene_changes(sc, 0), "scenes do not read back");
+            // Scene mode: saved as 1, read back, and only with scenes.
+            check(stored.mode == 0 && !read.scenes.scene_mode, "stomp mode is the default");
+            check(set_scene_mode(read, true).empty() && encode_scenes(read.scenes, block_of).mode == 1 &&
+                  decode_scenes(encode_scenes(read.scenes, block_of), id_of).scene_mode && validate_graph(read).empty(), "scene mode does not read back");
             // Orphans: a block that is gone, or that now holds another plugin, is kept and never applied.
             auto orphaned = stored;
             orphaned.scenes[0].second += " b|m9|urn:gone|1 b|m3|urn:other|1 p|m3|" + drive_uri + "|tone|500 bad b|m4|" + mist_uri + "|1 b|m4|x|0.5";
@@ -304,7 +308,7 @@ int main() {
             bad.count = 12; bad.current = 9; bad.scenes[0].first = "Far too long a name";
             read.scenes = decode_scenes(bad, id_of);
             check(read.scenes.scenes.size() == 2 && read.scenes.current == 1 && read.scenes.scenes[0].name == "Scene 1", "bad properties not cut");
-            check(decode_scenes({0, 1, stored.parameters, stored.scenes}, id_of).scenes.empty() && decode_scenes({}, id_of).parameters.empty(), "no scenes read as some");
+            check(decode_scenes({0, 1, 1, stored.parameters, stored.scenes}, id_of).scenes.empty() && decode_scenes({}, id_of).parameters.empty(), "no scenes read as some");
             // Modules added, duplicated and removed.
             sc.modules.push_back(Module{6, drive_uri, "Drive 2", 100, 300, false, true, sc.modules[2].parameters, sc.modules[2].ports});
             scenes_module_duplicated(sc, 3, 6);
@@ -342,7 +346,13 @@ int main() {
             check(delete_scene(sc, 1).empty() && sc.scenes.scenes.size() == 2 && sc.scenes.current == 0, "deleting another scene");
             sc.scenes.current = 1;
             check(delete_scene(sc, 0).empty() && sc.scenes.current == 0 && mark_scene_parameter(sc, 3, "tone").empty(), "deleting before the current scene");
-            check(delete_scene(sc, 0).empty() && sc.scenes.scenes.empty() && sc.scenes.parameters.empty() && validate_graph(sc).empty(), "deleting the last scene");
+            check(set_scene_mode(sc, true).empty(), "scene mode refused with a scene");
+            check(delete_scene(sc, 0).empty() && sc.scenes.scenes.empty() && sc.scenes.parameters.empty() && !sc.scenes.scene_mode && validate_graph(sc).empty(),
+                  "deleting the last scene");
+            check(!set_scene_mode(sc, true).empty() && set_scene_mode(sc, false).empty() && !sc.scenes.scene_mode, "scene mode without scenes");
+            sc.scenes.scene_mode = true;
+            check(!validate_graph(sc).empty(), "scene mode without scenes validated");
+            sc.scenes.scene_mode = false;
             for (std::size_t i = 0; i < max_scenes; ++i) check(add_scene(sc).empty(), "eight scenes refused");
             check(!add_scene(sc).empty() && sc.scenes.scenes.back().name == "Scene 8", "a ninth scene");
             // Validation.

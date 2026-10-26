@@ -398,6 +398,9 @@ void Application::navigate(Page page) {
     if (page == Page::Patches && page_ != Page::Patches) refresh_stored();
     // From the patch every list opens at the top.
     if (page_ == Page::Patch) list_scroll_.clear();
+    // Leaving the Scenes page ends picking a scene.
+    if (page != Page::Scenes) scene_pick_ = ScenePick::None;
+    if (page == Page::Scenes && page_ != Page::Scenes && page_ != Page::NamePatch && page_ != Page::ConfirmAction) message("Tap a scene to play it.");
     // Leaving MIDI learn before anything was learned ends the engine's wait.
     if (page_ == Page::MidiLearn && page != Page::MidiLearn && (learn_waiting_ || learn_request_)) {
         learn_waiting_ = false; learn_request_ = 0;
@@ -419,21 +422,22 @@ RequestId Application::submit(Command command) {
     message(engine_.capabilities().simulation ? "Waiting for simulated engine..." : "Waiting for engine...");
     return id;
 }
-void Application::stream_parameter(InstanceId id, const std::string& symbol, double value) {
+void Application::stream_parameter(InstanceId id, const std::string& symbol, double value, bool scene) {
     // A moving control must be heard while it moves. Send as fast as the
     // engine acknowledges, and never queue more than the newest value.
-    if (stream_ && (stream_->id != id || stream_->symbol != symbol)) {
-        if (stream_->sent != stream_->latest) submit(SetParameter{stream_->id, stream_->symbol, stream_->latest});
+    if (stream_ && (stream_->id != id || stream_->symbol != symbol || stream_->scene != scene)) {
+        if (stream_->sent != stream_->latest) submit(SetParameter{stream_->id, stream_->symbol, stream_->latest, stream_->scene});
         stream_.reset();
     }
     if (!stream_) stream_ = Stream{id, symbol};
+    stream_->scene = scene;
     stream_->latest = value;
     if (!stream_->in_flight) send_stream();
 }
 void Application::send_stream() {
     if (stream_->sent == stream_->latest) return;
     stream_->sent = stream_->latest;
-    stream_->in_flight = submit(SetParameter{stream_->id, stream_->symbol, stream_->latest});
+    stream_->in_flight = submit(SetParameter{stream_->id, stream_->symbol, stream_->latest, stream_->scene});
     if (!stream_->in_flight) stream_.reset();
 }
 // When the cables on a MIDI to CV poly's voices change, its Voices follows
@@ -488,6 +492,10 @@ void Application::tick(unsigned ms) {
         if (!e.accepted) message(e.message);
         else if (!e.message.empty()) message(e.message);
         else if (e.request) message("Edit accepted by engine.");
+        if (const auto note = accepted_notes_.find(e.request); note != accepted_notes_.end()) {
+            if (e.accepted) message(note->second());
+            accepted_notes_.erase(note);
+        }
         if (kind == PendingKind::Add) {
             if (!e.accepted) message("Could not add " + adding_[e.request] + ": " + e.message);
             adding_.erase(e.request);
@@ -707,17 +715,19 @@ lv_obj_t* Application::list_bar(lv_obj_t* list, const std::string& name, const B
     }
     return bar;
 }
-void Application::choice_bar(lv_obj_t* list, const std::vector<std::string>& choices, int chosen, Action action, InstanceId id, std::string symbol) {
+void Application::choice_bar(lv_obj_t* list, const std::vector<std::string>& choices, int chosen, Action action, InstanceId id, std::string symbol, int width,
+                             std::uint32_t fill) {
     // Like a module's three-way mode: every choice shows, the chosen one lit.
-    auto* bar = panel(list, 0, 0, compact_width, compact_height);
+    const int wide = width ? width : compact_width;
+    auto* bar = panel(list, 0, 0, wide, compact_height);
     lv_obj_set_style_radius(bar, 10, 0); lv_obj_set_style_clip_corner(bar, true, 0);
     const int count = std::max(1, static_cast<int>(choices.size()));
     for (int i = 0; i < count; ++i) {
-        const int x = i * compact_width / count, w = (i + 1) * compact_width / count - x;
+        const int x = i * wide / count, w = (i + 1) * wide / count - x;
         auto* b = button(bar, choices[static_cast<std::size_t>(i)], x, 0, w, action, id, symbol, i);
         lv_obj_set_height(b, compact_height); lv_obj_set_style_radius(b, 0, 0); lv_obj_set_style_border_width(b, 0, 0);
         lv_obj_set_style_border_width(b, 2, LV_STATE_FOCUS_KEY);
-        lv_obj_set_style_bg_color(b, color(i == chosen ? setting_fill : surface), 0);
+        lv_obj_set_style_bg_color(b, color(i == chosen ? (fill ? fill : setting_fill) : surface), 0);
         lv_obj_set_style_text_color(lv_obj_get_child(b, 0), color(i == chosen ? text : faint), 0);
         if (i) {
             auto* line = panel(bar, x, 8, 1, compact_height - 16, border);
@@ -752,7 +762,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
     if (b.action == Action::NameInput) {
         if (code == LV_EVENT_VALUE_CHANGED) {
             draft_name_ = lv_textarea_get_text(target);
-            message(renaming_ ? "Rename keeps modules, values and cables." : "New patch starts with IN connected to OUT.");
+            message(naming_scene_ ? "Up to 12 characters." : renaming_ ? "Rename keeps modules, values and cables." : "New patch starts with IN connected to OUT.");
         } else if (code == LV_EVENT_READY) commit_name();
         return;
     }
@@ -997,25 +1007,25 @@ void Application::handle(Binding& b, lv_event_t* e) {
                 } else if (std::abs(dy) > 6 || (indev && lv_indev_get_scroll_obj(indev))) bar_scrolling_ = true;
             }
             if (bar_moving_ && segments) paint_bar(target, chosen());
-            else if (bar_moving_) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value); update_euclidean(); }
+            else if (bar_moving_) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value, true); update_euclidean(); }
         } else if (code == LV_EVENT_RELEASED || code == LV_EVENT_PRESS_LOST) {
             if (bar_moving_) {
                 // Release sends the final position.
                 if (code == LV_EVENT_RELEASED && segments) {
-                    if (const auto p = chosen(); p.value != std::round(it->value)) submit(SetParameter{b.id, b.symbol, p.value});
+                    if (const auto p = chosen(); p.value != std::round(it->value)) submit(SetParameter{b.id, b.symbol, p.value, true});
                     else paint_bar(target, *it);
-                } else if (code == LV_EVENT_RELEASED) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value); update_euclidean(); }
+                } else if (code == LV_EVENT_RELEASED) { const auto p = dragged(); paint_bar(target, p); stream_parameter(b.id, b.symbol, p.value, true); update_euclidean(); }
                 else if (segments) paint_bar(target, *it);
                 if (parameter_list_) lv_obj_add_flag(parameter_list_, LV_OBJ_FLAG_SCROLLABLE);
                 bar_moving_ = false;
             }
         } else if (code == LV_EVENT_LONG_PRESSED && !bar_moving_ && !bar_scrolling_ && b.symbol != general_output_symbol) {
-            // Held still: MIDI learn for this control. The release that follows is not a tap.
+            // Held still: the control's own page, MIDI learn and per scene. The release that follows is not a tap.
             bar_dragged_ = true;
             open_learn(b.id, b.symbol);
         } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !bar_scrolling_ && segments) {
-            if (const auto p = chosen(); p.value != std::round(it->value)) submit(SetParameter{b.id, b.symbol, p.value});
-        } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !slides) submit(SetParameter{b.id, b.symbol, stepped_choice(*it)});
+            if (const auto p = chosen(); p.value != std::round(it->value)) submit(SetParameter{b.id, b.symbol, p.value, true});
+        } else if (code == LV_EVENT_CLICKED && !bar_dragged_ && !slides) submit(SetParameter{b.id, b.symbol, stepped_choice(*it), true});
         return;
     }
     if (b.action == Action::Slide) {
@@ -1099,7 +1109,8 @@ void Application::handle(Binding& b, lv_event_t* e) {
     case Action::OpenActions: selected_ = b.id; navigate(Page::ModuleActions); break;
     case Action::Edit: open_module(b.id); break;
     case Action::Bypass: {
-        const auto* m = find_module(graph_, b.id); if (m) submit(SetBypass{b.id, !m->bypassed}); break;
+        // From the screen: also written into the current scene.
+        const auto* m = find_module(graph_, b.id); if (m) submit(SetBypass{b.id, !m->bypassed, true}); break;
     }
     case Action::Remove: submit(RemoveModule{b.id}); navigate(Page::Patch); break;
     case Action::SaveSession:
@@ -1133,6 +1144,71 @@ void Application::handle(Binding& b, lv_event_t* e) {
         learn_request_ = submit(LearnMidi{learn_id_, learn_symbol_});
         break;
     case Action::MidiForget: submit(LearnMidi{learn_id_, learn_symbol_, true}); break;
+    case Action::SceneSelect: {
+        const auto& scenes = graph_.scenes.scenes;
+        const auto index = static_cast<std::size_t>(b.number);
+        if (index >= scenes.size()) break;
+        const auto pick = scene_pick_;
+        scene_pick_ = ScenePick::None; rebuild_ = true;
+        const auto current = graph_.scenes.current;
+        const auto name = scenes[index].name;
+        if (pick == ScenePick::CopyTo) {
+            if (index == current) { message("A scene copied over itself stays as it is."); break; }
+            const auto from = scenes[current].name;
+            if (const auto request = submit(CopyScene{current, index})) accepted_notes_[request] = [from, name] { return "Copied " + from + " over " + name + "."; };
+        } else if (pick == ScenePick::Delete) {
+            if (index == current && scenes.size() > 1) { message("Play another scene before deleting this one."); break; }
+            ask("Delete scene", "Delete " + name + "?", scenes.size() == 1 ? "The patch goes back to having no scenes; its parameters are the same in every scene again."
+                                                                            : "Its stored state is lost. The other scenes stay as they are.",
+                "Delete", [this, index, name] {
+                    navigate(Page::Scenes);
+                    if (const auto request = submit(DeleteScene{index})) accepted_notes_[request] = [name] { return "Deleted " + name + "."; };
+                });
+            confirmation_.back = Page::Scenes;
+        } else if (const auto request = submit(SelectScene{index})) accepted_notes_[request] = [name] { return "Playing " + name + "."; };
+        break;
+    }
+    case Action::SceneAdd:
+        if (const auto request = submit(AddScene{}))
+            accepted_notes_[request] = [this] { return "Added " + graph_.scenes.scenes[graph_.scenes.current].name + ": the patch as it is now."; };
+        break;
+    case Action::SceneRename:
+        if (graph_.scenes.scenes.empty()) break;
+        if (pending()) { message("Wait for pending edits before naming a scene."); break; }
+        naming_scene_ = true; renaming_ = saving_as_ = false;
+        draft_name_ = graph_.scenes.scenes[graph_.scenes.current].name;
+        message("Up to 12 characters.");
+        navigate(Page::NamePatch); break;
+    case Action::ScenePick:
+        scene_pick_ = static_cast<ScenePick>(b.number);
+        // The only scene needs no picking.
+        if (scene_pick_ == ScenePick::Delete && graph_.scenes.scenes.size() == 1) {
+            Binding only{this, Action::SceneSelect};
+            handle(only, e);
+            break;
+        }
+        if (scene_pick_ == ScenePick::CopyTo) message("Copy " + graph_.scenes.scenes[graph_.scenes.current].name + " over which scene?");
+        else message("Delete which scene? Not the one playing.");
+        rebuild_ = true;
+        break;
+    case Action::SceneCancel: scene_pick_ = ScenePick::None; message("Tap a scene to play it."); rebuild_ = true; break;
+    case Action::SceneMode: {
+        if (graph_.scenes.scenes.empty()) { message("Add a scene first: SCENES at the top."); break; }
+        const bool scene_mode = !graph_.scenes.scene_mode;
+        if (const auto request = submit(SetSceneMode{scene_mode}))
+            accepted_notes_[request] = [this, scene_mode] { return scene_mode ? scene_hint() : std::string("Stomps act as assigned."); };
+        break;
+    }
+    case Action::SceneMark: {
+        const bool marked = b.number == 1;
+        if (marked == scene_parameter_marked(graph_, learn_id_, learn_symbol_)) break;
+        const auto* m = find_module(graph_, learn_id_);
+        const auto name = m ? parameter(*m, learn_symbol_).name : learn_symbol_;
+        if (const auto request = submit(MarkSceneParameter{learn_id_, learn_symbol_, marked}))
+            accepted_notes_[request] = [name, marked] { return name + (marked ? " is now per scene." : " is now the same in every scene."); };
+        break;
+    }
+    case Action::SceneParameter: open_module(b.id); break;
     case Action::AddLoadMessage: {
         auto list = graph_.load_messages;
         if (list.size() < max_load_messages) { list.push_back({}); submit(SetLoadMessages{list}); }
@@ -1174,7 +1250,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
     case Action::NameEntry:
         if (pending()) { message("Wait for pending edits before naming a patch."); break; }
         // 0: new patch, 1: rename, 2: save under a new name as another stored patch.
-        renaming_ = b.number == 1; saving_as_ = b.number == 2;
+        renaming_ = b.number == 1; saving_as_ = b.number == 2; naming_scene_ = false;
         draft_name_ = b.number ? graph_.name : "";
         message(saving_as_ ? "Saves a separate copy; the original stays as it was saved." :
                 renaming_ ? "Rename keeps modules, values and cables." : "New patch starts with IN connected to OUT.");
@@ -1309,6 +1385,15 @@ void Application::add_module(const std::string& uri) {
     reveal(x, y, height); navigate(Page::Patch);
 }
 void Application::commit_name() {
+    if (naming_scene_) {
+        if (pending()) { message("Wait for pending edits before naming a scene."); return; }
+        if (auto issue = validate_scene_name(draft_name_); !issue.empty()) { message(issue); return; }
+        const auto index = graph_.scenes.current;
+        const auto name = draft_name_;
+        navigate(Page::Scenes);
+        if (const auto request = submit(RenameScene{index, name})) accepted_notes_[request] = [name] { return "Renamed " + name + "."; };
+        return;
+    }
     if (pending()) { message("Wait for pending edits before naming a patch."); return; }
     if (auto issue = validate_patch_name(draft_name_); !issue.empty()) { message(issue); return; }
     if (saving_as_) {
@@ -1325,7 +1410,7 @@ void Application::save_patch(bool as_new) {
     if (!store_) return;
     if (pending()) { message("Wait for pending edits before saving."); return; }
     if (as_new) {
-        renaming_ = false; saving_as_ = true; draft_name_ = graph_.name;
+        renaming_ = naming_scene_ = false; saving_as_ = true; draft_name_ = graph_.name;
         message("Saves a separate copy; the original stays as it was saved.");
         navigate(Page::NamePatch);
         return;
@@ -1440,7 +1525,17 @@ std::vector<Application::Pill> Application::header_pills() const {
     case Page::PatchMidi:
         pills.push_back({"+ Add", Action::AddLoadMessage, 0, {}, 0, true, graph_.load_messages.size() >= max_load_messages || !ready});
         break;
-    case Page::NamePatch: pills.push_back({saving_as_ ? "Save" : renaming_ ? "Rename" : "Create", Action::CommitName, 0, {}, 0, true}); break;
+    case Page::NamePatch: pills.push_back({naming_scene_ ? "Rename" : saving_as_ ? "Save" : renaming_ ? "Rename" : "Create", Action::CommitName, 0, {}, 0, true}); break;
+    case Page::Scenes: {
+        // While a tap picks a scene, only the way out.
+        if (scene_pick_ != ScenePick::None) { pills.push_back({"Cancel", Action::SceneCancel, 0, {}, 0, true}); break; }
+        const auto count = graph_.scenes.scenes.size();
+        pills.push_back({"Add", Action::SceneAdd, 0, {}, 0, true, count >= max_scenes || !ready});
+        pills.push_back({"Rename", Action::SceneRename, 0, {}, 0, false, !count || !ready});
+        pills.push_back({"Copy to", Action::ScenePick, 0, {}, static_cast<int>(ScenePick::CopyTo), false, count < 2 || !ready});
+        pills.push_back({"Delete", Action::ScenePick, 0, {}, static_cast<int>(ScenePick::Delete), false, !count || !ready});
+        break;
+    }
     case Page::Tempo: pills.push_back({"Tap", Action::Tap, 0, {}, 0, true}); break;
     case Page::MidiLearn: {
         const auto* m = find_module(graph_, learn_id_);
@@ -1499,14 +1594,23 @@ void Application::rebuild() {
     lv_obj_set_style_border_width(foot, 1, 0); lv_obj_set_style_border_color(foot, color(0x1f1f1f), 0);
     std::string section = "PATCH", title = graph_.name + (graph_.dirty ? " *" : "");
     switch (page_) {
-    case Page::Patch: break;
+    case Page::Patch:
+        // In scene mode, the scene playing.
+        if (graph_.scenes.scene_mode && !graph_.scenes.scenes.empty()) section += " // " + upper(graph_.scenes.scenes[graph_.scenes.current].name);
+        break;
     case Page::Browser: section = "BROWSER"; title.clear(); break;
     case Page::Parameters: case Page::ModuleActions: {
         section = page_ == Page::Parameters ? "MODULE" : "ACTIONS";
+        // Edits here go into the current scene: say which.
+        if (page_ == Page::Parameters && !graph_.scenes.scenes.empty()) section += " // " + upper(graph_.scenes.scenes[graph_.scenes.current].name);
         const auto* m = find_module(graph_, selected_);
         title = m ? m->name : "Module";
         break;
     }
+    case Page::Scenes:
+        section = "SCENES";
+        title = graph_.scenes.scenes.empty() ? "Scenes" : graph_.scenes.scenes[graph_.scenes.current].name;
+        break;
     case Page::Patches: section = "PATCHES"; break;
     case Page::PatchActions: {
         section = "PATCHES";
@@ -1515,7 +1619,10 @@ void Application::rebuild() {
         break;
     }
     case Page::Settings: section = "SETTINGS"; title = engine_.capabilities().simulation ? "Simulator settings" : "Engine settings"; break;
-    case Page::NamePatch: section = "PATCHES"; title = saving_as_ ? "Save as a new patch" : renaming_ ? "Rename patch" : "New patch"; break;
+    case Page::NamePatch:
+        section = naming_scene_ ? "SCENES" : "PATCHES";
+        title = naming_scene_ ? "Rename scene" : saving_as_ ? "Save as a new patch" : renaming_ ? "Rename patch" : "New patch";
+        break;
     case Page::ConfirmReplace: section = "PATCHES"; title = "Replace current patch?"; break;
     case Page::ConfirmAction: section = "CONFIRM"; title = confirmation_.title; break;
     case Page::CvConnect: {
@@ -1544,7 +1651,7 @@ void Application::rebuild() {
     case Page::Midi: section = "SETTINGS"; title = "MIDI"; break;
     case Page::PatchMidi: section = "PATCHES"; title = "MIDI on load"; break;
     case Page::MidiLearn: {
-        section = "MIDI LEARN";
+        section = "PARAMETER";
         const auto* m = find_module(graph_, learn_id_);
         title = m ? m->name : "Module";
         break;
@@ -1559,7 +1666,7 @@ void Application::rebuild() {
     lv_obj_set_style_text_letter_space(crumb, 2, 0);
     lv_obj_t* heading = nullptr;
     if (!title.empty()) {
-        heading = label(header, upper(title), 24, 32, patch ? 412 : page_ == Page::Settings ? 330 : page_ == Page::Parameters ? 440 : 600, text, &peepo_bold_24);
+        heading = label(header, upper(title), 24, 32, patch ? 312 : page_ == Page::Settings ? 330 : page_ == Page::Parameters ? 440 : 600, text, &peepo_bold_24);
         lv_label_set_long_mode(heading, LV_LABEL_LONG_DOT); lv_obj_set_height(heading, 30);
         if (patch) {
             // Tapping the patch name brings the canvas back to its start.
@@ -1570,9 +1677,10 @@ void Application::rebuild() {
     }
     if (page_ == Page::Browser) { browser(header, content, foot); lv_obj_update_layout(screen_); return; }
     if (patch) {
-        auto* add = primary(pill(button(header, "+ Add", 448, 12, 96, Action::Navigate, 0, {}, static_cast<int>(Page::Browser))));
+        auto* add = primary(pill(button(header, "+ Add", 348, 12, 96, Action::Navigate, 0, {}, static_cast<int>(Page::Browser))));
         // Nothing can be added until the engine answers again.
         if (!ready) lv_obj_add_state(add, LV_STATE_DISABLED);
+        pill(button(header, "Scenes", 452, 12, 96, Action::Navigate, 0, {}, static_cast<int>(Page::Scenes)));
         pill(button(header, "Patches", 556, 12, 104, Action::Navigate, 0, {}, static_cast<int>(Page::Patches)));
         pill(button(header, "Settings", 672, 12, 104, Action::Navigate, 0, {}, static_cast<int>(Page::Settings)));
     } else if (const auto wanted = header_pills(); !wanted.empty()) {
@@ -1637,6 +1745,7 @@ void Application::rebuild() {
     case Page::MidiLearn: midi_learn(content); break;
     case Page::PatchMidi: patch_midi(content); break;
     case Page::PatchActions: patch_actions(content); break;
+    case Page::Scenes: scenes_page(content); break;
     case Page::Halting: halting(content); break;
     }
     if (page_list_) {
@@ -1660,8 +1769,18 @@ void Application::rebuild() {
     if (!patch && page_ != Page::Halting) {
         slim(button(foot, "< Back", 14, 0, 112, Action::Navigate, 0, {}, static_cast<int>(back_page())));
     }
-    const int message_x = patch || page_ == Page::Halting ? 24 : 142;
-    footer_ = label(foot, message_, message_x, 7, patch && selected_cable_ ? 240 : 592 - message_x, faint, &peepo_mono_14);
+    if (patch) {
+        // Where Back is elsewhere: what the stomps do, stomps as assigned or
+        // scenes, saved with the patch. A tap changes it.
+        const bool scene_mode = graph_.scenes.scene_mode;
+        auto* mode = slim(button(foot, scene_mode ? "Scene" : "Stomp", 14, 0, 112, Action::SceneMode));
+        if (scene_mode) {
+            lv_obj_set_style_bg_color(mode, color(accent), 0); lv_obj_set_style_border_width(mode, 0, 0);
+            lv_obj_set_style_text_color(lv_obj_get_child(mode, 0), color(background), 0);
+        }
+    }
+    const int message_x = page_ == Page::Halting ? 24 : 142;
+    footer_ = label(foot, message_, message_x, 7, patch && selected_cable_ ? 280 - message_x - 8 : 592 - message_x, faint, &peepo_mono_14);
     lv_obj_set_height(footer_, 34); lv_label_set_long_mode(footer_, LV_LABEL_LONG_DOT);
     if (patch && selected_cable_) {
         slim(button(foot, "Deselect", 280, 0, 128, Action::ClearCable));
@@ -1752,8 +1871,9 @@ void Application::patch_view(lv_obj_t* parent) {
         lv_obj_align(name, LV_ALIGN_CENTER, 0, 0);
         const auto& ports = module_ports(m);
         // The stomps that act on it, numbered in a white dot on its top right
-        // corner, clear of the name and of the connectors.
-        if (const auto stomps = stomps_on(graph_, m); !stomps.empty() && !m.fixed) {
+        // corner, clear of the name and of the connectors. Not in scene mode,
+        // where the stomps play scenes.
+        if (const auto stomps = stomps_on(graph_, m); !stomps.empty() && !m.fixed && !graph_.scenes.scene_mode) {
             std::string digits;
             for (const auto n : stomps) digits += (digits.empty() ? "" : " ") + std::to_string(n);
             const int width = 20 + 14 * (static_cast<int>(stomps.size()) - 1);
@@ -2646,6 +2766,8 @@ void Application::parameter_bar(lv_obj_t* parent, const Module& m, const Paramet
             caption += (caption.empty() ? "" : "  ") + std::string(is_encoder(a.control) ? "E" : "S") + a.control.substr(is_encoder(a.control) ? 3 : 5);
     // And the MIDI message that sets it, learned by holding the bar.
     if (p.midi) caption += (caption.empty() ? "" : "  ") + midi_binding_text(*p.midi);
+    // Each scene keeps its own value, marked by holding the bar.
+    if (scene_parameter_marked(graph_, m.id, p.symbol)) caption += (caption.empty() ? "" : "  ") + std::string("Per scene");
     // The name takes the left half and more, the value the right.
     const int name_width = width * 54 / 100, value_x = width * 2 / 5, inset = width < bar_width ? 12 : 16;
     auto* name = label(bar, upper(p.name), inset, caption.empty() ? (height - 18) / 2 : height / 2 - 18, name_width, text, &peepo_bold_14);
@@ -2716,7 +2838,7 @@ void Application::activate_parameter() {
         return;
     }
     const auto& p = parameter(*m, bar.symbol);
-    if (p.kind == ParameterKind::Toggle || p.kind == ParameterKind::Enumeration || is_euclidean_toggle(p)) { submit(SetParameter{m->id, p.symbol, stepped_choice(p)}); return; }
+    if (p.kind == ParameterKind::Toggle || p.kind == ParameterKind::Enumeration || is_euclidean_toggle(p)) { submit(SetParameter{m->id, p.symbol, stepped_choice(p), true}); return; }
     // With one encoder, its push switches between choosing a bar and turning it.
     adjusting_ = !adjusting_;
     highlight(bar.widget, true, adjusting_, bar_ink(*m, bar.symbol));
@@ -2732,7 +2854,7 @@ void Application::open_module(InstanceId id) {
 Page Application::back_page() const {
     // Back returns to where the page was opened from.
     switch (page_) {
-    case Page::NamePatch: return Page::Patches;
+    case Page::NamePatch: return naming_scene_ ? Page::Scenes : Page::Patches;
     case Page::Controls: case Page::Diagnostics: case Page::Power: case Page::Midi: return Page::Settings;
     case Page::MidiLearn: return Page::Parameters;
     case Page::PatchMidi: case Page::PatchActions: return Page::Patches;
@@ -2760,8 +2882,10 @@ void Application::turn_parameter(InstanceId id, const std::string& symbol, const
     if (next == current) return;
     // The bar follows at once; the engine's answer confirms it.
     for (const auto& bar : bars_) if (bar.id == id && bar.symbol == symbol) paint_bar(bar.widget, shown);
-    if ((p->kind == ParameterKind::Continuous || p->kind == ParameterKind::Integer) && !is_euclidean_toggle(*p)) stream_parameter(id, symbol, next);
-    else submit(SetParameter{id, symbol, next});
+    // The page's own encoder edits the bar on screen, so the current scene;
+    // a pinned one is played, like a knob on a pedal.
+    if ((p->kind == ParameterKind::Continuous || p->kind == ParameterKind::Integer) && !is_euclidean_toggle(*p)) stream_parameter(id, symbol, next, !pin);
+    else submit(SetParameter{id, symbol, next, !pin});
     update_euclidean();
 }
 void Application::focus_module(int steps) {
@@ -2883,8 +3007,60 @@ void Application::midi_learn(lv_obj_t* parent) {
         list_note(list, "The first message on any channel sets this control from now on. A key sets it only when the control is a switch.");
         return;
     }
+    const auto& scenes = graph_.scenes;
     list_bar(list, "Set by", {.value = it->midi ? midi_binding_text(*it->midi) : "NOTHING", .value_ink = it->midi ? accent : muted, .still = true});
-    list_note(list, "Learn waits for the next control moved on a MIDI device, and replaces what set it before. Saved with the patch.");
+    if (scenes.scenes.empty()) {
+        list_note(list, "Learn waits for the next control moved on a MIDI device, and replaces what set it before. Saved with the patch.");
+        return;
+    }
+    // Whether each scene keeps its own value: the two choices across both columns.
+    list_heading(list, "Scenes");
+    const bool marked = scene_parameter_marked(graph_, m->id, it->symbol);
+    choice_bar(list, {"Same in every scene", "Per scene"}, marked ? 1 : 0, Action::SceneMark, 0, {}, 2 * compact_width, module_fill(*m));
+    std::string names;
+    for (std::size_t i = 0; i < scenes.scenes.size(); ++i)
+        names += (i == 0 ? "" : i + 1 == scenes.scenes.size() ? " and " : ", ") + scenes.scenes[i].name;
+    list_note(list, (scenes.scenes.size() == 1 ? "Per scene: " + names + " keeps its own value." : "Per scene: " + names + " each keep their own value.") +
+              "\nSame: one value for every scene. " + std::to_string(scenes.parameters.size()) + " of " + std::to_string(max_scene_parameters) + " marked in this patch.");
+}
+std::string Application::scene_hint() const {
+    const auto& s = graph_.scenes;
+    if (s.scenes.empty()) return {};
+    // The bank the scene playing is in.
+    const auto first = s.current / scene_bank * scene_bank;
+    std::string letters, names;
+    for (auto i = first; i < std::min(first + scene_bank, s.scenes.size()); ++i) {
+        letters += (letters.empty() ? "" : " ") + std::string(1, static_cast<char>('A' + (i - first)));
+        names += (names.empty() ? "" : ", ") + s.scenes[i].name;
+    }
+    return letters + ": " + names + "." + (s.scenes.size() > scene_bank ? " D E: bank." : "");
+}
+void Application::scenes_page(lv_obj_t* parent) {
+    const auto& s = graph_.scenes;
+    auto* list = page_list(parent);
+    if (s.scenes.empty()) {
+        list_note(list, "No scenes yet. Add keeps the patch as it is now as a scene: every module on or bypassed, and the parameters marked per scene.");
+        return;
+    }
+    // By bank, as the stomps reach them in scene mode; the one playing outlined.
+    for (std::size_t i = 0; i < s.scenes.size(); ++i) {
+        if (i % scene_bank == 0) list_heading(list, "Bank " + std::to_string(i / scene_bank + 1));
+        const bool playing = i == s.current;
+        BarLook look{.value = playing ? "PLAYING" : "", .value_ink = accent,
+                     .caption = "Scene " + std::to_string(i + 1) + "   stomp " + std::string(1, static_cast<char>('A' + i % scene_bank))};
+        if (playing) look.edge = accent;
+        list_bar(list, s.scenes[i].name, look, Action::SceneSelect, 0, {}, static_cast<int>(i));
+    }
+    list_heading(list, "Per scene  " + std::to_string(s.parameters.size()) + " of " + std::to_string(max_scene_parameters));
+    bool any = false;
+    for (const auto& t : s.parameters) {
+        const auto* m = scene_target(graph_, t);
+        if (!m) continue;
+        const auto& p = parameter(*m, t.symbol);
+        list_bar(list, p.name, {.value = format_value(p), .caption = m->name, .keep_case = false}, Action::SceneParameter, m->id, t.symbol);
+        any = true;
+    }
+    if (!any) list_note(list, "None yet. Hold a parameter on its module page to give each scene its own value.");
 }
 void Application::patch_midi(lv_obj_t* parent) {
     const auto& messages = graph_.load_messages;
@@ -2986,8 +3162,9 @@ void Application::name_patch(lv_obj_t* parent) {
     auto* input = lv_textarea_create(parent); lv_obj_set_pos(input, 24, 20); lv_obj_set_size(input, 752, 56);
     lv_textarea_set_one_line(input, true);
     // Preserve a backend name longer than the limit for newly typed text.
-    lv_textarea_set_text(input, draft_name_.c_str()); lv_textarea_set_max_length(input, 48);
-    lv_textarea_set_placeholder_text(input, "Patch name");
+    const auto longest = naming_scene_ ? max_scene_name : 48;
+    lv_textarea_set_text(input, draft_name_.c_str()); lv_textarea_set_max_length(input, static_cast<std::uint32_t>(longest));
+    lv_textarea_set_placeholder_text(input, naming_scene_ ? "Scene name" : "Patch name");
     lv_obj_set_style_text_font(input, &peepo_bold_24, 0); lv_obj_set_style_text_color(input, color(text), 0);
     lv_obj_set_style_bg_color(input, color(surface), 0); lv_obj_set_style_bg_opa(input, LV_OPA_COVER, 0);
     lv_obj_set_style_border_color(input, color(rim), 0); lv_obj_set_style_border_width(input, 1, 0);
@@ -2995,7 +3172,8 @@ void Application::name_patch(lv_obj_t* parent) {
     lv_obj_set_style_pad_all(input, 12, 0);
     bind(input, Action::NameInput);
     if (auto* group = lv_group_get_default()) lv_group_add_obj(group, input);
-    label(parent, renaming_ && lv_textarea_get_cursor_pos(input) > 48 ?
+    label(parent, naming_scene_ ? "Up to 12 characters. Back leaves the name as it was." :
+          renaming_ && lv_textarea_get_cursor_pos(input) > 48 ?
           "Existing long name preserved. Shorten to 48 characters to add text." :
           "Up to 48 characters. Cancel leaves your current patch intact.", 24, 88, 752, muted, &lv_font_montserrat_14);
     auto* keyboard = lv_keyboard_create(parent); lv_obj_set_align(keyboard, LV_ALIGN_TOP_LEFT);

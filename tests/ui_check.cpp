@@ -150,7 +150,7 @@ bool disabled_button(lv_obj_t* l) { return l && lv_obj_has_state(lv_obj_get_pare
 // The first tap on a card picks it, the second adds it.
 void pick_and_add(peepo::Application& app, const std::string& name) { tap(app, name); tap(app, name); }
 void add_module(peepo::Application& app, const std::string& group, const std::string& name) {
-    click(app, 490, 36); check(app.page() == peepo::Page::Browser, "browser navigation failed");
+    click(app, 396, 36); check(app.page() == peepo::Page::Browser, "browser navigation failed");
     tap(app, group); pick_and_add(app, name);
 }
 void keyboard_key(peepo::Application& app, const std::string& key) {
@@ -248,7 +248,7 @@ int main(int argc, char** argv) {
             drag(app, 225, 244, 225, 124);
             check(peepo::find_module(app.graph(), 3)->y == 24, "module drag failed to snap");
             check(app.page() == peepo::Page::Patch, "drag accidentally opened parameters");
-            click(app, 490, 36); check(app.page() == peepo::Page::Browser, "browser navigation failed");
+            click(app, 396, 36); check(app.page() == peepo::Page::Browser, "browser navigation failed");
             check(text_label(app.screen(), "ALL // ") != nullptr && exact_label(app.screen(), "MIST DEMO") != nullptr, "browser did not open on every group");
             check(text_label(app.screen(), "BPM") == nullptr, "browser kept the status bar");
             capture(app, output / "03-browser.bmp");
@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
             tap(app, "DELETE MODULE");
             check(!peepo::find_module(app.graph(), copy.id) && app.graph().connections.size() == 9, "context delete changed unrelated cables");
             // Run enough redraw cycles to expose stale bindings and queued callbacks.
-            for (int i = 0; i < 10; ++i) { click(app, 490, 36); click(app, 70, 456); }
+            for (int i = 0; i < 10; ++i) { click(app, 396, 36); click(app, 70, 456); }
             check(!app.pending(), "pending requests never resolved");
             // Replace the graph through the backend and fill the visible grid.
             auto dense = peepo::demo_graph(); dense.name = "Dense patch";
@@ -366,7 +366,7 @@ int main(int argc, char** argv) {
             tap(app, "DUPLICATE");
             check(app.graph().modules.size() == 5 && !app.pending(), "disabled missing-module duplication submitted an edit");
             tap(app, "DELETE MODULE"); check(app.graph().modules.size() == 4 && app.graph().connections.size() == 4, "missing placeholder deletion failed");
-            click(app, 490, 36); tap(app, "GAIN");
+            click(app, 396, 36); tap(app, "GAIN");
             capture(app, output / "18-catalogue-status.bmp");
             check(text_label(app.screen(), "compatibility") != nullptr, "untested entry reason missing");
             pick_and_add(app, "NAM FIXTURE"); check(app.page() == peepo::Page::Browser && app.graph().modules.size() == 4 && !app.pending(), "untested catalogue entry could be added");
@@ -524,7 +524,7 @@ int main(int argc, char** argv) {
             click(app, 70, 456);
 
             // Add the real granular module from the browser and open its generic pages.
-            click(app, 490, 36); tap(app, "TEXTURE");
+            click(app, 396, 36); tap(app, "TEXTURE");
             capture(app, output / "29-reference-catalogue.bmp");
             pick_and_add(app, "MIST GRANULAR");
             const auto mist = app.graph().modules.back();
@@ -631,7 +631,7 @@ int main(int argc, char** argv) {
             click(app, 70, 456);
             check(text_label(app.screen(), "Engine connection lost") != nullptr, "lost engine not shown");
             capture(app, output / "35-reconnecting.bmp");
-            click(app, 490, 36); check(app.page() == peepo::Page::Patch, "Add opened while the engine was away");
+            click(app, 396, 36); check(app.page() == peepo::Page::Patch, "Add opened while the engine was away");
             click(app, 232, 244); check(app.page() == peepo::Page::Parameters, "the last graph could not be inspected while away");
             click(app, 70, 456);
             stored_engine.set_state(peepo::EngineState::Ready); step(app);
@@ -677,7 +677,7 @@ int main(int argc, char** argv) {
             turn("enc1", 1);
             check(app.message().find("push encoder 1 to open it") != std::string::npos && !app.pending(), "encoder 1 did not pick a module on the patch");
             // In the browser encoder 2 picks the group, encoder 1 the card, a push adds it.
-            click(app, 490, 36);
+            click(app, 396, 36);
             turn("enc2", 3); check(text_label(app.screen(), "TIME // ") != nullptr, "encoder 2 did not step to the third group");
             turn("enc2", -4); check(text_label(app.screen(), "UTIL // ") != nullptr, "encoder 2 did not wrap to the last group");
             turn("enc2", 1); turn("enc1", 1); press("enc1"); release("enc1");
@@ -732,7 +732,7 @@ int main(int argc, char** argv) {
             check(app.page() == peepo::Page::Settings, "Settings did not open");
             press("enc1"); step(app, 800); release("enc1");
             check(app.page() == peepo::Page::Patch, "holding encoder 1 did not leave Settings");
-            turn("enc2", 3); press("enc2"); release("enc2");
+            turn("enc2", 4); press("enc2"); release("enc2");
             check(app.page() == peepo::Page::Settings, "encoder 2 did not step to and push Settings on the patch");
             click(app, 70, 456);
             // Stomps are assigned on the Controls page: stomp 1 toggles Mist Demo freeze.
@@ -822,7 +822,7 @@ int main(int argc, char** argv) {
             check(!text_label(app.screen(), "A4"), "offline tuner displayed a pitch");
             click(app, 70, 456); check(!live.watched, "leaving tuner did not stop monitoring");
             live.connect(); step(app, 500);
-            click(app, 490, 36); tap(app, "CV + UTIL");
+            click(app, 396, 36); tap(app, "CV + UTIL");
             check(!text_label(app.screen(), "LEGACY TUNER"), "hidden duplicate in Add list");
             const auto invalid = peepo::tuning_from_frequency(std::nan(""), 440);
             check(!invalid && !peepo::tuning_from_frequency(440, 0), "invalid pitch/reference accepted");
@@ -929,7 +929,7 @@ int main(int argc, char** argv) {
         {
             peepo::SimulatedEngine sim;
             peepo::Application app(sim); step(app);
-            click(app, 490, 36); tap(app, "GAIN");
+            click(app, 396, 36); tap(app, "GAIN");
             check(first_label(app.screen(), "DRIVE") && first_label(app.screen(), "AMP") && first_label(app.screen(), "CABINET"), "GAIN did not offer its categories");
             tap_first(app, "AMP");
             check(text_label(app.screen(), "GAIN / AMP // 1 MODULE") && !text_label(app.screen(), "Warm saturation"), "the category did not filter the cards");
@@ -1675,7 +1675,7 @@ int main(int argc, char** argv) {
             peepo::Application app(family_engine); step(app);
             const auto modules = app.graph().modules.size();
             const auto pill = [&](const char* name) { auto* l = exact_label(app.screen(), name); return l ? lv_obj_get_parent(l) : nullptr; };
-            click(app, 490, 36); tap(app, "GAIN"); tap_first(app, "DYNAMICS");
+            click(app, 396, 36); tap(app, "GAIN"); tap_first(app, "DYNAMICS");
             check(exact_label(app.screen(), "SQUASH") && !exact_label(app.screen(), "SQUASH STEREO") && text_label(app.screen(), "Evens out the level"), "the family is not one card");
             check(pill("MONO") && pill("STEREO") && lv_obj_has_state(pill("MONO"), LV_STATE_CHECKED) && !lv_obj_has_state(pill("STEREO"), LV_STATE_CHECKED),
                   "the family's pills are missing, or the first is not shown chosen");
@@ -1689,11 +1689,86 @@ int main(int argc, char** argv) {
             tap(app, "SQUASH");
             check(app.page() == peepo::Page::Patch && app.graph().modules.size() == modules + 1 && app.graph().modules.back().uri == stereo.uri,
                   "the card did not add the variant its pills show");
-            click(app, 490, 36); tap(app, "GAIN"); tap_first(app, "DYNAMICS");
+            click(app, 396, 36); tap(app, "GAIN"); tap_first(app, "DYNAMICS");
             check(lv_obj_has_state(pill("STEREO"), LV_STATE_CHECKED), "the card forgot the variant last picked");
             // Encoder 1 steps through the variants as through cards, in pill order.
             tap(app, "SQUASH"); app.control({peepo::ControlEvent::Type::Turn, "enc1", -1}); step(app);
             check(lv_obj_has_state(pill("MONO > STEREO"), LV_STATE_CHECKED) && !lv_obj_has_state(pill("STEREO"), LV_STATE_CHECKED), "encoder 1 did not step to the previous variant");
+        }
+        // Scenes: the mode pill bottom-left on the patch, the Scenes page, the
+        // marker on a module page and the held bar's page.
+        {
+            peepo::SimulatedEngine sim;
+            peepo::Application app(sim); step(app);
+            const auto& scenes = [&]() -> const peepo::Scenes& { return app.graph().scenes; };
+            check(exact_label(app.screen(), "STOMP") != nullptr, "the mode pill is missing");
+            click(app, 70, 456);
+            check(!scenes().scene_mode && text_label(app.screen(), "Add a scene first") != nullptr, "scene mode taken without scenes");
+            tap_header(app, "SCENES"); check(app.page() == peepo::Page::Scenes, "the Scenes pill did not open the Scenes page");
+            check(disabled_button(exact_label(app.screen(), "RENAME")) && disabled_button(exact_label(app.screen(), "COPY TO")), "a pill works without scenes");
+            capture(app, output / "88-scenes-empty.bmp");
+            tap_header(app, "ADD");
+            check(scenes().scenes.size() == 1 && exact_label(app.screen(), "PLAYING") != nullptr, "Add did not add a scene");
+            // Rename: the name keyboard, twelve characters.
+            tap_header(app, "RENAME"); check(app.page() == peepo::Page::NamePatch, "Rename did not open the keyboard");
+            lv_textarea_set_text(widget(app.screen(), &lv_textarea_class), "Verse"); step(app);
+            tap_header(app, "RENAME");
+            check(app.page() == peepo::Page::Scenes && scenes().scenes[0].name == "Verse", "the scene was not renamed");
+            // Bypassing Drive on its page writes it into Verse; the page says which scene it edits.
+            click(app, 70, 456); click(app, 225, 252);
+            check(app.page() == peepo::Page::Parameters && text_label(app.screen(), "MODULE // VERSE") != nullptr, "the module page does not name the scene");
+            tap_header(app, "ON");
+            check(peepo::find_module(app.graph(), 3)->bypassed && scenes().scenes[0].entries[0].value == 1, "the bypass was not written into the scene");
+            // Holding a bar: MIDI and per scene.
+            {
+                const auto at = bar_point(app, "DRIVE");
+                hold(app, at.x, at.y);
+            }
+            check(app.page() == peepo::Page::MidiLearn && exact_label(app.screen(), "SAME IN EVERY SCENE") != nullptr, "the held bar's page has no scenes choice");
+            tap_first(app, "PER SCENE");
+            check(peepo::scene_parameter_marked(app.graph(), 3, "drive"), "Per scene did not mark the parameter");
+            capture(app, output / "89-parameter-scenes.bmp");
+            click(app, 70, 456);
+            tap_header(app, "BYPASSED");
+            check(app.page() == peepo::Page::Parameters && text_label(app.screen(), "Per scene") != nullptr, "a marked bar has no marker");
+            slide(app, "DRIVE", 0.2);
+            capture(app, output / "90-module-per-scene.bmp");
+            // Chorus with Drive on, Solo with Delay off, then two more.
+            const auto drive = peepo::find_module(app.graph(), 3)->parameters[0].value;
+            check(scenes().scenes[0].entries[0].value == 0 && std::any_of(scenes().scenes[0].entries.begin(), scenes().scenes[0].entries.end(),
+                  [&](const peepo::SceneEntry& e) { return e.target.symbol == "drive" && e.value == drive; }), "edits on the screen did not go into the scene");
+            sim.submit(peepo::SetBypass{3, true, true});
+            sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{1, "Chorus"}); sim.submit(peepo::SetBypass{3, false, true});
+            sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{2, "Solo"}); sim.submit(peepo::SetBypass{5, true, true});
+            sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{3, "Bridge"});
+            sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{4, "Outro"});
+            step(app, 256);
+            click(app, 70, 456); tap_header(app, "SCENES");
+            tap(app, "CHORUS");
+            check(scenes().current == 1 && !peepo::find_module(app.graph(), 3)->bypassed && !peepo::find_module(app.graph(), 5)->bypassed,
+                  "tapping a scene did not play it");
+            check(exact_label(app.screen(), "BANK 2") != nullptr && exact_label(app.screen(), "PER SCENE  1 OF 16") != nullptr, "banks or marked parameters missing");
+            capture(app, output / "91-scenes.bmp");
+            // Copy to: the next tap picks where.
+            tap_header(app, "COPY TO");
+            check(exact_label(app.screen(), "CANCEL") != nullptr && text_label(app.screen(), "over which scene") != nullptr, "Copy to does not ask where");
+            capture(app, output / "92-scenes-copy-to.bmp");
+            tap(app, "OUTRO");
+            check(scenes().scenes[4].entries == scenes().scenes[1].entries && scenes().scenes[4].name == "Outro", "Copy to did not copy");
+            // Delete: the scene playing cannot be picked; another is asked about first.
+            tap_header(app, "DELETE"); tap(app, "OUTRO");
+            check(app.page() == peepo::Page::ConfirmAction, "Delete did not ask");
+            tap_header(app, "DELETE");
+            check(app.page() == peepo::Page::Scenes && scenes().scenes.size() == 4, "the scene was not deleted");
+            // The mode pill: scene mode names the scene playing and what A to E do.
+            click(app, 70, 456); click(app, 70, 456);
+            check(app.page() == peepo::Page::Patch && scenes().scene_mode, "the mode pill did not change to scene mode");
+            check(exact_label(app.screen(), "SCENE") != nullptr && text_label(app.screen(), "PATCH // CHORUS") != nullptr &&
+                  text_label(app.screen(), "A B C: Verse, Chorus, Solo. D E: bank.") != nullptr, "scene mode is not shown");
+            capture(app, output / "93-patch-scene-mode.bmp");
+            click(app, 70, 456);
+            check(!scenes().scene_mode && exact_label(app.screen(), "STOMP") != nullptr, "the mode pill did not change back");
+            capture(app, output / "94-patch-stomp-mode.bmp");
         }
         // Release the headless devices before the global runtime.
         lv_indev_delete(indev);

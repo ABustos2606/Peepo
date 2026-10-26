@@ -406,7 +406,7 @@ void simulated(const fs::path& root) {
     check(engine.snapshot().dirty, "edit did not mark the graph");
     // Two scenes, the second current when saved: drive 20 in the first, 80 in the second.
     for (Command c : {Command{AddScene{}}, Command{MarkSceneParameter{3, "drive"}}, Command{AddScene{}}, Command{SelectScene{0}},
-                      Command{SetParameter{3, "drive", 20, true}}, Command{SelectScene{1}}})
+                      Command{SetParameter{3, "drive", 20, true}}, Command{SelectScene{1}}, Command{SetSceneMode{true}}})
         check(run(engine, c)[0].accepted, "simulated scene command refused");
     check(find_module(engine.snapshot(), 3)->parameters[0].value == 80 && engine.snapshot().scenes.current == 1 &&
           (scene_changes(engine.snapshot(), 0) == std::vector<SceneChange>{{3, "drive", 20}}), "simulated scenes wrong");
@@ -428,7 +428,7 @@ void simulated(const fs::path& root) {
     check(loaded.patch_id == id && !loaded.dirty && loaded.modules.size() == graph.modules.size() && loaded.connections.size() == graph.connections.size(), "loaded graph differs");
     check(find_module(loaded, 3)->parameters[0].value == 80, "loaded value differs");
     // Loading restores the scene current when saved; its values are the saved ones.
-    check(loaded.scenes.scenes.size() == 2 && loaded.scenes.current == 1 && scene_changes(loaded, 1).empty() &&
+    check(loaded.scenes.scenes.size() == 2 && loaded.scenes.current == 1 && loaded.scenes.scene_mode && scene_changes(loaded, 1).empty() &&
           (scene_changes(loaded, 0) == std::vector<SceneChange>{{3, "drive", 20}}), "loading did not restore the current scene");
 
     // A plugin the engine lacks: refused before anything changes, as Ingen would load none of it.

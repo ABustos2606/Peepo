@@ -14,7 +14,7 @@
 
 namespace peepo {
 enum class Page { Patch, Browser, Parameters, Patches, Settings, ModuleActions, NamePatch, ConfirmReplace, CvConnect, ConfirmAction,
-                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo, Midi, MidiLearn, PatchMidi, PatchActions };
+                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo, Midi, MidiLearn, PatchMidi, PatchActions, Scenes };
 class Application {
 public:
     // Without a store the Patches page offers the in-memory session snapshot.
@@ -62,7 +62,8 @@ private:
                         AssignControl, EditControl, ClearControl, PickModule, PickTarget, InvertControl, SwitchModeChoice, PowerOff,
                         Restart, BrowserCategory, Revert, ChooseFile, PickFile, TempoStep, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind, ModulePage,
                         MidiToggle, MidiTempoSource, MidiChannel, MidiDevice, MidiLearn, MidiForget, ClockRestart,
-                        LoadMessage, AddLoadMessage, RemoveLoadMessage };
+                        LoadMessage, AddLoadMessage, RemoveLoadMessage,
+                        SceneSelect, SceneAdd, SceneRename, ScenePick, SceneCancel, SceneMode, SceneMark, SceneParameter };
     struct Binding {
         Application* app;
         Action action;
@@ -96,14 +97,17 @@ private:
     lv_obj_t* page_list(lv_obj_t* parent);
     lv_obj_t* list_bar(lv_obj_t* list, const std::string& name, const BarLook&, Action = Action::Navigate, InstanceId = 0, std::string symbol = {}, int number = 0);
     // Every choice in one bar, the chosen one lit; a tap takes one (its index is the number).
-    void choice_bar(lv_obj_t* list, const std::vector<std::string>& choices, int chosen, Action, InstanceId = 0, std::string symbol = {});
+    // As wide as a bar, or `width`; lit in `fill` (0 is green).
+    void choice_bar(lv_obj_t* list, const std::vector<std::string>& choices, int chosen, Action, InstanceId = 0, std::string symbol = {},
+                    int width = 0, std::uint32_t fill = 0);
     // Dragged sideways like a module's bar, or turned by encoder 2.
     lv_obj_t* value_bar(lv_obj_t* list, const std::string& name, double low, double high, double step, double value,
                         std::function<std::string(double)> shown, std::function<void(double)> set);
     static void event(lv_event_t*);
     void handle(Binding&, lv_event_t*);
     RequestId submit(Command);
-    void stream_parameter(InstanceId, const std::string& symbol, double value);
+    // `scene`: an edit on the touch screen, written into the current scene.
+    void stream_parameter(InstanceId, const std::string& symbol, double value, bool scene = false);
     void send_stream();
     void follow_poly_voices(bool replaced);
     void navigate(Page);
@@ -148,8 +152,13 @@ private:
     void patch_midi(lv_obj_t*);
     // Change the MIDI settings and write them, for peepo-midi and peepo-route to read.
     void change_midi(const std::function<void(midi::Settings&)>&);
-    // A held bar: MIDI learn for that control.
+    // A held bar: its own page, with MIDI learn and, in a patch with scenes,
+    // whether it changes per scene.
     void open_learn(InstanceId, const std::string& symbol);
+    // The patch's scenes by bank, and the parameters marked per scene.
+    void scenes_page(lv_obj_t*);
+    // In scene mode, what stomps A to C play and D and E do.
+    std::string scene_hint() const;
     void tap_tempo();
     void set_tempo(double bpm);
     void tuner_meter(lv_obj_t*);
@@ -227,7 +236,7 @@ private:
     // Engine news nobody here asked for, and when the page was last built.
     bool news_ = false;
     unsigned long long rebuilt_ms_ = 0;
-    std::string message_ = "Drag space to pan. Hold a module for actions. Drag output to input.";
+    std::string message_ = "Drag space to pan. Hold a module for actions.";
     enum class PendingKind { Edit, Rename, Replace, Add, Save, SaveAs };
     std::map<RequestId, PendingKind> pending_;
     // Module names of adds in flight, to say which plugin failed.
@@ -324,7 +333,15 @@ private:
     // What the encoders step through: groups shown, and usable modules in card order.
     std::vector<std::string> browser_groups_, browser_order_;
     bool renaming_ = false;
+    // The name being typed is the current scene's.
+    bool naming_scene_ = false;
     std::string draft_name_;
+    // On the Scenes page, a tap on a scene picks where Copy to copies, or
+    // which scene Delete deletes.
+    enum class ScenePick { None, CopyTo, Delete };
+    ScenePick scene_pick_ = ScenePick::None;
+    // What to say once the engine accepts a request, in place of the plain acknowledgement.
+    std::map<RequestId, std::function<std::string()>> accepted_notes_;
     std::optional<Command> replacement_;
     Page confirm_origin_ = Page::Patches;
     lv_obj_t *screen_ = nullptr, *canvas_ = nullptr, *footer_ = nullptr;
@@ -365,7 +382,7 @@ private:
     InstanceId cable_source_ = 0;
     std::string cable_port_;
     // A continuous gesture in progress: one request in flight, newest value wins.
-    struct Stream { InstanceId id; std::string symbol; double latest = 0; std::optional<double> sent; RequestId in_flight = 0; };
+    struct Stream { InstanceId id; std::string symbol; double latest = 0; std::optional<double> sent; RequestId in_flight = 0; bool scene = false; };
     std::optional<Stream> stream_;
     lv_point_t press_{};
     int start_x_ = 0, start_y_ = 0;

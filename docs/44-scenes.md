@@ -1,6 +1,6 @@
 # Scenes
 
-**Planned 24 October 2026. P13.1 (measurements), P13.2 (atomic bundles, engine patch 0012) and P13.3 (spill bypass, engine patch 0013) done in WSL the same day, P13.4 (`"bypass": "spill"` in the catalogue, 21 modules marked) and P13.5 (our own plugins: Discipline's Trails on by default, the tail check on the rest) on 25 October ([record](evidence/scenes-results.md)), P13.6 (the scene model in `src/core`) and P13.7 (the engine commands; scenes stored in the engine's graph and the patch) the same day; scenes are not yet shown on the screen.** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
+**Planned 24 October 2026. P13.1 (measurements), P13.2 (atomic bundles, engine patch 0012) and P13.3 (spill bypass, engine patch 0013) done in WSL the same day, P13.4 (`"bypass": "spill"` in the catalogue, 21 modules marked) and P13.5 (our own plugins: Discipline's Trails on by default, the tail check on the rest) on 25 October ([record](evidence/scenes-results.md)), P13.6 (the scene model in `src/core`) and P13.7 (the engine commands; scenes stored in the engine's graph and the patch) the same day, and P13.8 (the screens, and stomp or scene mode per patch) the same day; the stomps do not select scenes yet (P13.9).** Decided with the user: a scene stores every module's bypass plus only the parameters marked "per scene"; up to **8 scenes** per patch; delays and reverbs ring on when bypassed, including Discipline's and Aura's by default. The steps are Phase 13 of the [implementation plan](10-technical-implementation-plan.md#phase-13--scenes).
 
 A scene is a saved state inside one patch. "Verse" can have the chorus on and the drive off, and "Solo" the reverse, so one song is played on one patch by changing scenes. Changing scene must not break the sound: no gap, no click, and the echoes and reverb of what was just switched off ring on.
 
@@ -76,6 +76,7 @@ Graph properties, like the stomp assignments ([physical controls](18-physical-co
 ```
 peepo:scene-count   3
 peepo:scene-current 2
+peepo:scene-mode    1
 peepo:scene-params  "m4|<plugin>|gain m7|<plugin>|mix"
 peepo:scene-1-name  "Verse"
 peepo:scene-1       "b|m3|<plugin>|0 b|m4|<plugin>|1 p|m4|<plugin>|gain|0.42 p|m7|<plugin>|mix|0.3"
@@ -103,16 +104,23 @@ Loading a patch restores the scene that was current when it was saved: the saved
 
 - **On the touch screen, the current scene is edited.** A bypass changed, or a marked parameter set, is written into the current scene in the same message group, and the patch is dirty as for any edit. An unmarked parameter is a patch-wide edit, as today.
 - **Stomps, knobs, MIDI CC and learned controls are performance changes:** they change the sound but not the stored scene. Selecting the scene again, or another and back, brings back its saved state. (Helix calls this "discard"; it lets a player kick a boost on for one bar without rewriting the scene.)
-- On the module page, a marked parameter's bar shows a small scene marker; holding a bar offers **Per scene** / **Same in every scene**.
+- On the module page, a marked parameter's bar says **Per scene** under its name; holding a bar opens its page, where **Same in every scene** / **Per scene** is chosen.
 
 ## On the screen, stomps and MIDI
 
-Built to the [design language](03-interface-and-controls.md): header pills and one list of bars, no cards. A mockup comes first and is followed as drawn.
+Built to the [design language](03-interface-and-controls.md) from a mockup approved on 25 October 2026 (`docs/images/mockup-scenes-*.png`). Decided with the user: **no new row on the patch page**; the screen is small, and the footer had room.
 
-- **Patch page:** the scenes as pills along the top, the current one white; touching one selects it. A **Scenes** page (header pills: Add, Rename, Copy to, Delete) lists the eight as bars.
-- **Stomps** ([physical controls](18-physical-controls.md)): new actions **Scene 1** to **Scene 8**, **Next scene** and **Previous scene**, per patch or for every patch beside Next patch and Tap tempo. Next scene wraps from the last to the first.
+- **Stomp mode and scene mode, per patch.** In **stomp mode** the switches act as the player assigned them, as before scenes. In **scene mode** they select scenes. The mode is saved with the patch (`peepo:scene-mode`, 1 in scene mode) and is changed only on the screen: the pill at the bottom left of the patch page, where Back is on other pages, reads **STOMP** (outlined) or **SCENE** (green), and a tap changes it. A patch without scenes stays in stomp mode; scene mode is refused until a scene exists, and deleting the last scene returns to stomp mode. In scene mode the patch page names the scene playing in its top line (`PEEPO // PATCH // CHORUS`) and hides the stomp badges on the modules.
+- **Five switches, as on Beebo:** A, B and C are the three stomps; **D is A+B** pressed together and **E is B+C**. In stomp mode all five can be assigned. In scene mode A, B and C select the three scenes of the current **bank** (scenes 1-3, 4-6, 7-8), D steps to the previous bank and E to the next. Telling D and E from a single stomp: a single stomp acts about 40 ms after it is pressed, unless its neighbour joins it. Built in P13.9.
+- **Scenes page**, from the **SCENES** pill on the patch page's header: header pills **Add** (white), **Rename**, **Copy to**, **Delete**, and the current scene as the title. The scenes are listed by bank as bars, each with its number and the stomp that plays it in scene mode; the one playing is outlined and says PLAYING; a tap plays a scene. Below, **Per scene N of 16** lists the marked parameters with their module and value; a tap opens the module. **Copy to** and **Delete** ask for a scene with the next tap (Cancel in the header); Delete asks first, and the scene playing cannot be picked while others exist. Rename uses the name keyboard, 12 characters.
+- **Module page:** the top line names the scene that edits go into (`PEEPO // MODULE // VERSE`); a marked parameter says **Per scene** under its name. Edits made by touch, and by the encoders moving through the page, are written into the current scene; a pinned encoder, a stomp, MIDI and learned controls are performance changes.
+- **Holding a bar** opens the parameter's page (`PEEPO // PARAMETER`): MIDI learn as before and, in a patch with scenes, **Same in every scene | Per scene** across both columns, lit in the module's colour.
 - **MIDI:** a CC selects a scene (value 0 to 7 is scene 1 to 8), on the program-change channel set in Settings → MIDI. The CC number is a setting, default 69 (Line 6's choice, so foot controllers already set up for it work). Program change still selects a patch.
 - **Later:** a scene may also send a few CC messages to the player's other gear, like the patch's CC list on load, so an external pedal changes with the scene.
+
+*Built 25 October 2026 (P13.8):* the screens above, `SetSceneMode` in `src/engine/engine.hpp` with `set_scene_mode` in `src/core`, stored by `IngenEngine`, the simulator and the bundle. `peepo_ui_check` captures 88-94 (empty Scenes page, the held bar's page, the marker, the Scenes page, Copy to, the patch in scene and stomp mode). Not yet: the stomps selecting scenes, D and E, and the stomp letters on the screen (still 1-3), which are P13.9.
+
+![Scenes page](images/ui-scenes.png) ![Patch page in scene mode](images/ui-patch-scene-mode.png)
 
 ## Checks
 
@@ -120,5 +128,5 @@ Built to the [design language](03-interface-and-controls.md): header pills and o
 - **Atomic change** (`27-scenes.sh atomic`): two modules switched opposite ways in one bundle, by bypass, by parameter and mixed; both outputs must change on the same frame. Run with and without `-a`.
 - **Scene changes while playing:** 8 scenes, 4 modules each changing, switched every 500 ms for a minute: no xrun, no gap, every change read back.
 - **CPU:** the heaviest catalogue patch with all modules on; spill-bypassed delays stop costing CPU after their tail.
-- **Storage:** `peepo_core_tests` (differences, edits, orphans, duplicate, remove), `peepo_storage_tests` (bundle round trip), `peepo_ingen_tests` (a second client sees a scene change); `peepo_ui_check` screens for the pills, the Scenes page and the marker.
+- **Storage:** `peepo_core_tests` (differences, edits, orphans, duplicate, remove), `peepo_storage_tests` (bundle round trip), `peepo_ingen_tests` (a second client sees a scene change); `peepo_ui_check` screens for the mode pill, the Scenes page, the marker and the held bar's page.
 - **On the Pi**, by ear, with guitar: a verse/solo patch with a delay and a reverb switched by stomps and by a MIDI foot controller.

@@ -47,9 +47,9 @@ std::string literal_number(double value) {
 std::string iri(const std::string& text) { return "<" + text + ">"; }
 // One scene property: count, current, params, N-name or N, with N from 1 to 8.
 void read_scene(const std::string& local, const Term& object, SceneProperties& out) {
-    if (local == "count" || local == "current") {
+    if (local == "count" || local == "current" || local == "mode") {
         const auto value = number(object);
-        if (value && *value >= 0) (local == "count" ? out.count : out.current) = static_cast<int>(std::min(*value, double(max_scenes)));
+        if (value && *value >= 0) (local == "count" ? out.count : local == "current" ? out.current : out.mode) = static_cast<int>(std::min(*value, double(max_scenes)));
         return;
     }
     if (object.kind != Term::Kind::Literal) return;
@@ -287,7 +287,7 @@ std::string write_main_ttl(const Graph& graph) {
     if (!graph.scenes.scenes.empty()) {
         const auto scenes = encode_scenes(graph.scenes, [](InstanceId id) { return "m" + std::to_string(id); });
         text += " ;\n\tpeepo:scene-count " + std::to_string(scenes.count) + " ;\n\tpeepo:scene-current " + std::to_string(scenes.current) +
-                " ;\n\tpeepo:scene-params " + ingen::string_literal(scenes.parameters);
+                " ;\n\tpeepo:scene-mode " + std::to_string(scenes.mode) + " ;\n\tpeepo:scene-params " + ingen::string_literal(scenes.parameters);
         for (std::size_t i = 0; i < scenes.scenes.size(); ++i)
             text += " ;\n\tpeepo:scene-" + std::to_string(i + 1) + "-name " + ingen::string_literal(scenes.scenes[i].first) + " ;\n\tpeepo:scene-" +
                     std::to_string(i + 1) + " " + ingen::string_literal(scenes.scenes[i].second);

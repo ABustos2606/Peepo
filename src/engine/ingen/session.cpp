@@ -706,6 +706,7 @@ void Session::rebuild() {
         };
         stored.count = whole("count");
         stored.current = whole("current");
+        stored.mode = whole("mode");
         stored.parameters = text("params");
         for (int i = 1; i <= stored.count; ++i) stored.scenes.emplace_back(text(std::to_string(i) + "-name"), text(std::to_string(i)));
         // An entry whose block is gone is an orphan: kept, never applied.
@@ -806,6 +807,7 @@ void Session::write_scenes(Transaction& to, const Scenes& scenes, bool current) 
     auto text = [](std::string t) { return Value{Value::Kind::String, 0, false, std::move(t)}; };
     put("count", ingen::number(wanted.count));
     put("current", ingen::number(wanted.current));
+    put("mode", ingen::number(wanted.mode));
     put("params", text(wanted.parameters));
     // Every slot, so one a deleted scene used is emptied, and an emptied scene is never stale.
     for (std::size_t i = 0; i < max_scenes; ++i) {
@@ -1111,6 +1113,8 @@ std::string Session::plan(const Command& command, Transaction& to) {
         } else if constexpr (std::is_same_v<T, MarkSceneParameter>) {
             if (!paths_.contains(c.id)) return "No such module.";
             result = edit_scenes(to, [&](Graph& g) { return c.marked ? mark_scene_parameter(g, c.id, c.symbol) : unmark_scene_parameter(g, c.id, c.symbol); });
+        } else if constexpr (std::is_same_v<T, SetSceneMode>) {
+            result = edit_scenes(to, [&](Graph& g) { return set_scene_mode(g, c.scene_mode); });
         } else if constexpr (std::is_same_v<T, LoadPatch>) {
             if (!bundle_location(c.location)) return "Invalid patch location";
             std::vector<std::string> absent;

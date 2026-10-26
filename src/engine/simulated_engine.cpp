@@ -172,6 +172,8 @@ std::string SimulatedEngine::apply(const Command& command) {
             if (auto issue = delete_scene(graph_, c.scene); !issue.empty()) return issue;
         } else if constexpr (std::is_same_v<T, MarkSceneParameter>) {
             if (auto issue = c.marked ? mark_scene_parameter(graph_, c.id, c.symbol) : unmark_scene_parameter(graph_, c.id, c.symbol); !issue.empty()) return issue;
+        } else if constexpr (std::is_same_v<T, SetSceneMode>) {
+            if (auto issue = set_scene_mode(graph_, c.scene_mode); !issue.empty()) return issue;
         } else if constexpr (std::is_same_v<T, LoadPatch>) {
             const auto path = local_path(c.location);
             std::ifstream in(path / "main.ttl", std::ios::binary);

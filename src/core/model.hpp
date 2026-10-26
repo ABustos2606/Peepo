@@ -167,6 +167,8 @@ std::optional<std::vector<ControlChange>> decode_control_changes(const std::stri
 // every module's bypass and the value of each parameter marked per scene; the
 // marked list is the patch's, the same for every scene.
 inline constexpr std::size_t max_scenes = 8, max_scene_parameters = 16, max_scene_name = 12;
+// In scene mode stomps A to C play the scenes of one bank of three.
+inline constexpr std::size_t scene_bank = 3;
 // A module a scene names. Like an assignment, it keeps the module's plugin, so
 // a different module that later holds the same identity is never changed; an
 // entry whose module is gone or holds another plugin is an orphan, kept and
@@ -197,16 +199,21 @@ struct Scenes {
     // The scene the live state was last set from, counted from 0; unused when
     // there are no scenes.
     std::size_t current = 0;
+    // Scene mode: the stomps select scenes, A to C in the current bank of
+    // three and D and E the bank. Otherwise stomp mode, where they act as
+    // assigned. Saved with the patch; never set without scenes.
+    bool scene_mode = false;
 };
 // "Scene 1" to "Scene 8".
 std::string default_scene_name(std::size_t index);
 // Empty when acceptable: 1 to 12 printable ASCII characters.
 std::string validate_scene_name(const std::string&);
 // The graph properties scenes are kept in: peepo:scene-count, -current
-// (counted from 1, 0 with no scenes), -params, and -N-name and -N for each.
+// (counted from 1, 0 with no scenes), -mode (1 in scene mode), -params, and
+// -N-name and -N for each.
 // Entries are separated by spaces, fields by '|'; plugin URIs hold neither.
 struct SceneProperties {
-    int count = 0, current = 0;
+    int count = 0, current = 0, mode = 0;
     std::string parameters;
     // Each scene's name and entries, in order.
     std::vector<std::pair<std::string, std::string>> scenes;
@@ -263,6 +270,8 @@ std::string copy_scene(Graph&, std::size_t from, std::size_t to);
 // The current scene stays current wherever it moves.
 std::string move_scene(Graph&, std::size_t from, std::size_t to);
 std::string delete_scene(Graph&, std::size_t scene);
+// Scene mode or stomp mode; scene mode is refused without scenes.
+std::string set_scene_mode(Graph&, bool scene_mode);
 // Marking copies the parameter's live value into every scene; unmarking
 // leaves its live value for all of them.
 std::string mark_scene_parameter(Graph&, InstanceId, const std::string& symbol);

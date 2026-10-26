@@ -1070,7 +1070,7 @@ bool same_scenes(const Scenes& a, const Scenes& b) {
         return x.name == y.name && x.entries.size() == y.entries.size() &&
                std::equal(x.entries.begin(), x.entries.end(), y.entries.begin(), [](const SceneEntry& e, const SceneEntry& f) { return e.target.same(f.target) && e.value == f.value; });
     };
-    return a.current == b.current && a.parameters.size() == b.parameters.size() && a.scenes.size() == b.scenes.size() &&
+    return a.current == b.current && a.scene_mode == b.scene_mode && a.parameters.size() == b.parameters.size() && a.scenes.size() == b.scenes.size() &&
            std::equal(a.parameters.begin(), a.parameters.end(), b.parameters.begin(), [](const SceneTarget& s, const SceneTarget& t) { return s.same(t); }) &&
            std::equal(a.scenes.begin(), a.scenes.end(), b.scenes.begin(), entries);
 }
@@ -1138,6 +1138,9 @@ void scenes() {
     check(rig.result(RemoveModule{added}).accepted && !in_every(added) && validate_graph(rig.graph()).empty(), "a removed module stayed in the scenes");
     check(rig.result(MarkSceneParameter{b, "gain", false}).accepted && !scene_parameter_marked(rig.graph(), b, "gain") && rig.result(MarkSceneParameter{b, "gain"}).accepted,
           "unmark");
+    // Scene mode is the patch's, on the engine's graph like the scenes.
+    check(rig.result(SetSceneMode{true}).accepted && rig.graph().scenes.scene_mode && property(fake, "ingen:/main", scene_key("mode"))->number == 1,
+          "scene mode is not on the engine's graph");
     other.settle();
     check(same_scenes(other.graph().scenes, rig.graph().scenes), "a second client's scenes differ");
     const auto kept = rig.graph().scenes;

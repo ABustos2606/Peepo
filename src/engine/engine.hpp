@@ -97,9 +97,12 @@ struct MoveScene { std::size_t from, to; };
 struct DeleteScene { std::size_t scene; };
 // Per scene, or with `marked` false, the same in every scene again.
 struct MarkSceneParameter { InstanceId id; std::string symbol; bool marked = true; };
+// Scene mode, where the stomps select scenes, or stomp mode, where they act as
+// assigned; saved with the patch. Scene mode needs a scene.
+struct SetSceneMode { bool scene_mode; };
 using Command = std::variant<AddModule, RemoveModule, MoveModule, DuplicateModule, SetParameter, SetBypass, SetFile, SetTempo, Connect, Disconnect,
                              LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, LoadPatch, Assign, Unassign, LearnMidi, SetLoadMessages,
-                             SelectScene, AddScene, RenameScene, CopyScene, MoveScene, DeleteScene, MarkSceneParameter>;
+                             SelectScene, AddScene, RenameScene, CopyScene, MoveScene, DeleteScene, MarkSceneParameter, SetSceneMode>;
 struct EngineEvent {
     RequestId request = 0;
     bool accepted = true;

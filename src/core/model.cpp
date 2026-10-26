@@ -483,6 +483,7 @@ SceneProperties encode_scenes(const Scenes& s, const std::function<std::string(I
     SceneProperties out;
     out.count = static_cast<int>(s.scenes.size());
     out.current = s.scenes.empty() ? 0 : static_cast<int>(s.current) + 1;
+    out.mode = !s.scenes.empty() && s.scene_mode ? 1 : 0;
     // A module the engine does not hold keeps the block it was read with.
     auto block = [&](const SceneTarget& t) {
         auto symbol = t.module ? block_of(t.module) : std::string();
@@ -533,6 +534,7 @@ Scenes decode_scenes(const SceneProperties& in, const std::function<InstanceId(c
         s.scenes.push_back(std::move(scene));
     }
     s.current = in.current >= 1 ? std::min(static_cast<std::size_t>(in.current) - 1, count - 1) : 0;
+    s.scene_mode = in.mode == 1;
     return s;
 }
 const Module* scene_target(const Graph& g, const SceneTarget& t) {
@@ -614,6 +616,11 @@ std::string delete_scene(Graph& g, std::size_t index) {
     if (index == s.current) return "Select another scene before deleting this one.";
     s.scenes.erase(s.scenes.begin() + static_cast<std::ptrdiff_t>(index));
     if (index < s.current) --s.current;
+    return {};
+}
+std::string set_scene_mode(Graph& g, bool scene_mode) {
+    if (scene_mode && g.scenes.scenes.empty()) return "Add a scene first.";
+    g.scenes.scene_mode = scene_mode;
     return {};
 }
 std::string mark_scene_parameter(Graph& g, InstanceId id, const std::string& symbol) {
@@ -699,7 +706,7 @@ void fit_scenes(Graph& g) {
 std::string validate_scenes(const Graph& g) {
     const auto& s = g.scenes;
     if (s.scenes.size() > max_scenes) return "Too many scenes";
-    if (s.scenes.empty()) return s.parameters.empty() ? std::string() : "Parameters marked per scene without scenes";
+    if (s.scenes.empty()) return !s.parameters.empty() ? "Parameters marked per scene without scenes" : s.scene_mode ? "Scene mode without scenes" : std::string();
     if (s.current >= s.scenes.size()) return "Invalid current scene";
     if (s.parameters.size() > max_scene_parameters) return "Too many parameters per scene";
     auto valid = [](const SceneTarget& t) {
