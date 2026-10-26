@@ -305,7 +305,8 @@ void fixture(const std::string& folder) {
         check((d.category == "Delay" || d.category == "Reverb" || d.category == "Texture") && !d.port_bypass, ("a module spills that is not a delay or reverb: " + d.uri).c_str());
         check(d.uri != "http://polyeffects.com/lv2/polyclouds#spectral" && d.uri != "http://calf.sourceforge.net/plugins/Vinyl", ("a module that sounds by itself spills: " + d.uri).c_str());
     }
-    check(spilling == 21, ("the overlay should mark 21 modules to spill, not " + std::to_string(spilling)).c_str());
+    // 21 from WSL (P13.4), then Bitcrushed delay and the three IR reverbs on the Pi (P13.10).
+    check(spilling == 25, ("the overlay should mark 25 modules to spill, not " + std::to_string(spilling)).c_str());
     for (const auto& d : offered)
         if (d.uri.find("polyclouds#") != std::string::npos)
             check(d.parameters.size() == 12 && std::none_of(d.parameters.begin(), d.parameters.end(), [](const Parameter& p) { return p.kind == ParameterKind::Continuous && (p.symbol == "freeze_param" || p.symbol == "pitch_param"); }),

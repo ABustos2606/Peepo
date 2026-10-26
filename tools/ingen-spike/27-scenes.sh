@@ -5,10 +5,12 @@
 # its tail, a tone and its memory when bypassed today, then whether a bundle of
 # changes lands in one frame, with the engine started plainly and with
 # --atomic-bundles. "spill" repeats the tail checks with the engine's bypass
-# spilling (engine patch 0013, P13.3); it is not part of "all". See
+# spilling (engine patch 0013, P13.3), and "playing" changes scenes every
+# 500 ms while a tone plays (P13.10); neither is part of "all". See
 # 27-scenes.py. Run as root inside Debian:
-#   bash 27-scenes.sh [tails|spill|atomic] [URI-SUBSTRING]
-# Results: $RUN/scenes-tails.json, scenes-spill.json, scenes-atomic-plain.json,
+#   bash 27-scenes.sh [tails|spill|playing|atomic] [URI-SUBSTRING]
+# Results: $RUN/scenes-tails.json, scenes-spill.json, scenes-playing.json,
+# scenes-atomic-plain.json,
 # scenes-atomic-a.json.
 # SCENES_LV2 names more bundle directories, searched first (such as our own
 # plugins' build directories, with PEEPO_CATALOGUE a catalogue that lists them).
@@ -35,6 +37,14 @@ if [ "$what" = spill ]; then
     echo "== spill bypass: tails, click, replay, side and sleep"
     start_engine || exit 1
     SCENES_SPILL=1 SCENES_RESULTS="$RUN/scenes-spill.json" python3 "$D/27-scenes.py" spill "$CATALOGUE" "$OVERLAY" "${2:-}" || result=1
+    grep -E "rror" "$RUN/ingen.log" | sort | uniq -c | head -10
+    stop_engine
+fi
+if [ "$what" = playing ]; then
+    # P13.10: a scene every 500 ms for a minute while a tone plays.
+    echo "== scene changes while playing"
+    start_engine || exit 1
+    SCENES_RESULTS="$RUN/scenes-playing.json" python3 "$D/27-scenes.py" playing "$CATALOGUE" "$OVERLAY" || result=1
     grep -E "rror" "$RUN/ingen.log" | sort | uniq -c | head -10
     stop_engine
 fi

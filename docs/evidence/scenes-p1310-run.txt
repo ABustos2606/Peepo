@@ -1,0 +1,270 @@
+# P13.10 on the Pi, 26 October 2026. Package peepo-arm64-20261026-935e718-dirty (engine patches 0001-0013, -a).
+# Raspberry Pi 5, Tascam US-100 (hw:CODEC), JACK 48 kHz, 128 frames, 3 periods. Power supply under-voltage (throttled 0x50000/0x50005) throughout.
+# tools/pi/check-scenes.sh with tools/ingen-spike/27-scenes.py; outputs in run order.
+
+## 1. check-scenes.sh tails (full run, engine under gdb)
+VERSION 2026-10-26
+throttled: throttled=0x50005
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+round trip without a module: 196 frames
+engine CPU with no module: 0.0%
+Aura                         Delay    port   tail rings on               on  -47.9 off  -47.9 | click  19.7 dB | replay  -75.7, never bypassed  -75.7
+Bitcrushed delay             Delay    engine tail cut                    on  -50.4 off -180.0 | click  31.1 dB CLICK | replay  -13.0, never bypassed -180.0 REPLAY
+Discipline                   xrun during the click recording (8.0 dB): measured again
+Discipline                   Delay    port   tail rings on               on  -35.6 off  -35.6 | click   7.7 dB | replay -180.0, never bypassed  -50.7
+Discipline, Trails off       Delay    port   tail cut                    on  -35.6 off -180.0 | click   5.2 dB | replay -180.0, never bypassed  -50.7
+Euclidelay                   Delay    port   tail rings on               on  -31.2 off  -31.2 | click  14.4 dB | replay  -24.2, never bypassed  -24.2 | right -1 dB
+Euclidelay, engine bypass    Delay    engine tail cut                    on  -31.2 off -180.0 | click  58.7 dB CLICK | replay   -6.1, never bypassed  -24.2 REPLAY | right +0 dB
+Eureka Skip                  xrun during the click recording (5.2 dB): measured again
+Eureka Skip                  Delay    port   tail rings on               on  -36.5 off  -36.4 | click   4.3 dB | replay -180.0, never bypassed -180.0
+Eureka Spool                 Delay    port   tail rings on               on  -36.5 off  -36.5 | click   1.2 dB | replay  -25.4, never bypassed  -25.3
+Gx Delay stereo              Delay    spill  tail rings on               on  -40.3 off  -40.3 | click   0.0 dB | replay -180.0, never bypassed -180.0
+                             CPU %: on 0.3, spilling 1.0, after the tail 0.7 (no module 0.0); tail ends 1.0 s
+Gx Digital delay             Delay    spill  tail rings on               on  -36.2 off  -36.2 | click   0.1 dB | replay  -72.6, never bypassed  -72.6
+                             CPU %: on 1.0, spilling 1.0, after the tail 0.3 (no module 0.0); tail ends 3.5 s
+Gx Digital delay stereo      xrun during the click recording (0.1 dB): measured again
+Gx Digital delay stereo      Delay    spill  tail rings on               on  -36.2 off  -36.2 | click   0.1 dB | replay  -72.6, never bypassed  -72.6
+                             CPU %: on 1.0, spilling 1.3, after the tail 0.3 (no module 0.0); tail ends 3.5 s
+Gx Duck delay                Delay    spill  tail rings on               on  -32.5 off  -32.6 | click   0.0 dB | replay -180.0, never bypassed -180.0
+                             CPU %: on 0.7, spilling 0.3, after the tail 0.3 (no module 0.0); tail ends 0.5 s
+Gx Duck delay stereo         Delay    spill  tail rings on               on  -41.1 off  -41.1 | click   0.0 dB | replay -180.0, never bypassed -180.0
+                             CPU %: on 0.7, spilling 1.0, after the tail 0.7 (no module 0.0); tail ends 0.5 s
+Gx Echo Cat                  Delay    spill  tail rings on               on  -42.9 off  -42.9 | click  15.3 dB | replay  -79.7, never bypassed  -79.8
+                             CPU %: on 1.7, spilling 1.3, after the tail 0.7 (no module 0.0); tail ends 2.8 s
+Gx Echo stereo               Delay    spill  tail rings on               on  -33.0 off  -33.0 | click   6.7 dB | replay  -37.2, never bypassed  -37.2
+                             CPU %: on 1.0, spilling 0.7, after the tail 0.3 (no module 0.0); tail ends 7.2 s
+Gx Multiband delay           Delay    spill  tail rings on               on  -35.4 off  -35.4 | click   3.9 dB | replay  -35.3, never bypassed  -35.3
+                             CPU %: on 1.7, spilling 1.7, after the tail 3.7 (no module 0.0); tail ends 10.0 s
+Gx Multiband echo            Delay    spill  tail rings on               on  -46.9 off  -46.9 | click   9.4 dB | replay  -54.7, never bypassed  -54.7
+                             CPU %: on 1.7, spilling 2.0, after the tail 5.3 (no module 0.0); tail ends 6.0 s
+Gx Tube delay                Delay    spill  tail no tail at these values on -180.0 off -180.0 | click  33.8 dB CLICK | replay -180.0, never bypassed -180.0
+                             CPU %: on 1.0, spilling 0.7, after the tail 0.3 (no module 0.0); tail ends 0.0 s
+Loo-pi                       Delay    port   tail looper: mutes on purpose on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+MDA DubDelay                 Delay    spill  tail rings on               on  -39.4 off  -39.4 | click   9.4 dB | replay  -44.1, never bypassed  -44.9
+                             CPU %: on 0.7, spilling 0.7, after the tail 0.3 (no module 0.0); tail ends 6.7 s
+Mist Beat Repeat             Delay    engine tail no tail at these values on -180.0 off -180.0 | click  50.0 dB CLICK | replay -180.0, never bypassed -180.0
+Mist Looper                  Delay    spill  tail rings on               on  -43.4 off  -43.4 | click   2.9 dB | replay  -54.3, never bypassed  -54.3
+                             CPU %: on 2.3, spilling 2.3, after the tail 0.7 (no module 0.0); tail ends 4.6 s
+Stereo delay                 Delay    spill  tail rings on               on  -43.9 off  -43.9 | click  12.5 dB | replay  -69.1, never bypassed  -69.1
+                             CPU %: on 0.3, spilling 1.0, after the tail 0.7 (no module 0.0); tail ends 3.8 s
+Tempo delay                  Delay    spill  tail rings on               on  -50.5 off  -50.5 | click  16.2 dB | replay -120.6, never bypassed -120.6
+                             CPU %: on 0.3, spilling 0.7, after the tail 1.0 (no module 0.0); tail ends 2.0 s
+Dragonfly Hall               Reverb   spill  tail rings on               on  -63.9 off  -63.9 | click   5.2 dB | replay -122.8, never bypassed -128.0
+                             CPU %: on 3.7, spilling 3.3, after the tail 0.7 (no module 0.0); tail ends 1.5 s
+Dragonfly Plate              Reverb   spill  tail rings on               on  -45.2 off  -45.2 | click   7.7 dB | replay  -71.9, never bypassed  -71.9
+                             CPU %: on 0.7, spilling 1.0, after the tail 0.3 (no module 0.0); tail ends 3.3 s
+Dragonfly Room               Reverb   spill  tail rings on               on  -52.0 off  -52.0 | click   4.4 dB | replay  -76.0, never bypassed  -76.1
+                             CPU %: on 4.0, spilling 4.3, after the tail 0.3 (no module 0.0); tail ends 3.5 s
+Eureka Hush                  Reverb   port   tail rings on               on  -35.2 off  -35.2 | click   5.5 dB | replay  -42.9, never bypassed  -42.9
+Eureka Slowmo                Reverb   port   tail rings on               on  -34.6 off  -34.6 | click   4.9 dB | replay  -38.7, never bypassed  -38.3
+Gx Multiband reverb          Reverb   spill  tail rings on               on  -47.5 off  -47.5 | click  16.2 dB | replay  -58.8, never bypassed  -58.8
+                             CPU %: on 2.7, spilling 2.7, after the tail 0.7 (no module 0.0); tail ends 5.7 s
+Gx Shimmizita                Reverb   spill  tail rings on               on  -45.0 off  -45.0 | click  15.5 dB | replay  -80.3, never bypassed  -80.3
+                             CPU %: on 3.0, spilling 3.0, after the tail 0.3 (no module 0.0); tail ends 3.1 s
+IR Reverb - Mono             Reverb   engine tail no tail at these values on -180.0 off -180.0 | click 167.7 dB CLICK | replay -180.0, never bypassed -180.0
+IR Reverb - Mono to Stereo   Reverb   engine tail no tail at these values on -180.0 off -180.0 | click 167.7 dB CLICK | replay -180.0, never bypassed -180.0 | right +0 dB
+IR Reverb - Stereo           Reverb   engine tail no tail at these values on -180.0 off -180.0 | click 167.7 dB CLICK | replay -180.0, never bypassed -180.0
+Mist Oliverb                 Reverb   spill  tail rings on               on  -31.3 off  -32.5 | click   7.2 dB | replay  -38.9, never bypassed  -40.3
+                             CPU %: on 3.3, spilling 3.3, after the tail 0.7 (no module 0.0); tail ends 4.8 s
+Beat Repeater - Mono         Texture  engine tail no tail at these values on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+Beat Repeater - Stereo       Texture  engine tail no tail at these values on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+Beat Slicer - Mono           Texture  engine tail no tail at these values on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+Beat Slicer - Stereo         Texture  engine tail no tail at these values on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+Drizzle                      Texture  port   tail rings on               on  -53.9 off  -53.9 | click   7.2 dB | replay -180.0, never bypassed -180.0
+Eureka Bloom                 Texture  port   tail no tail at these values on  -70.6 off  -70.8 | click   6.9 dB | replay  -77.4, never bypassed  -77.1
+Eureka Crinkle               Texture  port   tail no tail at these values on -180.0 off -180.0 | click  10.5 dB | replay -180.0, never bypassed -180.0
+Eureka Granny                Texture  port   tail rings on               on  -35.1 off  -35.1 | click   2.4 dB | replay  -23.9, never bypassed  -23.9
+Eureka Prism                 Texture  port   tail no tail at these values on -110.8 off -111.0 | click  28.5 dB CLICK | replay -180.0, never bypassed -180.0
+/tmp/peepo-scenes/27-scenes.py:84: RuntimeWarning: overflow encountered in square
+  return float(numpy.sqrt(numpy.mean(numpy.square(x)))) if len(x) else 0.0
+Granulator - Mono            Texture  engine tail cut                    on    inf off -180.0 | click 519.2 dB CLICK | replay -180.0, never bypassed -180.0
+Granulator - Stereo          Texture  engine tail cut                    on  -33.6 off -180.0 | click  61.4 dB CLICK | replay -180.0, never bypassed -180.0
+Mist                         Texture  spill  tail rings on               on  -49.0 off  -39.2 | click   4.6 dB | replay -180.0, never bypassed -180.0
+                             CPU %: on 1.7, spilling 1.7, after the tail 0.7 (no module 0.0); tail ends 1.8 s
+Mist Spectral                xrun during the click recording (42.8 dB): measured again
+Mist Spectral                Texture  engine tail cut                    on   -9.2 off -180.0 | click  40.7 dB CLICK | replay   -2.1, never bypassed    2.9
+Power cut                    Texture  engine tail no tail at these values on -180.0 off -180.0 | click 167.6 dB CLICK | replay -180.0, never bypassed -180.0
+Reverse (Reflector)          Texture  engine tail no tail at these values on  -71.9 off -180.0 | click   6.5 dB | replay -180.0, never bypassed -180.0
+Stuck (freeze)               Texture  engine tail no tail at these values on -180.0 off -180.0 | click  51.6 dB CLICK | replay -180.0, never bypassed -180.0
+Vinyl                        Texture  engine tail no tail at these values on -180.0 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+      5 fluidsynth: error: requested set value for setting 'synth.midi-channels' out of range
+instrument started again: active active active
+
+
+## 2. round 2: tails on the IR reverbs with an impulse response; spill on the candidates (engine crashed in Bitcrushed delay); playing (read-back parser not yet fixed)
+VERSION 2026-10-26
+throttled: throttled=0x50005
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+round trip without a module: 196 frames
+IR Reverb - Mono             Reverb   engine tail cut                    on  -59.1 off -180.0 | click  60.5 dB CLICK | replay  -18.8, never bypassed -180.0 REPLAY
+IR Reverb - Mono to Stereo   Reverb   engine tail cut                    on  -59.0 off -180.0 | click  62.4 dB CLICK | replay  -18.8, never bypassed -180.0 REPLAY | right -11 dB
+IR Reverb - Stereo           Reverb   engine tail cut                    on  -59.0 off -180.0 | click  62.4 dB CLICK | replay  -18.8, never bypassed -180.0 REPLAY
+instrument started again: active active active
+VERSION 2026-10-26
+throttled: throttled=0x50005
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+round trip without a module: 196 frames
+engine CPU with no module: 0.0%
+Traceback (most recent call last):
+  File "/tmp/peepo-scenes/27-scenes.py", line 864, in <module>
+    main()
+  File "/tmp/peepo-scenes/27-scenes.py", line 851, in main
+    results = tails(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/peepo-scenes/27-scenes.py", line 507, in tails
+    click, side = run_click(probe, m)
+                  ^^^^^^^^^^^^^^^^^^^
+  File "/tmp/peepo-scenes/27-scenes.py", line 337, in run_click
+    worst, side, xruns = click_once(probe, module)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/peepo-scenes/27-scenes.py", line 346, in click_once
+    if block.create() != 0:
+       ^^^^^^^^^^^^^^
+  File "/tmp/peepo-scenes/27-scenes.py", line 266, in create
+    status = c.put(self.path, "a ingen:Block ;\n\t\tlv2:prototype <%s>" % self.module["uri"], timeout=20)[0]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/peepo-scenes/ingenprobe.py", line 126, in put
+    return self.request("a patch:Put ;\n\tpatch:subject <%s> ;\n\tpatch:body [\n\t\t%s\n\t]" % (subject, body), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/peepo-scenes/ingenprobe.py", line 110, in request
+    m = self.read_message(deadline - time.monotonic())
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/peepo-scenes/ingenprobe.py", line 82, in read_message
+    raise ConnectionError("engine closed the socket")
+ConnectionError: engine closed the socket
+instrument started again: active active active
+VERSION 2026-10-26
+throttled: throttled=0x50000
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+module MDA Overdrive                        bypass engine parameter drive, 0.1 to 0.6
+module Gain                                 bypass engine parameter gain, -9 to 0
+module Stereo delay                         bypass spill  parameter fx_mix, 0.2 to 0.5
+module Dragonfly Hall                       bypass spill  parameter late_level, 10 to 40
+FAIL  120 scene changes in 60 s: 11 xruns; level -18.1 dBFS, lowest 2.5 ms window 31.8 dB below it, 181 gaps; 480 read back wrong; change and read back p95 50.5 ms
+      scene 2, MDA Overdrive: bypassed False value None, wanted False 0.314286
+      scene 2, Gain: bypassed False value None, wanted True -3.85714
+      scene 2, Stereo delay: bypassed False value None, wanted False 0.414286
+      scene 2, Dragonfly Hall: bypassed False value None, wanted True 35.7143
+      scene 3, MDA Overdrive: bypassed False value None, wanted True 0.528571
+      scene 3, Gain: bypassed False value None, wanted False 0
+      scene 3, Stereo delay: bypassed False value None, wanted True 0.2
+      scene 3, Dragonfly Hall: bypassed False value None, wanted False 14.2857
+      scene 4, MDA Overdrive: bypassed False value None, wanted False 0.171429
+      scene 4, Gain: bypassed False value None, wanted True -6.42857
+instrument started again: active active active
+ROUND2-DONE
+
+## 3. Bitcrushed delay under gdb, before its fix (SCENES_GDB=1 check-scenes.sh spill bitcrushed_delay)
+Thread 10 "ingen" received signal SIGSEGV, Segmentation fault.
+0x00007ffff41d550c in ?? () from /opt/peepo/lib/lv2/bitcrushed_delay.lv2/bitcrushed_delay.so
+=> 0x7ffff41d550c:	ldr	w1, [x20, #12]
+x20            0x800000002d08
+#0  0x00007ffff41d550c in ?? () from /opt/peepo/lib/lv2/bitcrushed_delay.lv2/bitcrushed_delay.so
+#1  ingen::server::LV2Block::run(ingen::server::RunContext&) () from /opt/peepo/lib/aarch64-linux-gnu/libingen_server.so
+#2  ingen::server::BlockImpl::process(ingen::server::RunContext&) ()
+#3  ingen::server::Task::run(ingen::server::RunContext&) ()
+#4  ingen::server::GraphImpl::process(ingen::server::RunContext&) ()
+#5  ingen::server::Engine::run(unsigned int) ()
+#6  ingen::server::JackDriver::_process_cb(unsigned int) () from /opt/peepo/lib/aarch64-linux-gnu/libingen_jack.so
+Offset 0x550c of the arm64 build: run()'s LV2_ATOM_SEQUENCE_FOREACH over plugin->event_port, which
+connect_port had set to the is_using_tempo control's buffer (port 11, after the audio output).
+
+## 4. round 3, Bitcrushed delay fixed: spill on the candidates; playing
+VERSION 2026-10-26
+throttled: throttled=0x50005
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+round trip without a module: 196 frames
+engine CPU with no module: 0.0%
+Bitcrushed delay             Delay    spill  tail rings on               on  -50.4 off  -50.4 | click   6.4 dB | replay -180.0, never bypassed -180.0
+                             CPU %: on 0.7, spilling 0.7, after the tail 0.3 (no module 0.0); tail ends 1.3 s
+Gx Multiband delay           Delay    spill  tail rings on               on  -35.4 off  -35.4 | click   4.0 dB | replay  -35.3, never bypassed  -35.3
+                             CPU %: on 2.0, spilling 2.0, after the tail 3.3 (no module 0.0); tail ends 10.0 s
+Gx Multiband echo            Delay    spill  tail rings on               on  -46.9 off  -46.9 | click   9.4 dB | replay  -54.7, never bypassed  -54.7
+                             CPU %: on 2.0, spilling 1.7, after the tail 5.0 (no module 0.0); tail ends 6.0 s
+Gx Tube delay                Delay    spill  tail no tail at these values on -180.0 off -180.0 | click  32.5 dB CLICK | replay -180.0, never bypassed -180.0
+                             CPU %: on 1.0, spilling 1.0, after the tail 0.3 (no module 0.0); tail ends 0.0 s
+IR Reverb - Mono             Reverb   spill  tail rings on               on  -59.1 off  -59.1 | click  23.2 dB CLICK | replay -180.0, never bypassed -180.0
+                             CPU %: on 2.7, spilling 2.3, after the tail 0.3 (no module 0.0); tail ends 1.3 s
+IR Reverb - Mono to Stereo   Reverb   spill  tail rings on               on  -59.0 off  -59.0 | click  34.0 dB CLICK | replay -180.0, never bypassed -180.0 | right -1 dB
+                             CPU %: on 4.7, spilling 3.3, after the tail 0.3 (no module 0.0); tail ends 1.3 s
+IR Reverb - Stereo           Reverb   spill  tail rings on               on  -59.0 off  -59.0 | click  34.0 dB CLICK | replay -180.0, never bypassed -180.0
+                             CPU %: on 5.0, spilling 3.7, after the tail 0.3 (no module 0.0); tail ends 1.3 s
+Granulator - Mono            Texture  spill  tail cut                    on  -52.6 off -180.0 | click   0.0 dB | replay -180.0, never bypassed -180.0
+                             CPU %: on 0.3, spilling 0.7, after the tail 0.3 (no module 0.0); tail ends 0.2 s
+Granulator - Stereo          Texture  spill  tail no tail at these values on -180.0 off  -61.8 | click  17.4 dB | replay -180.0, never bypassed -180.0
+                             CPU %: on 0.7, spilling 0.3, after the tail 0.7 (no module 0.0); tail ends 0.3 s
+instrument started again: active active active
+VERSION 2026-10-26
+throttled: throttled=0x50005
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+module MDA Overdrive                        bypass engine parameter drive, 0.1 to 0.6
+module Gain                                 bypass engine parameter gain, -9 to 0
+module Stereo delay                         bypass spill  parameter fx_mix, 0.2 to 0.5
+module Dragonfly Hall                       bypass spill  parameter late_level, 10 to 40
+FAIL  120 scene changes in 60 s: 11 xruns; level -17.9 dBFS, lowest 2.5 ms window 31.0 dB below it, 0 dropouts; 0 read back wrong; change and read back p95 51.3 ms
+instrument started again: active active active
+ROUND3-DONE
+
+## 5. round 4: Gx Tube delay at feedback 5 (runs away); playing without scene changes, the baseline (the probe then hung in its cleanup and was stopped)
+VERSION 2026-10-26
+throttled: throttled=0x50000
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+round trip without a module: 196 frames
+engine CPU with no module: 0.0%
+Gx Tube delay                Delay    spill  tail rings on               on   -8.9 off  -11.5 | click  75.0 dB CLICK | replay    6.1, never bypassed    6.8
+                             CPU %: on 1.0, spilling 0.7, after the tail 1.3 (no module 0.0); tail ends None s
+instrument started again: active active active
+VERSION 2026-10-26
+throttled: throttled=0x50005
+JACK_DRIVER_OPTIONS=-d hw:CODEC -r 48000 -p 128 -n 3
+module MDA Overdrive                        bypass engine parameter drive, 0.1 to 0.6
+module Gain                                 bypass engine parameter gain, -9 to 0
+module Stereo delay                         bypass spill  parameter fx_mix, 0.2 to 0.5
+module Dragonfly Hall                       bypass spill  parameter late_level, 10 to 40
+FAIL  0 scene changes in 60 s: 12 xruns; level -24.5 dBFS, lowest 2.5 ms window 4.0 dB below it, 0 dropouts; 0 read back wrong; change and read back p95 0.0 ms
+      xruns, ms after the change before each: [None, None, None, None, None, None, None, None, None, None, None, None]
+Terminated
+instrument started again: active active active
+
+## 6. Gx Tube delay at feedback 1, level -20 dB (check-scenes.sh spill gxtubedelay)
+Gx Tube delay                Delay    spill  tail rings on               on  -36.7 off  -36.7 | click  12.8 dB | replay -103.2, never bypassed -103.2
+                             CPU %: on 1.0, spilling 1.3, after the tail 0.7 (no module 0.3); tail ends 2.4 s
+
+## 7. check-scenes.sh cpu: each stored patch as saved, then with every module switched on (instrument's engine, no probe)
+== p20261014-222121-f9e0: Clouds guitar
+1 modules (Mist); 0 switched on
+  as saved  JACK DSP load mean 1.7%, max 1.8%; engine 1.5% of a core; 0 xruns
+  all on    JACK DSP load mean 1.8%, max 2.2%; engine 1.6% of a core; 0 xruns
+== p20261014-224640-727c: wendy
+3 modules (Chorus, TAP Tubewarmth, Harmonic tremolo); 1 switched on
+  as saved  JACK DSP load mean 1.3%, max 1.5%; engine 1.0% of a core; 0 xruns
+  all on    JACK DSP load mean 1.7%, max 1.8%; engine 1.5% of a core; 0 xruns
+== p20261016-133756-59b6: Overdrive into Clouds
+2 modules (MDA Overdrive, Mist); 0 switched on
+  as saved  JACK DSP load mean 2.1%, max 2.3%; engine 1.8% of a core; 0 xruns
+  all on    JACK DSP load mean 1.9%, max 2.0%; engine 1.7% of a core; 0 xruns
+== p20261017-195332-a47c: Euclidean test
+4 modules (Euclidean, 16 Step Note Sequencer, AMS LFO - Tempo, Weave Oscillator); 0 switched on
+  as saved  JACK DSP load mean 2.7%, max 3.2%; engine 2.4% of a core; 0 xruns
+  all on    JACK DSP load mean 3.1%, max 3.1%; engine 3.0% of a core; 0 xruns
+== p20261020-192022-4fbf: aura
+1 modules (Aura); 1 switched on
+  as saved  JACK DSP load mean 2.9%, max 3.3%; engine 2.6% of a core; 0 xruns
+  all on    JACK DSP load mean 3.0%, max 3.3%; engine 2.7% of a core; 0 xruns
+== p20261021-142134-ba94: midi keyboard
+4 modules (Aura, Weave Oscillator, MIDI to CV, Mist); 1 switched on
+  as saved  JACK DSP load mean 3.9%, max 4.2%; engine 5.8% of a core; 0 xruns
+  all on    JACK DSP load mean 4.1%, max 4.2%; engine 6.1% of a core; 0 xruns
+== p20261021-214240-7ae5: Chamber showcase
+3 modules (Chamber, Chamber, Chamber); 0 switched on
+  as saved  JACK DSP load mean 4.8%, max 5.4%; engine 12.4% of a core; 0 xruns
+  all on    JACK DSP load mean 5.0%, max 5.2%; engine 12.8% of a core; 0 xruns
+== p20261022-032223-315c: drizzling
+2 modules (Drizzle Synth, Drizzle); 1 switched on
+  as saved  JACK DSP load mean 4.7%, max 5.5%; engine 8.7% of a core; 0 xruns
+  all on    JACK DSP load mean 4.9%, max 5.6%; engine 9.3% of a core; 0 xruns
+== p20261022-042359-78e0: discipline
+3 modules (Chamber, Aura, Discipline); 2 switched on
+  as saved  JACK DSP load mean 7.3%, max 7.8%; engine 10.8% of a core; 0 xruns
+  all on    JACK DSP load mean 7.9%, max 8.1%; engine 11.5% of a core; 0 xruns
+running patch p20261014-222121-f9e0 loaded again, dirty=0; guitar and speakers wired again

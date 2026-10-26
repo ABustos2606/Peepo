@@ -1,0 +1,16 @@
+diff --git a/bitcrushed_delay/bitcrushed_delay.cpp b/bitcrushed_delay/bitcrushed_delay.cpp
+index 923cb5d..b132298 100644
+--- a/bitcrushed_delay/bitcrushed_delay.cpp
++++ b/bitcrushed_delay/bitcrushed_delay.cpp
+@@ -2237,7 +2237,10 @@ connect_port(LV2_Handle instance,
+       if (i < m)
+ 	plugin->outputs[i] = (float*)data;
+       else if (i == m)
+-	plugin->event_port = (LV2_Atom_Sequence*)data;
++	// Peepo: port m is is_using_tempo in bitcrushed_delay.ttl, a control
++	// this code never reads. It has no MIDI input: read as one, the
++	// control's value walked through memory and crashed the engine.
++	;
+       else if (i == m+1)
+ 	plugin->poly = (float*)data;
+       else if (i == m+2)

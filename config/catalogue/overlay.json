@@ -516,7 +516,6 @@
     {"match": "gareus.org/oss/lv2/zeroconvolv#", "file": {"property": "http://gareus.org/oss/lv2/zeroconvolv#ir", "label": "Impulse response", "folder": "ir/reverb", "extensions": ["wav", "flac"]}},
     {"match": "gareus.org/oss/lv2/zeroconvolv#", "availability": "untested", "reason": "Does not load an impulse response in this engine: its worker reports an error (docs/29)."},
     {"uri": "http://polyeffects.com/lv2/polyfilter#moog_ladder", "availability": "untested", "reason": "Produced non-finite samples from a plain sine in the compatibility check."},
-    {"uri": "http://polyeffects.com/lv2/bitcrushed_delay", "availability": "untested", "reason": "Has crashed the engine; see docs/22-plugin-catalogue.md."},
     {"match": "polyclouds#", "output": "output_param"},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/granulator_mono", "output": "outputGain"},
     {"uri": "http://avwlv2.sourceforge.net/plugins/avw/granulator_stereo", "output": "outputGain"},
@@ -637,6 +636,10 @@
     {"uri": "https://github.com/michaelwillis/dragonfly-reverb", "bypass": "spill"},
     {"uri": "urn:dragonfly:plate", "bypass": "spill"},
     {"uri": "urn:dragonfly:room", "bypass": "spill"},
+    {"uri": "http://polyeffects.com/lv2/bitcrushed_delay", "bypass": "spill"},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#Mono", "bypass": "spill"},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#MonoToStereo", "bypass": "spill"},
+    {"uri": "http://polyeffects.com/lv2/polyconvo#Stereo", "bypass": "spill"},
     {"uri": "http://polyeffects.com/lv2/polymarbles", "groups": [
       {"name": "T clock", "parameters": ["t_rate_param", "t_mode_param", "t_range_param", "t_bias_param"]},
       {"name": "T randomness", "parameters": ["t_jitter_param", "t_deja_vu_param", "deja_vu_param", "deja_vu_length_param"]},

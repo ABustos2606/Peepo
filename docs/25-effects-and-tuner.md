@@ -35,7 +35,9 @@ different channel layouts. These are functional differences.
 NAM and cabinet/IR reverbs have model and impulse response selectors; see
 [file handling](29-parameters-files-tempo.md#model-and-ir-files-p83). The x42 IR
 Convolver remains disabled for its worker error. MIDI-played instruments need MIDI routing. Clouds Beat Repeat,
-the Poly Moog ladder and Bitcrushed delay are withheld for documented defects.
+and the Poly Moog ladder are withheld for documented defects. Bitcrushed delay, withheld after it crashed
+the engine, is offered again from 26 October 2026: it read a control as a MIDI input, fixed by
+`tools/plugin-patches/polylv2-bitcrushed-no-event-port.patch` ([record](evidence/scenes-results.md#on-the-pi-p1310)).
 Clean Boost (`basic_modular#boost`) is hidden from Add as it is a rigid 2×–4×
 multiplier completely redundant with Gain (`eg-amp`, -90 dB to +24 dB); its
 identity remains recognized for saved patches. For coloured boost, use

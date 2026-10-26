@@ -5,6 +5,8 @@
 
     python3 27-scenes.py tails  CATALOGUE OVERLAY [URI-SUBSTRING]
     python3 27-scenes.py spill  CATALOGUE OVERLAY [URI-SUBSTRING]
+    python3 27-scenes.py playing CATALOGUE OVERLAY
+    python3 27-scenes.py cpu     CATALOGUE OVERLAY
     python3 27-scenes.py atomic
 
 tails: every Delay, Reverb and Texture module the catalogue offers, under the
@@ -34,6 +36,21 @@ off and on again, and one more check:
           -90 dBFS for 2.5 s (waiting at most 20 s), against the engine with
           no module.
 
+playing: scene changes while playing (P13.10). Four modules in a row (drive,
+amplifier, a spill delay and a spill reverb), 8 scenes that each switch every
+module's bypass and one parameter, sent as the adapter sends a selection: one
+bundle with the bypasses, the values and peepo:scene-current. A 220 Hz tone
+plays while a scene is selected every 500 ms (SCENES_EVERY; 0 changes
+nothing, for a baseline) for a minute (SCENES_SECONDS).
+Pass: no xrun, no dropout (a 2.5 ms window of the output 40 dB below its
+usual level), and every bypass and value read back from the engine after
+each change. SCENES_DUMP keeps the recording and the change frames.
+
+cpu: the patch the engine holds, measured for 10 s as it is and again with
+every module switched on (the engine's bypass, or the plugin's own switch):
+JACK's DSP load, the engine's CPU and xruns. tools/pi/check-scenes.sh runs it
+on each stored patch on the Pi.
+
 atomic: two eg-amp blocks, A from in_l to out_l and B from in_l to out_r, with
 a steady 0.5 on in_l. A scene-like bundle switches them opposite ways (their
 bypass, or their gain between 0 and -90 dB) and the frames where out_l and
@@ -47,7 +64,6 @@ broadcasts, and the engine then stalls.
 import json
 import os
 import re
-import subprocess
 import sys
 import threading
 import time
@@ -56,7 +72,7 @@ import jack
 import numpy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ingenprobe import Client
+from ingenprobe import Client, engine_pid
 
 MAIN = "ingen:/main/"
 SILENT = 1e-9
@@ -88,6 +104,7 @@ class Probe:
         self.chunks = []
         self.recording = False
         self.xruns = 0
+        self.xrun_frames = []
         self.client.set_process_callback(self.process)
         self.client.set_xrun_callback(self.xrun)
         self.client.activate()
@@ -113,6 +130,7 @@ class Probe:
 
     def xrun(self, delay):
         self.xruns += 1
+        self.xrun_frames.append(self.frame)
 
     def now(self):
         with self.lock:
@@ -190,7 +208,7 @@ def present(module, rules):
     for rule in rules:
         if not (module["uri"] == rule["uri"] if "uri" in rule else rule["match"] in module["uri"]):
             continue
-        for key in ("name", "category", "bypass"):
+        for key in ("name", "category", "bypass", "file"):
             if rule.get(key):
                 module[key] = rule[key]
         if rule.get("hidden"):
@@ -207,6 +225,9 @@ SETTINGS = {
     "http://guitarix.sourceforge.net/plugins/gxechocat#echocat": {"head1": 1, "head2": 1, "swell": 0.8, "sustain": 0.3},
     "http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo": {"level_l": 60, "level_r": 60, "timt_l": 400, "timt_r": 400},
     "http://drobilla.net/plugins/mda/DubDelay": {"delay": 0.3, "fx_mix": 0.6},
+    # The project's build of Gx Tube delay (the Pi's) is silent at its
+    # defaults: gain -40 dB and level -60 dB (P13.10).
+    "http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay": {"fslider0_": 0, "fslider1_": 1, "fslider2_": 300, "fslider3_": -20},
     "http://polyeffects.com/lv2/polyclouds#beat_repeat": {"reverb_param": 0.9},
     "urn:dragonfly:plate": {"decay": 3, "early_level": 50},
     "urn:dragonfly:room": {"decay": 3, "late_level": 50},
@@ -225,6 +246,10 @@ SPILL = os.environ.get("SCENES_SPILL") == "1"
 ON_AGAIN = SPILL or os.environ.get("SCENES_ON_AGAIN") == "1"
 # A directory to keep each recording whose click is over 20 dB in.
 DUMP = os.environ.get("SCENES_DUMP")
+# An impulse response for the reverbs that read one from a file.
+IR = os.environ.get("SCENES_IR")
+# playing: SCENES_READ_BACK=0 sends the scenes without reading them back.
+READ_BACK = os.environ.get("SCENES_READ_BACK", "1") != "0"
 # One input and two outputs, measured again under the engine's bypass for the
 # side check.
 MONO_TO_STEREO = {
@@ -245,7 +270,7 @@ class Block:
         self.ins = [p["symbol"] for p in audio if p["direction"] == "input"][:2]
         self.outs = [p["symbol"] for p in audio if p["direction"] == "output"][:2]
 
-    def create(self):
+    def create(self, wire=True):
         with Engine() as c:
             status = c.put(self.path, "a ingen:Block ;\n\t\tlv2:prototype <%s>" % self.module["uri"], timeout=20)[0]
             if status != 0:
@@ -257,6 +282,16 @@ class Block:
                 c.set(self.path, "peepo:spillBypass", "true")
             for symbol, value in self.module.get("settings", {}).items():
                 c.set(self.path + "/" + symbol, "ingen:value", number(value))
+            # A reverb read from a file is silent without one: SCENES_IR names
+            # an impulse response, given as the adapter gives a file (P13.10).
+            reads = self.module.get("file") or {}
+            control = [p["symbol"] for p in self.module["ports"] if p["type"] in ("atom", "midi") and p["direction"] == "input"]
+            if IR and reads.get("folder") == "ir/reverb" and control:
+                c.set(self.path + "/" + control[0], "ingen:activity",
+                      "[ a patch:Set ; patch:property <%s> ; patch:value \"%s\"^^atom:Path ]" % (reads["property"], IR))
+                time.sleep(1.5)
+            if not wire:
+                return 0
             for port, symbol in zip(("in_l", "in_r"), self.ins):
                 c.connect(MAIN + port, self.path + "/" + symbol)
             for port, symbol in zip(("out_l", "out_r"), self.outs):
@@ -359,8 +394,13 @@ def click_once(probe, module):
             module["name"], worst, name, probe.xruns - xruns), flush=True)
     side = None
     if len(block.ins) == 1 and len(block.outs) == 2:
-        end = int(0.3 * rate)
-        side = db(rms(right[-end:])) - db(rms(left[-end:]))
+        if ON_AGAIN:
+            # While bypassed: from 50 ms after the switch until it is on again.
+            a, b = int(sent - first + 0.05 * rate), int(sent - first + 0.18 * rate)
+            side = db(rms(right[a:b])) - db(rms(left[a:b]))
+        else:
+            end = int(0.3 * rate)
+            side = db(rms(right[-end:])) - db(rms(left[-end:]))
     return worst, side, probe.xruns - xruns
 
 
@@ -388,7 +428,7 @@ def run_replay(probe, module, bypass):
 
 def cpu_seconds():
     """The engine's CPU time so far, in seconds."""
-    pid = subprocess.run(["pgrep", "-n", "-x", "ingen"], capture_output=True, text=True).stdout.strip()
+    pid = engine_pid()
     fields = open("/proc/%s/stat" % pid).read().rsplit(")", 1)[1].split()
     return (int(fields[11]) + int(fields[12])) / os.sysconf("SC_CLK_TCK")
 
@@ -437,7 +477,7 @@ def tails(catalogue, overlay, only):
     rules = json.load(open(overlay, encoding="utf-8"))["rules"]
     modules = [present(m, rules) for m in json.load(open(catalogue, encoding="utf-8"))["modules"]]
     modules = [m for m in modules if m["availability"] == "available" and not m.get("hidden")
-               and m["category"] in ("Delay", "Reverb", "Texture") and (not only or only in m["uri"])]
+               and m["category"] in ("Delay", "Reverb", "Texture") and (not only or any(o in m["uri"] for o in only.split(",")))]
     modules = [m for m in modules if any(p["type"] == "audio" and p["direction"] == "input" for p in m["ports"])]
     for m in modules:
         m["settings"] = SETTINGS.get(m["uri"], {})
@@ -622,17 +662,248 @@ def atomic():
     return results
 
 
+# ------------------------------------------------------------- playing ----
+
+# Four modules in a row, each with one parameter marked per scene and the
+# range its scenes take; the first installed of each list is used. Drive,
+# amplifier, a spill delay and a spill reverb (Dragonfly Hall on the Pi, the
+# amplifier again in WSL), so every kind of bypass is switched.
+PLAYING = [
+    [("http://drobilla.net/plugins/mda/Overdrive", "drive", 0.1, 0.6)],
+    [("http://lv2plug.in/plugins/eg-amp", "gain", -9.0, 0.0)],
+    [("http://drobilla.net/plugins/mda/Delay", "fx_mix", 0.2, 0.5)],
+    [("https://github.com/michaelwillis/dragonfly-reverb", "late_level", 10.0, 40.0),
+     ("http://lv2plug.in/plugins/eg-amp", "gain", -6.0, 0.0)],
+]
+SCENES = 8
+
+
+def scene_of(k, i, low, high):
+    """Scene k of module i: bypassed on alternate scenes, so each change
+    switches every module, and its parameter somewhere else every time."""
+    return (k + i) % 2 == 0, low + (high - low) * ((3 * k + i) % SCENES) / (SCENES - 1)
+
+
+def read_back(c, block, symbol):
+    """The block's bypass and its parameter's value, as the engine holds them."""
+    _, reply, others = c.get(block.path)
+    text = reply + "".join(others)
+    # The answer can come in more than one message, and the engine may name
+    # the block <ingen:/main/x> or </main/x>.
+    path = "(?:ingen:)?" + re.escape(block.path[len("ingen:"):])
+
+    def value(port):
+        m = re.search(r"<%s/%s>\s*;\s*patch:body \[\s*ingen:value \"?([-0-9.e]+)" % (path, re.escape(port)), text)
+        return float(m.group(1)) if m else None
+
+    deadline = time.monotonic() + 1.0
+    while value(symbol) is None and time.monotonic() < deadline:
+        more = c.read_message(deadline - time.monotonic())
+        if more is None:
+            break
+        text += more
+    if block.by_port:
+        enabled = (value(block.enable) or 0) > 0.5
+    else:
+        m = re.search(r"patch:subject <%s> ;\s*patch:body \[([^\]]*)\]" % path, text)
+        enabled = not (m and re.search(r"ingen:enabled false", m.group(1)))
+    return not enabled, value(symbol)
+
+
+def playing(catalogue, overlay, seconds=60.0, every=0.5):
+    """8 scenes over 4 modules, a scene every `every` seconds while a tone
+    plays: no xrun, no gap in the sound, every change read back."""
+    rules = json.load(open(overlay, encoding="utf-8"))["rules"]
+    offered = {m["uri"]: present(m, rules) for m in json.load(open(catalogue, encoding="utf-8"))["modules"]}
+    probe = Probe()
+    graph_ports(probe)
+    chain = []
+    for choices in PLAYING:
+        for uri, symbol, low, high in choices:
+            if uri not in offered:
+                continue
+            block = Block(dict(offered[uri], settings={}))
+            if block.create(wire=False) == 0:
+                chain.append((block, symbol, low, high))
+                break
+            block.delete()
+        else:
+            print("FAIL  none of %s is installed" % [c[0] for c in choices])
+            return None
+    with Engine() as c:
+        # in_l feeds the first block; each block's first output feeds every
+        # audio input of the next; the last one's outputs go to out_l and out_r.
+        tails_ = [MAIN + "in_l"]
+        for block, _, _, _ in chain:
+            for symbol in block.ins:
+                c.connect(tails_[0], block.path + "/" + symbol)
+            tails_ = [block.path + "/" + s for s in block.outs]
+        c.connect(tails_[0], MAIN + "out_l")
+        c.connect(tails_[-1], MAIN + "out_r")
+    for block, symbol, low, high in chain:
+        print("module %-36s bypass %-6s parameter %s, %g to %g" % (
+            block.module["name"], "port" if block.by_port else "spill" if block.module.get("bypass") == "spill" else "engine",
+            symbol, low, high), flush=True)
+
+    def messages(k):
+        out = []
+        for i, (block, symbol, low, high) in enumerate(chain):
+            bypassed, value = scene_of(k, i, low, high)
+            if block.by_port:
+                out.append(set_message(block.path + "/" + block.enable, "ingen:value", number(0 if bypassed else 1)))
+            else:
+                out.append(set_message(block.path, "ingen:enabled", boolean(not bypassed)))
+            out.append(set_message(block.path + "/" + symbol, "ingen:value", number(value)))
+        # As the adapter sends it with every selection.
+        out.append(set_message(MAIN, "peepo:scene-current", '"%d"^^xsd:int' % k))
+        return out
+
+    with Engine() as c:
+        send_bundle(c, messages(0))
+    with probe.lock:
+        probe.tone, probe.phase = 0.25, 0.0
+    time.sleep(1.5)
+    xruns = probe.xruns
+    probe.start()
+    changes, wrong, late, at = 0, [], [], []
+    began = time.monotonic()
+    k = 0
+    if every <= 0:
+        # The baseline: the same chain and tone, no scene changes.
+        time.sleep(seconds)
+    while every > 0 and time.monotonic() - began < seconds:
+        due = began + (changes + 1) * every
+        time.sleep(max(0.0, due - time.monotonic()))
+        k = (k + 1) % SCENES
+        sent = time.monotonic()
+        at.append(probe.now())
+        with Engine() as c:
+            send_bundle(c, messages(k))
+            for i, (block, symbol, low, high) in enumerate(chain if READ_BACK else []):
+                want_bypassed, want_value = scene_of(k, i, low, high)
+                bypassed, value = read_back(c, block, symbol)
+                if bypassed != want_bypassed or value is None or abs(value - want_value) > 1e-3 * max(1.0, abs(want_value)):
+                    wrong.append("scene %d, %s: bypassed %s value %s, wanted %s %g" % (
+                        k + 1, block.module["name"], bypassed, value, want_bypassed, want_value))
+        late.append(time.monotonic() - sent)
+        changes += 1
+    time.sleep(0.5)
+    first, left, right = probe.stop()
+    with probe.lock:
+        probe.tone = 0.0
+    lost = probe.xruns - xruns
+    # Each xrun, in ms after the scene change before it.
+    after_change = []
+    for f in probe.xrun_frames[xruns:]:
+        before = [a for a in at if a <= f]
+        after_change.append(round(1000.0 * (f - before[-1]) / probe.rate, 1) if before else None)
+    size = int(0.0025 * probe.rate)
+    levels = numpy.array([rms(left[i:i + size]) for i in range(0, len(left) - size, size)])
+    usual = numpy.median(levels) if len(levels) else 0.0
+    # A dropout is near silence. The tone beating with its own echoes as the
+    # mix changes dips by up to about 30 dB for a few ms; that is not one.
+    gaps = int(numpy.sum(levels < 0.01 * usual)) if usual > 0 else len(levels)
+    lowest = db(levels.min()) - db(usual) if len(levels) else None
+    if DUMP:
+        os.makedirs(DUMP, exist_ok=True)
+        numpy.savez(os.path.join(DUMP, "playing-%d" % int(time.time())), left=left, right=right, first=first,
+                    changes=numpy.array(at), xruns=numpy.array(probe.xrun_frames[xruns:]), rate=probe.rate)
+    result = {"modules": [b.module["name"] for b, _, _, _ in chain], "seconds": seconds, "every_s": every,
+              "changes": changes, "xruns": lost, "xrun_ms_after_change": after_change, "read_back": READ_BACK,
+              "level_dbfs": round(db(usual), 1),
+              "lowest_window_db": None if lowest is None else round(lowest, 1), "dropouts": gaps,
+              "read_back_wrong": wrong[:10], "read_back_wrong_count": len(wrong),
+              "change_and_read_back_ms_p95": round(1000 * float(numpy.percentile(late, 95)), 1) if late else None}
+    ok = not lost and not gaps and not wrong and (every <= 0 or changes >= int(seconds / every) - 1)
+    print("%s  %d scene changes in %.0f s: %d xruns; level %.1f dBFS, lowest 2.5 ms window %.1f dB below it, %d dropouts; "
+          "%d read back wrong; change and read back p95 %.1f ms" % (
+              "PASS" if ok else "FAIL", changes, seconds, lost, db(usual), -(lowest or 0), gaps, len(wrong),
+              result["change_and_read_back_ms_p95"] or 0), flush=True)
+    for w in wrong[:10]:
+        print("      " + w)
+    if after_change:
+        print("      xruns, ms after the change before each: %s" % after_change, flush=True)
+    result["result"] = "pass" if ok else "fail"
+    for block, _, _, _ in chain:
+        block.delete()
+    return result
+
+
+# ------------------------------------------------------------------ cpu ----
+
+def all_on(catalogue, overlay, seconds=10.0):
+    """The running patch with every module switched on, as a scene can ask
+    (P13.10): JACK's DSP load and the engine's CPU over `seconds`, before and
+    after. Leaves the patch edited; the caller loads it again."""
+    rules = json.load(open(overlay, encoding="utf-8"))["rules"]
+    offered = {m["uri"]: present(m, rules) for m in json.load(open(catalogue, encoding="utf-8"))["modules"]}
+    client = jack.Client("scenes-cpu", no_start_server=True)
+    lost = []
+    client.set_xrun_callback(lambda delay: lost.append(delay))
+    client.activate()
+
+    def measure():
+        before = len(lost)
+        a = cpu_seconds()
+        loads = []
+        for _ in range(int(seconds / 0.5)):
+            time.sleep(0.5)
+            loads.append(client.cpu_load())
+        return {"dsp_mean": round(float(numpy.mean(loads)), 1), "dsp_max": round(float(numpy.max(loads)), 1),
+                "engine_cpu": round(100 * (cpu_seconds() - a) / seconds, 1), "xruns": len(lost) - before}
+
+    with Engine() as c:
+        _, reply, others = c.get(MAIN)
+    text = reply + "".join(others)
+    blocks = []
+    # The engine names a block <ingen:/main/x> or </main/x>.
+    for path, body in re.findall(r"patch:subject <(?:ingen:)?/main/([^/>]+)> ;\s*patch:body \[([^\]]*)\]", text):
+        uri = re.search(r"lv2:prototype <([^>]+)>", body)
+        if uri and "ingen:Block" in body:
+            blocks.append((MAIN + path, uri.group(1), "ingen:enabled false" in body))
+    as_saved = measure()
+    switched = []
+    with Engine() as c:
+        for path, uri, off in blocks:
+            m = offered.get(uri, {})
+            if m.get("bypass") == "port" and m.get("enable"):
+                c.set(path + "/" + m["enable"], "ingen:value", number(1))
+                switched.append(m.get("name", uri))
+            elif off:
+                c.set(path, "ingen:enabled", "true")
+                switched.append(m.get("name", uri))
+    time.sleep(2.0)
+    every = measure()
+    client.deactivate()
+    client.close()
+    result = {"modules": [offered.get(u, {}).get("name", u) for _, u, _ in blocks], "switched_on": switched,
+              "as_saved": as_saved, "all_on": every}
+    print("%d modules (%s); %d switched on" % (len(blocks), ", ".join(result["modules"]), len(switched)), flush=True)
+    for name, z in (("as saved", as_saved), ("all on", every)):
+        print("  %-9s JACK DSP load mean %.1f%%, max %.1f%%; engine %.1f%% of a core; %d xruns" % (
+            name, z["dsp_mean"], z["dsp_max"], z["engine_cpu"], z["xruns"]), flush=True)
+    return result
+
+
 def main():
     mode = sys.argv[1]
     out = os.environ.get("SCENES_RESULTS")
     if mode in ("tails", "spill"):
         results = tails(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else "")
+    elif mode == "playing":
+        results = playing(sys.argv[2], sys.argv[3], float(os.environ.get("SCENES_SECONDS", "60")),
+                          float(os.environ.get("SCENES_EVERY", "0.5")))
+    elif mode == "cpu":
+        results = all_on(sys.argv[2], sys.argv[3])
     else:
         results = atomic()
     if out and results is not None:
         with open(out, "w", encoding="utf-8", newline="\n") as f:
             json.dump(results, f, indent=1)
-    sys.exit(0 if results is not None else 1)
+    sys.stdout.flush()
+    # Straight out: closing the JACK client after a run with xruns once hung
+    # the probe on the Pi, with the instrument stopped behind it (P13.10).
+    os._exit(0 if results is not None and not (isinstance(results, dict) and results.get("result") == "fail") else 1)
 
 
 main()

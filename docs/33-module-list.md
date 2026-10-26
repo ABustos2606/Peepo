@@ -1,6 +1,6 @@
 # Complete module list
 
-**Updated 25 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
+**Updated 26 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
 
 **371 plugin identities:** 351 installed in the Pi export and 20 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
 
@@ -14,8 +14,8 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Ready | 332 | Can be added to a patch. This does not imply a guitar listening test of every module. |
-| Needs adaptation | 3 | Installed, but disabled in Add for the stated limitation. |
+| Ready | 333 | Can be added to a patch. This does not imply a guitar listening test of every module. |
+| Needs adaptation | 2 | Installed, but disabled in Add for the stated limitation. |
 | Unavailable | 7 | Present in the Pi export but unusable by the current host; see each reason. |
 | Hidden | 9 | Omitted from Add as a duplicate or redundant module; retained for saved patches. |
 | Not installed | 20 | Selected reference identity without an installed implementation. |
@@ -37,7 +37,7 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 | [Filter](#filter) | 23 / 24 |
 | [Modulation](#modulation) | 37 / 37 |
 | [Pitch](#pitch) | 8 / 8 |
-| [Delay](#delay) | 21 / 23 |
+| [Delay](#delay) | 22 / 23 |
 | [Reverb](#reverb) | 11 / 11 |
 | [Texture](#texture) | 17 / 17 |
 | [Resonator](#resonator) | 4 / 4 |
@@ -250,7 +250,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
 | Aura | An always-listening micro-looper and reverb, delay or sampler sharing one clock. Clock slows both together. Stereo Spread and six CV inputs shape the sound. | audio 2 in / 2 out; CV 6 in / 0 out | Ready; tail rings on when bypassed |
-| Bitcrushed delay | Flexible delay module with bitcrushed repeats. | audio 1 in / 1 out; CV 6 in / 0 out | Needs adaptation: Has crashed the engine; see docs/22-plugin-catalogue.md. |
+| Bitcrushed delay | Flexible delay module with bitcrushed repeats. | audio 1 in / 1 out; CV 6 in / 0 out | Ready; tail rings on when bypassed |
 | CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
 | Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready; tail rings on when bypassed |
 | DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
@@ -284,9 +284,9 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Eureka Slowmo | Long stereo reverb with size and diffusion controls. Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
 | Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
 | Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
-| IR Reverb - Mono | IR Reverb from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out | Ready |
-| IR Reverb - Mono to Stereo | IR Reverb from an impulse response file. Mono input and stereo output; use a stereo IR. | audio 1 in / 2 out | Ready |
-| IR Reverb - Stereo | IR Reverb from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses. | audio 2 in / 2 out | Ready |
+| IR Reverb - Mono | IR Reverb from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
+| IR Reverb - Mono to Stereo | IR Reverb from an impulse response file. Mono input and stereo output; use a stereo IR. | audio 1 in / 2 out | Ready; tail rings on when bypassed |
+| IR Reverb - Stereo | IR Reverb from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Mist Oliverb | A special effects reverb with pitch-shifted, modulated tails. Hold sustains the tail. | audio 2 in / 2 out; CV 12 in / 0 out | Ready; tail rings on when bypassed |
 
 ## Texture

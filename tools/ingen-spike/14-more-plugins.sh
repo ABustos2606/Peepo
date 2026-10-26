@@ -67,6 +67,14 @@ poly() { # repository commit
 
 # --- Poly: PolyLV2, one make project per directory
 poly PolyLV2 6f3ae80f6b4eccb8daebfc2b641fde1d48224250
+# Bitcrushed delay read its is_using_tempo control as a MIDI input and
+# crashed the engine (P13.10); the patch leaves that port unread.
+BITCRUSHED_PATCH="$HERE/../plugin-patches/polylv2-bitcrushed-no-event-port.patch"
+if git -C "$SRC/PolyLV2" apply --check "$BITCRUSHED_PATCH" 2>/dev/null; then
+    git -C "$SRC/PolyLV2" apply "$BITCRUSHED_PATCH"
+else
+    git -C "$SRC/PolyLV2" apply --reverse --check "$BITCRUSHED_PATCH"
+fi
 for dir in "$SRC"/PolyLV2/*/; do
     name=PolyLV2/$(basename "$dir")
     [ -f "$dir/Makefile" ] || continue

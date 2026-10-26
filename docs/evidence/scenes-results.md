@@ -1,4 +1,4 @@
-# Scenes: bypass tails and atomic changes, measured (P13.1, P13.2), the spill bypass (P13.3), its marks in the catalogue (P13.4), our own plugins (P13.5) and scenes sent and stored (P13.7)
+# Scenes: bypass tails and atomic changes, measured (P13.1, P13.2), the spill bypass (P13.3), its marks in the catalogue (P13.4), our own plugins (P13.5), scenes sent and stored (P13.7), stomps and MIDI (P13.9) and the Pi (P13.10)
 
 24 October 2026, WSL2 Debian, JACK dummy backend, 48 kHz, 128 frames. Engine: upstream Ingen 13a045d0 + Poly's MIDI-learn fix + project patches 0001-0012, rebuilt in `/opt/peepo` for this record (it is the first WSL build with 0011 and 0012). Script: `tools/ingen-spike/27-scenes.sh` / `27-scenes.py`. Raw output: [scenes-run.txt](scenes-run.txt); data: [third-party tails](scenes-tails-thirdparty.json), [own plugins' tails](scenes-tails-own.json), [bundles, plain engine](scenes-atomic-plain.json), [bundles, `-a`](scenes-atomic-a.json).
 
@@ -212,3 +212,45 @@ Every module with a tail rings on, within 0.3 dB of the module left on, and none
 **Against the real engine** (`25-midi-settings.sh`, extended): Charlie is stored with three scenes, the third playing. It loads with the third. CC 69 value 0 plays scene 1, and the patch stays unedited. CC 70 and a value past the patch's scenes change nothing. With `scene_cc=11`, CC 11 value 1 plays scene 2. A program change to Charlie and CC 11 value 0 in one period load Charlie, then play scene 1, not the saved third. A scene on another channel than program change is ignored. The earlier program-change, clock and MIDI learn checks pass unchanged.
 
 **Not covered:** the 40 ms wait with real footswitches and one foot pressing two of them; scene changes by stomp and by a foot controller while playing, by ear (P13.10). The Linux interface was not built here (WSL builds without it), so the simulator keys V and B were only built for Windows.
+
+## On the Pi (P13.10)
+
+26 October 2026. Raspberry Pi 5 with the Tascam US-100 (`hw:CODEC`), JACK at 48 kHz, 128 frames, 3 periods, package `peepo-arm64-20261026-935e718-dirty`: scenes as built in P13.6-P13.9, engine patches 0001-0013 started with `-a`, Discipline 0.4.1, the same 197 bundles and 351 modules as before. The power supply still under-volts (`throttled=0x50005`), so the CPU figures are upper bounds. Script: `tools/pi/check-scenes.sh` (copies `27-scenes.py` and `ingenprobe.py` beside it). `tails`, `spill` and `playing` stop the instrument and run an engine of their own on its JACK, wired only to the probe; `cpu` loads each stored patch into the instrument's engine with the guitar and speakers unwired. The instrument comes back at the end, or the running patch is loaded again. Raw output: [scenes-p1310-run.txt](scenes-p1310-run.txt); data: [scenes-p1310.json](scenes-p1310.json).
+
+**Tail check, every Delay, Reverb and Texture module (52, the click switching off and on).** The 21 modules marked `"spill"` ring on (Mist louder bypassed, as in WSL), click at most 16.2 dB, never replay, and fall to 0.3-0.7 % of a core after their tail, except **Gx Multiband delay and echo**, which use more after their tail (3.3-5.3 %) than on (1.7-2.0 %), in two runs, as they did in WSL (P13.3): they do not seem to sleep. Not yet explained. Our own modules ring on as in WSL; Aura clicked 19.7, 21.8 and 22.4 dB in three runs, and Eureka Prism 28.5 dB at about -111 dBFS: both for the ear. **Gx Tube delay** in the project's build (not Debian's, as in WSL) is silent at its defaults (gain -40 dB, level -60 dB); at gain 0, feedback 1, 300 ms and level -20 dB it rings on, clicks 12.8 dB and does not replay, so it keeps its mark (feedback 5 ran away to +6 dBFS).
+
+The modules WSL lacked, under the engine's bypass and then spilling:
+
+| Module | Engine's bypass | Spilling |
+| --- | --- | --- |
+| Bitcrushed delay | cut, 31.1 dB click, replays at -13 dBFS | rings on, 6.4 dB, no replay, sleeps (after its fix, below) |
+| IR Reverb - Mono, Mono to Stereo, Stereo | silent without an impulse response; with one (a made-up 2 s stereo decay): cut, 60-62 dB click, replay at -19 dBFS | ring on, 23-34 dB click, no replay, sleep; Mono to Stereo keeps its right side (-1 dB) |
+| Granulator - Mono, Stereo | Mono once put out `inf` at its defaults; Stereo cut | inconsistent: Mono still cut, Stereo silent; not marked |
+| Beat Repeater and Beat Slicer (mono, stereo), Power cut, Stuck | silent at defaults: they need a tempo, a trigger or a held control | not marked |
+| Reverse (Reflector) | -72 dBFS, cut | not marked |
+
+So **Bitcrushed delay and the three IR Reverbs are now marked `"spill"`** (25 modules; `peepo_catalogue_tests` expects 25). The IR Reverbs' click is less than half the engine's in dB but still over 20 dB with a noise impulse response that starts at full level; for the ear with a real IR.
+
+**Bitcrushed delay crashed the engine.** The first full run and the first spill run both ended in a segmentation fault while a new block was created after Bitcrushed delay's tail; under gdb, in the plugin's `run()` on the audio thread. Its source (PolyLV2, Faust's LV2 architecture) maps a port after its audio output to a MIDI input, but its `.ttl` puts the `is_using_tempo` control there: `run()` read that control's buffer (1.0, so a size of about a gigabyte) as an event sequence and walked off into memory. Whether it crashed depended on what lay beyond, so it came and went. It was already withheld from Add ("Has crashed the engine"). `tools/plugin-patches/polylv2-bitcrushed-no-event-port.patch` leaves that port unread; `14-more-plugins.sh` applies it, and the arm64 build root and the Pi have the rebuilt plugin. With it, the spill check ran to the end. The other eight PolyLV2 plugins built the same way have no port after their outputs. With the user's agreement it is offered in Add again (the overlay's `untested` entry removed).
+
+**Scene changes while playing** (`playing`): MDA Overdrive (engine's bypass), Gain (engine's bypass), Stereo delay (spill) and Dragonfly Hall (spill) in a row, 8 scenes each switching all four bypasses and one parameter per module, one bundle per change as the adapter sends it, a 220 Hz tone, a change every 500 ms for a minute: **120 changes, every bypass and value read back right (480 of 480), no dropout**, change and read-back p95 51 ms. The deepest 2.5 ms dip was 31 dB, a few ms after a change: the tone beating with its own echoes as the mix changes, not a dropout (a dropout is near silence; the check counts 40 dB down). **Xruns: 11 in the minute, and 12 in the same minute with no scene changes**, so they come from the probe (a Python JACK client in the audio graph), not from scenes: the instrument alone logged 4 overnight, and the CPU check below, with no probe in the graph, none.
+
+**CPU, every stored patch with every module on** (`cpu`, 10 s each, as saved and then all on):
+
+| Patch | Modules | JACK DSP load, all on (mean / max) | Engine, % of a core | Xruns |
+| --- | --- | --- | --- | --- |
+| discipline | Chamber, Aura, Discipline | 7.9 / 8.1 % | 11.5 | 0 |
+| drizzling | Drizzle Synth, Drizzle | 4.9 / 5.6 % | 9.3 | 0 |
+| Chamber showcase | Chamber x3 | 5.0 / 5.2 % | 12.8 | 0 |
+| midi keyboard | Aura, Weave Oscillator, MIDI to CV, Mist | 4.1 / 4.2 % | 6.1 | 0 |
+| the other five | 1 to 4 modules | 3.1 % or less | 3.0 or less | 0 |
+
+The heaviest stored patch uses 8 % of the audio cycle with everything on. The heaviest modules measured alone in the tail check: IR Reverb - Stereo 5.0 %, Mono to Stereo 4.7 %, Dragonfly Room 4.0 %, Dragonfly Hall 3.7 %, Mist Oliverb 3.3 % of a core.
+
+**The patch marked edited.** After the first run the running patch showed as edited without anyone touching it, and the checks refused to start. Loading it again cleared it. It did not happen again in ten more restarts of the instrument and eighteen patch loads. Loading a patch sets `peepo:modified true` from the saved file for a moment, before the interface clears it. `tools/pi/watch-modified.py`, a client that only listens, now runs on the Pi (a transient unit, until the next reboot) and logs the 300 engine messages before the mark stays on for more than 3 s: it saw the mark turn on 22 times, each time cleared within 3 s. The cause is not found.
+
+**With guitar, by ear** (the same day). The footswitches are not built yet, so a USB keyboard stood in: three lines in the Pi's `/etc/peepo/controls.conf` make its keys 1, 2 and 3 stomps A, B and C (key codes 2, 3 and 4; the file's key names do not include them), through the same `ControlRecognizer` and its 40 ms wait; the file before is kept as `controls.conf.before-keyboard-test`. A patch with a drive, a delay and a reverb in three scenes, played and switched in scene mode, with D and E stepping the banks and stomp mode after: no click, no gap, and the delay and reverb tails ring on through the next scenes.
+
+**By MIDI** (the same day). A MIDIPLUS AKM320 keyboard on USB stood in for a foot controller. It sends on channel 1: the mod wheel CC 1, the volume slider CC 7, the pitch wheel bend, the keys notes; its octave and transpose buttons send nothing. With program change on channel 1 and **Plays scene** set to CC 1, the mod wheel played the patch's scenes through `peepo-midi` on the Pi. Only the bottom of its travel does anything, as designed: values 0-7 play scenes 1-8, which suits a foot controller's fixed values, not a wheel or a slider. The AKM320 echoes Peepo's MIDI clock back (about 46 messages a second at 120 BPM), harmless while the tempo is the patch's. Plugging it in, or any USB device, made the power supply sag: the USB bus reset, the audio interface dropped out ("ALSA: playback device disconnected") and JACK did not recover until the instrument was restarted.
+
+**Not covered:** a real MIDI foot controller; the 40 ms D/E wait and two switches pressed by one foot, on the real footswitches; the clicks of Aura, Eureka Prism and the IR Reverbs by ear; why Gx Multiband delay and echo do not sleep; Granulator - Mono's `inf`.
