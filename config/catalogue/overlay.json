@@ -263,7 +263,7 @@
       {"name": "CV assign and out", "parameters": ["assign_to", "gate_mode", "output"]}
     ]},
     {"uri": "urn:peepo:lv2:footswitch", "name": "Foot switch", "category": "Control", "description": "A stomp as a control signal: On value while it is down, Off value otherwise. Latching flips it on each press instead.", "parameters": [
-      {"symbol": "stomp", "choices": ["1", "2", "3"]}, {"symbol": "latching"}, {"symbol": "on_value"}, {"symbol": "off_value"}, {"symbol": "pressed"}
+      {"symbol": "stomp", "choices": ["A", "B", "C"]}, {"symbol": "latching"}, {"symbol": "on_value"}, {"symbol": "off_value"}, {"symbol": "pressed"}
     ]},
     {"uri": "http://polyeffects.com/lv2/chorus_ext", "name": "Chorus (CV)", "category": "Modulation", "description": "8 voice multi-dimensional chorus with CV for the LFO."},
     {"uri": "http://polyeffects.com/lv2/flanger", "name": "Flanger", "category": "Modulation", "description": "Flanger with internal LFO."},

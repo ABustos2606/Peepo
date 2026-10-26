@@ -735,10 +735,10 @@ int main(int argc, char** argv) {
             turn("enc2", 4); press("enc2"); release("enc2");
             check(app.page() == peepo::Page::Settings, "encoder 2 did not step to and push Settings on the patch");
             click(app, 70, 456);
-            // Stomps are assigned on the Controls page: stomp 1 toggles Mist Demo freeze.
+            // Stomps are assigned on the Controls page: stomp A toggles Mist Demo freeze.
             click(app, 707, 36); tap(app, "CONTROLS");
             check(app.page() == peepo::Page::Controls && text_label(app.screen(), "Moves through the page"), "Controls page did not open");
-            tap(app, "STOMP 1"); check(app.page() == peepo::Page::AssignPicker, "Assign did not open the picker");
+            tap(app, "STOMP A"); check(app.page() == peepo::Page::AssignPicker, "Assign did not open the picker");
             tap(app, "MIST DEMO"); check(text_label(app.screen(), "BYPASS") != nullptr, "picking Mist Demo did not list its controls");
             tap(app, "FREEZE");
             check(app.page() == peepo::Page::Controls && app.graph().assignments.size() == 1 && app.graph().assignments[0].parameter == "freeze", "stomp 1 not assigned to freeze");
@@ -747,7 +747,7 @@ int main(int argc, char** argv) {
             press("stomp1"); release("stomp1");
             check(value(4, 3) == 0, "stomp toggle did not switch freeze off");
             // Momentary: held on, released off.
-            tap(app, "STOMP 1"); check(app.page() == peepo::Page::AssignmentDetail, "Edit did not open the assignment");
+            tap(app, "STOMP A"); check(app.page() == peepo::Page::AssignmentDetail, "Edit did not open the assignment");
             tap(app, "MOMENTARY");
             check(app.graph().assignments[0].mode == peepo::SwitchMode::Momentary, "momentary mode not stored");
             capture(app, output / "37-assignment-detail.bmp");
@@ -755,13 +755,13 @@ int main(int argc, char** argv) {
             check(value(4, 3) == 1, "momentary press did not hold freeze on");
             release("stomp1");
             check(value(4, 3) == 0, "momentary release did not let go");
-            // Stomp 2 bypasses Delay.
-            click(app, 70, 456); tap(app, "STOMP 2"); tap(app, "DELAY"); tap(app, "BYPASS");
+            // Stomp B bypasses Delay.
+            click(app, 70, 456); tap(app, "STOMP B"); tap(app, "DELAY"); tap(app, "BYPASS");
             check(app.graph().assignments.size() == 2 && app.graph().assignments[1].action == peepo::ControlAction::Bypass, "bypass assignment not made");
             press("stomp2"); release("stomp2");
             check(peepo::find_module(app.graph(), 5)->bypassed, "bypass stomp did nothing");
             press("stomp3"); release("stomp3");
-            check(app.message().find("Stomp 3 is not assigned") != std::string::npos, "an unassigned stomp did not say so");
+            check(app.message().find("Stomp C is not assigned") != std::string::npos, "an unassigned stomp did not say so");
             capture(app, output / "38-controls.bmp");
             // Controls are ignored while a name is typed.
             click(app, 70, 456); click(app, 70, 456); click(app, 600, 36); tap(app, "+ NEW PATCH");
@@ -1138,7 +1138,7 @@ int main(int argc, char** argv) {
             const std::string footswitch = "urn:peepo:lv2:footswitch";
             peepo::register_definitions({{footswitch, "Foot switch", "Control", "Test footswitch", 0xe3c770,
                 {{"out", peepo::Direction::Output, 1, peepo::PortType::Cv}},
-                {{"stomp", "Stomp", "", peepo::ParameterKind::Enumeration, 0, 2, 1, false, {"1", "2", "3"}},
+                {{"stomp", "Stomp", "", peepo::ParameterKind::Enumeration, 0, 2, 1, false, {"A", "B", "C"}},
                  {"latching", "Latching", "", peepo::ParameterKind::Toggle, 0, 1, 0},
                  {"on_value", "On value", "", peepo::ParameterKind::Continuous, 0, 1, 1},
                  {"off_value", "Off value", "", peepo::ParameterKind::Continuous, 0, 1, 0},
@@ -1152,13 +1152,13 @@ int main(int argc, char** argv) {
             press("stomp1"); release("stomp1");
             check(app.graph().assignments.size() == 1 && app.graph().assignments[0].module == 3 && app.graph().assignments[0].action == peepo::ControlAction::Bypass &&
                   app.page() == peepo::Page::ModuleActions && !bypassed(3), "a stomp pressed on Drive's actions did not assign its bypass, or played");
-            check(text_label(app.screen(), "Stomp 1 switches it") != nullptr, "the actions page does not say which stomp switches the module");
+            check(text_label(app.screen(), "Stomp A switches it") != nullptr, "the actions page does not say which stomp switches the module");
             capture(app, output / "55-stomp-quick-assign.bmp");
             click(app, 70, 456); hold(app, 396, 244);
             press("stomp1"); release("stomp1");
             check(app.graph().assignments.size() == 2 && app.graph().assignments[1].module == 4, "a second module did not join the stomp");
             click(app, 70, 456);
-            check(app.page() == peepo::Page::Patch && exact_label(app.screen(), "1") != nullptr, "the patch does not number the stomp on its modules");
+            check(app.page() == peepo::Page::Patch && exact_label(app.screen(), "A") != nullptr, "the patch does not letter the stomp on its modules");
             // Mist Demo starts bypassed, so each press swaps which of the two plays.
             sim.submit(peepo::SetBypass{4, true}); step(app, 256);
             capture(app, output / "56-stomp-badges.bmp");
@@ -1176,14 +1176,14 @@ int main(int argc, char** argv) {
             hold(app, 236, 244); press("stomp1"); release("stomp1");
             check(app.graph().assignments.size() == 1 && app.graph().assignments[0].module == 4, "pressing again did not take Drive off the stomp");
             click(app, 70, 456);
-            // A Footswitch module set to stomp 2 is pressed and released with it.
+            // A Footswitch module set to stomp B is pressed and released with it.
             sim.submit(peepo::AddModule{footswitch, 600, 264}); step(app, 256);
             const auto id = app.graph().modules.back().id;
             const auto value = [&](const char* symbol) {
                 const auto* m = peepo::find_module(app.graph(), id);
                 return std::find_if(m->parameters.begin(), m->parameters.end(), [&](const peepo::Parameter& p) { return p.symbol == symbol; })->value;
             };
-            check(exact_label(app.screen(), "2") != nullptr, "the Footswitch module does not show its stomp");
+            check(exact_label(app.screen(), "B") != nullptr, "the Footswitch module does not show its stomp");
             press("stomp2");
             check(app.message().find("Foot switch on") != std::string::npos, "the stomp did not say it pressed the Footswitch module");
             step(app, 192);
@@ -1291,7 +1291,7 @@ int main(int argc, char** argv) {
             app.control({peepo::ControlEvent::Type::Press,"stomp2"});step(app,256);app.control({peepo::ControlEvent::Type::Release,"stomp2"});step(app);
             check(live.sent.empty() && app.graph().assignments.size()==1 && app.graph().assignments[0].action==peepo::ControlAction::Looper &&
                   peepo::looper_assignment_command(app.graph().assignments[0])==8 && peepo::looper_assignment_target(app.graph().assignments[0])==1,"stomp not bound to Insert on all loops");
-            { auto* dot=exact_label(app.screen(),"2"); auto* insert=exact_label(app.screen(),"INSERT");
+            { auto* dot=exact_label(app.screen(),"B"); auto* insert=exact_label(app.screen(),"INSERT");
               lv_area_t d{},b{}; if(dot&&insert){lv_obj_get_coords(lv_obj_get_parent(dot),&d);lv_obj_get_coords(lv_obj_get_parent(insert),&b);}
               check(dot && insert && d.x2>=b.x2 && d.x1<=b.x2 && d.y1<b.y1,"bound command has no stomp badge at its corner"); }
             capture(app,output/"67-looper-bind.bmp");
@@ -1769,6 +1769,42 @@ int main(int argc, char** argv) {
             click(app, 70, 456);
             check(!scenes().scene_mode && exact_label(app.screen(), "STOMP") != nullptr, "the mode pill did not change back");
             capture(app, output / "94-patch-stomp-mode.bmp");
+            // The stomps in scene mode: A to C play the bank shown, D (A+B) and
+            // E (B+C) step the bank. Two stomps pressed together are one switch.
+            using Type = peepo::ControlEvent::Type;
+            const auto stomps = [&](std::initializer_list<const char*> ids) {
+                for (const auto* id : ids) app.control({Type::Press, id});
+                step(app, 64);
+                for (const auto* id : ids) app.control({Type::Release, id});
+                step(app, 256);
+            };
+            click(app, 70, 456);
+            check(scenes().scene_mode, "scene mode not taken again");
+            stomps({"stomp3"});
+            check(scenes().current == 2 && app.message() == "Stomp C: playing Solo.", "stomp C did not play Solo");
+            stomps({"stomp2", "stomp3"});
+            check(scenes().current == 2 && app.message() == "Bank 2. A: Bridge. D E: bank.", "E did not step to bank 2");
+            stomps({"stomp2"});
+            check(scenes().current == 2 && app.message() == "Stomp B: bank 2 has no scene 5.", "an empty place in the bank did something");
+            stomps({"stomp1"});
+            check(scenes().current == 3 && app.message() == "Stomp A: playing Bridge.", "stomp A did not play the bank shown");
+            stomps({"stomp1", "stomp2"});
+            check(app.message() == "Bank 1. A B C: Verse, Chorus, Solo. D E: bank.", "D did not step back to bank 1");
+            stomps({"stomp1"});
+            check(scenes().current == 0, "stomp A did not play bank 1's first scene");
+            // Stomp mode: D can be assigned like any stomp, from a held module.
+            click(app, 70, 456);
+            hold(app, 225, 252);
+            check(app.page() == peepo::Page::ModuleActions, "holding Drive did not open its actions");
+            stomps({"stomp1", "stomp2"});
+            check(app.graph().assignments.size() == 1 && app.graph().assignments[0].control == "stomp4" && app.graph().assignments[0].module == 3,
+                  "A+B did not assign D");
+            check(text_label(app.screen(), "Stomp D switches it") != nullptr, "the actions page does not name D");
+            click(app, 70, 456);
+            const bool was_bypassed = peepo::find_module(app.graph(), 3)->bypassed;
+            stomps({"stomp2", "stomp1"});
+            check(peepo::find_module(app.graph(), 3)->bypassed != was_bypassed && exact_label(app.screen(), "D") != nullptr, "D did not switch Drive, or Drive shows no D");
+            capture(app, output / "95-stomp-d.bmp");
         }
         // Release the headless devices before the global runtime.
         lv_indev_delete(indev);

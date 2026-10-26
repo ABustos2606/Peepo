@@ -159,6 +159,12 @@ private:
     void scenes_page(lv_obj_t*);
     // In scene mode, what stomps A to C play and D and E do.
     std::string scene_hint() const;
+    // The bank of three scenes stomps A to C play in scene mode: the one D or
+    // E last stepped to, or else the playing scene's.
+    std::size_t shown_bank() const;
+    // A stomp in scene mode: A to C play a scene of the bank shown, D and E
+    // step to the previous and next bank.
+    void scene_stomp(const Gesture&);
     void tap_tempo();
     void set_tempo(double bpm);
     void tuner_meter(lv_obj_t*);
@@ -340,6 +346,10 @@ private:
     // which scene Delete deletes.
     enum class ScenePick { None, CopyTo, Delete };
     ScenePick scene_pick_ = ScenePick::None;
+    // The bank D or E stepped to, while the scene then playing still plays in
+    // the same patch; another scene playing forgets it.
+    struct SceneBank { std::size_t bank, scene; std::string patch; };
+    std::optional<SceneBank> scene_bank_;
     // What to say once the engine accepts a request, in place of the plain acknowledgement.
     std::map<RequestId, std::function<std::string()>> accepted_notes_;
     std::optional<Command> replacement_;

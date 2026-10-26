@@ -55,6 +55,10 @@ Settings parse_settings(std::string_view text) {
             else if (const auto r = std::from_chars(value.data(), value.data() + value.size(), channel); r.ec == std::errc{} && r.ptr == value.data() + value.size() && channel >= 1 && channel <= 16)
                 s.program_channel = channel;
             else s.program_channel = program_off;
+        } else if (key == "scene_cc") {
+            int number = 0;
+            if (const auto r = std::from_chars(value.data(), value.data() + value.size(), number); r.ec == std::errc{} && r.ptr == value.data() + value.size() && number >= 0 && number <= 127)
+                s.scene_controller = number;
         } else if (key == "input_off" && storable(value)) s.inputs_off.emplace(value);
         else if (key == "output_off" && storable(value)) s.outputs_off.emplace(value);
     });
@@ -66,6 +70,7 @@ std::string format_settings(const Settings& s) {
     text += std::string("start_stop=") + (s.start_stop ? "on" : "off") + "\n";
     text += std::string("tempo_source=") + (s.tempo_source == TempoSource::Clock ? "clock" : "patch") + "\n";
     text += "program_change=" + (s.program_channel == any_channel ? std::string("any") : s.program_channel >= 1 && s.program_channel <= 16 ? std::to_string(s.program_channel) : std::string("off")) + "\n";
+    text += "scene_cc=" + std::to_string(s.scene_controller >= 0 && s.scene_controller <= 127 ? s.scene_controller : default_scene_controller) + "\n";
     for (const auto& name : s.inputs_off) if (storable(name)) text += "input_off=" + name + "\n";
     for (const auto& name : s.outputs_off) if (storable(name)) text += "output_off=" + name + "\n";
     return text;

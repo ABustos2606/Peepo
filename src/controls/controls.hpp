@@ -12,12 +12,18 @@
 // source produces the same raw events; everything after that is shared.
 // See docs/18-physical-controls.md.
 namespace peepo {
-// The instrument's surface: push encoders enc1..encN, stomp switches stomp1..stompN.
+// The instrument's surface: push encoders enc1..encN, stomp switches
+// stomp1..stompN, and after them one more switch for each two neighbours
+// pressed together, as on Beebo: with three stomps A, B and C, stomp4 is D
+// (A+B) and stomp5 is E (B+C).
 struct ControlLayout {
     unsigned encoders = 2, stomps = 3;
     std::vector<std::string> ids() const;
 };
+// "Encoder 2", "Stomp A" to "Stomp E".
 std::string control_label(const std::string& id);
+// The stomp's letter, A for stomp1; empty for anything else.
+std::string stomp_letter(const std::string& id);
 bool is_encoder(const std::string& id);
 bool is_stomp(const std::string& id);
 
@@ -31,7 +37,9 @@ struct ControlEvent {
 };
 // What it means. Encoders: Turn (fine while the push is held), Tap (pushed and
 // released without turning), Hold (pushed long without turning). Stomps: Press
-// and Release, at once, so a musical action never waits for a gesture to end.
+// and Release, never waiting for a gesture to end; a press only waits
+// chord_ms for its neighbour, which together make the stomp after the
+// physical ones (A+B is D).
 struct Gesture {
     enum class Kind { Turn, Tap, Hold, Press, Release };
     Kind kind = Kind::Turn;
@@ -57,6 +65,11 @@ public:
     static constexpr unsigned hold_ms = 700;
     // A switch that closes again this soon after opening is bouncing.
     static constexpr unsigned bounce_ms = 25;
+    // A stomp acts this long after it is pressed, unless its neighbour joins
+    // it first: then the two are the one switch between them.
+    static constexpr unsigned chord_ms = 40;
+    // `stomps` physical stomps, stomp1 to stompN.
+    explicit ControlRecognizer(unsigned stomps = 3) : stomps_(stomps) {}
     void input(const ControlEvent&);
     std::vector<Gesture> advance(unsigned milliseconds);
     // Forget every pressed control, as when the control source reconnects.
@@ -66,7 +79,15 @@ private:
         bool pressed = false, used = false;
         unsigned long long pressed_at = 0, released_at = 0, turned_at = 0;
         bool turned = false, released = false;
+        // A stomp pressed and waiting chord_ms for its neighbour.
+        bool waiting = false;
+        // The two-stomp switch it is part of while held, as D; empty for none.
+        // Ended when the first of the two is released.
+        std::string chord;
     };
+    // The physical stomp's number, or 0 for any other control.
+    unsigned physical(const std::string& id) const;
+    unsigned stomps_;
     std::map<std::string, State> states_;
     std::vector<Gesture> pending_;
     unsigned long long clock_ = 0;

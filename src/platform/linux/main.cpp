@@ -112,6 +112,9 @@ int sdl_keys(void* events, SDL_Event* e) {
     if (key == SDLK_z) press("stomp1");
     if (key == SDLK_x) press("stomp2");
     if (key == SDLK_c) press("stomp3");
+    // Two stomps at once: V is A+B (D), B is B+C (E).
+    if (key == SDLK_v) { press("stomp1"); press("stomp2"); }
+    if (key == SDLK_b) { press("stomp2"); press("stomp3"); }
     return 1;
 }
 #endif

@@ -126,16 +126,25 @@ void program_changes() {
     check(program_change(on_three, 2, 3) == 5 && program_change(on_three, 2, any_channel) == 5, "program change on its channel");
     check(!program_change(on_three, 2, 1) && !program_change(on_three, 2, program_off) && !program_change(on_three, 1, 3) && !program_change(note, 3, any_channel),
           "a program change taken from another channel, while off, cut short, or from a note");
+    // The scene control change: values 0 to 7 are scenes 1 to 8, on the program-change channel.
+    const std::uint8_t scene_three[] = {0xb2, 69, 2}, ninth[] = {0xb2, 69, 8}, other[] = {0xb2, 70, 2};
+    check(scene_change(scene_three, 3, 3, 69) == 2u && scene_change(scene_three, 3, any_channel, 69) == 2u, "scene control change on its channel");
+    check(!scene_change(scene_three, 3, 1, 69) && !scene_change(scene_three, 3, program_off, 69) && !scene_change(scene_three, 2, 3, 69) &&
+          !scene_change(ninth, 3, 3, 69) && !scene_change(other, 3, 3, 69) && !scene_change(on_three, 2, 3, 5),
+          "a scene taken from another channel or controller, while off, cut short, past scene 8, or from a program change");
 }
 void settings_files() {
     Settings s;
-    check(parse_settings("") == s && s.clock_out && s.start_stop && s.tempo_source == TempoSource::Patch && s.program_channel == program_off, "defaults");
-    s.clock_out = false; s.tempo_source = TempoSource::Clock; s.program_channel = 16;
+    check(parse_settings("") == s && s.clock_out && s.start_stop && s.tempo_source == TempoSource::Patch && s.program_channel == program_off &&
+          s.scene_controller == 69, "defaults");
+    s.clock_out = false; s.tempo_source = TempoSource::Clock; s.program_channel = 16; s.scene_controller = 0;
     s.inputs_off = {"a2j:Arturia (capture): Arturia MIDI 1"}; s.outputs_off = {"a2j:KO-2 (playback): KO-2"};
     check(parse_settings(format_settings(s)) == s, "settings do not read back");
     s.program_channel = any_channel;
     check(parse_settings(format_settings(s)).program_channel == any_channel, "any channel does not read back");
     check(parse_settings("program_change=17\nprogram_change=0x3\nsomething=else\r\n").program_channel == program_off, "a bad channel or an unknown line was taken");
+    check(parse_settings("scene_cc=128\n").scene_controller == 69 && parse_settings("scene_cc=-1\n").scene_controller == 69 &&
+          parse_settings("scene_cc=11\r\n").scene_controller == 11, "a bad scene controller taken, or a good one not");
     Status status{119.96, {"a2j:A (capture): A"}, {"a2j:B (playback): B"}};
     const auto back = parse_status(format_status(status));
     check(back.clock_in && std::abs(*back.clock_in - 120) < 1e-9 && back.inputs == status.inputs && back.outputs == status.outputs, "status does not read back");

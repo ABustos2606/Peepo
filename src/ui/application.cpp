@@ -342,17 +342,19 @@ std::string joined_names(const std::vector<std::string>& names) {
     for (std::size_t i = 0; i < names.size(); ++i) out += (i ? ", " : "") + names[i];
     return out;
 }
-// The stomps that act on a module, by number: assigned to its bypass or a
+// The stomps that act on a module, by letter: assigned to its bypass or a
 // parameter, or heard by it when it is a Footswitch module.
-std::vector<int> stomps_on(const Graph& g, const Module& m) {
-    std::vector<int> numbers;
-    const auto add = [&](int n) { if (std::find(numbers.begin(), numbers.end(), n) == numbers.end()) numbers.push_back(n); };
+std::vector<std::string> stomps_on(const Graph& g, const Module& m) {
+    std::vector<std::string> letters;
+    const auto add = [&](const std::string& id) {
+        if (const auto l = stomp_letter(id); !l.empty() && std::find(letters.begin(), letters.end(), l) == letters.end()) letters.push_back(l);
+    };
     for (const auto& a : g.assignments)
-        if (a.module == m.id && is_stomp(a.control) && assignment_target(g, a)) add(std::stoi(a.control.substr(5)));
+        if (a.module == m.id && is_stomp(a.control) && assignment_target(g, a)) add(a.control);
     if (m.uri == footswitch_uri)
-        for (const auto& p : m.parameters) if (p.symbol == "stomp") add(static_cast<int>(p.value) + 1);
-    std::sort(numbers.begin(), numbers.end());
-    return numbers;
+        for (const auto& p : m.parameters) if (p.symbol == "stomp") add("stomp" + std::to_string(static_cast<int>(p.value) + 1));
+    std::sort(letters.begin(), letters.end());
+    return letters;
 }
 }
 Application::Application(Engine& engine, PatchStore* store) : engine_(engine), graph_(engine.snapshot()), store_(store && store->usable() ? store : nullptr) {
@@ -1870,12 +1872,12 @@ void Application::patch_view(lv_obj_t* parent) {
         }
         lv_obj_align(name, LV_ALIGN_CENTER, 0, 0);
         const auto& ports = module_ports(m);
-        // The stomps that act on it, numbered in a white dot on its top right
+        // The stomps that act on it, by letter in a white dot on its top right
         // corner, clear of the name and of the connectors. Not in scene mode,
         // where the stomps play scenes.
         if (const auto stomps = stomps_on(graph_, m); !stomps.empty() && !m.fixed && !graph_.scenes.scene_mode) {
             std::string digits;
-            for (const auto n : stomps) digits += (digits.empty() ? "" : " ") + std::to_string(n);
+            for (const auto& n : stomps) digits += (digits.empty() ? "" : " ") + n;
             const int width = 20 + 14 * (static_cast<int>(stomps.size()) - 1);
             auto* badge = panel(card, module_width + 6 - width, -12, width, 20, m.bypassed ? faint : text);
             lv_obj_set_style_radius(badge, 10, 0); lv_obj_set_style_border_width(badge, 0, 0);
@@ -2409,7 +2411,7 @@ void Application::looper_view(lv_obj_t* parent, const Module& m) {
     looper_selected_ = std::clamp(int(live_selection.value_or(parameter(m, "selected").value)), 1, count);
     looper_target_ = std::clamp(looper_target_, 0, count + 1);
     // The stomps bound to a command for a target, as on the patch: a white dot
-    // holding each stomp's number.
+    // holding each stomp's letter.
     // Drawn last, over the buttons, at the top right corner of each.
     struct Badge { int x, y, id, target; };
     std::vector<Badge> badges;
@@ -2417,7 +2419,7 @@ void Application::looper_view(lv_obj_t* parent, const Module& m) {
         std::string digits;
         for (const auto& a : graph_.assignments)
             if (a.module == m.id && is_stomp(a.control) && looper_assignment_command(a) == at.id && looper_assignment_target(a) == at.target && assignment_target(graph_, a))
-                digits += (digits.empty() ? "" : " ") + a.control.substr(5);
+                digits += (digits.empty() ? "" : " ") + stomp_letter(a.control);
         if (digits.empty()) return;
         const int width = 20 + 14 * static_cast<int>(std::count(digits.begin(), digits.end(), ' '));
         auto* dot = panel(parent, at.x - width + 6, at.y - 8, width, 20, text);
@@ -2969,6 +2971,10 @@ void Application::midi_page(lv_obj_t* parent) {
     list_bar(list, "Loads patch N", {.value = channel == midi::program_off ? "OFF" : channel == midi::any_channel ? "ANY" : "CH " + std::to_string(channel),
                                      .value_ink = channel ? accent : muted, .caption = "Tap: next channel"}, Action::MidiChannel, 0, {}, 1);
     list_bar(list, "Previous channel", {}, Action::MidiChannel, 0, {}, -1);
+    // On the same channel: a control change whose value 0 to 7 plays scene 1 to 8.
+    value_bar(list, "Plays scene", 0, 127, 1, s.scene_controller, [](double v) { return "CC " + std::to_string(std::lround(v)); },
+              [this](double v) { change_midi([&](midi::Settings& m) { m.scene_controller = static_cast<int>(std::lround(v)); }); });
+    list_note(list, channel ? "Value 0 to 7 plays scene 1 to 8 of the patch, on the channel above." : "Scenes follow the program-change channel: off for now.", faint);
     list_heading(list, "Devices");
     if (!midi_->connected()) { list_note(list, "The instrument lists its MIDI devices here."); return; }
     // A device that sends and receives shows once, with both switches.
@@ -3023,11 +3029,39 @@ void Application::midi_learn(lv_obj_t* parent) {
     list_note(list, (scenes.scenes.size() == 1 ? "Per scene: " + names + " keeps its own value." : "Per scene: " + names + " each keep their own value.") +
               "\nSame: one value for every scene. " + std::to_string(scenes.parameters.size()) + " of " + std::to_string(max_scene_parameters) + " marked in this patch.");
 }
+std::size_t Application::shown_bank() const {
+    const auto& s = graph_.scenes;
+    const auto banks = (s.scenes.size() + scene_bank - 1) / scene_bank;
+    if (scene_bank_ && scene_bank_->scene == s.current && scene_bank_->patch == graph_.patch_id && scene_bank_->bank < banks) return scene_bank_->bank;
+    return s.current / scene_bank;
+}
+void Application::scene_stomp(const Gesture& g) {
+    if (g.kind != Gesture::Kind::Press) return;
+    const auto& s = graph_.scenes;
+    const auto name = control_label(g.control);
+    const auto n = static_cast<std::size_t>(std::stoul(g.control.substr(5)));
+    // D (A+B) and E (B+C): the previous and next bank, round and round.
+    if (n > layout_.stomps) {
+        if (n > layout_.stomps + 2) return;
+        const auto banks = (s.scenes.size() + scene_bank - 1) / scene_bank;
+        if (banks < 2) { message(name + ": one bank only. " + scene_hint()); return; }
+        const auto bank = (shown_bank() + (n == layout_.stomps + 1 ? banks - 1 : 1)) % banks;
+        scene_bank_ = SceneBank{bank, s.current, graph_.patch_id};
+        message("Bank " + std::to_string(bank + 1) + ". " + scene_hint());
+        return;
+    }
+    const auto index = shown_bank() * scene_bank + n - 1;
+    if (index >= s.scenes.size()) { message(name + ": bank " + std::to_string(shown_bank() + 1) + " has no scene " + std::to_string(index + 1) + "."); return; }
+    // A performance change of scene, as a tap on the Scenes page: the scene's
+    // saved state, the patch left unedited.
+    const auto scene = s.scenes[index].name;
+    if (const auto request = submit(SelectScene{index})) accepted_notes_[request] = [name, scene] { return name + ": playing " + scene + "."; };
+}
 std::string Application::scene_hint() const {
     const auto& s = graph_.scenes;
     if (s.scenes.empty()) return {};
-    // The bank the scene playing is in.
-    const auto first = s.current / scene_bank * scene_bank;
+    // The bank stomps A to C play.
+    const auto first = shown_bank() * scene_bank;
     std::string letters, names;
     for (auto i = first; i < std::min(first + scene_bank, s.scenes.size()); ++i) {
         letters += (letters.empty() ? "" : " ") + std::string(1, static_cast<char>('A' + (i - first)));
@@ -3296,7 +3330,7 @@ void Application::settings(lv_obj_t* parent) {
     list_bar(list, "Reject next edit", {}, Action::Reject);
     list_bar(list, "Missing module", {}, Action::MissingFixture);
     list_note(list, "No audio processing. No hardware connection required. Use these states to exercise the interface.");
-    list_note(list, "Keys: Q/A W/S turn encoders 1 and 2, keys 1 and 2 push them, Z X C are the stomps.", faint);
+    list_note(list, "Keys: Q/A W/S turn encoders 1 and 2, keys 1 and 2 push them, Z X C are stomps A B C, V and B press A+B (D) and B+C (E).", faint);
 }
 namespace {
 std::string decimal(double value, int places) {
@@ -3495,6 +3529,17 @@ void Application::stomp(const Gesture& g) {
     if (looper_binding_ && page_ == Page::Parameters) {
         if (const auto* m = find_module(graph_, selected_); m && looper_uri(m->uri)) { if (pressed) looper_bind(g.control); return; }
     }
+    // In scene mode the stomps play scenes, never what they are assigned; a
+    // Loo-pi command held from before still lets go.
+    if (graph_.scenes.scene_mode && !graph_.scenes.scenes.empty()) {
+        if (const auto held = looper_stomps_.find(g.control); !pressed && held != looper_stomps_.end()) {
+            engine_.looper_command(held->second.id, held->second.command, held->second.target, false);
+            looper_stomps_.erase(held);
+            return;
+        }
+        scene_stomp(g);
+        return;
+    }
     // Footswitch modules hear the stomp as well as whatever it is assigned.
     std::vector<std::string> said;
     const bool listened = drive_footswitches(g.control, pressed, said);
@@ -3672,7 +3717,10 @@ void Application::controls(lv_obj_t* parent) {
         if (id == active_control_) look.edge = accent;
         list_bar(list, control_label(id), look, Action::EditControl, 0, id);
     }
-    list_note(list, "Tap a control to choose what it does; a footswitch can also change patch or tap the tempo in every patch.");
+    list_note(list, "Tap a control to choose what it does; a footswitch can also change patch or tap the tempo in every patch. "
+                    "D is A and B pressed together, E is B and C.");
+    if (graph_.scenes.scene_mode)
+        list_note(list, "This patch is in scene mode: A, B and C play scenes, D and E change bank. The pill at the bottom left of the patch changes it.", accent);
 }
 void Application::assign_picker(lv_obj_t* parent) {
     auto* list = page_list(parent);

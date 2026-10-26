@@ -17,12 +17,17 @@ namespace peepo::midi {
 enum class TempoSource { Patch, Clock };
 // Program change: off, one channel (1 to 16), or any.
 inline constexpr int program_off = 0, any_channel = 17;
+// The control change that selects a scene, on the program-change channel
+// (docs/44-scenes.md): Line 6's choice, so foot controllers set up for it work.
+inline constexpr int default_scene_controller = 69;
 struct Settings {
     bool clock_out = true;
     // Start with the clock and Stop when it ends; off sends the clock alone.
     bool start_stop = true;
     TempoSource tempo_source = TempoSource::Patch;
     int program_channel = program_off;
+    // Its value 0 to 7 plays scene 1 to 8; off while program change is.
+    int scene_controller = default_scene_controller;
     // Devices left out, by name, as senders (inputs) and as receivers (outputs).
     std::set<std::string> inputs_off, outputs_off;
     bool operator==(const Settings&) const = default;

@@ -44,10 +44,12 @@ void gestures() {
     r.input({Type::Turn, "enc3", 1});
     out = r.advance(0);
     check(out.size() == 1 && !out[0].fine, "turn after release still fine");
-    // Stomps act on the press itself, and a bouncing contact is one press.
+    // Stomps act on the press itself, once their neighbour has had chord_ms
+    // to join; a bouncing contact is one press.
     r.input({Type::Press, "stomp1"});
-    out = r.advance(0);
-    check(out.size() == 1 && out[0].kind == Kind::Press, "stomp press waited for its release");
+    check(r.advance(ControlRecognizer::chord_ms - 1).empty(), "a stomp did not wait for its neighbour");
+    out = r.advance(1);
+    check(out.size() == 1 && out[0].kind == Kind::Press && out[0].control == "stomp1", "stomp press waited for its release");
     r.advance(80);
     r.input({Type::Release, "stomp1"});
     out = r.advance(ControlRecognizer::bounce_ms - 5);
@@ -60,8 +62,63 @@ void gestures() {
     r.input({Type::Press, "stomp1"});
     out = r.advance(5000);
     check(out.size() == 1 && out[0].kind == Kind::Press, "repeated press or stomp hold produced extra gestures");
-    check(ControlLayout{}.ids() == std::vector<std::string>{"enc1", "enc2", "stomp1", "stomp2", "stomp3"}, "default surface is not two encoders and three stomps");
-    check(control_label("enc2") == "Encoder 2" && control_label("stomp3") == "Stomp 3", "control names wrong");
+    check(ControlLayout{}.ids() == std::vector<std::string>{"enc1", "enc2", "stomp1", "stomp2", "stomp3", "stomp4", "stomp5"},
+          "default surface is not two encoders and three stomps, with D and E");
+    check(control_label("enc2") == "Encoder 2" && control_label("stomp3") == "Stomp C" && control_label("stomp5") == "Stomp E" && stomp_letter("enc1").empty(),
+          "control names wrong");
+}
+// D is A and B pressed together, E is B and C: told from a single stomp by
+// the chord_ms wait.
+void chords() {
+    ControlRecognizer r;
+    auto all = [&](unsigned ms) { return r.advance(ms); };
+    r.input({Type::Press, "stomp1"});
+    check(all(20).empty(), "A acted before B could join it");
+    r.input({Type::Press, "stomp2"});
+    auto out = all(0);
+    check(out.size() == 1 && out[0].kind == Kind::Press && out[0].control == "stomp4", "A and B together are not D");
+    check(all(1000).empty(), "D held made more gestures, or A or B acted alone");
+    // The first released ends D; the other's release says nothing.
+    r.input({Type::Release, "stomp2"});
+    out = all(0);
+    check(out.size() == 1 && out[0].kind == Kind::Release && out[0].control == "stomp4", "D not released with its first stomp");
+    r.input({Type::Release, "stomp1"});
+    check(all(100).empty(), "the second stomp of D released something");
+    // C then B is E.
+    r.input({Type::Press, "stomp3"});
+    all(ControlRecognizer::chord_ms - 5);
+    r.input({Type::Press, "stomp2"});
+    out = all(0);
+    check(out.size() == 1 && out[0].control == "stomp5", "C and B together are not E");
+    r.input({Type::Release, "stomp3"}); r.input({Type::Release, "stomp2"});
+    out = all(100);
+    check(out.size() == 1 && out[0].control == "stomp5" && out[0].kind == Kind::Release, "E not released once");
+    // Too late: a neighbour after the wait is a stomp of its own.
+    r.input({Type::Press, "stomp1"});
+    out = all(ControlRecognizer::chord_ms);
+    r.input({Type::Press, "stomp2"});
+    for (auto& g : all(ControlRecognizer::chord_ms)) out.push_back(g);
+    check(out.size() == 2 && out[0].control == "stomp1" && out[1].control == "stomp2", "a late neighbour made a chord");
+    r.input({Type::Release, "stomp1"}); r.input({Type::Release, "stomp2"});
+    out = all(100);
+    check(out.size() == 2 && out[0].kind == Kind::Release && out[1].kind == Kind::Release, "the two stomps not released");
+    // A and C are not neighbours: two stomps.
+    r.input({Type::Press, "stomp1"}); r.input({Type::Press, "stomp3"});
+    out = all(ControlRecognizer::chord_ms);
+    check(out.size() == 2 && out[0].control != "stomp4" && out[1].control != "stomp5", "A and C made a chord");
+    r.input({Type::Release, "stomp1"}); r.input({Type::Release, "stomp3"});
+    all(100);
+    // A quick tap released inside the wait is played at its release, press first.
+    r.input({Type::Press, "stomp2"});
+    all(10);
+    r.input({Type::Release, "stomp2"});
+    out = all(0);
+    check(out.size() == 2 && out[0].kind == Kind::Press && out[1].kind == Kind::Release && out[0].control == "stomp2", "a quick tap was lost");
+    // D sent by itself, as a source may, acts at once.
+    all(100);
+    r.input({Type::Press, "stomp4"});
+    out = all(0);
+    check(out.size() == 1 && out[0].control == "stomp4", "a stomp past the physical ones waited");
 }
 
 void mapping() {
@@ -179,6 +236,7 @@ int main() {
         const auto root = std::filesystem::temp_directory_path() / "peepo-controls-tests";
         std::filesystem::remove_all(root);
         gestures();
+        chords();
         mapping();
         assignments(root);
         std::filesystem::remove_all(root);

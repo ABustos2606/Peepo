@@ -38,6 +38,9 @@ LRESULT CALLBACK control_keys(HWND window, UINT message, WPARAM key, LPARAM deta
         if (key == 'Z') press("stomp1");
         if (key == 'X') press("stomp2");
         if (key == 'C') press("stomp3");
+        // Two stomps at once: V is A+B (D), B is B+C (E).
+        if (key == 'V') { press("stomp1"); press("stomp2"); }
+        if (key == 'B') { press("stomp2"); press("stomp3"); }
         if (!found.empty()) {
             const std::lock_guard lock(control_mutex);
             control_events.insert(control_events.end(), found.begin(), found.end());

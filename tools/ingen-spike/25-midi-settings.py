@@ -96,6 +96,29 @@ configure(program_change="any")
 s = program(b"\xc5\x02")
 check(s.get("name") == "Charlie" and s.get("dirty") == "0", "with any channel, program 3 on channel 6 loads Charlie", str(s))
 
+# Scene change (P13.9): CC 69 unless set otherwise, on the program-change
+# channel; values 0 to 7 play scenes 1 to 8.
+check(s.get("scene") == "3/3", "Charlie loads with the third of its scenes playing, as saved", str(s))
+s = program(b"\xb4\x45\x00")
+check(s.get("scene") == "1/3" and s.get("dirty") == "0", "CC 69 value 0 plays scene 1, the patch left unedited", str(s))
+s = program(b"\xb4\x46\x01")
+check(s.get("scene") == "1/3", "another controller plays no scene", str(s))
+s = program(b"\xb4\x45\x05")
+check(s.get("scene") == "1/3", "a scene the patch does not have changes nothing", str(s))
+configure(program_change="any", scene_cc=11)
+s = program(b"\xb4\x0b\x01")
+check(s.get("scene") == "2/3", "the scene controller follows the setting: CC 11 value 1 plays scene 2", str(s))
+s = program(b"\xc0\x00")
+check(s.get("name") == "Alpha" and s.get("scene") == "0/0", "program 1 loads Alpha, which has no scenes", str(s))
+queue.extend([b"\xc0\x02", b"\xb0\x0b\x00"])
+time.sleep(1.5)
+s = state()
+check(s.get("name") == "Charlie" and s.get("scene") == "1/3", "a program change and a scene together: the scene plays in the patch loaded", str(s))
+configure(program_change=1)
+s = program(b"\xb2\x45\x01")
+check(s.get("scene") == "1/3", "a scene on another channel than program change is ignored", str(s))
+configure(program_change="any")
+
 # Clock out: restart, then no Start or Stop, then off.
 def restart():
     count = int(open(run + "/restart").read()) if os.path.exists(run + "/restart") else 0

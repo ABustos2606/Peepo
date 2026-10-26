@@ -1,0 +1,42 @@
+# P13.9, 2026-10-25, WSL Debian, engine: ingen -e -f -a -S /tmp/peepo-ingen.sock
+# Linux build (RelWithDebInfo, UI off), then the unit tests, then
+# PEEPO_PREBUILT=1 tools/ingen-spike/25-midi-settings.sh
+Domain validation, typed ranges, delayed acknowledgment, rejection, reconnect and restore passed.
+peepo_core_tests exit 0
+Control gestures, mapping rules, soft takeover and stored assignments passed.
+peepo_controls_tests exit 0
+MIDI clock out and in, Start and Stop, program change and the settings files passed.
+peepo_midi_tests exit 0
+Bundles, revisions, interrupted saves, fallback, startup choice, foreign bundles, missing files, scenes and simulated save/load passed.
+peepo_storage_tests exit 0
+Ingen protocol reading, command mapping, acknowledgment, second client, scenes, timeout, reconnect and restart passed.
+peepo_ingen_tests exit 0
+PASS  store Alpha (90 BPM), Bravo (100) and Charlie (110), then play an unsaved patch
+PASS  peepo-midi tells the interface what it hears -- (no devices, no clock)
+PASS  with no settings file, the clock goes out
+PASS  program change while it is off changes nothing -- {'name': 'Scratch', 'tempo': '120', 'dirty': '1', 'scene': '0/0'}
+PASS  program 2 on channel 1 loads the second stored patch, with its tempo -- {'name': 'Bravo', 'tempo': '100', 'dirty': '0', 'scene': '0/0'}
+PASS  Bravo's two control changes go out as it loads -- b0 07 64 b1 0a 40
+PASS  a program change on another channel is ignored -- {'name': 'Bravo', 'tempo': '100', 'dirty': '0', 'scene': '0/0'}
+PASS  a program with no stored patch changes nothing -- {'name': 'Bravo', 'tempo': '100', 'dirty': '0', 'scene': '0/0'}
+PASS  with any channel, program 3 on channel 6 loads Charlie -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '3/3'}
+PASS  Charlie loads with the third of its scenes playing, as saved -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '3/3'}
+PASS  CC 69 value 0 plays scene 1, the patch left unedited -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '1/3'}
+PASS  another controller plays no scene -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '1/3'}
+PASS  a scene the patch does not have changes nothing -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '1/3'}
+PASS  the scene controller follows the setting: CC 11 value 1 plays scene 2 -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '2/3'}
+PASS  program 1 loads Alpha, which has no scenes -- {'name': 'Alpha', 'tempo': '90', 'dirty': '0', 'scene': '0/0'}
+PASS  a program change and a scene together: the scene plays in the patch loaded -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '1/3'}
+PASS  a scene on another channel than program change is ignored -- {'name': 'Charlie', 'tempo': '110', 'dirty': '0', 'scene': '1/3'}
+PASS  Restart sends Stop, then Start, and the clock goes on -- f8 f8 fc fa f8 f8
+PASS  with Start and Stop off, a restart sends neither
+PASS  clock out off: nothing goes out
+PASS  clock out on again: it begins with Start
+PASS  the patch tempo follows incoming clock at 125 BPM -- 125 (was 110)
+PASS  following the clock does not mark the patch as edited -- {'name': 'Charlie', 'tempo': '125', 'dirty': '0', 'scene': '1/3'}
+PASS  while following incoming clock, Peepo sends none of its own
+PASS  the interface is told the clock it hears -- clock_in=125.0
+PASS  and follows a change to 93.5 BPM
+PASS  a clock that stops is no longer reported
+PASS  controller 7 on channel 3 learned, sets the control, is saved, loaded and forgotten
+SUMMARY MIDI settings checks passed

@@ -245,7 +245,8 @@ int main(int argc, char** argv) {
     // For the MIDI settings check: what plays now; stored patches for program
     // change; and MIDI learn, waiting for a probe to move a controller.
     if (mode == "--state") {
-        std::cout << "STATE name=" << a->graph().name << " tempo=" << a->graph().tempo << " dirty=" << a->graph().dirty << std::endl;
+        std::cout << "STATE name=" << a->graph().name << " tempo=" << a->graph().tempo << " dirty=" << a->graph().dirty
+                  << " scene=" << (a->graph().scenes.scenes.empty() ? 0 : a->graph().scenes.current + 1) << "/" << a->graph().scenes.scenes.size() << std::endl;
         return 0;
     }
     if (mode == "--midi-patches" && argc > 4) {
@@ -258,6 +259,8 @@ int main(int argc, char** argv) {
             a->ok(SetTempo{bpm}, "at " + std::to_string(static_cast<int>(bpm)) + " BPM");
             // Bravo sends two control changes as it loads.
             if (std::string(name) == "Bravo") a->ok(SetLoadMessages{{{1, 7, 100}, {2, 10, 64}}}, "with two control changes on load");
+            // Charlie has three scenes, saved with the third playing.
+            if (std::string(name) == "Charlie") for (int i = 0; i < 3; ++i) a->ok(AddScene{}, "with a scene");
             const auto id = store.new_id();
             std::string issue;
             auto staging = store.stage(id, issue);

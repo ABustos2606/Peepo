@@ -93,4 +93,11 @@ inline std::optional<int> program_change(const std::uint8_t* data, std::size_t s
     if (channel != any_channel && (channel < 1 || channel > 16 || (data[0] & 0x0f) != channel - 1)) return std::nullopt;
     return data[1];
 }
+// The scene a message selects, counted from 0, when it is control change
+// `controller` on `channel` (as for program_change) with a value 0 to 7.
+inline std::optional<std::size_t> scene_change(const std::uint8_t* data, std::size_t size, int channel, int controller) {
+    if (size < 3 || (data[0] & 0xf0) != 0xb0 || data[1] != controller || data[2] >= max_scenes) return std::nullopt;
+    if (channel != any_channel && (channel < 1 || channel > 16 || (data[0] & 0x0f) != channel - 1)) return std::nullopt;
+    return data[2];
+}
 }

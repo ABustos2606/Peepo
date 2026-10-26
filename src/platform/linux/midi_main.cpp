@@ -8,6 +8,8 @@
 //     follows the clock heard on peepo-midi:midi_in, and the clock out stops.
 //   - Program change on the chosen channel loads stored patch number N, in
 //     the order Patches lists them, until the set list exists.
+//   - The scene control change (CC 69 unless changed) on the same channel
+//     plays scene 1 to 8 for values 0 to 7, after a patch it follows loads.
 //   - A patch's own control changes go out on clock_out as it loads, and
 //     again when they are edited.
 // It is a second engine client: a tap, the Tempo page and a patch change all
@@ -57,10 +59,11 @@ struct Shared {
     std::array<std::array<std::uint8_t, 3>, 64> outgoing{};
     std::atomic<unsigned> written{0}, sent{0};
     std::atomic<int> program_channel{peepo::midi::program_off};
+    std::atomic<int> scene_controller{peepo::midi::default_scene_controller};
     // From the audio thread to the main thread.
     std::atomic<bool> stopped{false};
     std::atomic<double> clock_in{no_tempo};
-    std::atomic<int> program{-1};
+    std::atomic<int> program{-1}, scene{-1};
     std::atomic<unsigned> lost{0};
 };
 int process(jack_nframes_t frames, void* data) {
@@ -71,11 +74,13 @@ int process(jack_nframes_t frames, void* data) {
     // What came in: clock for the tempo, and program changes.
     void* input = jack_port_get_buffer(s.in, frames);
     const auto channel = s.program_channel.load(std::memory_order_relaxed);
+    const auto controller = s.scene_controller.load(std::memory_order_relaxed);
     for (std::uint32_t i = 0, count = jack_midi_get_event_count(input); i < count; ++i) {
         jack_midi_event_t event;
         if (jack_midi_event_get(&event, input, i) != 0 || event.size == 0) continue;
         s.heard->message(s.frames + event.time, event.buffer[0]);
         if (const auto program = peepo::midi::program_change(event.buffer, event.size, channel)) s.program = *program;
+        if (const auto scene = peepo::midi::scene_change(event.buffer, event.size, channel, controller)) s.scene = static_cast<int>(*scene);
     }
     s.clock_in.store(s.heard->tempo(s.frames + frames).value_or(no_tempo), std::memory_order_relaxed);
     // What goes out: the clock.
@@ -186,7 +191,9 @@ int main(int argc, char** argv) {
     peepo::midi::Status written;
     bool status_written = false;
     unsigned restarts = link.restart_requests();
-    peepo::RequestId following = 0, loading = 0;
+    peepo::RequestId following = 0, loading = 0, selecting = 0;
+    // A scene asked for, kept until a patch loading before it has loaded.
+    std::optional<std::size_t> scene_wanted;
     // The patch and control changes last sent, so a patch's are sent once as it loads.
     std::optional<std::string> sent_for;
     auto last = std::chrono::steady_clock::now(), checked = last - std::chrono::seconds(1), followed = last;
@@ -197,10 +204,11 @@ int main(int argc, char** argv) {
         const auto elapsed = static_cast<unsigned>(std::chrono::duration_cast<std::chrono::milliseconds>(now - last).count());
         if (elapsed) last = now;
         for (const auto& event : engine.advance(elapsed)) {
-            if (event.request && (event.request == following || event.request == loading) && !event.accepted)
-                std::cerr << "peepo-midi: " << (event.request == loading ? "program change: " : "tempo from clock: ") << event.message << std::endl;
+            if (event.request && (event.request == following || event.request == loading || event.request == selecting) && !event.accepted)
+                std::cerr << "peepo-midi: " << (event.request == loading ? "program change: " : event.request == selecting ? "scene: " : "tempo from clock: ") << event.message << std::endl;
             if (event.request == following) following = 0;
             if (event.request == loading) loading = 0;
+            if (event.request == selecting) selecting = 0;
         }
         if (const auto lost = shared.lost.exchange(0)) std::cerr << "peepo-midi: " << lost << " clock messages did not fit their period" << std::endl;
         const bool ready = engine.state() == peepo::EngineState::Ready;
@@ -243,6 +251,7 @@ int main(int argc, char** argv) {
         }
         shared.transport = settings.start_stop;
         shared.program_channel = settings.program_channel;
+        shared.scene_controller = settings.scene_controller;
         // Clock out only when the tempo is Peepo's own: following another
         // clock and sending one could make a loop.
         const bool want = told_tempo && settings.clock_out && settings.tempo_source == peepo::midi::TempoSource::Patch;
@@ -264,6 +273,18 @@ int main(int argc, char** argv) {
                 std::cout << "peepo-midi: program " << program + 1 << " loads " << p.name << std::endl;
                 loading = engine.submit(peepo::LoadPatch{p.location, peepo::saved_blocks(p.bundle), p.id, p.bundle.tempo});
             }
+        }
+        // Scene change: the newest wins, played once the patch before it has loaded.
+        if (const int scene = shared.scene.exchange(-1); scene >= 0) scene_wanted = static_cast<std::size_t>(scene);
+        if (scene_wanted && ready && !loading) {
+            const auto& scenes = engine.snapshot().scenes.scenes;
+            if (*scene_wanted >= scenes.size())
+                std::cerr << "peepo-midi: scene " << *scene_wanted + 1 << ": " << engine.snapshot().name << " has " << scenes.size() << " scenes" << std::endl;
+            else {
+                std::cout << "peepo-midi: scene " << *scene_wanted + 1 << " plays " << scenes[*scene_wanted].name << std::endl;
+                selecting = engine.submit(peepo::SelectScene{*scene_wanted});
+            }
+            scene_wanted.reset();
         }
     }
     if (server_gone) { std::cerr << "peepo-midi: JACK went away" << std::endl; return 1; }

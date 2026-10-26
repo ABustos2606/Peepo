@@ -63,6 +63,7 @@ Every source — the simulator's keys today, the GPIO adapter later — produces
 - **Foot switch modules:** a Foot switch module in the patch listens to one stomp (below) and hears every press and release, beside whatever the stomp is assigned.
 - **Next or previous patch, tap tempo:** instrument-wide (below).
 - A press closer than 25 ms after a release is a bounce and is ignored.
+- **Five switches from three stomps (25 October 2026, P13.9).** The stomps are A, B and C. Two neighbours pressed together are a switch of their own, as on Beebo: **D is A+B** and **E is B+C**. So a stomp acts 40 ms after it is pressed, unless its neighbour joins it in that time. The first of the two released releases D or E. A and C together are two stomps. D and E are assigned like any stomp. In a patch in scene mode the stomps play scenes instead ([scenes](44-scenes.md#on-the-screen-stomps-and-midi)).
 
 **Assigning a stomp from the patch (16 October 2026).** Beebo's way: hold a module on the patch, and its actions open. A stomp pressed while they are open does not play. It now switches that module's bypass, beside any others it already switches; pressing it again there takes the module off. The page says which stomps switch the module. On the patch, each module a stomp acts on shows the stomp's number in a white dot on its top right corner: through its bypass, through an assigned parameter, or, for a Foot switch module, the stomp it listens to.
 
@@ -71,7 +72,7 @@ Every source — the simulator's keys today, the GPIO adapter later — produces
 
 **A stomp as a control signal (16 October 2026).** The **Foot switch** module (CV + UTIL) is Peepo's own plugin (`plugins/footswitch.lv2`, `urn:peepo:lv2:footswitch`), standing in for Beebo's Foot Switch A-E modules, whose plugin has no public source. Its control output can be cabled to any control input, for example through a slew limiter to a delay's feedback.
 
-- **Stomp** (1, 2 or 3): the stomp it listens to.
+- **Stomp** (A, B or C): the stomp it listens to. Not D or E: the plugin counts only to three.
 - **Latching:** off, the output follows the stomp (On value while it is down); on, each press flips it.
 - **On value** and **Off value** (0 to 1): what the output gives in each state.
 - **Pressed:** the state the interface sets from the stomp. It can also be switched on its page.
@@ -96,7 +97,7 @@ Switch actions go to the engine at once; only encoder turns are coalesced (one v
 
 ## Assignments (P7.5)
 
-**Settings → Controls** lists the two encoders and three stomps. Each row shows its assignment, an orphan in orange, or what the encoder does unpinned / "Not assigned". Using a control highlights its row, which is how to find which physical knob is which.
+**Settings → Controls** lists the two encoders and the stomps A to E. Each row shows its assignment, an orphan in orange, or what the encoder does unpinned / "Not assigned". Using a control highlights its row, which is how to find which physical knob is which.
 
 - **Assign** picks a module, then a parameter. Stomps also offer **Bypass**, and **Next patch** / **Previous patch**. A bypass joins the modules the stomp already switches; a parameter replaces whatever the stomp did. **Clear** empties it.
 - **Edit** sets Invert, Toggle or Momentary, the From and To ends of the range, or clears it.
@@ -119,7 +120,8 @@ Switch actions go to the engine at once; only encoder turns are coalesced (one v
 | --- | --- |
 | Q / A, W / S | Turn encoders 1 and 2 clockwise / anticlockwise (holding a key repeats, which shows acceleration) |
 | 1, 2 | Push encoders 1 and 2 |
-| Z, X, C | Stomps 1–3 |
+| Z, X, C | Stomps A–C |
+| V, B | A+B (D) and B+C (E), both stomps pressed at once |
 
 The keys work in the Windows build against the simulation or a real engine. They still reach LVGL, where they are text on the name page; the interface ignores them as controls there.
 
