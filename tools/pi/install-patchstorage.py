@@ -20,6 +20,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'ingen-spike'))
 from ingenprobe import Client
 
 
+def require(condition, message):
+    # Checked whatever Python's optimisation: an assert would vanish under -O.
+    if not condition:
+        raise RuntimeError(message)
+
+
 def command(*args):
     return subprocess.check_output(args, text=True).strip()
 
@@ -49,8 +55,8 @@ def socket_ready():
 def copy_graph(source, destination):
     client = Client('/run/peepo/ingen.sock')
     try:
-        assert client.copy(source, destination, timeout=60)[0] == 0
-        assert client.get('ingen:/main', timeout=20)[0] == 0
+        require(client.copy(source, destination, timeout=60)[0] == 0, 'The engine did not copy the graph')
+        require(client.get('ingen:/main', timeout=20)[0] == 0, 'The engine did not describe the copied graph')
     finally:
         client.close()
 
@@ -65,35 +71,35 @@ def graph_equal(before, after):
 
 
 def main():
-    assert os.geteuid() == 0, 'Run as root'
+    require(os.geteuid() == 0, 'Run as root')
     work, stage, engine, results = map(lambda p: Path(p).resolve(), sys.argv[1:])
     prefix = Path('/opt/peepo')
     manifest = json.loads((work / 'config/catalogue/patchstorage.json').read_text())
     expected = {p['uri'] for e in manifest['entries'] for p in e['plugins']}
     result = json.loads(results.read_text())
-    assert result['machine'] == 'aarch64' and result['total'] == result['passed'] == len(expected)
-    assert {p['uri'] for p in result['entries']} == expected
-    assert all(p['passed'] for p in result['entries'])
-    assert result['control_recheck'] is True
-    assert result['manifest_sha256'] == sha(work / 'config/catalogue/patchstorage.json')
-    assert result['engine_server_sha256'] == sha(engine / 'lib/aarch64-linux-gnu/libingen_server.so')
+    require(result['machine'] == 'aarch64' and result['total'] == result['passed'] == len(expected), 'The test results are not from this Pi, or not every plugin passed')
+    require({p['uri'] for p in result['entries']} == expected, 'The test results cover other plugins than the manifest')
+    require(all(p['passed'] for p in result['entries']), 'A plugin failed its test')
+    require(result['control_recheck'] is True, 'The control recheck did not pass')
+    require(result['manifest_sha256'] == sha(work / 'config/catalogue/patchstorage.json'), 'The manifest changed since it was tested')
+    require(result['engine_server_sha256'] == sha(engine / 'lib/aarch64-linux-gnu/libingen_server.so'), 'The staged engine is not the one tested')
     tree = hashlib.sha256()
     for item in sorted((stage / 'lib/lv2').rglob('*')):
         if item.is_file():
             tree.update(item.relative_to(stage / 'lib/lv2').as_posix().encode())
             tree.update(hashlib.sha256(item.read_bytes()).digest())
-    assert result['plugin_tree_sha256'] == tree.hexdigest()
+    require(result['plugin_tree_sha256'] == tree.hexdigest(), 'The staged plugins are not the ones tested')
     # Fail before touching services if comparison support or any bundle is absent.
     import rdflib
     bundles = {p['bundle'] for e in manifest['entries'] for p in e['plugins']}
     for bundle in bundles:
-        assert Path(bundle).name == bundle and bundle.endswith('.lv2')
-        assert (stage / 'lib/lv2' / bundle / 'manifest.ttl').is_file()
+        require(Path(bundle).name == bundle and bundle.endswith('.lv2'), 'A bundle name is not a plain .lv2 directory')
+        require((stage / 'lib/lv2' / bundle / 'manifest.ttl').is_file(), 'A staged bundle has no manifest.ttl')
         target = prefix / 'lib/lv2' / bundle
-        assert not target.exists() or files(target) == files(stage / 'lib/lv2' / bundle), f'Existing bundle differs: {bundle}'
+        require(not target.exists() or files(target) == files(stage / 'lib/lv2' / bundle), f'Existing bundle differs: {bundle}')
     engine_files = ['bin/ingen', 'lib/aarch64-linux-gnu/libingen_server.so',
                     'lib/aarch64-linux-gnu/libingen_jack.so', 'lib/aarch64-linux-gnu/libingen-0.so.0.5.1']
-    assert all((engine / name).is_file() for name in engine_files)
+    require(all((engine / name).is_file() for name in engine_files), 'The staged engine is incomplete')
     record = Path(tempfile.mkdtemp(prefix='patchstorage-update-', dir='/var/lib/peepo'))
     shutil.chown(record, user='peepo', group='peepo')
     backup = record / 'backup'
@@ -125,12 +131,12 @@ def main():
             atomic_copy(work / source, prefix / destination)
         subprocess.run(['/opt/peepo/bin/peepo-export-catalogue'], check=True)
         catalogue = json.loads((prefix / 'share/peepo/catalogue.json').read_text())
-        assert expected <= {p['uri'] for p in catalogue['modules']}
+        require(expected <= {p['uri'] for p in catalogue['modules']}, 'The exported catalogue lacks an installed plugin')
         subprocess.run(['systemctl', 'stop', 'peepo-ui', 'peepo-route'], check=True)
         copy_graph('ingen:/main', before.as_uri())
         subprocess.run(['systemctl', 'stop', 'peepo-engine'], check=True)
         stopped = True
-        assert command('systemctl', 'show', '-p', 'MainPID', '--value', 'peepo-engine') == '0'
+        require(command('systemctl', 'show', '-p', 'MainPID', '--value', 'peepo-engine') == '0', 'The engine did not stop')
         for name in engine_files:
             atomic_copy(engine / name, prefix / name)
         subprocess.run(['systemctl', 'start', 'peepo-engine'], check=True)
@@ -138,15 +144,15 @@ def main():
         copy_graph(before.as_uri(), 'ingen:/main')
         after = record / 'after.ingen'
         copy_graph('ingen:/main', after.as_uri())
-        assert graph_equal(before, after), 'Restored graph differs from the captured graph'
+        require(graph_equal(before, after), 'Restored graph differs from the captured graph')
         subprocess.run(['systemctl', 'start', 'peepo-route', 'peepo-ui'], check=True)
         time.sleep(2)
         after_ui = record / 'after-ui.ingen'
         copy_graph('ingen:/main', after_ui.as_uri())
-        assert graph_equal(before, after_ui), 'UI restart changed the restored graph'
+        require(graph_equal(before, after_ui), 'UI restart changed the restored graph')
         for unit in ('peepo-jack', 'peepo-engine', 'peepo-route', 'peepo-ui'):
-            assert command('systemctl', 'is-active', unit) == 'active', unit
-        assert command('systemctl', 'show', '-p', 'MainPID', '--value', 'peepo-jack') == before_units['peepo-jack']
+            require(command('systemctl', 'is-active', unit) == 'active', f'{unit} is not running')
+        require(command('systemctl', 'show', '-p', 'MainPID', '--value', 'peepo-jack') == before_units['peepo-jack'], 'JACK restarted')
         for directory in ('sources', 'licenses'):
             source = stage / 'share/peepo' / directory
             if source.exists():

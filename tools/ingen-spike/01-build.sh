@@ -75,9 +75,29 @@ if ! git -C ingen rev-parse -q --verify peepo-spike >/dev/null; then
 fi
 
 # Our small changes to the engine (AGPL-3.0-or-later, like the files they touch).
+# The interface depends on every one of them, so the source is either
+# untouched, and they all apply in order, or exactly the source with all of
+# them applied; anything else stops the build. (Later patches touch lines of
+# earlier ones, so each cannot be checked alone.) The patched source is first
+# made in a scratch index, leaving the working tree alone.
+patched_index=$(mktemp)
+GIT_INDEX_FILE="$patched_index" git -C ingen read-tree HEAD
 for patch in "$HERE"/patches/*.patch; do
-    git -C ingen apply --check "$patch" 2>/dev/null && git -C ingen apply "$patch" && echo "applied $(basename "$patch")"
+    GIT_INDEX_FILE="$patched_index" git -C ingen apply --cached "$patch" ||
+        { echo "$(basename "$patch") does not apply to the pinned engine source" >&2; rm -f "$patched_index"; exit 1; }
 done
+patched_tree=$(GIT_INDEX_FILE="$patched_index" git -C ingen write-tree)
+rm -f "$patched_index"
+if git -C ingen diff --quiet HEAD; then
+    for patch in "$HERE"/patches/*.patch; do git -C ingen apply "$patch"; echo "applied $(basename "$patch")"; done
+elif git -C ingen diff --quiet "$patched_tree"; then
+    echo "all $(ls "$HERE"/patches/*.patch | wc -l) engine patches already applied"
+else
+    echo "the engine source in $SRC/ingen has changes that are not exactly our patches:" >&2
+    git -C ingen diff --stat "$patched_tree" >&2
+    exit 1
+fi
+git -C ingen diff --quiet "$patched_tree" || { echo "the engine source does not match the patched source" >&2; exit 1; }
 
 export PKG_CONFIG_PATH="$(find "$PREFIX" -name pkgconfig -type d | paste -sd:)"
 configure ingen -Dgui=disabled -Ddocs=disabled -Dbindings_py=disabled -Dportaudio=disabled -Djack=enabled -Dlint=false

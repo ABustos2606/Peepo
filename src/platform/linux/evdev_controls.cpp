@@ -22,14 +22,19 @@ constexpr Named names[] = {
     {"KEY_F19", KEY_F19}, {"KEY_F20", KEY_F20}, {"KEY_F21", KEY_F21}, {"KEY_F22", KEY_F22}, {"KEY_F23", KEY_F23}, {"KEY_F24", KEY_F24},
     {"KEY_ENTER", KEY_ENTER}, {"KEY_SPACE", KEY_SPACE}, {"BTN_0", BTN_0}, {"BTN_1", BTN_1}, {"BTN_2", BTN_2}, {"BTN_3", BTN_3},
     {"BTN_4", BTN_4}, {"BTN_5", BTN_5}, {"BTN_6", BTN_6}, {"BTN_7", BTN_7}};
-bool code_of(const std::string& text, unsigned& code) {
-    for (const auto& named : names) if (text == named.name) { code = named.code; return true; }
-    const auto result = std::from_chars(text.data(), text.data() + text.size(), code);
-    return result.ec == std::errc{} && result.ptr == text.data() + text.size() && code <= KEY_MAX;
+// A code no higher than `highest`: REL_MAX for a turn, KEY_MAX for a key.
+bool code_of(const std::string& text, unsigned highest, unsigned& code) {
+    bool found = false;
+    for (const auto& named : names) if (text == named.name) { code = named.code; found = true; }
+    if (!found) {
+        const auto result = std::from_chars(text.data(), text.data() + text.size(), code);
+        found = result.ec == std::errc{} && result.ptr == text.data() + text.size();
+    }
+    return found && code <= highest;
 }
-bool has_bit(const unsigned long* bits, unsigned bit) {
+template <std::size_t N> bool has_bit(const unsigned long (&bits)[N], unsigned bit) {
     constexpr unsigned width = 8 * sizeof(unsigned long);
-    return (bits[bit / width] >> (bit % width)) & 1UL;
+    return bit / width < N && ((bits[bit / width] >> (bit % width)) & 1UL);
 }
 constexpr unsigned long_count(unsigned bits) { return bits / (8 * sizeof(unsigned long)) + 1; }
 std::string device_name(int fd) {
@@ -68,7 +73,7 @@ std::string parse_bindings(std::string_view text, std::vector<Binding>& out) {
         if (word[1] == "turn") b.kind = Binding::Kind::Turn;
         else if (word[1] != "key") return where + "expected turn or key";
         if (b.kind == Binding::Kind::Turn && !is_encoder(b.control)) return where + "only encoders turn";
-        if (!code_of(word[2], b.code)) return where + "unknown code " + word[2];
+        if (!code_of(word[2], b.kind == Binding::Kind::Turn ? REL_MAX : KEY_MAX, b.code)) return where + "unknown code " + word[2] + " for " + word[1];
         for (std::size_t i = 3; i < word.size(); ++i) {
             if (word[i] == "reverse") b.reverse = true;
             else if (word[i].starts_with("device=")) b.device = word[i].substr(7);
@@ -107,11 +112,10 @@ void EvdevControls::scan() {
         // Open only devices that report something bound, so a keyboard or
         // the touch screen is never held for nothing.
         unsigned long rel[long_count(REL_MAX)] = {}, key[long_count(KEY_MAX)] = {};
-        ioctl(fd, EVIOCGBIT(EV_REL, sizeof rel), rel);
-        ioctl(fd, EVIOCGBIT(EV_KEY, sizeof key), key);
+        if (ioctl(fd, EVIOCGBIT(EV_REL, sizeof rel), rel) < 0 || ioctl(fd, EVIOCGBIT(EV_KEY, sizeof key), key) < 0) { close(fd); continue; }
         const auto name = device_name(fd);
         const bool wanted = std::any_of(bindings_.begin(), bindings_.end(), [&](const Binding& b) {
-            return (b.device.empty() || b.device == name) && has_bit(b.kind == Binding::Kind::Turn ? rel : key, b.code);
+            return (b.device.empty() || b.device == name) && (b.kind == Binding::Kind::Turn ? has_bit(rel, b.code) : has_bit(key, b.code));
         });
         if (wanted) devices_.push_back({fd, path, name});
         else close(fd);
@@ -142,9 +146,9 @@ std::optional<std::string> find_touchscreen(const std::string& directory) {
         const int fd = open(path.c_str(), O_RDONLY | O_NONBLOCK | O_CLOEXEC);
         if (fd < 0) continue;
         unsigned long abs[long_count(ABS_MAX)] = {}, key[long_count(KEY_MAX)] = {};
-        ioctl(fd, EVIOCGBIT(EV_ABS, sizeof abs), abs);
-        ioctl(fd, EVIOCGBIT(EV_KEY, sizeof key), key);
+        const bool read = ioctl(fd, EVIOCGBIT(EV_ABS, sizeof abs), abs) >= 0 && ioctl(fd, EVIOCGBIT(EV_KEY, sizeof key), key) >= 0;
         close(fd);
+        if (!read) continue;
         const bool positions = has_bit(abs, ABS_MT_POSITION_X) || (has_bit(abs, ABS_X) && has_bit(abs, ABS_Y));
         if (positions && has_bit(key, BTN_TOUCH)) return path;
     }

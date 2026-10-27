@@ -40,7 +40,10 @@ void bindings(const std::string& shipped) {
 
     check(parse_bindings("enc1 turn REL_X reverse device=rotary@5\n# comment\n\nstomp1 key 189\n", b).empty() && b.size() == 2 && b[1].code == 189, "options or numeric codes not read");
     check(translate(b, "rotary@5", EV_REL, REL_X, 2)->steps == -2 && !translate(b, "rotary@d", EV_REL, REL_X, 2), "reverse or device filter ignored");
-    for (const char* bad : {"enc9x turn REL_X", "stomp1 turn REL_X", "enc1 spin REL_X", "enc1 turn REL_NOPE", "enc1 key KEY_F13 sideways", "enc1"})
+    check(parse_bindings("enc1 turn 15\nenc2 key REL_DIAL\nstomp1 key 767\n", b).empty() && b.size() == 3, "codes at the edge of their range refused");
+    for (const char* bad : {"enc9x turn REL_X", "stomp1 turn REL_X", "enc1 spin REL_X", "enc1 turn REL_NOPE", "enc1 key KEY_F13 sideways", "enc1",
+                            // A code beyond its event type's range: a turn is REL_, a key up to KEY_MAX.
+                            "enc1 turn 64", "enc1 turn 16", "enc1 turn KEY_ENTER", "stomp1 key 768", "stomp1 key 99999999999"})
         check(!parse_bindings(bad, b).empty(), "a malformed binding was accepted");
 }
 

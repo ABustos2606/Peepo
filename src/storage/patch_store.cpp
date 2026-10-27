@@ -55,20 +55,23 @@ std::string unescaped(const std::string& iri) {
 // Pull the power right after a save and the card may not have it yet: a
 // rename is atomic, but only what was flushed survives. Flush each file, then
 // the directory that names it. Windows (the simulator) is left to itself.
-void flush(const fs::path& path) {
+// False when the card may not have it.
+bool flush(const fs::path& path) {
 #ifndef _WIN32
     const int fd = ::open(path.c_str(), O_RDONLY | O_CLOEXEC);
-    if (fd < 0) return;
-    ::fsync(fd);
-    ::close(fd);
+    if (fd < 0) return false;
+    const bool synced = ::fsync(fd) == 0;
+    return ::close(fd) == 0 && synced;
 #else
     (void)path;
+    return true;
 #endif
 }
-void flush_tree(const fs::path& directory) {
+bool flush_tree(const fs::path& directory) {
     std::error_code error;
-    for (const auto& entry : fs::recursive_directory_iterator(directory, error)) flush(entry.path());
-    flush(directory);
+    bool all = true;
+    for (fs::recursive_directory_iterator it(directory, error), end; !error && it != end; it.increment(error)) all = flush(it->path()) && all;
+    return !error && flush(directory) && all;
 }
 std::string lower(std::string text) {
     for (auto& c : text) if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
@@ -278,11 +281,12 @@ std::string PatchStore::publish(const Staging& staging) {
     const auto directory = staging.path.parent_path();
     const auto final_path = directory / revision_name(staging.revision);
     if (fs::exists(final_path, error)) return "Revision r" + std::to_string(staging.revision) + " already exists";
-    flush_tree(staging.path);
+    if (!flush_tree(staging.path)) return "Could not write the saved revision to the card";
     fs::rename(staging.path, final_path, error);
     if (error) return "Could not publish the saved revision: " + error.message();
-    flush(directory);
-    flush(directory.parent_path());
+    // Published, but a power cut could still lose its name: then every older
+    // revision stays, to fall back on.
+    if (!flush(directory) || !flush(directory.parent_path())) return {};
     // The new revision is complete; older ones beyond the fallback can go.
     const auto found = revisions(directory);
     for (std::size_t i = kept_revisions; i < found.size(); ++i) fs::remove_all(directory / revision_name(found[i]), error);
@@ -336,7 +340,7 @@ std::string PatchStore::set_global_control(const std::string& control, const std
         if (!out) return "Could not write the control settings";
     }
     std::error_code error;
-    flush(temporary);
+    if (!flush(temporary)) { fs::remove(temporary, error); return "Could not write the settings to the card"; }
     fs::rename(temporary, root_ / "controls", error);
     flush(root_);
     return error ? "Could not record the control settings: " + error.message() : std::string();
@@ -358,7 +362,7 @@ std::string PatchStore::set_startup(const std::string& id) {
         out << id << "\n";
         if (!out) return "Could not write the startup choice";
     }
-    flush(temporary);
+    if (!flush(temporary)) { fs::remove(temporary, error); return "Could not write the settings to the card"; }
     fs::rename(temporary, root_ / "startup", error);
     flush(root_);
     return error ? "Could not record the startup choice: " + error.message() : std::string();

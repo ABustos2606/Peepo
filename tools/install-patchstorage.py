@@ -17,6 +17,12 @@ import tarfile
 import tempfile
 import urllib.request
 
+
+def require(condition, message):
+    # Checked whatever Python's optimisation: an assert would vanish under -O.
+    if not condition:
+        raise RuntimeError(message)
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -60,7 +66,7 @@ def cached_archive(cache, target, artifact):
             partial.unlink()
             raise RuntimeError(f'Checksum mismatch: {artifact["filename"]}')
         partial.replace(archive)
-    assert digest(archive) == artifact['sha256'], f'Checksum mismatch: {archive}'
+    require(digest(archive) == artifact['sha256'], f'Checksum mismatch: {archive}')
     return archive
 
 
@@ -72,14 +78,14 @@ def rebuild_detune(recipe, cache, prefix):
             for name, expected in recipe['source_files'].items():
                 with urllib.request.urlopen(recipe['raw_base'] + name, timeout=60) as response:
                     data = response.read()
-                assert hashlib.sha256(data).hexdigest() == expected, name
+                require(hashlib.sha256(data).hexdigest() == expected, name)
                 info = tarfile.TarInfo(name)
                 info.size = len(data)
                 info.mode = 0o644
                 tar.addfile(info, io.BytesIO(data))
     with tarfile.open(source) as tar:
         files = {m.name: hashlib.sha256(tar.extractfile(m).read()).hexdigest() for m in tar if m.isfile()}
-    assert files == recipe['source_files'], 'Detune source package content changed'
+    require(files == recipe['source_files'], 'Detune source package content changed')
     output = prefix / 'build/patchstorage-detune'
     subprocess.run(['bash', str(ROOT / 'tools/build-guitarix-detune.sh'), str(cache), str(output)], check=True)
     corresponding = prefix / 'share/peepo/sources/patchstorage'
@@ -114,7 +120,7 @@ def main():
                     if package_target else entry['archives'][target])
         archive = cached_archive(args.cache, target, artifact)
         checksum = digest(archive)
-        assert checksum == artifact['sha256'], f"Checksum mismatch: {archive}"
+        require(checksum == artifact['sha256'], f"Checksum mismatch: {archive}")
         with tempfile.TemporaryDirectory(prefix='peepo-lv2-') as work:
             if package_target:
                 subprocess.run(['dpkg-deb', '--extract', str(archive), work], check=True)
@@ -123,9 +129,9 @@ def main():
                 with tarfile.open(archive) as tar:
                     extract(tar, work)
                 found = sorted(Path(work).glob('*.lv2'))
-            assert found and all((b / 'manifest.ttl').is_file() for b in found), entry['title']
+            require(found and all((b / 'manifest.ttl').is_file() for b in found), entry['title'])
             bundles = [b.name for b in found]
-            assert set(bundles) == set(artifact['bundles']), entry['title']
+            require(set(bundles) == set(artifact['bundles']), entry['title'])
             for override in entry.get('metadata_overrides', []):
                 if override['target'] != target:
                     continue
@@ -146,7 +152,7 @@ def main():
                             manifest_file.write_text(text + '\n# Peepo: expose the second descriptor already present in this binary.\n' + repair['turtle'] + '\n')
                 for binary in bundle.rglob('*.so'):
                     header = binary.read_bytes()[:20]
-                    assert header[:4] == b'\x7fELF' and int.from_bytes(header[18:20], 'little') == expected_machine, binary
+                    require(header[:4] == b'\x7fELF' and int.from_bytes(header[18:20], 'little') == expected_machine, binary)
                 install_bundle(bundle, lv2dir / bundle.name)
         result.append({'id': entry['id'], 'title': entry['title'], 'bundles': bundles, 'artifact_or_source': checksum})
         print('STAGED ' + entry['title'], flush=True)
