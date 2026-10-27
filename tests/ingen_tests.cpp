@@ -644,6 +644,18 @@ void adapter() {
     fake.fail_saves = false;
     rig.settle();
     check(!outcome.accepted && rig.graph().patch_id == "p-one" && rig.graph().dirty && property(fake, "ingen:/main", identity)->text == "p-one", "refused save changed identity or marker");
+    // An edit sent while the engine writes the bundle is not in it: the patch stays unsaved.
+    rig.engine->submit(SaveGraph{SaveScope::Persistent, true, "file:///patches/p-one/r000002.ingen", "p-one"});
+    rig.engine->submit(RenamePatch{"Renamed"}); rig.settle();
+    check(rig.graph().name == "Renamed" && rig.graph().dirty && property(fake, "ingen:/main", modified)->boolean &&
+          find(fake.files.at("file:///patches/p-one/r000002.ingen").first.at("ingen:/main"), full(uri::peepo, "patchName"))->text != "Renamed",
+          "an edit made during a save was marked saved");
+    // A bundle the patch store could not publish: unsaved again, under the identity it had.
+    check(rig.result(SaveGraph{SaveScope::Persistent, true, "file:///patches/p-two/r000001.ingen", "p-two"}).accepted && !rig.graph().dirty && rig.graph().patch_id == "p-two",
+          "save as failed");
+    check(rig.result(RestoreUnsaved{"p-one"}).accepted && rig.graph().dirty && rig.graph().patch_id == "p-one" && property(fake, "ingen:/main", modified)->boolean &&
+          property(fake, "ingen:/main", identity)->text == "p-one", "an unpublished save stayed marked saved");
+    check(!rig.result(RestoreUnsaved{"Not an id"}).accepted, "an invalid identity was restored");
     // Load: everything goes, the bundle comes in, and the result waits for the loaded graph.
     check(rig.result(NewPatch{"Elsewhere"}).accepted && rig.graph().patch_id.empty() && rig.graph().modules.size() == 2, "new patch kept the identity or modules");
     std::vector<SavedBlock> blocks;
@@ -657,6 +669,19 @@ void adapter() {
           rig.graph().connections.size() == saved.connections.size() && find_module(rig.graph(), 3)->parameters[0].value == 3, "loaded graph differs from the saved one");
     other.settle();
     check(other.graph().patch_id == "p-one" && other.graph().modules.size() == saved.modules.size(), "another client did not follow the load");
+    // A bundle the engine cannot read: the patch playing comes back, as stored, and the load is reported failed.
+    LoadPatch broken{"file:///patches/p-gone/r000001.ingen", blocks, "p-gone"};
+    broken.fallback = std::make_shared<const LoadPatch>(LoadPatch{first_bundle, blocks, "p-one", 96});
+    outcome = rig.result(broken);
+    check(!outcome.accepted && outcome.message.find("restored nothing") != std::string::npos && outcome.message.find("plays again") != std::string::npos,
+          "a failed load with a fallback misreported");
+    check(rig.graph().patch_id == "p-one" && !rig.graph().dirty && rig.graph().modules.size() == saved.modules.size() &&
+          rig.graph().connections.size() == saved.connections.size() && find_module(rig.graph(), 3)->parameters[0].value == 3, "a failed load did not bring the patch before back");
+    // Its fallback unreadable too: both fail, and the result says so.
+    broken.fallback = std::make_shared<const LoadPatch>(LoadPatch{"file:///patches/p-gone/r000002.ingen", blocks, "p-one"});
+    outcome = rig.result(broken);
+    check(!outcome.accepted && outcome.message.find("did not come back") != std::string::npos, "a failed fallback went unreported");
+    check(rig.result(LoadPatch{first_bundle, blocks, "p-one", 96}).accepted && rig.graph().modules.size() == saved.modules.size(), "reload after failed fallback");
     // A restarted interface knows which stored patch is playing, and whether it has unsaved edits.
     {
         Rig fresh(fake);
@@ -1115,6 +1140,13 @@ void scenes() {
     check(rig.result(SetBypass{a, true}).accepted && rig.result(SelectScene{0}).accepted && !find_module(rig.graph(), a)->bypassed, "the scene was not restored");
     auto before = fake.requests;
     check(rig.result(SelectScene{0}).accepted && fake.requests == before && !rig.result(SelectScene{5}).accepted && fake.requests == before, "a needless or missing scene was sent");
+    // Picked one after another before the engine answers: the last one plays.
+    rig.engine->submit(SelectScene{1}); rig.engine->submit(SelectScene{0}); rig.settle();
+    check(rig.graph().scenes.current == 0 && gain(rig, b) == 0, "a scene picked straight after another did not play");
+    // Two screen edits in flight together both go into the current scene.
+    rig.engine->submit(SetBypass{a, true, true}); rig.engine->submit(SetParameter{b, "gain", -6, true}); rig.settle();
+    check(find_module(rig.graph(), a)->bypassed && gain(rig, b) == -6 && scene_changes(rig.graph(), 0).empty(), "an edit in flight was lost from the scene");
+    check(rig.result(SetBypass{a, false, true}).accepted && rig.result(SetParameter{b, "gain", 0, true}).accepted && scene_changes(rig.graph(), 0).empty(), "scene edits not undone");
     // Rename, reorder, copy, delete.
     check(rig.result(RenameScene{0, "Verse"}).accepted && rig.result(RenameScene{1, "Solo"}).accepted && property(fake, "ingen:/main", scene_key("1-name"))->text == "Verse",
           "rename not stored");

@@ -261,6 +261,8 @@ private:
     std::map<Page, int> list_scroll_;
     // A save the engine is writing, published once it answers.
     std::optional<PatchStore::Staging> staging_;
+    // The identity the graph had before the save in progress, put back if it cannot be published.
+    std::string save_restore_id_;
     std::string save_as_id_, load_note_;
     bool saving_as_ = false;
     // Load the startup patch once the engine is ready, if it plays no stored patch.
@@ -368,6 +370,11 @@ private:
     // Stomps holding a Loo-pi command down, so the release reaches the loop
     // that got the press even if the selection changed in between.
     std::map<std::string, LooperPress> looper_stomps_;
+    // What each switch control last sent, while the engine has not answered:
+    // a quick tap's release, or a second press, starts from there, not from
+    // the graph the press has not reached yet.
+    struct SwitchSent { InstanceId id; std::string symbol; double value; RequestId request; };
+    std::map<std::string, SwitchSent> switch_sent_;
     struct LooperCard { lv_obj_t *card = nullptr, *state = nullptr, *time = nullptr, *cycle = nullptr, *bar = nullptr; };
     std::array<LooperCard, looper_loops> looper_cards_{};
     std::vector<lv_obj_t*> looper_commands_;

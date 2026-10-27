@@ -333,6 +333,13 @@ void store(const fs::path& root) {
     auto second = reopened.stage(other, issue);
     graph.name = "Another"; engine_writes(*second, graph);
     check(reopened.publish(*second).empty() && reopened.list().size() == 2 && reopened.list()[0].name == "Another", "list not ordered by name");
+    // Loading one falls back on the patch playing, as stored; never on itself, or on nothing loadable.
+    const auto another = reopened.find(other), repaired = reopened.find(id);
+    const auto load = load_command(*another, repaired);
+    check(load.location == another->location && load.patch_id == other && load.fallback && load.fallback->location == repaired->location &&
+          load.fallback->patch_id == id && load.fallback->blocks.size() == 3 && !load.fallback->fallback, "load falls back on the wrong patch");
+    check(!load_command(*another, another).fallback && !load_command(*another, std::nullopt).fallback && !load_command(*another, fallback).fallback,
+          "load falls back on itself or on nothing loadable");
     check(reopened.remove(id).empty() && reopened.list().size() == 1 && reopened.startup().empty() && !fs::exists(root / id), "delete left the patch or its startup choice");
     check(!reopened.remove(id).empty(), "deleting twice succeeded");
     // A first save that fails leaves no empty patch behind.

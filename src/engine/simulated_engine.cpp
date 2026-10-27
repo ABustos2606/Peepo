@@ -133,6 +133,9 @@ std::string SimulatedEngine::apply(const Command& command) {
                 return {};
             }
             saved_session_ = graph_; saved_session_->dirty = false; graph_.dirty = false;
+        } else if constexpr (std::is_same_v<T, RestoreUnsaved>) {
+            if (!c.patch_id.empty() && !valid_patch_id(c.patch_id)) return "Invalid patch identity";
+            graph_.patch_id = c.patch_id;
         } else if constexpr (std::is_same_v<T, LoadSession>) {
             if (!saved_session_) return "No session snapshot saved";
             graph_ = *saved_session_;

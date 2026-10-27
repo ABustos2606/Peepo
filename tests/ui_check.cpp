@@ -581,6 +581,13 @@ int main(int argc, char** argv) {
             check(exact_label(app.screen(), "3 modules") != nullptr && exact_label(app.screen(), "PLAYING") != nullptr, "saved patch not listed");
             click(app, 70, 456); drag(app, 225, 244, 225, 124); check(app.graph().dirty, "edit after save not marked");
             click(app, 600, 36); check(exact_label(app.screen(), "FIRST LIGHT *") != nullptr, "unsaved edits not shown on the patch playing");
+            // A save the store cannot publish leaves the edits unsaved.
+            const auto blocker = root / first / "r000002.ingen";
+            std::ofstream{blocker} << "in the way";
+            tap_header(app, "SAVE"); step(app, 256);
+            check(app.graph().dirty && app.graph().patch_id == first && app.message().find("Not saved") == 0 && store.find(first)->revision == 1,
+                  "an unpublished save was marked saved");
+            std::filesystem::remove(blocker);
             tap_header(app, "SAVE"); step(app, 256);
             check(store.find(first)->revision == 2 && !app.graph().dirty && store.list().size() == 1, "second save did not add a revision");
             // Save as: a separate stored patch under a new name.
@@ -746,6 +753,10 @@ int main(int argc, char** argv) {
             check(value(4, 3) == 1, "stomp toggle did not switch freeze on");
             press("stomp1"); release("stomp1");
             check(value(4, 3) == 0, "stomp toggle did not switch freeze off");
+            // Two presses before the engine answers the first: on, then off again.
+            app.control({Type::Press, "stomp1"}); step(app, 32); app.control({Type::Release, "stomp1"}); step(app, 32);
+            app.control({Type::Press, "stomp1"}); step(app, 32); app.control({Type::Release, "stomp1"}); step(app, 256);
+            check(value(4, 3) == 0, "a quick double press did not switch freeze back off");
             // Momentary: held on, released off.
             tap(app, "STOMP A"); check(app.page() == peepo::Page::AssignmentDetail, "Edit did not open the assignment");
             tap(app, "MOMENTARY");
@@ -755,6 +766,11 @@ int main(int argc, char** argv) {
             check(value(4, 3) == 1, "momentary press did not hold freeze on");
             release("stomp1");
             check(value(4, 3) == 0, "momentary release did not let go");
+            // A quick tap: the release comes before the engine has answered the press.
+            app.control({Type::Press, "stomp1"}); app.control({Type::Release, "stomp1"}); step(app, 256);
+            check(value(4, 3) == 0, "a quick momentary tap left freeze held");
+            app.control({Type::Press, "stomp1"}); step(app, 16); app.control({Type::Release, "stomp1"}); step(app, 256);
+            check(value(4, 3) == 0, "a 16 ms momentary tap left freeze held");
             // Stomp B bypasses Delay.
             click(app, 70, 456); tap(app, "STOMP B"); tap(app, "DELAY"); tap(app, "BYPASS");
             check(app.graph().assignments.size() == 2 && app.graph().assignments[1].action == peepo::ControlAction::Bypass, "bypass assignment not made");

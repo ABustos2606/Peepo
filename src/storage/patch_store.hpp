@@ -32,6 +32,9 @@ struct StoredPatch {
     std::vector<std::string> missing_files;
     bool startup = false;
 };
+// The command that loads `patch`, falling back on `playing`, the patch
+// playing as last stored, when the engine cannot load it.
+LoadPatch load_command(const StoredPatch& patch, const std::optional<StoredPatch>& playing);
 class PatchStore {
 public:
     // `root` as this program sees it; `engine_root` as an absolute path on the

@@ -494,6 +494,12 @@ void Session::finish(Transaction& done) {
             message = verified(done, failed);
             ok = !failed;
         }
+        if (!ok && done.fallback && done.next != Transaction::Next::FallBack && state_ == EngineState::Ready) { fall_back(done, message); break; }
+        if (!done.failure.empty()) {
+            // The fallback's result is the failed load's.
+            message = done.failure + (ok ? " The patch before plays again." : " The patch before did not come back: " + message);
+            ok = false;
+        }
         if (ok && done.snapshot) {
             if (mirror_changed_) rebuild();
             saved_session_ = graph_;
@@ -822,7 +828,30 @@ std::string Session::edit_scenes(Transaction& to, const std::function<std::strin
     write_scenes(to, edited.scenes);
     return {};
 }
+void Session::fall_back(const Transaction& failed, const std::string& why) {
+    auto& read = begin(failed.request, Purpose::Edit);
+    read.replaces = next_sequence_;
+    send(read, get, main_path);
+    read.next = Transaction::Next::FallBack;
+    read.fallback = failed.fallback;
+    read.failure = why;
+}
 void Session::proceed(Transaction& done) {
+    if (done.next == Transaction::Next::FallBack) {
+        // Planned on the graph as the failed load left it, so what it left is cleared.
+        if (mirror_changed_) rebuild();
+        auto& back = begin(done.request, Purpose::Edit);
+        const auto written = outgoing_.size();
+        if (auto issue = plan(*done.fallback, back); !issue.empty()) {
+            for (const auto number : back.sequences) sequences_.erase(number);
+            outgoing_.resize(written);
+            transactions_.erase(back.id);
+            emit(done.request, false, done.failure + " The patch before did not come back: " + issue);
+            return;
+        }
+        back.failure = done.failure;
+        return;
+    }
     // The engine has answered the save or load itself. Its identity steps
     // took effect; what remains is to read back and clear the marker.
     for (const auto& local : done.local) merge(local.path, {{local.predicate, local.value}});
@@ -831,6 +860,8 @@ void Session::proceed(Transaction& done) {
     next.expected = std::move(done.expected);
     next.location = std::move(done.location);
     next.patch_id = std::move(done.patch_id);
+    next.fallback = std::move(done.fallback);
+    next.failure = std::move(done.failure);
     if (done.next == Transaction::Next::Loaded) {
         // A load is answered before the loaded graph is announced. A Get sent
         // now is queued behind it, so its answer is the loaded graph.
@@ -846,7 +877,8 @@ void Session::proceed(Transaction& done) {
         next.verify = true;
         if (!next.patch_id.empty()) identify(next, next.patch_id);
     }
-    mark(next, false);
+    // An edit sent while the engine wrote the bundle is not in it: still unsaved.
+    mark(next, done.next == Transaction::Next::Saved && done.edits != edits_);
 }
 std::string Session::verified(const Transaction& done, bool& failed) {
     if (mirror_changed_) rebuild();
@@ -1061,8 +1093,12 @@ std::string Session::plan(const Command& command, Transaction& to) {
                 const auto saving = sequence();
                 send(to, copy(saving, main_path, c.location), saving);
                 to.next = Transaction::Next::Saved;
+                to.edits = edits_;
                 to.message = "Saved " + graph_.name + ".";
             }
+        } else if constexpr (std::is_same_v<T, RestoreUnsaved>) {
+            if (!c.patch_id.empty() && !valid_patch_id(c.patch_id)) return "Invalid patch identity";
+            if (c.patch_id != graph_.patch_id) identify(to, c.patch_id);
         } else if constexpr (std::is_same_v<T, Assign>) {
             auto a = c.assignment;
             const auto* m = find_module(graph_, a.module);
@@ -1128,6 +1164,7 @@ std::string Session::plan(const Command& command, Transaction& to) {
             if (!c.patch_id.empty() && !valid_patch_id(c.patch_id)) return "Invalid patch identity";
             to.location = c.location;
             to.patch_id = c.patch_id;
+            to.fallback = c.fallback;
             to.dirty.reset();
             clear_engine_graph(to);
             // The bundle brings its own identity and name. Graph properties
@@ -1253,8 +1290,27 @@ RequestId Session::submit(Command command) {
     const auto written = outgoing_.size();
     const auto marked = sent_modified_;
     const auto scenes_sent = sent_scenes_;
+    // Planned against what the engine will hold once the edits in flight have
+    // landed, so a scene picked, or recorded, straight after another builds
+    // on it. The mirror goes back to what the engine has said.
+    std::optional<std::pair<std::map<std::string, Properties>, Graph>> held;
+    const bool was_changed = mirror_changed_;
+    for (const auto& [ignored, t] : transactions_) {
+        if (t.purpose != Purpose::Edit || (t.local.empty() && t.dropped.empty())) continue;
+        if (!held) held.emplace(objects_, graph_);
+        for (const auto& [path, predicate] : t.dropped)
+            if (const auto object = objects_.find(path); object != objects_.end()) std::erase_if(object->second, [&](const auto& entry) { return entry.first == predicate; });
+        for (const auto& local : t.local) {
+            auto& object = objects_[local.path];
+            std::erase_if(object, [&](const auto& entry) { return entry.first == local.predicate; });
+            object.emplace_back(local.predicate, local.value);
+        }
+    }
+    if (held) rebuild();
     auto& pending = begin(id, Purpose::Edit);
-    if (auto issue = plan(command, pending); !issue.empty()) {
+    auto issue = plan(command, pending);
+    if (held) { objects_ = std::move(held->first); graph_ = std::move(held->second); mirror_changed_ = was_changed; }
+    if (!issue.empty()) {
         for (const auto number : pending.sequences) sequences_.erase(number);
         outgoing_.resize(written);
         sent_modified_ = marked;
@@ -1265,6 +1321,7 @@ RequestId Session::submit(Command command) {
     }
     // The marker changes with the first edit after a save, and is sent once.
     if (pending.dirty && *pending.dirty != sent_modified_.value_or(graph_.dirty)) mark(pending, *pending.dirty);
+    if (pending.dirty == true) ++edits_;
     if (pending.waiting.empty()) {
         // Nothing for the engine to do, such as a snapshot of an unchanged graph.
         auto node = transactions_.extract(pending.id);

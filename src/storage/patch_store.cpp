@@ -294,6 +294,12 @@ void PatchStore::discard(const Staging& staging) {
     // A first save that failed leaves nothing behind.
     if (fs::is_empty(staging.path.parent_path(), error)) fs::remove(staging.path.parent_path(), error);
 }
+LoadPatch load_command(const StoredPatch& patch, const std::optional<StoredPatch>& playing) {
+    LoadPatch load{patch.location, saved_blocks(patch.bundle), patch.id, patch.bundle.tempo};
+    if (playing && playing->revision && playing->location != patch.location)
+        load.fallback = std::make_shared<const LoadPatch>(LoadPatch{playing->location, saved_blocks(playing->bundle), playing->id, playing->bundle.tempo});
+    return load;
+}
 std::string PatchStore::remove(const std::string& id) {
     if (!usable_ || !valid_patch_id(id)) return "Invalid patch identity";
     std::error_code error;

@@ -506,7 +506,12 @@ void Application::tick(unsigned ms) {
             if (e.accepted) {
                 const auto issue = store_->publish(*staging_);
                 if (issue.empty()) message("Saved " + graph_.name + " (revision " + std::to_string(staging_->revision) + ").");
-                else { store_->discard(*staging_); message("Not saved: " + issue); }
+                else {
+                    // The engine has marked the graph saved; it is not.
+                    store_->discard(*staging_);
+                    if (const auto request = submit(RestoreUnsaved{save_restore_id_})) accepted_notes_[request] = [issue] { return "Not saved: " + issue; };
+                    message("Not saved: " + issue);
+                }
             } else store_->discard(*staging_);
             staging_.reset();
             refresh_stored();
@@ -1427,6 +1432,7 @@ void Application::start_save(const std::string& id) {
     const auto request = submit(SaveGraph{SaveScope::Persistent, engine_.capabilities().plugin_state, staging->location, id});
     if (!request) { store_->discard(*staging); return; }
     pending_[request] = PendingKind::Save;
+    save_restore_id_ = graph_.patch_id;
     staging_ = std::move(*staging);
     message("Saving " + graph_.name + "...");
 }
@@ -1445,7 +1451,7 @@ void Application::load_stored(const std::string& id, bool allow_missing, bool gu
             [this, id, guarded] { navigate(Page::Patches); load_stored(id, true, guarded); });
         return;
     }
-    Command command = LoadPatch{patch->location, blocks, patch->id, patch->bundle.tempo};
+    Command command = load_command(*patch, graph_.patch_id.empty() ? std::nullopt : store_->find(graph_.patch_id));
     load_note_ = patch->issue;
     if (!patch->missing_files.empty()) {
         std::string files;
@@ -3580,10 +3586,15 @@ void Application::stomp(const Gesture& g) {
         }
         // Switch actions go straight to the engine: never coalesced with turns.
         const auto* p = assignment_parameter(graph_, *pin);
-        const auto value = switched_value(*p, p->value, *pin, pressed);
-        if (value && *value != p->value) {
+        auto current = p->value;
+        if (const auto sent = switch_sent_.find(g.control); sent != switch_sent_.end()) {
+            if (pending_.contains(sent->second.request) && sent->second.id == m->id && sent->second.symbol == p->symbol) current = sent->second.value;
+            else switch_sent_.erase(sent);
+        }
+        const auto value = switched_value(*p, current, *pin, pressed);
+        if (value && *value != current) {
             auto shown = *p; shown.value = *value;
-            submit(SetParameter{m->id, p->symbol, *value});
+            if (const auto request = submit(SetParameter{m->id, p->symbol, *value})) switch_sent_[g.control] = {m->id, p->symbol, *value, request};
             said.insert(said.begin(), m->name + " / " + p->name + " " + format_value(shown));
         }
         if (!said.empty()) message(name + ": " + joined_names(said));

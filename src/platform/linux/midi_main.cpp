@@ -271,7 +271,8 @@ int main(int argc, char** argv) {
             else if (const auto& p = loadable[program]; p.id == engine.snapshot().patch_id && !engine.snapshot().dirty) {}
             else {
                 std::cout << "peepo-midi: program " << program + 1 << " loads " << p.name << std::endl;
-                loading = engine.submit(peepo::LoadPatch{p.location, peepo::saved_blocks(p.bundle), p.id, p.bundle.tempo});
+                const auto& playing = engine.snapshot().patch_id;
+                loading = engine.submit(peepo::load_command(p, playing.empty() ? std::nullopt : store->find(playing)));
             }
         }
         // Scene change: the newest wins, played once the patch before it has loaded.

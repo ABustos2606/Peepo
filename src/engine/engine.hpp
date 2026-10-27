@@ -4,6 +4,7 @@
 #include "core/euclidean.hpp"
 #include "core/looper.hpp"
 #include "core/model.hpp"
+#include <memory>
 #include <optional>
 #include <variant>
 
@@ -54,6 +55,9 @@ struct SaveGraph {
     std::string location, patch_id;
 };
 struct LoadSession {};
+// A saved bundle the patch store could not publish: the graph is unsaved
+// again, under the identity it had before the save (empty for none).
+struct RestoreUnsaved { std::string patch_id; };
 // One block of a saved bundle, as the patch store read it.
 struct SavedBlock { std::string symbol, plugin, name; };
 // Replace the graph with a saved bundle, plugin state included. A bundle that
@@ -70,6 +74,9 @@ struct LoadPatch {
     // straight from the old patch's to the new one's (MIDI clock followers
     // hear no other); empty for a bundle without one, which plays the default.
     std::optional<double> tempo;
+    // Loaded instead when the engine cannot load this one, so a failed load
+    // does not leave the graph empty: the patch playing, as last stored.
+    std::shared_ptr<const LoadPatch> fallback;
 };
 // Pin a physical control, replacing whatever it had in this patch; saved with
 // it. With `add`, a bypass joins the modules the control already switches.
@@ -101,7 +108,7 @@ struct MarkSceneParameter { InstanceId id; std::string symbol; bool marked = tru
 // assigned; saved with the patch. Scene mode needs a scene.
 struct SetSceneMode { bool scene_mode; };
 using Command = std::variant<AddModule, RemoveModule, MoveModule, DuplicateModule, SetParameter, SetBypass, SetFile, SetTempo, Connect, Disconnect,
-                             LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, LoadPatch, Assign, Unassign, LearnMidi, SetLoadMessages,
+                             LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, RestoreUnsaved, LoadPatch, Assign, Unassign, LearnMidi, SetLoadMessages,
                              SelectScene, AddScene, RenameScene, CopyScene, MoveScene, DeleteScene, MarkSceneParameter, SetSceneMode>;
 struct EngineEvent {
     RequestId request = 0;

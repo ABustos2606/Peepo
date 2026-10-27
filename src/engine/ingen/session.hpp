@@ -71,15 +71,23 @@ private:
         std::optional<bool> dirty;
         std::string message;
         // A save or load answered: what to do next, under the same request.
-        enum class Next { None, Saved, Loaded } next = Next::None;
+        // FallBack: the graph a failed load left is read, then the fallback loaded.
+        enum class Next { None, Saved, Loaded, FallBack } next = Next::None;
         // Load: the bundle, and the blocks the engine should then have.
         std::string location, patch_id;
         std::vector<SavedBlock> expected;
         bool verify = false;
+        // Load: what to load instead if this cannot be. Set on that load in
+        // turn: why the one asked for failed, which its result reports.
+        std::shared_ptr<const LoadPatch> fallback;
+        std::string failure;
         // Save: the identity to put back if the engine refuses it.
         std::optional<std::string> restore_id;
         // Session save: keep the graph once accepted.
         bool snapshot = false;
+        // Save: the edits sent before it. One sent after is not in the bundle,
+        // so the marker stays.
+        unsigned edits = 0;
     };
     Transaction& begin(RequestId, Purpose);
     void send(Transaction&, std::string (*writer)(int, std::string_view), std::string_view subject);
@@ -121,6 +129,8 @@ private:
     void proceed(Transaction&);
     // What a load restored; `failed` when it restored nothing it should have.
     std::string verified(const Transaction&, bool& failed);
+    // A failed load: read what it left, then load its fallback under the same request.
+    void fall_back(const Transaction& failed, const std::string& why);
     std::string clear_engine_graph(Transaction&);
     std::string create_graph(const Graph&, Transaction&);
     std::string address(InstanceId, const std::string& symbol, Direction, bool current) const;
@@ -134,6 +144,8 @@ private:
     std::optional<bool> sent_modified_;
     // Likewise each scene property, so edits in flight build on one another.
     std::map<std::string, Value> sent_scenes_;
+    // Edits sent that mark the patch unsaved, counted.
+    unsigned edits_ = 0;
     std::optional<double> cpu_;
     std::optional<InstanceId> tuner_;
     std::string tuner_port_;
