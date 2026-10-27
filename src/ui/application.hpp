@@ -132,6 +132,9 @@ private:
     // A page of its own on two tabs (Aura, Discipline): the main controls and
     // stomps, or everything else. Returns the list it scrolls in.
     lv_obj_t* pedal_view(lv_obj_t*, const Module&);
+    // Flow Envelope's wave above its bars, redrawn when a value it shows moves.
+    void flow_view(lv_obj_t*, const Module&);
+    void update_flow();
     void file_bar(lv_obj_t*, const Module&);
     // Move the encoder highlight on the module page, keeping it in view.
     void focus_parameter(std::size_t);
@@ -384,6 +387,13 @@ private:
     std::array<std::array<lv_obj_t*, euclidean_max_steps>, euclidean_tracks> euclidean_dots_{};
     std::array<lv_obj_t*, euclidean_tracks> euclidean_step_labels_{};
     std::array<std::array<lv_obj_t*, 3>, euclidean_tracks> euclidean_tiles_{};
+    static constexpr std::size_t flow_steps = 96;
+    lv_obj_t* flow_line_ = nullptr;
+    lv_obj_t* flow_middle_ = nullptr;
+    std::array<lv_point_precise_t, flow_steps> flow_points_{};
+    std::array<lv_point_precise_t, 2> flow_middle_points_{};
+    // The values the wave was last drawn from: Shape, Slope, Smoothness, Ramp, Range.
+    std::optional<std::array<double, 5>> flow_drawn_;
     lv_indev_t* pointer_input_ = nullptr;
     lv_indev_t* keypad_input_ = nullptr;
     std::deque<Binding> bindings_;

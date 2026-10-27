@@ -90,7 +90,7 @@ std::string header(const Value& root, std::string_view format) {
 // it may rename it, give it a unit, show it as whole numbers or as an on/off
 // switch, choose another default inside the plugin's range, or hide it.
 // Listed controls come first, in the order listed; the rest keep theirs.
-// Ranges stay the plugin's: the engine neither reports nor checks them.
+// Ranges stay the plugin's, or narrower: the engine neither reports nor checks them.
 std::string apply_parameter_rules(const Value& entries, const std::string& where, ModuleDefinition& d) {
     std::vector<Parameter> listed;
     std::set<std::string> hidden, seen;
@@ -111,6 +111,13 @@ std::string apply_parameter_rules(const Value& entries, const std::string& where
             const auto kind = static_cast<ParameterKind>(entry.choice("kind", kinds));
             if (kind == ParameterKind::Enumeration) return entry.where + ": name the choices instead";
             p.kind = kind;
+        }
+        // A plugin that wraps its values round (Tides' Range 0-3 plays 0, 1, 2
+        // and 0 again) is cut to the values it plays; never widened.
+        if (item.get("maximum")) {
+            const double maximum = entry.number("maximum");
+            if (maximum < p.minimum || maximum > p.maximum) return entry.where + ": a maximum may only narrow the plugin's range";
+            p.maximum = maximum;
         }
         // Names for the values of a whole-number control that counts from 0,
         // which the plugin gives only as numbers: shown as a list of choices.

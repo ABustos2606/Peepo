@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Peepo contributors
 #include "ui/application.hpp"
+#include "core/flow_wave.hpp"
 #include "core/poly_voices.hpp"
 #include "core/tuning.hpp"
 #include "ui/fonts/fonts.h"
@@ -108,9 +109,9 @@ std::string metric_text(std::optional<double> reading, bool cpu) {
 enum class ModuleLayout { Generic, Tuner, Euclidean, Looper, Pedal };
 // Modules with a page of their own on two tabs: the main controls first, two
 // to a row like every bar, and the stomps; the rest on the second tab under
-// the overlay's groups.
+// the overlay's groups. Flow Envelope draws its wave above its main bars.
 struct PedalBar { const char* symbol; const char* name; bool segmented; };
-struct PedalLayout { std::vector<PedalBar> main; std::vector<const char*> stomps; };
+struct PedalLayout { std::vector<PedalBar> main; std::vector<const char*> stomps; bool wave = false; };
 const PedalLayout* pedal_layout(const std::string& uri) {
     static const PedalLayout aura{
         {{"time", nullptr, false}, {"wet_modify", "Modify", false},
@@ -125,7 +126,14 @@ const PedalLayout* pedal_layout(const std::string& uri) {
          {"spread", nullptr, false}, {"scan", nullptr, false},
          {"modifier", nullptr, false}, {"routing", nullptr, true}},
         {"loop", "scan_hold", "clear"}};
+    static const PedalLayout flow{
+        {{"shape_param", nullptr, false}, {"slope_param", nullptr, false},
+         {"smoothness_param", nullptr, false}, {"shift_param", nullptr, false},
+         {"frequency_param", nullptr, false}, {"range_param", nullptr, false},
+         {"ramp_param", nullptr, false}, {"mode_param", nullptr, false}},
+        {}, true};
     if (uri == "https://github.com/ABustos2606/aura#aura") return &aura;
+    if (flow_uri(uri)) return &flow;
     if (uri == "https://github.com/ABustos2606/discipline#discipline") return &discipline;
     return nullptr;
 }
@@ -274,6 +282,8 @@ std::string bar_text(const Parameter& p) {
 }
 // The module page's smaller bars, with room around them to scroll.
 constexpr int compact_width = 300, compact_height = 40;
+// Flow Envelope's wave box, over both columns of bars; the bars start below it.
+constexpr int flow_left = 64, flow_width = 2 * compact_width + 40, flow_height = 118, flow_box_height = flow_height - 10, flow_inset = 14;
 // A segmented bar shows every choice of a mode, as the Mood's three-way toggles.
 bool segmented_bar(lv_obj_t* bar) { return lv_obj_has_flag(bar, LV_OBJ_FLAG_USER_1); }
 int segment_at(lv_obj_t* bar, const Parameter& p, int x) {
@@ -584,6 +594,7 @@ void Application::tick(unsigned ms) {
     engine_.watch_looper(shown && layout == ModuleLayout::Looper ? std::optional<InstanceId>{shown->id} : std::nullopt);
     update_tuner();
     update_euclidean();
+    update_flow();
     update_looper();
 }
 void Application::update_metrics() {
@@ -1592,6 +1603,7 @@ void Application::rebuild() {
     release_looper(); looper_cards_ = {}; looper_commands_.clear();
     euclidean_status_ = nullptr;
     euclidean_rings_ = {}; euclidean_halos_ = {}; euclidean_dots_ = {}; euclidean_step_labels_ = {}; euclidean_tiles_ = {};
+    flow_line_ = flow_middle_ = nullptr; flow_drawn_.reset();
     const bool patch = page_ == Page::Patch, ready = engine_.state() == EngineState::Ready;
     // Every page: a header naming where you are, the page, and a footer with
     // the way back, what is happening, and the readings.
@@ -2324,7 +2336,9 @@ lv_obj_t* Application::pedal_view(lv_obj_t* parent, const Module& m) {
             shape(11, 23, 22, 10, false, 5); shape(14, 26, 6, 4, true, 2);
         }
     }
-    auto* list = bar_list(parent, m, 0);
+    const bool wave = layout->wave && pedal_page_ == 0;
+    if (wave) flow_view(parent, m);
+    auto* list = bar_list(parent, m, wave ? flow_height : 0);
     const auto heading = [&](const std::string& name) {
         auto* h = label(list, upper(name), 0, 0, 0, ink, &peepo_mono_14);
         lv_obj_set_width(h, LV_PCT(100)); lv_obj_set_style_text_letter_space(h, 2, 0);
@@ -2356,6 +2370,50 @@ lv_obj_t* Application::pedal_view(lv_obj_t* parent, const Module& m) {
             parameter_bar(list, m, *p, compact_width, compact_height, p->kind == ParameterKind::Enumeration && p->choices.size() <= 3);
     }
     return list;
+}
+// The wave: as wide as the two columns of bars, above them.
+void Application::flow_view(lv_obj_t* parent, const Module& m) {
+    auto* box = panel(parent, flow_left, 10, flow_width, flow_height - 10);
+    lv_obj_set_style_radius(box, 8, 0);
+    if (m.bypassed) lv_obj_set_style_opa(box, LV_OPA_50, 0);
+    // A looping wave swings about the middle, drawn as a dotted line.
+    flow_middle_ = lv_line_create(box);
+    flow_middle_points_ = {{{flow_inset, flow_box_height / 2}, {flow_width - flow_inset, flow_box_height / 2}}};
+    lv_line_set_points(flow_middle_, flow_middle_points_.data(), 2);
+    lv_obj_set_style_line_color(flow_middle_, color(rim), 0);
+    lv_obj_set_style_line_width(flow_middle_, 1, 0);
+    lv_obj_set_style_line_dash_width(flow_middle_, 2, 0); lv_obj_set_style_line_dash_gap(flow_middle_, 6, 0);
+    flow_line_ = lv_line_create(box);
+    lv_obj_set_style_line_color(flow_line_, color(module_ink(m)), 0);
+    lv_obj_set_style_line_width(flow_line_, 3, 0);
+    lv_obj_set_style_line_rounded(flow_line_, true, 0);
+    for (auto* o : {flow_middle_, flow_line_}) lv_obj_remove_flag(o, LV_OBJ_FLAG_CLICKABLE);
+    flow_drawn_.reset();
+    update_flow();
+}
+void Application::update_flow() {
+    if (!flow_line_) return;
+    const auto* m = find_module(graph_, selected_);
+    if (!m) return;
+    // A bar being dragged is drawn as it moves, before the engine answers.
+    const auto value = [&](const char* symbol) {
+        if (stream_ && stream_->id == m->id && stream_->symbol == symbol) return stream_->latest;
+        for (const auto& p : m->parameters) if (p.symbol == symbol) return p.value;
+        return 0.0;
+    };
+    const std::array<double, 5> drawn{value("shape_param"), value("slope_param"), value("smoothness_param"),
+                                      std::round(value("ramp_param")), std::round(value("range_param"))};
+    if (flow_drawn_ == drawn) return;
+    flow_drawn_ = drawn;
+    const FlowSettings settings{drawn[0], drawn[1], drawn[2], static_cast<FlowRamp>(std::clamp(static_cast<int>(drawn[3]), 0, 2)), static_cast<int>(drawn[4])};
+    const auto wave = flow_wave(settings, static_cast<int>(flow_steps));
+    const double across = flow_width - 2.0 * flow_inset, high = flow_box_height - 2.0 * flow_inset;
+    for (std::size_t i = 0; i < flow_steps; ++i)
+        flow_points_[i] = {static_cast<lv_value_precise_t>(std::round(flow_inset + across * static_cast<double>(i) / (flow_steps - 1))),
+                           static_cast<lv_value_precise_t>(std::round(flow_inset + (1 - wave[i]) * high))};
+    lv_line_set_points(flow_line_, flow_points_.data(), static_cast<std::uint32_t>(flow_steps));
+    if (settings.ramp == FlowRamp::Looping) lv_obj_remove_flag(flow_middle_, LV_OBJ_FLAG_HIDDEN);
+    else lv_obj_add_flag(flow_middle_, LV_OBJ_FLAG_HIDDEN);
 }
 void Application::tuner_meter(lv_obj_t* parent) {
     auto* meter = panel(parent, 24, 12, 752, 200);

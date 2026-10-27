@@ -148,7 +148,17 @@
     {"uri": "http://polyeffects.com/lv2/polyplaits", "name": "Weave Oscillator", "description": "A powerful multi-model oscillator voice."},
     {"uri": "http://polyeffects.com/lv2/polygrids", "name": "Lattice Drum Sequencer", "category": "Control", "description": "Drum trigger explorer for kick, snare and hi-hat. Expects a 4 ppq clock if using external clock."},
     {"uri": "http://polyeffects.com/lv2/polymarbles", "name": "Dice Random Sampler", "category": "Control", "description": "Powerful repeatable randomness source: random gates and control signals."},
-    {"uri": "http://polyeffects.com/lv2/polytides", "name": "Flow Envelope", "category": "Control", "description": "A powerful envelope and LFO generator with four related outputs."},
+    {"uri": "http://polyeffects.com/lv2/polytides", "name": "Flow Envelope", "category": "Control", "description": "A powerful envelope and LFO generator with four related outputs.", "parameters": [
+      {"symbol": "shape_param"}, {"symbol": "slope_param"}, {"symbol": "smoothness_param"}, {"symbol": "shift_param"},
+      {"symbol": "frequency_param", "unit": "st"},
+      {"symbol": "range_param", "kind": "integer", "maximum": 2, "choices": ["1/8 Hz", "2 Hz", "130 Hz"]},
+      {"symbol": "ramp_param", "kind": "integer", "maximum": 2, "choices": ["AD", "Looping", "AR"]},
+      {"symbol": "mode_param", "name": "Outputs", "kind": "integer", "maximum": 3, "choices": ["Shapes", "Levels", "Times", "Frequencies"]},
+      {"symbol": "shape_cv_param", "name": "Shape CV"}, {"symbol": "slope_cv_param", "name": "Slope CV"}, {"symbol": "smoothness_cv_param", "name": "Smoothness CV"},
+      {"symbol": "shift_cv_param", "name": "Shift CV"}, {"symbol": "frequency_cv_param", "name": "Frequency CV"}
+    ], "groups": [
+      {"name": "CV amount", "parameters": ["shape_cv_param", "slope_cv_param", "smoothness_cv_param", "shift_cv_param", "frequency_cv_param"]}
+    ]},
     {"match": "drobilla.net/plugins/mda/", "strip_prefix": "MDA "},
     {"uri": "http://drobilla.net/plugins/mda/Bandisto", "category": "Drive", "description": "Distortion with separate low, middle and high bands."},
     {"uri": "http://drobilla.net/plugins/mda/BeatBox", "category": "Sound source", "description": "Triggers synthesized drum sounds from incoming audio."},

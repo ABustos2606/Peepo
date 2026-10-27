@@ -1497,6 +1497,42 @@ int main(int argc, char** argv) {
             check(exact_label(app.screen(), "SWITCHES") && exact_label(app.screen(), "MANUAL") && exact_label(app.screen(), "COLLECT"), "Discipline's second tab missing");
             capture(app, output / "72-discipline-more.bmp");
         }
+        // Flow Envelope, from the exported catalogue and the overlay: its wave
+        // above eight bars, two to a row; the CV amounts on the second tab.
+        {
+            const std::string uri = "http://polyeffects.com/lv2/polytides";
+            const std::filesystem::path config = PEEPO_CATALOGUE_DIR;
+            std::vector<peepo::ModuleDefinition> exported;
+            check(peepo::load_catalogue((config / "wsl-debian.json").string(), (config / "overlay.json").string(), exported).empty(), "the WSL catalogue and overlay did not load");
+            const auto found = std::find_if(exported.begin(), exported.end(), [&](const peepo::ModuleDefinition& d) { return d.uri == uri; });
+            check(found != exported.end(), "Flow Envelope is not in the WSL catalogue");
+            // The overlay's entry replaces the reference one, as on the instrument.
+            std::vector<peepo::ModuleDefinition> offered;
+            for (const auto& d : peepo::catalogue()) if (d.category != "Endpoint" && d.uri != uri) offered.push_back(d);
+            offered.push_back(*found);
+            peepo::replace_catalogue(offered);
+            peepo::SimulatedEngine sim;
+            sim.submit(peepo::LoadGraph{peepo::empty_graph("Flow")}); sim.advance(100);
+            sim.submit(peepo::AddModule{uri, 184, 132}); sim.advance(100);
+            peepo::Application app(sim); step(app);
+            const auto id = app.graph().modules.back().id;
+            click(app, 184 + 20, 132 + 72 + 28);
+            check(app.page() == peepo::Page::Parameters, "Flow Envelope's page did not open");
+            for (const char* name : {"SHAPE", "SLOPE", "SMOOTHNESS", "SHIFT", "FREQUENCY", "RANGE", "RAMP", "OUTPUTS", "1/8 HZ", "AD", "SHAPES"})
+                check(exact_label(app.screen(), name) != nullptr, (std::string("Flow Envelope's main tab misses ") + name).c_str());
+            check(!exact_label(app.screen(), "SHAPE CV"), "a CV amount is on Flow Envelope's main tab");
+            const auto box = [&](const char* name) { lv_area_t a; lv_obj_get_coords(bar(app, name), &a); return a; };
+            const auto shape = box("SHAPE"), slope = box("SLOPE"), outputs = box("OUTPUTS");
+            check(shape.y1 == slope.y1 && slope.x1 > shape.x2 && shape.y1 >= 72 + 118 && outputs.y2 < 432, "Flow Envelope's bars are not two to a row below the wave");
+            capture(app, output / "96-flow-one-shot.bmp");
+            sim.submit(peepo::SetParameter{id, "ramp_param", 1}); sim.submit(peepo::SetParameter{id, "shape_param", 0.35});
+            sim.submit(peepo::SetParameter{id, "slope_param", 0.3}); step(app, 256);
+            check(exact_label(app.screen(), "LOOPING") != nullptr, "Flow Envelope's Ramp did not follow the engine");
+            capture(app, output / "97-flow-looping.bmp");
+            click(app, 28, 72 + 10 + 52 + 22);
+            check(exact_label(app.screen(), "CV AMOUNT") && exact_label(app.screen(), "SHAPE CV") && !exact_label(app.screen(), "SMOOTHNESS"), "Flow Envelope's second tab missing");
+            capture(app, output / "98-flow-cv.bmp");
+        }
         // Settings > MIDI, the Tempo page following incoming clock, and MIDI learn on a held bar.
         {
             const auto folder = std::filesystem::temp_directory_path() / "peepo-ui-midi";

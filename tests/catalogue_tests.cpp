@@ -185,6 +185,15 @@ void overlay() {
     const auto& freeze = find(modes)->parameters[0];
     check(freeze.kind == ParameterKind::Enumeration && freeze.choices == std::vector<std::string>{"Live", "Held"} && format_value([&] { auto p = freeze; p.value = 1; return p; }()) == "Held",
           "named values not shown as choices");
+    // A maximum narrows the plugin's range, never widens it.
+    auto narrowed = document.modules;
+    const auto cut = apply_catalogue_overlay(rule(R"({"symbol": "pitch_param", "kind": "integer", "default": 0, "maximum": 12})"), narrowed);
+    check(cut.empty(), cut.c_str());
+    check(find(narrowed)->parameters[0].maximum == 12 && find(narrowed)->parameters[0].minimum == -48, "a maximum did not narrow the range");
+    for (const char* bad : {R"({"symbol": "pitch_param", "maximum": 60})", R"({"symbol": "pitch_param", "maximum": -60})", R"({"symbol": "pitch_param", "maximum": -12})"}) {
+        auto refused = document.modules;
+        check(!apply_catalogue_overlay(rule(bad), refused).empty(), "a maximum that widens the range, or leaves the value outside it, accepted");
+    }
 
     // Named groups: any number of shown controls, none twice; the general
     // Output can be grouped; a rule matching several modules skips what one lacks.
@@ -295,6 +304,13 @@ void fixture(const std::string& folder) {
             check(d.parameters.size() == 16 && d.parameters[0].symbol == "is_enabled1" && d.parameters[0].kind == ParameterKind::Toggle &&
                   d.parameters[1].symbol == "steps1" && d.parameters[2].symbol == "beats1" && d.parameters[3].symbol == "shift1" &&
                   d.parameters[12].symbol == "is_enabled4" && d.parameters[12].kind == ParameterKind::Toggle, "Euclidean loops not ordered or switches not marked");
+        }
+        // Flow Envelope: Range, Ramp and Outputs cut to the values Tides plays, by name.
+        if (d.uri == "http://polyeffects.com/lv2/polytides") {
+            const auto range = has("range_param"), ramp = has("ramp_param"), outputs = has("mode_param");
+            check(d.category == "Control" && range->kind == ParameterKind::Enumeration && range->maximum == 2 && range->choices[0] == "1/8 Hz" &&
+                  ramp->maximum == 2 && ramp->choices[1] == "Looping" && outputs->name == "Outputs" && outputs->maximum == 3 &&
+                  d.parameters[0].symbol == "shape_param" && d.groups.size() == 1 && d.groups[0].symbols.size() == 5, "Flow Envelope not presented as its page expects");
         }
     }
     // Delays and reverbs whose tails passed the check ring on when bypassed

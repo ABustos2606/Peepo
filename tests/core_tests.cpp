@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Peepo contributors
 #include "core/euclidean.hpp"
+#include "core/flow_wave.hpp"
 #include "core/poly_voices.hpp"
 #include "engine/simulated_engine.hpp"
 #include <algorithm>
@@ -378,6 +379,26 @@ int main() {
         check(euclidean_pattern(8, 3, 1) == std::vector<bool>{false, true, false, true, false, false, true, false}, "tresillo 3:8 shifted by 1");
         check(euclidean_pattern(8, 3, 2) == std::vector<bool>{false, false, true, false, true, false, false, true}, "tresillo 3:8 shifted by 2");
         check(euclidean_pattern(40, 1, 0).size() == euclidean_max_steps, "euclidean step count clamped to 32");
+        // Flow Envelope's drawn wave follows Tides 2: centred linear shape and
+        // slope make a triangle; a one-shot rests at the bottom either side.
+        {
+            const auto triangle = flow_wave({0.5, 0.5, 0.5, FlowRamp::Looping, 0}, 201);
+            check(triangle.size() == 201 && std::abs(triangle[0]) < 0.01 && std::abs(triangle[50] - 1) < 0.02 && std::abs(triangle[25] - 0.5) < 0.02 && std::abs(triangle[100]) < 0.02,
+                  "a centred looping wave is not a triangle");
+            const auto once = flow_wave({0.5, 0.5, 0.5, FlowRamp::Ad, 0}, 200);
+            check(once.front() == 0 && once.back() == 0 && *std::max_element(once.begin(), once.end()) > 0.95, "an AD wave does not rest, rise and rest");
+            // Slope: a short attack peaks early.
+            const auto fast = flow_wave({0.5, 0.0, 0.5, FlowRamp::Looping, 0}, 200);
+            check(std::max_element(fast.begin(), fast.begin() + 100) - fast.begin() < 10, "a low slope does not make a fast attack");
+            // Smoothness: below noon rounds the wave down, above it folds it.
+            const auto smooth = flow_wave({0.5, 0.5, 0.0, FlowRamp::Looping, 0}, 200), folded = flow_wave({0.5, 0.5, 1.0, FlowRamp::Looping, 0}, 200);
+            check(*std::max_element(smooth.begin(), smooth.end()) < 0.9, "low smoothness does not soften the wave");
+            int turns = 0;
+            for (std::size_t i = 2; i < folded.size(); ++i) turns += (folded[i] - folded[i - 1]) * (folded[i - 1] - folded[i - 2]) < 0;
+            check(turns > 8, "high smoothness does not fold the wave");
+            for (const auto& w : {triangle, once, fast, smooth, folded})
+                check(std::all_of(w.begin(), w.end(), [](double v) { return v >= 0 && v <= 1; }), "a drawn wave leaves its box");
+        }
         // MIDI to CV poly's Voices follows the highest voice with a cable.
         Graph poly;
         poly.modules.push_back(Module{7, midi_cv_poly_uri, "MIDI to CV poly", 0, 0});
