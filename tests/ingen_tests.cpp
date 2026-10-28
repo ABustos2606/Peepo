@@ -1136,9 +1136,23 @@ void scenes() {
     other.settle();
     check(other.graph().scenes.current == 0 && !find_module(other.graph(), a)->bypassed && gain(other, b) == 0 && same_scenes(other.graph().scenes, rig.graph().scenes),
           "a second client did not see the scene change");
+    // Master bypass: several bypasses in one bundle, playing, so the patch is not marked.
+    fake.bundles.clear();
+    check(rig.result(SetBypasses{{{a, true}, {b, true}}}).accepted && find_module(rig.graph(), a)->bypassed && find_module(rig.graph(), b)->bypassed,
+          "master bypass not applied");
+    check((fake.bundles == std::vector<std::vector<std::string>>{{pa + " " + full(uri::ingen, "enabled"), pb + " " + full(uri::ingen, "enabled")}}),
+          "master bypass was not sent as one bundle");
+    check(!rig.graph().dirty && !property(fake, "ingen:/main", full(uri::peepo, "modified"))->boolean, "master bypass marked the patch");
+    check(rig.result(SetBypasses{{{a, false}, {b, false}}}).accepted && !find_module(rig.graph(), a)->bypassed && !find_module(rig.graph(), b)->bypassed && !rig.graph().dirty,
+          "master bypass not undone");
+    // A missing module or an endpoint refuses the whole command, before anything is sent.
+    auto before = fake.requests;
+    check(!rig.result(SetBypasses{{{a, true}, {9999, true}}}).accepted && !rig.result(SetBypasses{{{a, true}, {rig.graph().modules[0].id, true}}}).accepted &&
+              fake.requests == before && !find_module(rig.graph(), a)->bypassed,
+          "master bypass with a missing module or an endpoint was half applied");
     // Selecting the current scene again brings back its saved state; with nothing to change, nothing is sent.
     check(rig.result(SetBypass{a, true}).accepted && rig.result(SelectScene{0}).accepted && !find_module(rig.graph(), a)->bypassed, "the scene was not restored");
-    auto before = fake.requests;
+    before = fake.requests;
     check(rig.result(SelectScene{0}).accepted && fake.requests == before && !rig.result(SelectScene{5}).accepted && fake.requests == before, "a needless or missing scene was sent");
     // Picked one after another before the engine answers: the last one plays.
     rig.engine->submit(SelectScene{1}); rig.engine->submit(SelectScene{0}); rig.settle();

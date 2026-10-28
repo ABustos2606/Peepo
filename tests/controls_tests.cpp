@@ -62,13 +62,15 @@ void gestures() {
     r.input({Type::Press, "stomp1"});
     out = r.advance(5000);
     check(out.size() == 1 && out[0].kind == Kind::Press, "repeated press or stomp hold produced extra gestures");
-    check(ControlLayout{}.ids() == std::vector<std::string>{"enc1", "enc2", "stomp1", "stomp2", "stomp3", "stomp4", "stomp5"},
-          "default surface is not two encoders and three stomps, with D and E");
-    check(control_label("enc2") == "Encoder 2" && control_label("stomp3") == "Stomp C" && control_label("stomp5") == "Stomp E" && stomp_letter("enc1").empty(),
+    check(ControlLayout{}.ids() == std::vector<std::string>{"enc1", "enc2", "stomp1", "stomp2", "stomp3", "stomp4", "stomp12", "stomp23", "stomp34"},
+          "default surface is not two encoders and four stomps, with their three chords");
+    check(control_label("enc2") == "Encoder 2" && control_label("stomp4") == "Stomp D" && control_label("stomp23") == "Stomp B+C" && stomp_letter("enc1").empty() &&
+              chord_first("stomp34") == 3 && !is_chord("stomp4") && !is_chord("stomp13") && is_chord(master_bypass_chord),
           "control names wrong");
 }
-// D is A and B pressed together, E is B and C: told from a single stomp by
-// the chord_ms wait.
+// Two neighbours pressed together are a chord (A+B is stomp12), told from a
+// single stomp by the chord_ms wait. A chord says Press at once, Hold once
+// held chord_hold_ms, and Tap on release if it was not held.
 void chords() {
     ControlRecognizer r;
     auto all = [&](unsigned ms) { return r.advance(ms); };
@@ -76,23 +78,31 @@ void chords() {
     check(all(20).empty(), "A acted before B could join it");
     r.input({Type::Press, "stomp2"});
     auto out = all(0);
-    check(out.size() == 1 && out[0].kind == Kind::Press && out[0].control == "stomp4", "A and B together are not D");
-    check(all(1000).empty(), "D held made more gestures, or A or B acted alone");
-    // The first released ends D; the other's release says nothing.
+    check(out.size() == 1 && out[0].kind == Kind::Press && out[0].control == "stomp12", "A and B together are not A+B");
+    check(all(ControlRecognizer::chord_hold_ms - 1).empty(), "A+B made more gestures before its hold, or A or B acted alone");
+    out = all(1);
+    check(out.size() == 1 && out[0].kind == Kind::Hold && out[0].control == "stomp12", "A+B held gave no Hold");
+    // The first released ends it; held, there is no Tap; the other's release says nothing.
     r.input({Type::Release, "stomp2"});
     out = all(0);
-    check(out.size() == 1 && out[0].kind == Kind::Release && out[0].control == "stomp4", "D not released with its first stomp");
+    check(out.size() == 1 && out[0].kind == Kind::Release && out[0].control == "stomp12", "A+B not released with its first stomp");
     r.input({Type::Release, "stomp1"});
-    check(all(100).empty(), "the second stomp of D released something");
-    // C then B is E.
+    check(all(100).empty(), "the second stomp of A+B released something");
+    // C then B is B+C; released quickly, a Tap before the Release.
     r.input({Type::Press, "stomp3"});
     all(ControlRecognizer::chord_ms - 5);
     r.input({Type::Press, "stomp2"});
     out = all(0);
-    check(out.size() == 1 && out[0].control == "stomp5", "C and B together are not E");
+    check(out.size() == 1 && out[0].control == "stomp23", "C and B together are not B+C");
     r.input({Type::Release, "stomp3"}); r.input({Type::Release, "stomp2"});
     out = all(100);
-    check(out.size() == 1 && out[0].control == "stomp5" && out[0].kind == Kind::Release, "E not released once");
+    check(out.size() == 2 && out[0].control == "stomp23" && out[0].kind == Kind::Tap && out[1].kind == Kind::Release, "B+C not tapped and released once");
+    // C and D are the third chord.
+    r.input({Type::Press, "stomp4"}); r.input({Type::Press, "stomp3"});
+    out = all(0);
+    check(out.size() == 1 && out[0].control == "stomp34", "C and D together are not C+D");
+    r.input({Type::Release, "stomp3"}); r.input({Type::Release, "stomp4"});
+    all(100);
     // Too late: a neighbour after the wait is a stomp of its own.
     r.input({Type::Press, "stomp1"});
     out = all(ControlRecognizer::chord_ms);
@@ -105,7 +115,7 @@ void chords() {
     // A and C are not neighbours: two stomps.
     r.input({Type::Press, "stomp1"}); r.input({Type::Press, "stomp3"});
     out = all(ControlRecognizer::chord_ms);
-    check(out.size() == 2 && out[0].control != "stomp4" && out[1].control != "stomp5", "A and C made a chord");
+    check(out.size() == 2 && !is_chord(out[0].control) && !is_chord(out[1].control), "A and C made a chord");
     r.input({Type::Release, "stomp1"}); r.input({Type::Release, "stomp3"});
     all(100);
     // A quick tap released inside the wait is played at its release, press first.
@@ -114,11 +124,26 @@ void chords() {
     r.input({Type::Release, "stomp2"});
     out = all(0);
     check(out.size() == 2 && out[0].kind == Kind::Press && out[1].kind == Kind::Release && out[0].control == "stomp2", "a quick tap was lost");
-    // D sent by itself, as a source may, acts at once.
+    // A chord sent by itself, as a source may, acts at once and taps on release.
     all(100);
-    r.input({Type::Press, "stomp4"});
+    r.input({Type::Press, "stomp34"});
     out = all(0);
-    check(out.size() == 1 && out[0].control == "stomp4", "a stomp past the physical ones waited");
+    check(out.size() == 1 && out[0].control == "stomp34" && out[0].kind == Kind::Press, "a chord sent by itself waited");
+    r.input({Type::Release, "stomp34"});
+    out = all(0);
+    check(out.size() == 2 && out[0].kind == Kind::Tap && out[1].kind == Kind::Release, "a chord sent by itself did not tap");
+    all(100);
+    // Chords off, as in tap mode: each stomp at once, two neighbours two stomps.
+    r.set_chords(false);
+    r.input({Type::Press, "stomp1"});
+    out = all(0);
+    check(out.size() == 1 && out[0].control == "stomp1" && out[0].kind == Kind::Press, "with chords off a stomp waited");
+    r.input({Type::Press, "stomp2"});
+    out = all(ControlRecognizer::chord_hold_ms);
+    check(out.size() == 1 && out[0].control == "stomp2", "with chords off two neighbours made a chord");
+    r.input({Type::Release, "stomp1"}); r.input({Type::Release, "stomp2"});
+    out = all(0);
+    check(out.size() == 2 && out[0].kind == Kind::Release && out[1].kind == Kind::Release, "with chords off the stomps not released");
 }
 
 void mapping() {

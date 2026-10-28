@@ -167,8 +167,8 @@ std::optional<std::vector<ControlChange>> decode_control_changes(const std::stri
 // every module's bypass and the value of each parameter marked per scene; the
 // marked list is the patch's, the same for every scene.
 inline constexpr std::size_t max_scenes = 8, max_scene_parameters = 16, max_scene_name = 12;
-// In scene mode stomps A to C play the scenes of one bank of three.
-inline constexpr std::size_t scene_bank = 3;
+// In scene mode stomps A to D play the scenes of one bank of four.
+inline constexpr std::size_t scene_bank = 4;
 // A module a scene names. Like an assignment, it keeps the module's plugin, so
 // a different module that later holds the same identity is never changed; an
 // entry whose module is gone or holds another plugin is an orphan, kept and
@@ -199,8 +199,8 @@ struct Scenes {
     // The scene the live state was last set from, counted from 0; unused when
     // there are no scenes.
     std::size_t current = 0;
-    // Scene mode: the stomps select scenes, A to C in the current bank of
-    // three and D and E the bank. Otherwise stomp mode, where they act as
+    // Scene mode: the stomps select scenes, A to D in the current bank of
+    // four, A+B and C+D the bank. Otherwise stomp mode, where they act as
     // assigned. Saved with the patch; never set without scenes.
     bool scene_mode = false;
 };

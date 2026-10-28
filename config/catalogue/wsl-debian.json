@@ -7682,7 +7682,7 @@
       ],
       "parameters": [
         {"symbol": "pressed", "name": "Pressed", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "stomp", "name": "Stomp", "unit": "", "kind": "integer", "minimum": 0, "maximum": 2, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "stomp", "name": "Stomp", "unit": "", "kind": "integer", "minimum": 0, "maximum": 3, "default": 0, "logarithmic": false, "choices": []},
         {"symbol": "latching", "name": "Latching", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
         {"symbol": "on_value", "name": "On value", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 1, "logarithmic": false, "choices": []},
         {"symbol": "off_value", "name": "Off value", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}

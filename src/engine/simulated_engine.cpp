@@ -163,6 +163,16 @@ std::string SimulatedEngine::apply(const Command& command) {
             }
             graph_.scenes.current = c.scene;
             following = true;
+        } else if constexpr (std::is_same_v<T, SetBypasses>) {
+            for (const auto& [id, bypassed] : c.changes) {
+                const auto* m = find_module(graph_, id);
+                if (!m) return "Module is missing";
+                if (m->fixed) return "Endpoints cannot be bypassed";
+                if (!module_available(*m)) return "Module is unavailable";
+            }
+            // All at once, as the engine's atomic bundle; playing, so not an edit.
+            for (const auto& [id, bypassed] : c.changes) find_module(graph_, id)->bypassed = bypassed;
+            following = true;
         } else if constexpr (std::is_same_v<T, AddScene>) {
             if (auto issue = add_scene(graph_); !issue.empty()) return issue;
         } else if constexpr (std::is_same_v<T, RenameScene>) {

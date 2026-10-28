@@ -562,6 +562,15 @@ void Application::tick(unsigned ms) {
         }
     }
     for (const auto& g : recognizer_.advance(ms)) gesture(g);
+    if (tap_mode_until_ && clock_ms_ >= tap_mode_until_) end_tap_mode();
+    // Another patch or scene ends master bypass: it plays as it was saved.
+    if (master_bypass_ && pending_.empty()) {
+        const bool still = std::any_of(master_bypass_->modules.begin(), master_bypass_->modules.end(), [&](InstanceId id) {
+            const auto* m = find_module(graph_, id);
+            return m && m->bypassed;
+        });
+        if (master_bypass_->patch != graph_.patch_id || master_bypass_->scene != graph_.scenes.current || !still) end_master_bypass(false);
+    }
     if (startup_pending_ && engine_.state() == EngineState::Ready && pending_.empty()) {
         startup_pending_ = false;
         // Only when the engine plays nothing stored and nothing unsaved: a
@@ -1210,13 +1219,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
         rebuild_ = true;
         break;
     case Action::SceneCancel: scene_pick_ = ScenePick::None; message("Tap a scene to play it."); rebuild_ = true; break;
-    case Action::SceneMode: {
-        if (graph_.scenes.scenes.empty()) { message("Add a scene first: SCENES at the top."); break; }
-        const bool scene_mode = !graph_.scenes.scene_mode;
-        if (const auto request = submit(SetSceneMode{scene_mode}))
-            accepted_notes_[request] = [this, scene_mode] { return scene_mode ? scene_hint() : std::string("Stomps act as assigned."); };
-        break;
-    }
+    case Action::SceneMode: switch_scene_mode(); break;
     case Action::SceneMark: {
         const bool marked = b.number == 1;
         if (marked == scene_parameter_marked(graph_, learn_id_, learn_symbol_)) break;
@@ -1300,6 +1303,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
         message("Choose what " + control_label(b.symbol) + " controls in this patch.");
         navigate(Page::AssignPicker); break;
     case Action::EditControl:
+        if (b.symbol == master_bypass_chord) { message("B+C is master bypass in every patch; it cannot be assigned."); break; }
         editing_control_ = b.symbol;
         if (pinned(b.symbol) || (store_ && store_->global_controls().contains(b.symbol))) navigate(Page::AssignmentDetail);
         else {
@@ -1341,6 +1345,7 @@ void Application::handle(Binding& b, lv_event_t* e) {
         if (const auto* a = pinned(editing_control_)) { auto changed = *a; changed.inverted = !changed.inverted; submit(Assign{changed}); }
         break;
     case Action::SwitchModeChoice:
+        if (is_chord(editing_control_)) break;
         if (const auto* a = pinned(editing_control_)) { auto changed = *a; changed.mode = b.number ? SwitchMode::Momentary : SwitchMode::Toggle; submit(Assign{changed}); }
         break;
     case Action::ConfirmAction: if (confirmation_.act) { auto act = std::move(confirmation_.act); confirmation_.act = nullptr; act(); } break;
@@ -1427,6 +1432,8 @@ void Application::commit_name() {
 void Application::save_patch(bool as_new) {
     if (!store_) return;
     if (pending()) { message("Wait for pending edits before saving."); return; }
+    // Saved now, every module would be stored bypassed.
+    if (master_bypass_) { message("Master bypass is on: B+C first, then save."); return; }
     if (as_new) {
         renaming_ = naming_scene_ = false; saving_as_ = true; draft_name_ = graph_.name;
         message("Saves a separate copy; the original stays as it was saved.");
@@ -1437,6 +1444,7 @@ void Application::save_patch(bool as_new) {
     start_save(graph_.patch_id.empty() ? store_->new_id() : graph_.patch_id);
 }
 void Application::start_save(const std::string& id) {
+    if (master_bypass_) { message("Master bypass is on: B+C first, then save."); return; }
     std::string issue;
     auto staging = store_->stage(id, issue);
     if (!staging) { message(issue); return; }
@@ -1615,6 +1623,7 @@ void Application::rebuild() {
     std::string section = "PATCH", title = graph_.name + (graph_.dirty ? " *" : "");
     switch (page_) {
     case Page::Patch:
+        // In scene mode, the scene playing.
         // In scene mode, the scene playing.
         if (graph_.scenes.scene_mode && !graph_.scenes.scenes.empty()) section += " // " + upper(graph_.scenes.scenes[graph_.scenes.current].name);
         break;
@@ -1820,7 +1829,8 @@ void Application::rebuild() {
         lv_obj_add_flag(tempo_value_, LV_OBJ_FLAG_CLICKABLE); lv_obj_set_ext_click_area(tempo_value_, 14);
         bind(tempo_value_, Action::Navigate, 0, {}, static_cast<int>(Page::Tempo));
     }
-    for (auto* caption : {label(metrics, "BPM", 8, 22, 76, faint, &peepo_mono_14),
+    // In tap mode the caption says so: every stomp taps.
+    for (auto* caption : {label(metrics, tap_mode_until_ ? "TAP" : "BPM", 8, 22, 76, tap_mode_until_ ? accent : faint, &peepo_mono_14),
                           label(metrics, engine_.capabilities().simulation ? "CPU SIM" : "CPU", 92, 22, 80, faint, &peepo_mono_14)})
         lv_obj_set_style_text_align(caption, LV_TEXT_ALIGN_RIGHT, 0);
     update_metrics();
@@ -1858,12 +1868,15 @@ void Application::patch_view(lv_obj_t* parent) {
     }
     for (const auto& m : graph_.modules) {
         const auto ink = module_ink(m);
+        // Under master bypass, each module as it will play once it ends, so
+        // the player sees what engaging the patch will sound like.
+        const bool bypassed = m.bypassed && !(master_bypass_ && std::find(master_bypass_->modules.begin(), master_bypass_->modules.end(), m.id) != master_bypass_->modules.end());
         // A browser card in miniature: dark, outlined in the group colour, a white name.
         const int height = module_height_of(m);
         auto* card = panel(parent, m.x - pan_x_, m.y - pan_y_, module_width, height);
         lv_obj_set_style_border_color(card, color(ink), 0); lv_obj_set_style_border_width(card, 2, 0);
-        lv_obj_set_style_border_opa(card, static_cast<lv_opa_t>(m.bypassed ? LV_OPA_40 : LV_OPA_COVER), 0);
-        lv_obj_set_style_bg_color(card, color(m.bypassed ? background : surface), 0);
+        lv_obj_set_style_border_opa(card, static_cast<lv_opa_t>(bypassed ? LV_OPA_40 : LV_OPA_COVER), 0);
+        lv_obj_set_style_bg_color(card, color(bypassed ? background : surface), 0);
         lv_obj_set_style_radius(card, 6, 0);
         // Encoder 1's highlight.
         if (m.id == patch_focus_) {
@@ -1880,7 +1893,7 @@ void Application::patch_view(lv_obj_t* parent) {
         const lv_font_t* font = &peepo_bold_10;
         for (const auto* f : {&peepo_bold_14, &peepo_bold_12})
             if (text_fits(title, f, module_width - 8, height - 10)) { font = f; break; }
-        auto* name = label(card, title, 0, 0, module_width - 8, m.bypassed ? faint : text, font);
+        auto* name = label(card, title, 0, 0, module_width - 8, bypassed ? faint : text, font);
         lv_label_set_long_mode(name, LV_LABEL_LONG_WRAP);
         lv_obj_set_style_text_align(name, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_update_layout(name);
@@ -1896,8 +1909,9 @@ void Application::patch_view(lv_obj_t* parent) {
         if (const auto stomps = stomps_on(graph_, m); !stomps.empty() && !m.fixed && !graph_.scenes.scene_mode) {
             std::string digits;
             for (const auto& n : stomps) digits += (digits.empty() ? "" : " ") + n;
-            const int width = 20 + 14 * (static_cast<int>(stomps.size()) - 1);
-            auto* badge = panel(card, module_width + 6 - width, -12, width, 20, m.bypassed ? faint : text);
+            // As wide as its letters: "A", "A C", "A+B".
+            const int width = 13 + 7 * static_cast<int>(digits.size());
+            auto* badge = panel(card, module_width + 6 - width, -12, width, 20, bypassed ? faint : text);
             lv_obj_set_style_radius(badge, 10, 0); lv_obj_set_style_border_width(badge, 0, 0);
             lv_obj_remove_flag(badge, LV_OBJ_FLAG_CLICKABLE);
             auto* number = label(badge, digits, 0, 1, width, background, &peepo_mono_14);
@@ -1947,6 +1961,17 @@ void Application::patch_view(lv_obj_t* parent) {
         }
     }
     update_viewport();
+    // Master bypass: the patch dimmed under one word, still in sight, and
+    // still answering touches through the veil.
+    if (master_bypass_) {
+        auto* veil = lv_obj_create(parent); lv_obj_remove_style_all(veil);
+        lv_obj_set_size(veil, lv_pct(100), lv_pct(100)); lv_obj_set_pos(veil, 0, 0);
+        lv_obj_set_style_bg_color(veil, color(background), 0); lv_obj_set_style_bg_opa(veil, LV_OPA_50, 0);
+        lv_obj_remove_flag(veil, LV_OBJ_FLAG_CLICKABLE); lv_obj_remove_flag(veil, LV_OBJ_FLAG_SCROLLABLE);
+        auto* word = label(veil, "BYPASSED", 0, 0, 0, text, &peepo_bold_48);
+        lv_obj_align(word, LV_ALIGN_CENTER, 0, 0);
+        lv_obj_remove_flag(word, LV_OBJ_FLAG_CLICKABLE);
+    }
 }
 void Application::update_viewport() {
     for (const auto& m : graph_.modules) {
@@ -3103,17 +3128,18 @@ void Application::scene_stomp(const Gesture& g) {
     if (g.kind != Gesture::Kind::Press) return;
     const auto& s = graph_.scenes;
     const auto name = control_label(g.control);
-    const auto n = static_cast<std::size_t>(std::stoul(g.control.substr(5)));
-    // D (A+B) and E (B+C): the previous and next bank, round and round.
-    if (n > layout_.stomps) {
-        if (n > layout_.stomps + 2) return;
+    // A+B shows bank 1 and C+D bank 2: always the same bank, never round and round.
+    if (is_chord(g.control)) {
+        if (g.control != bank_low_chord && g.control != bank_high_chord) return;
         const auto banks = (s.scenes.size() + scene_bank - 1) / scene_bank;
-        if (banks < 2) { message(name + ": one bank only. " + scene_hint()); return; }
-        const auto bank = (shown_bank() + (n == layout_.stomps + 1 ? banks - 1 : 1)) % banks;
+        const std::size_t bank = g.control == bank_low_chord ? 0 : 1;
+        if (bank >= banks) { message(name + ": one bank only. " + scene_hint()); return; }
         scene_bank_ = SceneBank{bank, s.current, graph_.patch_id};
         message("Bank " + std::to_string(bank + 1) + ". " + scene_hint());
         return;
     }
+    const auto n = static_cast<std::size_t>(std::stoul(g.control.substr(5)));
+    if (n < 1 || n > scene_bank) return;
     const auto index = shown_bank() * scene_bank + n - 1;
     if (index >= s.scenes.size()) { message(name + ": bank " + std::to_string(shown_bank() + 1) + " has no scene " + std::to_string(index + 1) + "."); return; }
     // A performance change of scene, as a tap on the Scenes page: the scene's
@@ -3124,14 +3150,14 @@ void Application::scene_stomp(const Gesture& g) {
 std::string Application::scene_hint() const {
     const auto& s = graph_.scenes;
     if (s.scenes.empty()) return {};
-    // The bank stomps A to C play.
+    // The bank stomps A to D play.
     const auto first = shown_bank() * scene_bank;
     std::string letters, names;
     for (auto i = first; i < std::min(first + scene_bank, s.scenes.size()); ++i) {
         letters += (letters.empty() ? "" : " ") + std::string(1, static_cast<char>('A' + (i - first)));
         names += (names.empty() ? "" : ", ") + s.scenes[i].name;
     }
-    return letters + ": " + names + "." + (s.scenes.size() > scene_bank ? " D E: bank." : "");
+    return letters + ": " + names + "." + (s.scenes.size() > scene_bank ? " A+B C+D: bank." : "");
 }
 void Application::scenes_page(lv_obj_t* parent) {
     const auto& s = graph_.scenes;
@@ -3585,6 +3611,80 @@ void Application::encoder(const Gesture& g) {
     }
 }
 void Application::stomp(const Gesture& g) {
+    // Tap mode: every stomp taps the tempo, and does nothing else.
+    if (tap_mode_until_) {
+        if (g.kind == Gesture::Kind::Press) { tap_tempo(); tap_mode_until_ = clock_ms_ + tap_mode_ms; }
+        return;
+    }
+    // B+C is master bypass in every patch, whatever page is open.
+    if (g.control == master_bypass_chord) { if (g.kind == Gesture::Kind::Press) master_bypass(); return; }
+    if (is_chord(g.control)) {
+        // Held: C+D starts tap mode, A+B switches stomp and scene mode.
+        if (g.kind == Gesture::Kind::Hold) {
+            if (g.control == bank_high_chord) start_tap_mode();
+            else if (g.control == bank_low_chord) switch_scene_mode();
+            return;
+        }
+        // Otherwise A+B and C+D act when let go, so a hold is never taken for
+        // a press: their press and release are played together.
+        if (g.kind != Gesture::Kind::Tap) return;
+        auto played = g;
+        played.kind = Gesture::Kind::Press; stomp_action(played);
+        played.kind = Gesture::Kind::Release; stomp_action(played);
+        return;
+    }
+    stomp_action(g);
+}
+void Application::switch_scene_mode() {
+    if (graph_.scenes.scenes.empty()) { message("Add a scene first: SCENES at the top of the patch."); return; }
+    const bool scene_mode = !graph_.scenes.scene_mode;
+    if (const auto request = submit(SetSceneMode{scene_mode}))
+        accepted_notes_[request] = [this, scene_mode] { return scene_mode ? "Scene mode. " + scene_hint() : std::string("Stomp mode: stomps act as assigned."); };
+}
+void Application::start_tap_mode() {
+    // Two neighbours pressed together would be a chord, and wait for it: off.
+    recognizer_.set_chords(false);
+    tapper_.reset();
+    tap_mode_until_ = clock_ms_ + tap_mode_ms;
+    message("Tap mode: tap any stomp. It ends 3 s after the last tap.");
+    rebuild_ = true;
+}
+void Application::end_tap_mode() {
+    tap_mode_until_ = 0;
+    recognizer_.set_chords(true);
+    message("Tap mode over: " + metric_text(tempo_sent_ ? *tempo_sent_ : graph_.tempo, false) + " BPM.");
+    rebuild_ = true;
+}
+void Application::master_bypass() {
+    if (master_bypass_) { end_master_bypass(true); return; }
+    // Every module playing; delays and reverbs ring on as they are bypassed.
+    std::vector<std::pair<InstanceId, bool>> changes;
+    MasterBypass held{graph_.patch_id, graph_.scenes.current, {}};
+    for (const auto& m : graph_.modules)
+        if (!m.fixed && !m.bypassed && module_available(m)) { changes.push_back({m.id, true}); held.modules.push_back(m.id); }
+    if (changes.empty()) { message("Master bypass: every module is bypassed already."); return; }
+    const auto request = submit(SetBypasses{std::move(changes)});
+    if (!request) return;
+    accepted_notes_[request] = [] { return std::string("Master bypass: dry, tails ringing on. B+C again to play."); };
+    master_bypass_ = std::move(held);
+    rebuild_ = true;
+}
+void Application::end_master_bypass(bool restore) {
+    if (!master_bypass_) return;
+    std::vector<std::pair<InstanceId, bool>> changes;
+    // Only the modules it bypassed, and only those still bypassed.
+    if (restore)
+        for (const auto id : master_bypass_->modules)
+            if (const auto* m = find_module(graph_, id); m && m->bypassed && module_available(*m)) changes.push_back({id, false});
+    master_bypass_.reset();
+    rebuild_ = true;
+    if (!restore) return;
+    message("Master bypass off: the patch plays again.");
+    if (changes.empty()) return;
+    if (const auto request = submit(SetBypasses{std::move(changes)}))
+        accepted_notes_[request] = [] { return std::string("Master bypass off: the patch plays again."); };
+}
+void Application::stomp_action(const Gesture& g) {
     const auto name = control_label(g.control);
     const bool pressed = g.kind == Gesture::Kind::Press;
     // A module's actions are open, as after holding it on the patch: the stomp is being assigned.
@@ -3751,6 +3851,7 @@ void Application::step_patch(int direction) {
     load_stored(loadable[next]->id, false, true);
 }
 std::string Application::assignment_text(const std::string& control) const {
+    if (control == master_bypass_chord) return "Master bypass (every patch)";
     if (const auto held = bypass_assignments(graph_, control); !held.empty()) {
         std::vector<std::string> names;
         for (const auto* a : held) if (const auto* m = assignment_target(graph_, *a)) names.push_back(m->name);
@@ -3767,7 +3868,7 @@ std::string Application::assignment_text(const std::string& control) const {
         std::string summary = m->name + " / " + p->name;
         if (a->minimum != p->minimum || a->maximum != p->maximum) summary += ", " + format_value(low) + " to " + format_value(high);
         if (a->inverted) summary += ", inverted";
-        if (is_stomp(control)) summary += a->mode == SwitchMode::Momentary ? ", momentary" : ", toggle";
+        if (is_stomp(control) && !is_chord(control)) summary += a->mode == SwitchMode::Momentary ? ", momentary" : ", toggle";
         return summary;
     }
     if (store_) if (const auto global = store_->global_controls(); global.contains(control))
@@ -3787,9 +3888,10 @@ void Application::controls(lv_obj_t* parent) {
         list_bar(list, control_label(id), look, Action::EditControl, 0, id);
     }
     list_note(list, "Tap a control to choose what it does; a footswitch can also change patch or tap the tempo in every patch. "
-                    "D is A and B pressed together, E is B and C.");
+                    "A+B is A and B pressed together; it and C+D act when let go. B+C is always master bypass. "
+                    "Held a second: C+D starts tap mode, A+B switches stomp and scene mode.");
     if (graph_.scenes.scene_mode)
-        list_note(list, "This patch is in scene mode: A, B and C play scenes, D and E change bank. The pill at the bottom left of the patch changes it.", accent);
+        list_note(list, "This patch is in scene mode: A to D play scenes, A+B shows bank 1 and C+D bank 2. The pill at the bottom left of the patch, or holding A+B, changes it.", accent);
 }
 void Application::assign_picker(lv_obj_t* parent) {
     auto* list = page_list(parent);
@@ -3836,7 +3938,8 @@ void Application::assignment_detail(lv_obj_t* parent) {
         return;
     }
     list_bar(list, "Invert", {.value = a->inverted ? "ON" : "OFF", .lit = a->inverted}, Action::InvertControl);
-    if (is_stomp(id)) choice_bar(list, {"Toggle", "Momentary"}, a->mode == SwitchMode::Momentary ? 1 : 0, Action::SwitchModeChoice);
+    // A+B and C+D act when let go, so they cannot hold a value while pressed.
+    if (is_stomp(id) && !is_chord(id)) choice_bar(list, {"Toggle", "Momentary"}, a->mode == SwitchMode::Momentary ? 1 : 0, Action::SwitchModeChoice);
     if (p->kind != ParameterKind::Toggle && p->kind != ParameterKind::Enumeration) {
         // The two ends of the range, in the parameter's own (linear or logarithmic) scale.
         const Parameter shape = *p;
@@ -3857,7 +3960,7 @@ void Application::assignment_detail(lv_obj_t* parent) {
         };
         end_bar("From", 0); end_bar("To", 1);
     }
-    list_note(list, is_stomp(id) ? (a->mode == SwitchMode::Momentary ? "Held: To. Released: From." : "Each press: From, then To.")
+    list_note(list, is_stomp(id) ? (a->mode == SwitchMode::Momentary && !is_chord(id) ? "Held: To. Released: From." : "Each press: From, then To.")
                                  : "Clockwise moves from From towards To; push and turn for fine steps.");
 }
 }

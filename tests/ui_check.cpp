@@ -1794,6 +1794,7 @@ int main(int argc, char** argv) {
             sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{2, "Solo"}); sim.submit(peepo::SetBypass{5, true, true});
             sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{3, "Bridge"});
             sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{4, "Outro"});
+            sim.submit(peepo::AddScene{}); sim.submit(peepo::RenameScene{5, "Coda"});
             step(app, 256);
             click(app, 70, 456); tap_header(app, "SCENES");
             tap(app, "CHORUS");
@@ -1811,22 +1812,22 @@ int main(int argc, char** argv) {
             tap_header(app, "DELETE"); tap(app, "OUTRO");
             check(app.page() == peepo::Page::ConfirmAction, "Delete did not ask");
             tap_header(app, "DELETE");
-            check(app.page() == peepo::Page::Scenes && scenes().scenes.size() == 4, "the scene was not deleted");
-            // The mode pill: scene mode names the scene playing and what A to E do.
+            check(app.page() == peepo::Page::Scenes && scenes().scenes.size() == 5, "the scene was not deleted");
+            // The mode pill: scene mode names the scene playing and what the stomps do.
             click(app, 70, 456); click(app, 70, 456);
             check(app.page() == peepo::Page::Patch && scenes().scene_mode, "the mode pill did not change to scene mode");
             check(exact_label(app.screen(), "SCENE") != nullptr && text_label(app.screen(), "PATCH // CHORUS") != nullptr &&
-                  text_label(app.screen(), "A B C: Verse, Chorus, Solo. D E: bank.") != nullptr, "scene mode is not shown");
+                  text_label(app.screen(), "A B C D: Verse, Chorus, Solo, Bridge. A+B C+D: bank.") != nullptr, "scene mode is not shown");
             capture(app, output / "93-patch-scene-mode.bmp");
             click(app, 70, 456);
             check(!scenes().scene_mode && exact_label(app.screen(), "STOMP") != nullptr, "the mode pill did not change back");
             capture(app, output / "94-patch-stomp-mode.bmp");
-            // The stomps in scene mode: A to C play the bank shown, D (A+B) and
-            // E (B+C) step the bank. Two stomps pressed together are one switch.
+            // The stomps in scene mode: A to D play the bank shown, A+B shows
+            // bank 1 and C+D bank 2. Two neighbours pressed together are a chord.
             using Type = peepo::ControlEvent::Type;
-            const auto stomps = [&](std::initializer_list<const char*> ids) {
+            const auto stomps = [&](std::initializer_list<const char*> ids, unsigned held = 64) {
                 for (const auto* id : ids) app.control({Type::Press, id});
-                step(app, 64);
+                step(app, held);
                 for (const auto* id : ids) app.control({Type::Release, id});
                 step(app, 256);
             };
@@ -1834,29 +1835,78 @@ int main(int argc, char** argv) {
             check(scenes().scene_mode, "scene mode not taken again");
             stomps({"stomp3"});
             check(scenes().current == 2 && app.message() == "Stomp C: playing Solo.", "stomp C did not play Solo");
-            stomps({"stomp2", "stomp3"});
-            check(scenes().current == 2 && app.message() == "Bank 2. A: Bridge. D E: bank.", "E did not step to bank 2");
+            stomps({"stomp3", "stomp4"});
+            check(scenes().current == 2 && app.message() == "Bank 2. A: Coda. A+B C+D: bank.", "C+D did not show bank 2");
             stomps({"stomp2"});
-            check(scenes().current == 2 && app.message() == "Stomp B: bank 2 has no scene 5.", "an empty place in the bank did something");
+            check(scenes().current == 2 && app.message() == "Stomp B: bank 2 has no scene 6.", "an empty place in the bank did something");
             stomps({"stomp1"});
-            check(scenes().current == 3 && app.message() == "Stomp A: playing Bridge.", "stomp A did not play the bank shown");
+            check(scenes().current == 4 && app.message() == "Stomp A: playing Coda.", "stomp A did not play the bank shown");
+            stomps({"stomp3", "stomp4"});
+            check(app.message() == "Bank 2. A: Coda. A+B C+D: bank.", "C+D went round instead of staying on bank 2");
             stomps({"stomp1", "stomp2"});
-            check(app.message() == "Bank 1. A B C: Verse, Chorus, Solo. D E: bank.", "D did not step back to bank 1");
+            check(app.message() == "Bank 1. A B C D: Verse, Chorus, Solo, Bridge. A+B C+D: bank.", "A+B did not show bank 1");
+            stomps({"stomp4"});
+            check(scenes().current == 3 && app.message() == "Stomp D: playing Bridge.", "stomp D did not play Bridge");
             stomps({"stomp1"});
             check(scenes().current == 0, "stomp A did not play bank 1's first scene");
-            // Stomp mode: D can be assigned like any stomp, from a held module.
-            click(app, 70, 456);
+            // B+C: master bypass, every module playing at once, the patch not edited.
+            const bool dirty = app.graph().dirty;
+            const auto playing = [&] {
+                std::vector<peepo::InstanceId> on;
+                for (const auto& m : app.graph().modules) if (!m.fixed && !m.bypassed) on.push_back(m.id);
+                return on;
+            };
+            const auto before = playing();
+            check(!before.empty(), "nothing plays to bypass");
+            stomps({"stomp2", "stomp3"});
+            check(playing().empty() && app.graph().dirty == dirty && exact_label(app.screen(), "BYPASSED") != nullptr && exact_label(app.screen(), "DRIVE") != nullptr &&
+                      app.message() == "Master bypass: dry, tails ringing on. B+C again to play.",
+                  "B+C did not bypass every module, marked the patch edited, or is not shown");
+            capture(app, output / "95-master-bypass.bmp");
+            stomps({"stomp3", "stomp2"});
+            check(playing() == before && app.graph().dirty == dirty && exact_label(app.screen(), "BYPASSED") == nullptr && exact_label(app.screen(), "DRIVE") != nullptr &&
+                      app.message() == "Master bypass off: the patch plays again.", "B+C again did not play the same modules");
+            // A scene played ends it: the scene's own state.
+            stomps({"stomp2", "stomp3"});
+            stomps({"stomp2"});
+            check(scenes().current == 1 && exact_label(app.screen(), "BYPASSED") == nullptr && !peepo::find_module(app.graph(), 3)->bypassed,
+                  "a scene played under master bypass did not end it");
+            // Held a second, A+B switches to stomp mode.
+            stomps({"stomp1", "stomp2"}, 1100);
+            check(!scenes().scene_mode && exact_label(app.screen(), "STOMP") != nullptr, "holding A+B did not switch to stomp mode");
+            // Stomp mode: A+B can be assigned like any stomp, from a held module.
             hold(app, 225, 252);
             check(app.page() == peepo::Page::ModuleActions, "holding Drive did not open its actions");
             stomps({"stomp1", "stomp2"});
-            check(app.graph().assignments.size() == 1 && app.graph().assignments[0].control == "stomp4" && app.graph().assignments[0].module == 3,
-                  "A+B did not assign D");
-            check(text_label(app.screen(), "Stomp D switches it") != nullptr, "the actions page does not name D");
+            check(app.graph().assignments.size() == 1 && app.graph().assignments[0].control == "stomp12" && app.graph().assignments[0].module == 3,
+                  "A+B was not assigned");
+            check(text_label(app.screen(), "Stomp A+B switches it") != nullptr, "the actions page does not name A+B");
+            // B+C on the actions page is still master bypass, never assigned.
+            stomps({"stomp2", "stomp3"});
+            check(app.graph().assignments.size() == 1 && playing().empty(), "B+C was assigned, or did not bypass");
+            stomps({"stomp2", "stomp3"});
             click(app, 70, 456);
             const bool was_bypassed = peepo::find_module(app.graph(), 3)->bypassed;
             stomps({"stomp2", "stomp1"});
-            check(peepo::find_module(app.graph(), 3)->bypassed != was_bypassed && exact_label(app.screen(), "D") != nullptr, "D did not switch Drive, or Drive shows no D");
-            capture(app, output / "95-stomp-d.bmp");
+            check(peepo::find_module(app.graph(), 3)->bypassed != was_bypassed && exact_label(app.screen(), "A+B") != nullptr, "A+B did not switch Drive, or Drive shows no A+B");
+            capture(app, output / "96-stomp-ab.bmp");
+            // Held, A+B is the mode switch only, never its assignment.
+            stomps({"stomp1", "stomp2"}, 1100);
+            check(peepo::find_module(app.graph(), 3)->bypassed != was_bypassed && scenes().scene_mode, "a held A+B also played its assignment");
+            stomps({"stomp1", "stomp2"}, 1100);
+            check(!scenes().scene_mode, "holding A+B again did not go back to stomp mode");
+            // Held a second, C+D starts tap mode: any stomp taps, until 3 s without one.
+            stomps({"stomp3", "stomp4"}, 1100);
+            check(text_label(app.screen(), "Tap mode") != nullptr && exact_label(app.screen(), "TAP") != nullptr, "holding C+D did not start tap mode");
+            capture(app, output / "97-tap-mode.bmp");
+            for (const auto* id : {"stomp1", "stomp4", "stomp2", "stomp3"}) {
+                app.control({Type::Press, id}); step(app, 96);
+                app.control({Type::Release, id}); step(app, 400);
+            }
+            check(app.graph().tempo == 121, "tap mode did not set 121 BPM from taps 496 ms apart");
+            check(peepo::find_module(app.graph(), 3)->bypassed != was_bypassed, "a tap in tap mode played the stomp's assignment");
+            step(app, 3100);
+            check(exact_label(app.screen(), "BPM") != nullptr && app.message() == "Tap mode over: 121 BPM.", "tap mode did not end");
         }
         // Release the headless devices before the global runtime.
         lv_indev_delete(indev);

@@ -63,4 +63,4 @@ The custom Clouds and Delay pages (Texture / Mix-hold tabs, Character buttons) a
 - Encoders: picking a module on the patch, groups and cards in the browser, moving the highlight and stopping at the last bar, fine turning, one-encoder turning, hold for Back, a push opening the highlighted module, a pinned encoder from the patch page, tap and hold, Settings reached with encoder 2.
 - A time in beats stepped by note value with encoder 2; the file bar opening the file list; the Tuner's bar staying the same widget while the pitch changes.
 
-`peepo_controls_tests` and the Linux `linux_input` test check the two-encoder surface and the shipped bindings (seven: two turns, two pushes, three stomps).
+`peepo_controls_tests` and the Linux `linux_input` test check the two-encoder surface and the shipped bindings (eight since 28 October 2026: two turns, two pushes, four stomps).

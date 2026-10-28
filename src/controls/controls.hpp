@@ -14,18 +14,27 @@
 namespace peepo {
 // The instrument's surface: push encoders enc1..encN, stomp switches
 // stomp1..stompN, and after them one more switch for each two neighbours
-// pressed together, as on Beebo: with three stomps A, B and C, stomp4 is D
-// (A+B) and stomp5 is E (B+C).
+// pressed together, named by both: with four stomps A to D, stomp12 is A+B,
+// stomp23 is B+C and stomp34 is C+D.
 struct ControlLayout {
-    unsigned encoders = 2, stomps = 3;
+    unsigned encoders = 2, stomps = 4;
     std::vector<std::string> ids() const;
 };
-// "Encoder 2", "Stomp A" to "Stomp E".
+// Two neighbouring stomps pressed together, the lower first: stomp12 for 1 and 2.
+std::string chord_id(unsigned first);
+// A chord's lower stomp, 1 for stomp12; 0 for any other control.
+unsigned chord_first(const std::string& id);
+// The fixed meanings of the chords, the same in every patch (docs/18-physical-controls.md):
+// B+C is master bypass; held, A+B switches stomp and scene mode and C+D
+// starts tap mode. In scene mode A+B shows bank 1 and C+D bank 2.
+inline const std::string bank_low_chord = "stomp12", master_bypass_chord = "stomp23", bank_high_chord = "stomp34";
+// "Encoder 2", "Stomp A" to "Stomp D", "Stomp A+B".
 std::string control_label(const std::string& id);
-// The stomp's letter, A for stomp1; empty for anything else.
+// The stomp's letter, A for stomp1, or both for a chord (A+B); empty for anything else.
 std::string stomp_letter(const std::string& id);
 bool is_encoder(const std::string& id);
 bool is_stomp(const std::string& id);
+bool is_chord(const std::string& id);
 
 // What a control reports. An encoder's push is a Press and Release on the
 // encoder itself; a Turn carries detents, positive clockwise.
@@ -38,8 +47,9 @@ struct ControlEvent {
 // What it means. Encoders: Turn (fine while the push is held), Tap (pushed and
 // released without turning), Hold (pushed long without turning). Stomps: Press
 // and Release, never waiting for a gesture to end; a press only waits
-// chord_ms for its neighbour, which together make the stomp after the
-// physical ones (A+B is D).
+// chord_ms for its neighbour, which together make a chord (A+B). A chord
+// gives Press, Hold once held chord_hold_ms, then Tap if it was not held,
+// and Release.
 struct Gesture {
     enum class Kind { Turn, Tap, Hold, Press, Release };
     Kind kind = Kind::Turn;
@@ -68,9 +78,13 @@ public:
     // A stomp acts this long after it is pressed, unless its neighbour joins
     // it first: then the two are the one switch between them.
     static constexpr unsigned chord_ms = 40;
+    static constexpr unsigned chord_hold_ms = 1000;
     // `stomps` physical stomps, stomp1 to stompN.
-    explicit ControlRecognizer(unsigned stomps = 3) : stomps_(stomps) {}
+    explicit ControlRecognizer(unsigned stomps = 4) : stomps_(stomps) {}
     void input(const ControlEvent&);
+    // Off, as in tap mode: every stomp acts at once and no two make a chord.
+    void set_chords(bool on) { chords_ = on; }
+    bool chords() const { return chords_; }
     std::vector<Gesture> advance(unsigned milliseconds);
     // Forget every pressed control, as when the control source reconnects.
     void reset();
@@ -81,13 +95,16 @@ private:
         bool turned = false, released = false;
         // A stomp pressed and waiting chord_ms for its neighbour.
         bool waiting = false;
-        // The two-stomp switch it is part of while held, as D; empty for none.
+        // The chord it is part of while held, as stomp12; empty for none.
         // Ended when the first of the two is released.
         std::string chord;
     };
     // The physical stomp's number, or 0 for any other control.
     unsigned physical(const std::string& id) const;
+    // A chord's Tap, when it was not held, and Release.
+    void end_chord(const std::string& chord);
     unsigned stomps_;
+    bool chords_ = true;
     std::map<std::string, State> states_;
     std::vector<Gesture> pending_;
     unsigned long long clock_ = 0;

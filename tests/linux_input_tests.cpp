@@ -28,7 +28,7 @@ std::string read_file(const std::string& path) {
 
 void bindings(const std::string& shipped) {
     std::vector<Binding> b;
-    check(parse_bindings(read_file(shipped), b).empty() && b.size() == 7, "the shipped bindings do not read as two encoders with pushes and three stomps");
+    check(parse_bindings(read_file(shipped), b).empty() && b.size() == 8, "the shipped bindings do not read as two encoders with pushes and four stomps");
     check(b[0].control == "enc1" && b[0].kind == Binding::Kind::Turn && b[0].code == REL_X, "encoder 1 is not REL_X");
     auto turn = translate(b, "rotary@5", EV_REL, REL_Y, -1);
     check(turn && turn->type == ControlEvent::Type::Turn && turn->control == "enc2" && turn->steps == -1, "a turn of encoder 2 was not translated");
@@ -36,7 +36,7 @@ void bindings(const std::string& shipped) {
     check(press && press->type == ControlEvent::Type::Press && press->control == "enc1" && release && release->type == ControlEvent::Type::Release, "a push was not translated");
     check(!translate(b, "x", EV_KEY, KEY_F13, 2), "the kernel's autorepeat became a press");
     check(!translate(b, "x", EV_KEY, KEY_A, 1) && !translate(b, "x", EV_REL, REL_X, 0) && !translate(b, "x", EV_ABS, REL_X, 3), "an unbound event was translated");
-    check(translate(b, "x", EV_KEY, KEY_F19, 1)->control == "stomp3", "stomp 3 not bound");
+    check(translate(b, "x", EV_KEY, KEY_F19, 1)->control == "stomp3" && translate(b, "x", EV_KEY, KEY_F20, 1)->control == "stomp4", "stomps 3 and 4 not bound");
 
     check(parse_bindings("enc1 turn REL_X reverse device=rotary@5\n# comment\n\nstomp1 key 189\n", b).empty() && b.size() == 2 && b[1].code == 189, "options or numeric codes not read");
     check(translate(b, "rotary@5", EV_REL, REL_X, 2)->steps == -2 && !translate(b, "rotary@d", EV_REL, REL_X, 2), "reverse or device filter ignored");

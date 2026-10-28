@@ -33,6 +33,9 @@ struct DuplicateModule { InstanceId id; int x, y; };
 // MIDI and learned controls are performance changes and leave it false.
 struct SetParameter { InstanceId id; std::string symbol; double value; bool scene = false; };
 struct SetBypass { InstanceId id; bool value; bool scene = false; };
+// Several bypasses on one audio frame, as master bypass: playing, not
+// editing, so the unsaved marker is left alone and no scene is written.
+struct SetBypasses { std::vector<std::pair<InstanceId, bool>> changes; };
 // The patch tempo: stored with the patch, and given to every module that follows it.
 // `follow` is a tempo taken from incoming MIDI clock: it follows the playing
 // rather than editing the patch, so the unsaved marker is left alone.
@@ -107,7 +110,7 @@ struct MarkSceneParameter { InstanceId id; std::string symbol; bool marked = tru
 // Scene mode, where the stomps select scenes, or stomp mode, where they act as
 // assigned; saved with the patch. Scene mode needs a scene.
 struct SetSceneMode { bool scene_mode; };
-using Command = std::variant<AddModule, RemoveModule, MoveModule, DuplicateModule, SetParameter, SetBypass, SetFile, SetTempo, Connect, Disconnect,
+using Command = std::variant<AddModule, RemoveModule, MoveModule, DuplicateModule, SetParameter, SetBypass, SetBypasses, SetFile, SetTempo, Connect, Disconnect,
                              LoadGraph, NewPatch, RenamePatch, SaveGraph, LoadSession, RestoreUnsaved, LoadPatch, Assign, Unassign, LearnMidi, SetLoadMessages,
                              SelectScene, AddScene, RenameScene, CopyScene, MoveScene, DeleteScene, MarkSceneParameter, SetSceneMode>;
 struct EngineEvent {

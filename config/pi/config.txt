@@ -9,10 +9,11 @@
 dtoverlay=rotary-encoder,pin_a=5,pin_b=6,relative_axis=1,linux_axis=0,steps-per-period=1
 dtoverlay=rotary-encoder,pin_a=13,pin_b=16,relative_axis=1,linux_axis=1,steps-per-period=1
 #
-# The encoder pushes and three momentary footswitches, each switching to
-# ground with the internal pull-up, each with its own key code (KEY_F13, F14, F17..F19).
+# The encoder pushes and four momentary footswitches, each switching to
+# ground with the internal pull-up, each with its own key code (KEY_F13, F14, F17..F20).
 dtoverlay=gpio-key,gpio=12,keycode=183,label="enc1-push",gpio_pull=up
 dtoverlay=gpio-key,gpio=17,keycode=184,label="enc2-push",gpio_pull=up
 dtoverlay=gpio-key,gpio=4,keycode=187,label="stomp1",gpio_pull=up
 dtoverlay=gpio-key,gpio=7,keycode=188,label="stomp2",gpio_pull=up
 dtoverlay=gpio-key,gpio=8,keycode=189,label="stomp3",gpio_pull=up
+dtoverlay=gpio-key,gpio=22,keycode=190,label="stomp4",gpio_pull=up

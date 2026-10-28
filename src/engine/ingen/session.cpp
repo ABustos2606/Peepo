@@ -1136,6 +1136,22 @@ std::string Session::plan(const Command& command, Transaction& to) {
             write_scenes(to, selected);
             number = sequence();
             send(to, bundle(number, false), number);
+        } else if constexpr (std::is_same_v<T, SetBypasses>) {
+            for (const auto& [id, bypassed] : c.changes) {
+                const auto* m = find_module(graph_, id);
+                if (!m || !paths_.contains(id)) return "Module is missing";
+                if (m->fixed) return "Endpoints cannot be bypassed";
+                if (!module_available(*m)) return "Module is unavailable";
+            }
+            // Playing, not editing: the marker is left alone.
+            to.dirty.reset();
+            if (c.changes.empty()) return {};
+            // One bundle: with the engine's atomic bundles, every change lands on one frame.
+            auto number = sequence();
+            send(to, bundle(number, true), number);
+            for (const auto& [id, bypassed] : c.changes) bypass_block(to, *find_module(graph_, id), paths_.at(id), bypassed);
+            number = sequence();
+            send(to, bundle(number, false), number);
         } else if constexpr (std::is_same_v<T, AddScene>) {
             result = edit_scenes(to, [](Graph& g) { return add_scene(g); });
         } else if constexpr (std::is_same_v<T, RenameScene>) {

@@ -20,9 +20,11 @@ std::vector<std::string> ControlLayout::ids() const {
     std::vector<std::string> out;
     for (unsigned i = 1; i <= encoders; ++i) out.push_back("enc" + std::to_string(i));
     // The physical stomps, then one for each two neighbours pressed together.
-    for (unsigned i = 1; i <= (stomps ? 2 * stomps - 1 : 0); ++i) out.push_back("stomp" + std::to_string(i));
+    for (unsigned i = 1; i <= stomps; ++i) out.push_back("stomp" + std::to_string(i));
+    for (unsigned i = 1; i < stomps; ++i) out.push_back(chord_id(i));
     return out;
 }
+std::string chord_id(unsigned first) { return "stomp" + std::to_string(first) + std::to_string(first + 1); }
 namespace {
 // The prefix, then a number: enc1, stomp3.
 bool numbered(const std::string& id, std::string_view prefix) {
@@ -32,10 +34,18 @@ bool numbered(const std::string& id, std::string_view prefix) {
 }
 bool is_encoder(const std::string& id) { return numbered(id, "enc"); }
 bool is_stomp(const std::string& id) { return numbered(id, "stomp"); }
+unsigned chord_first(const std::string& id) {
+    if (!is_stomp(id) || id.size() != 7) return 0;
+    const unsigned first = static_cast<unsigned>(id[5] - '0'), second = static_cast<unsigned>(id[6] - '0');
+    return first >= 1 && second == first + 1 ? first : 0;
+}
+bool is_chord(const std::string& id) { return chord_first(id) != 0; }
 std::string stomp_letter(const std::string& id) {
     if (!is_stomp(id)) return {};
+    const auto letter = [](unsigned n) { return std::string(1, static_cast<char>('A' + n - 1)); };
+    if (const auto first = chord_first(id)) return letter(first) + "+" + letter(first + 1);
     const auto n = std::stoul(id.substr(5));
-    return n >= 1 && n <= 26 ? std::string(1, static_cast<char>('A' + n - 1)) : id.substr(5);
+    return n >= 1 && n <= 26 ? letter(static_cast<unsigned>(n)) : id.substr(5);
 }
 std::string control_label(const std::string& id) {
     if (is_encoder(id)) return "Encoder " + id.substr(3);
@@ -68,10 +78,11 @@ void ControlRecognizer::input(const ControlEvent& event) {
         if (state.released && clock_ - state.released_at < bounce_ms) return;
         state.pressed = true; state.used = false; state.pressed_at = clock_;
         if (!is_stomp(event.control)) break;
-        // Any other stomp, such as D sent by itself, acts at once.
+        // Any other stomp, such as a chord sent by itself, acts at once.
         if (!stomp) { pending_.push_back({Gesture::Kind::Press, event.control}); break; }
-        // A neighbour still waiting makes the two one switch: the one between
-        // them, numbered after the physical stomps (A+B is D, B+C is E).
+        if (!chords_) { pending_.push_back({Gesture::Kind::Press, event.control}); break; }
+        // A neighbour still waiting makes the two one switch, the chord of
+        // both (A+B is stomp12).
         for (const auto other : {stomp - 1, stomp + 1}) {
             if (other < 1 || other > stomps_) continue;
             auto& neighbour = states_["stomp" + std::to_string(other)];
@@ -79,7 +90,9 @@ void ControlRecognizer::input(const ControlEvent& event) {
             neighbour.waiting = false;
             // Spent: neither says anything more when released.
             state.used = neighbour.used = true;
-            state.chord = neighbour.chord = "stomp" + std::to_string(stomps_ + std::min(stomp, other));
+            state.chord = neighbour.chord = chord_id(std::min(stomp, other));
+            auto& chord = states_[state.chord];
+            chord.pressed = true; chord.used = false; chord.pressed_at = clock_;
             pending_.push_back({Gesture::Kind::Press, state.chord});
             return;
         }
@@ -96,19 +109,28 @@ void ControlRecognizer::input(const ControlEvent& event) {
             pending_.push_back({Gesture::Kind::Press, event.control});
             pending_.push_back({Gesture::Kind::Release, event.control});
         } else if (!state.chord.empty()) {
-            // The first of the two released ends the switch; the other's
+            // The first of the two released ends the chord; the other's
             // release then says nothing.
             const auto chord = state.chord;
             for (auto& entry : states_) if (entry.second.chord == chord) entry.second.chord.clear();
-            pending_.push_back({Gesture::Kind::Release, chord});
-        } else if (!stomp || !state.used) pending_.push_back({Gesture::Kind::Release, event.control});
+            end_chord(chord);
+        } else if (is_chord(event.control)) end_chord(event.control);
+        else if (!stomp || !state.used) pending_.push_back({Gesture::Kind::Release, event.control});
         break;
     }
+}
+void ControlRecognizer::end_chord(const std::string& chord) {
+    auto& state = states_[chord];
+    // Held long, it gave Hold already; otherwise it was a tap.
+    if (!state.used) pending_.push_back({Gesture::Kind::Tap, chord});
+    state.used = true; state.pressed = false; state.released = true; state.released_at = clock_;
+    pending_.push_back({Gesture::Kind::Release, chord});
 }
 std::vector<Gesture> ControlRecognizer::advance(unsigned milliseconds) {
     clock_ += milliseconds;
     for (auto& [control, state] : states_) {
-        if (state.pressed && !state.used && is_encoder(control) && clock_ - state.pressed_at >= hold_ms) {
+        if (state.pressed && !state.used && (is_encoder(control) || is_chord(control)) &&
+            clock_ - state.pressed_at >= (is_chord(control) ? chord_hold_ms : hold_ms)) {
             state.used = true;
             pending_.push_back({Gesture::Kind::Hold, control});
         }

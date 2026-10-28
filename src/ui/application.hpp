@@ -160,15 +160,25 @@ private:
     void open_learn(InstanceId, const std::string& symbol);
     // The patch's scenes by bank, and the parameters marked per scene.
     void scenes_page(lv_obj_t*);
-    // In scene mode, what stomps A to C play and D and E do.
+    // In scene mode, what stomps A to D play and A+B and C+D do.
     std::string scene_hint() const;
-    // The bank of three scenes stomps A to C play in scene mode: the one D or
-    // E last stepped to, or else the playing scene's.
+    // The bank of four scenes stomps A to D play in scene mode: the one A+B
+    // or C+D last showed, or else the playing scene's.
     std::size_t shown_bank() const;
-    // A stomp in scene mode: A to C play a scene of the bank shown, D and E
-    // step to the previous and next bank.
+    // A stomp in scene mode: A to D play a scene of the bank shown, A+B
+    // shows bank 1 and C+D bank 2.
     void scene_stomp(const Gesture&);
     void tap_tempo();
+    // Tap mode, from holding C+D: every stomp taps the tempo until a few
+    // seconds pass without a tap.
+    void start_tap_mode();
+    // Stomp mode or scene mode, from the pill or from holding A+B.
+    void switch_scene_mode();
+    void end_tap_mode();
+    // Master bypass, from B+C in every patch: every module playing is
+    // bypassed at once, delays and reverbs ringing on; again, they play.
+    void master_bypass();
+    void end_master_bypass(bool restore);
     void set_tempo(double bpm);
     void tuner_meter(lv_obj_t*);
     void update_tuner();
@@ -205,6 +215,8 @@ private:
     void gesture(const Gesture&);
     void encoder(const Gesture&);
     void stomp(const Gesture&);
+    // What a stomp is assigned to in this patch, or instrument-wide.
+    void stomp_action(const Gesture&);
     // A stomp pressed while a module's actions are open: it switches that
     // module's bypass from then on, beside any others, or no longer does.
     void quick_assign(const std::string& control);
@@ -294,6 +306,13 @@ private:
     bool learn_waiting_ = false;
     TapTempo tapper_;
     unsigned long long clock_ms_ = 0;
+    // Tap mode ends at this time; 0 when off.
+    unsigned long long tap_mode_until_ = 0;
+    static constexpr unsigned tap_mode_ms = 3000;
+    // The modules master bypass bypassed, in the patch and scene it was
+    // pressed in. Another patch or scene, or none of them still bypassed, ends it.
+    struct MasterBypass { std::string patch; std::size_t scene; std::vector<InstanceId> modules; };
+    std::optional<MasterBypass> master_bypass_;
     // When the last message was given: the Loo-pi page's status line waits
     // a few seconds before replacing it.
     unsigned long long message_ms_ = 0;
@@ -351,7 +370,7 @@ private:
     // which scene Delete deletes.
     enum class ScenePick { None, CopyTo, Delete };
     ScenePick scene_pick_ = ScenePick::None;
-    // The bank D or E stepped to, while the scene then playing still plays in
+    // The bank A+B or C+D showed, while the scene then playing still plays in
     // the same patch; another scene playing forgets it.
     struct SceneBank { std::size_t bank, scene; std::string patch; };
     std::optional<SceneBank> scene_bank_;
