@@ -34,6 +34,8 @@ Every phase has numbered tasks, a deliverable, and an exit check. A phase is com
 | 10 | Automatic startup, readiness and recovery | Pi | Working representative patch from Phases 5–7 |
 | 11 | Complete validation and reproducible release package | PC and Pi | Phases 0–10 for the selected release scope |
 | 12 | MIDI: devices, MIDI cables and modules, clock, program change and learn | PC and Pi, USB-MIDI devices, later the enclosure's jacks | Phases 4 and 5; the set list for program change; Phase 11 again for a release that includes it |
+| 13 | Scenes: up to eight saved states per patch, changed while playing without a gap or click, delay and reverb tails ringing on | WSL and Pi, footswitches and a MIDI foot controller | Phases 5 and 7 (patches, stomps); Phase 12 for scene select by MIDI |
+| 14 | Files and network: models and IRs from a USB stick, Wi-Fi joined on the pedal, an upload page, Tone3000 if allowed | PC, WSL and Pi, USB sticks, a phone | Phase 8's file folders (P8.3); Phase 10 (nothing may delay boot or audio) |
 
 Phases 1–2 do not wait for the Pi. Phase 3 must pass before building the full interface around assumed engine behaviour. NAM and catalogue expansion do not block the first Clouds instrument milestone. Work can proceed on independent tasks without completing every phase strictly in numeric order.
 
@@ -61,6 +63,8 @@ Phases 1–2 do not wait for the Pi. Phase 3 must pass before building the full 
 | 10 | Direct boot into saved Clouds verified by reboot and user touch confirmation; independent services, automatic JACK/engine recovery and native UI-crash recovery verified | Full readiness/error cases, offline/five cold boots, missing assets/plugins, shutdown/storage and wider recovery (P10.2–P10.7) |
 | 11 | Development package installed; current evidence linked to requirements below | Complete acceptance matrix, endurance/lifecycle, release provenance/source package and operation guide |
 | 12 | Planned 20 October 2026 ([MIDI](39-midi.md)); one merged MIDI IN decided; MIDI cables built and checked on the PC and in WSL (P12.4); clock out built and measured in WSL (P12.3) | P12.1, P12.2, P12.3 on the Pi, P12.5–P12.11; P12.4 on the Pi with the next package (its install exports the version 2 catalogue) |
+| 13 | Planned 24 October 2026 ([scenes](44-scenes.md)); P13.1–P13.9 and P13.11 (four stomps) done; P13.10 measured and played on the Pi 26 October with a keyboard standing in for the footswitches ([record](evidence/scenes-results.md#on-the-pi-p1310)) | P13.10 with the real footswitches and a MIDI foot controller, and its open items (clicks of Aura, Prism and the IR Reverbs by ear, Gx Multiband delay and echo not sleeping, Granulator - Mono's `inf`); P13.11 four stomps on the Pi; CC messages to other gear per scene (later) |
+| 14 | Planned and decided 30 October 2026 ([files and network](45-files-and-network.md)); P14.1 (stick mount) built and checked in WSL | P14.1 on the Pi with real sticks, P14.2–P14.10 |
 
 **User-directed execution, 14 October 2026:** direct instrument boot was prioritized and completed: enable Peepo at boot, mask the desktop/MODEP/automatic-console competitors, select saved Clouds, preserve the newer unsaved wendy patch, reboot, verify restoration/routing and confirm display/touch. Automatic JACK/engine recovery also passed. [Record](24-instrument-boot.md). Phase 10's full acceptance remains open. The remaining conventional-effect and touch workflow checks (P3.4, P4.7), Clouds-plus-conventional-effect persistence (P6.5), P6.4 listening and physical controls remain the subsequent work. The observed power/throttling issue must be resolved and rechecked before latency or sustained load budgets are accepted (P0.3, P0.7, P6.6). NAM and catalogue expansion remain separate work.
 
@@ -526,6 +530,27 @@ See [the plugin catalogue](22-plugin-catalogue.md) and [the compatibility matrix
 **Deliverable:** scenes stored in the patch, changed from the screen, stomps and MIDI; delays and reverbs that ring on when bypassed, for third-party modules and our own; each with its record.
 
 **Exit check:** on the Pi, with guitar, a patch with at least three scenes is played through scene changes from a stomp and from a MIDI controller: the changes are heard at once and together, delay and reverb tails ring on across them, nothing clicks or replays an old buffer, no xruns; the scenes survive a save, a reload and an interface restart.
+
+## Phase 14 — Files and network
+
+**Purpose:** get NAM models and IRs onto the instrument away from home, with no computer: from a USB stick, from a phone through an upload page, and later from Tone3000 if its terms allow; and join a new Wi-Fi network from the pedal. The design and decisions are in [Files and network](45-files-and-network.md).
+
+**Status — 30 October 2026:** planned and decided with the user: USB first, then Wi-Fi on the pedal, then the upload page, then Tone3000; IRs on a stick sorted by folder name ("cab", "reverb"/"room"), asked otherwise; the upload page off by default, with a new 4-digit code each time shown only on the pedal; no hotspot of Peepo's own; patch export to a stick later. P14.1 built and checked in WSL the same day ([record](evidence/usb-results.txt)).
+
+- [ ] **P14.1 — Mount service:** udev rule, `peepo-usb@.service`, read-only mount at `/run/peepo-usb`, FAT32/exFAT/NTFS; checked in WSL with loop devices, then on the Pi with real sticks: plug, pull while idle, pull while copying. *Built and checked in WSL 30 October 2026 ([record](evidence/usb-results.txt)):* `config/pi/bin/peepo-usb` mounts `ro,nosuid,nodev,noexec`, files owned by `peepo` (644), and writes `/run/peepo-usb/<device>.info` (`state` mounted, unreadable or refused; `label`, `type`, `message`) for the interface. A disk with anything mounted outside `/run/peepo-usb`, such as the one Linux runs from, is refused. `config/pi/udev/90-peepo-usb.rules` starts the unit for a filesystem on a USB disk; the unit is bound to the device, so pulling the stick unmounts it. Its own `/run/peepo-usb`, because `/run/peepo` is the engine's and is removed when the engine stops. `install.sh` installs and removes the rule and the unit. `tools/pi/check-usb.sh`: FAT32 and exFAT pass every check, ext4 and an empty disk reported unreadable, a disk in use refused, bad device names refused; NTFS skipped (no ntfs3 in WSL's kernel). Unit and rule pass `systemd-analyze verify` and `udevadm verify`. Still to do on the Pi: the check there (NTFS included), and real sticks plugged and pulled.
+- [ ] **P14.2 — File checks and copy (`src/storage`):** classify, validate, copy to a temporary name and rename, skip or number duplicates; unit tests with good, broken and oversized files.
+- [ ] **P14.3 — Settings → Files:** the page from a mockup approved first; stick contents, Import, the Cabinet/Reverb question, rejected files, files on Peepo with Delete. LVGL check.
+- [ ] **P14.4 — On the Pi:** import while a NAM patch plays: no xruns, no click; power measured with the stick in (P13.10 saw a USB device make the supply sag and the audio interface drop out); a saved patch still loads after its model is deleted from the folder.
+- [ ] **P14.5 — Network actions:** scan, join, forget, disconnect through NetworkManager; polkit rule installed by `install.sh`; checked on the Pi with a second network (the phone's hotspot).
+- [ ] **P14.6 — Settings → Network:** the page and the keyboard for the password, from an approved mockup; wrong password and out-of-range cases; scans while playing checked for xruns.
+- [ ] **P14.7 — `peepo-files` service:** the upload page, the code, the idle timeout, the same checks as P14.2; security review before it ships.
+- [ ] **P14.8 — Upload on the Pi:** from a phone and a laptop on the same network, while playing; no xruns.
+- [ ] **P14.9 — Tone3000 research:** API and terms recorded; go or no-go with the user.
+- [ ] **P14.10 — Tone3000 on the upload page:** only after P14.9 says go.
+
+**Deliverable:** models and IRs imported from a stick and a phone, Wi-Fi joined from the pedal, each with its record.
+
+**Exit check:** away from home, with no computer, a player joins a new Wi-Fi from the pedal, imports a model from a stick and an IR from a phone, plays them in a patch and saves it, and none of it interrupts the sound.
 
 ## Verification strategy and phase records
 

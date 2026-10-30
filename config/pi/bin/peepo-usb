@@ -1,0 +1,90 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Peepo contributors
+# Mount a USB stick for Settings > Files to import models and IRs from (P14.1).
+# peepo-usb@<device>.service runs it; udev starts that unit when a USB disk
+# with a filesystem appears (90-peepo-usb.rules) and stops it when it goes.
+#   peepo-usb mount sda1     mount /dev/sda1 read-only at /run/peepo-usb/sda1
+#   peepo-usb unmount sda1   unmount it and forget it
+# For every stick the interface reads /run/peepo-usb/<device>.info:
+#   state=mounted | unreadable | refused
+#   label=   the stick's name, if it has one
+#   type=    its filesystem as blkid names it
+#   message= why it is unreadable or refused
+# Mounted read-only, nosuid, nodev, noexec, its files owned by peepo, so
+# nothing on a stick can run or be changed. FAT32, exFAT and NTFS are read;
+# anything else is listed as unreadable with its type. A disk with anything
+# mounted outside /run/peepo-usb (the disk Linux runs from, say) is refused.
+# Expected outcomes exit 0, so the unit stays active and its stop cleans up.
+set -u
+RUN=${PEEPO_USB_RUN:-/run/peepo-usb}
+OWNER=${PEEPO_USB_OWNER:-peepo}
+
+usage() { echo "usage: peepo-usb mount|unmount DEVICE" >&2; exit 2; }
+[ $# = 2 ] || usage
+action=$1; dev=$2
+case $dev in ''|.*|*[!A-Za-z0-9_-]*) echo "peepo-usb: bad device name '$dev'" >&2; exit 2 ;; esac
+dir=$RUN/$dev
+label=''; type=''
+
+write_info() {  # state message
+    tmp=$RUN/.$dev.info.$$
+    { echo "state=$1"; echo "label=$label"; echo "type=$type"; echo "message=$2"; } >"$tmp" &&
+        chmod 0644 "$tmp" && mv -f "$tmp" "$RUN/$dev.info"
+    echo "peepo-usb: $dev ${label:+($label) }$1${2:+: $2}"
+}
+
+unmount() {
+    if mountpoint -q "$dir" 2>/dev/null; then
+        umount "$dir" 2>/dev/null || umount -l "$dir"
+    fi
+    rmdir "$dir" 2>/dev/null
+    rm -f "$RUN/$dev.info"
+}
+
+case $action in
+    unmount) unmount; exit 0 ;;
+    mount) ;;
+    *) usage ;;
+esac
+
+[ -b "/dev/$dev" ] || { echo "peepo-usb: /dev/$dev is not a block device" >&2; exit 1; }
+install -d -m 0755 "$RUN"
+unmount
+# Control characters would break the one-line-per-value file.
+label=$(blkid -o value -s LABEL "/dev/$dev" 2>/dev/null | tr -d '\000-\037')
+type=$(blkid -o value -s TYPE "/dev/$dev" 2>/dev/null | tr -d '\000-\037')
+
+# The whole disk, partitioned or not: nothing on it may be mounted elsewhere.
+disk=$(lsblk -dno PKNAME "/dev/$dev" 2>/dev/null)
+[ -n "$disk" ] || disk=$dev
+elsewhere=$(lsblk -nro MOUNTPOINTS "/dev/$disk" 2>/dev/null | grep -v '^$' | grep -v "^$RUN/" | head -1)
+if [ -n "$elsewhere" ]; then
+    write_info refused "the disk is in use by the system ($elsewhere)"
+    exit 0
+fi
+
+uid=$(id -u "$OWNER") && gid=$(id -g "$OWNER") || { echo "peepo-usb: no user $OWNER" >&2; exit 1; }
+safe="ro,nosuid,nodev,noexec,uid=$uid,gid=$gid,fmask=0133,dmask=0022"
+case $type in
+    vfat) fs=vfat; options="$safe,utf8,shortname=mixed" ;;
+    exfat) fs=exfat; options=$safe ;;
+    ntfs) fs=ntfs3; options=$safe ;;
+    '') write_info unreadable "no filesystem found"; exit 0 ;;
+    *) write_info unreadable "formatted as $type; Peepo reads FAT32, exFAT and NTFS"; exit 0 ;;
+esac
+
+modprobe -q "$fs" 2>/dev/null
+if ! grep -qw "$fs" /proc/filesystems; then
+    write_info unreadable "formatted as $type, which this Peepo cannot read"
+    exit 0
+fi
+install -d -m 0755 "$dir"
+if error=$(mount -t "$fs" -o "$options" "/dev/$dev" "$dir" 2>&1); then
+    write_info mounted ''
+else
+    rmdir "$dir" 2>/dev/null
+    # mount's first line says why; the rest points at dmesg.
+    write_info unreadable "could not be read: $(echo "$error" | head -1 | sed 's/^mount: [^:]*: //' | tr -d '\000-\037')"
+fi
+exit 0

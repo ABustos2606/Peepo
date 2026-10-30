@@ -1,0 +1,40 @@
+P14.1 USB stick mount: tools/pi/check-usb.sh in WSL (Debian, kernel 6.18.54.1-microsoft-standard-WSL2), 30 October 2026
+Loop devices stand in for sticks; owner 'nobody' because WSL has no peepo user.
+systemd-analyze verify peepo-usb@sda1.service: no warnings. udevadm verify 90-peepo-usb.rules (udev 257): success.
+
+PASS  vfat: mounted
+PASS  vfat: label 'PEEPO 1'
+PASS  vfat: type
+PASS  vfat: ro, nosuid, nodev, noexec
+PASS  vfat: files and folders with spaces readable
+PASS  vfat: files owned by nobody
+PASS  vfat: files 644
+PASS  vfat: cannot be written
+PASS  vfat: a script on it cannot run
+PASS  vfat: info readable by all
+PASS  vfat: mounting twice leaves one mount
+PASS  vfat: unmounted and forgotten
+PASS  exfat: mounted
+PASS  exfat: label 'Peepo stick'
+PASS  exfat: type
+PASS  exfat: ro, nosuid, nodev, noexec
+PASS  exfat: files and folders with spaces readable
+PASS  exfat: files owned by nobody
+PASS  exfat: files 644
+PASS  exfat: cannot be written
+PASS  exfat: a script on it cannot run
+PASS  exfat: info readable by all
+PASS  exfat: mounting twice leaves one mount
+PASS  exfat: unmounted and forgotten
+SKIP  ntfs: no ntfs3 in this kernel (formatted as ntfs, which this Peepo cannot read)
+PASS  ext4: unreadable, says so: formatted as ext4; Peepo reads FAT32, exFAT and NTFS
+PASS  empty disk: unreadable, says so: no filesystem found
+PASS  disk mounted elsewhere: refused: the disk is in use by the system (/tmp/tmp.cojIoMyLdn/elsewhere)
+PASS  the disk Linux runs from (sdd): refused
+PASS  bad device name '../sda1' refused
+PASS  bad device name 'sda1;reboot' refused
+PASS  bad device name '' refused
+PASS  bad device name '.hidden' refused
+PASS  bad device name 'sd a1' refused
+
+All USB stick checks passed.

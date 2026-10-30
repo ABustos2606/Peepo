@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# USB sticks for Peepo (P14.1): a filesystem on a USB disk, partitioned or
+# not, starts peepo-usb@<device>.service, which mounts it read-only. Other
+# disks, such as the SD card Linux runs from, are never touched. Matched on
+# every event but removal, so the device keeps its systemd unit through
+# "change" events and the mount is not dropped by one.
+ACTION!="remove", SUBSYSTEM=="block", ENV{ID_BUS}=="usb", ENV{ID_FS_USAGE}=="filesystem", TAG+="systemd", ENV{SYSTEMD_WANTS}+="peepo-usb@%k.service"

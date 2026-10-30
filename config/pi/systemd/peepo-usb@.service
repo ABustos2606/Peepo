@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A USB stick, mounted read-only at /run/peepo-usb/<device> for Settings >
+# Files to import models and IRs from (P14.1). udev starts it when the stick
+# appears (90-peepo-usb.rules); it stops, and unmounts, when the stick goes.
+# Not part of peepo.target: a stick is read whether or not the instrument is
+# playing, and it never holds up the audio.
+[Unit]
+Description=Peepo USB stick %I
+BindsTo=dev-%i.device
+After=dev-%i.device
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/peepo/bin/peepo-usb mount %I
+ExecStop=/opt/peepo/bin/peepo-usb unmount %I
+Nice=10
+IOSchedulingClass=idle

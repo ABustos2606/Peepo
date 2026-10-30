@@ -36,6 +36,10 @@ if [ $action = remove ]; then
     if [ -f /etc/peepo/splash-state/cmdline.txt ] && [ -x "$PREFIX/bin/peepo-splash" ]; then run "$PREFIX/bin/peepo-splash" --restore; fi
     if [ -f /etc/peepo/slim-boot-state/units ] && [ -x "$PREFIX/bin/peepo-slim-boot" ]; then run "$PREFIX/bin/peepo-slim-boot" --restore; fi
     for unit in $UNITS; do run systemctl disable --now "$unit" 2>/dev/null || true; run rm -f "/etc/systemd/system/$unit"; done
+    run rm -f /etc/udev/rules.d/90-peepo-usb.rules
+    run systemctl stop 'peepo-usb@*.service' 2>/dev/null || true
+    run rm -f /etc/systemd/system/peepo-usb@.service
+    run udevadm control --reload
     run rm -f /etc/polkit-1/rules.d/50-peepo-power.rules
     run systemctl daemon-reload
     echo "Removed the services. $PREFIX, /etc/peepo and /var/lib/peepo are kept."
@@ -80,7 +84,7 @@ fi
 # The programs: the previous installation stays as $PREFIX.previous.
 if [ -d "$PREFIX" ]; then run rm -rf "$PREFIX.previous"; run mv "$PREFIX" "$PREFIX.previous"; fi
 run cp -a "$HERE/root/opt/peepo" "$PREFIX"
-run install -m 0755 "$HERE/config/bin/peepo-engine" "$HERE/config/bin/peepo-route" "$PREFIX/bin/"
+run install -m 0755 "$HERE/config/bin/peepo-engine" "$HERE/config/bin/peepo-route" "$HERE/config/bin/peepo-usb" "$PREFIX/bin/"
 run install -m 0755 "$HERE/export-catalogue.sh" "$PREFIX/bin/peepo-export-catalogue"
 run install -m 0755 "$HERE/instrument-boot.sh" "$PREFIX/bin/peepo-instrument-boot"
 run install -m 0755 "$HERE/splash.sh" "$PREFIX/bin/peepo-splash"
@@ -101,6 +105,12 @@ run install -m 0644 "$HERE/config/config.txt" "$PREFIX/share/peepo/config.txt"
 run install -d -o peepo -g peepo -m 0755 /var/lib/peepo /var/lib/peepo/patches
 
 for unit in $UNITS; do run install -m 0644 "$HERE/config/systemd/$unit" "/etc/systemd/system/$unit"; done
+# USB sticks, mounted read-only for Settings > Files; a stick already plugged
+# in is mounted at the next boot or when plugged in again.
+run install -m 0644 "$HERE/config/systemd/peepo-usb@.service" /etc/systemd/system/
+run install -d -m 0755 /etc/udev/rules.d
+run install -m 0644 "$HERE/config/udev/90-peepo-usb.rules" /etc/udev/rules.d/
+run udevadm control --reload
 # The interface's Shut down button.
 run install -d -m 0755 /etc/polkit-1/rules.d
 run install -m 0644 "$HERE/config/polkit/50-peepo-power.rules" /etc/polkit-1/rules.d/
