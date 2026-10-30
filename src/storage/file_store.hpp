@@ -9,11 +9,11 @@ namespace peepo {
 // Files plugins read, kept on the instrument in one folder per kind:
 //
 //   <root>/nam/          amp models (.nam)
-//   <root>/ir/cab/       cabinet impulse responses (.wav)
-//   <root>/ir/reverb/    reverb impulse responses (.wav)
+//   <root>/ir/cab/       cabinet impulse responses (.wav, .flac)
+//   <root>/ir/reverb/    reverb impulse responses (.wav, .flac)
 //
-// They are copied there by hand, over SSH; the interface only
-// lists them and gives a plugin the chosen one's path.
+// They arrive from a USB stick (file_import.hpp) or by hand over SSH; the
+// interface lists them and gives a plugin the chosen one's path.
 struct StoredFile {
     std::string name;
     std::filesystem::path path;

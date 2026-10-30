@@ -3,7 +3,9 @@
 // Bundles and the patch store: reading what the engine writes, revisions,
 // interrupted saves, fallback to an older revision, identity, the startup
 // choice, and the simulator saving and loading through the same store.
+// Files from a stick: sorted, checked, copied, duplicates skipped or numbered.
 #include "engine/simulated_engine.hpp"
+#include "storage/file_import.hpp"
 #include "storage/file_store.hpp"
 #include "storage/patch_store.hpp"
 #include <algorithm>
@@ -351,6 +353,134 @@ void store(const fs::path& root) {
 
 // Bundles from elsewhere: without project properties, from a newer schema, and
 // with plugin state that refers to files.
+// A WAV file as the parts say, with a chunk before the format as some
+// editors write; `cut` drops that many bytes off the end.
+std::string wav(unsigned format, unsigned channels, unsigned rate, unsigned bits, std::uint32_t frames, std::size_t cut = 0) {
+    auto le = [](std::string& out, std::uint32_t v, int bytes) { for (int i = 0; i < bytes; ++i) out += static_cast<char>((v >> (8 * i)) & 0xff); };
+    const std::uint32_t block = channels * bits / 8, data = frames * block;
+    std::string out = "RIFF";
+    le(out, 36 + 12 + data, 4);
+    out += "WAVELIST";
+    le(out, 4, 4);
+    out += "INFOfmt ";
+    le(out, 16, 4);
+    le(out, format, 2);
+    le(out, channels, 2);
+    le(out, rate, 4);
+    le(out, rate * block, 4);
+    le(out, block, 2);
+    le(out, bits, 2);
+    out += "data";
+    le(out, data, 4);
+    out += std::string(data, '\0');
+    out.resize(out.size() - cut);
+    return out;
+}
+// A 16-bit FLAC's marker and STREAMINFO, then some bytes standing for its frames.
+std::string flac(unsigned rate, unsigned channels, std::uint64_t samples) {
+    std::string info(34, '\0');
+    info[10] = static_cast<char>(rate >> 12);
+    info[11] = static_cast<char>(rate >> 4);
+    info[12] = static_cast<char>(((rate & 0xf) << 4) | ((channels - 1) << 1));
+    info[13] = static_cast<char>((15 << 4) | ((samples >> 32) & 0xf));
+    for (int i = 0; i < 4; ++i) info[14 + i] = static_cast<char>(samples >> (24 - 8 * i));
+    return std::string("fLaC\x80\0\0\x22", 8) + info + std::string(64, '\x55');
+}
+const std::string model = R"({"version": "0.5.4", "architecture": "WaveNet", "config": {"layers": [{"input_size": 1, "gated": false, "name": "a \"b\""}]}, "weights": [0.1, -2e-3, 3]})";
+
+void imports(const fs::path& root) {
+    const auto stick = root / "stick";
+    write(stick / "Amp One.nam", model);
+    write(stick / "deep" / "er" / "Amp Two.nam", R"({"weights":[],"architecture":"LSTM"})");
+    write(stick / "No weights.nam", R"({"architecture": "WaveNet", "config": {}})");
+    write(stick / "No architecture.nam", R"({"weights": [1, 2]})");
+    write(stick / "Cut.nam", model.substr(0, model.size() - 20));
+    write(stick / "Text.nam", "not a model at all");
+    write(stick / "Trailing.nam", model + " x");
+    write(stick / "Huge.nam", R"({"architecture": "WaveNet", "weights": [)" + std::string(max_model_bytes, ' ') + "]}");
+    write(stick / "Cabs" / "4x12.wav", wav(1, 2, 48000, 24, 9600));
+    write(stick / "IR" / "My Reverbs" / "Hall.flac", flac(44100, 2, 44100 * 3));
+    write(stick / "Room Mics" / "Booth.wav", wav(0xFFFE, 1, 48000, 32, 100));
+    write(stick / "loose" / "Short.wav", wav(3, 1, 48000, 32, 12000));
+    write(stick / "loose" / "Long.wav", wav(1, 1, 1000, 8, 31000));
+    write(stick / "loose" / "Five.wav", wav(1, 5, 48000, 16, 100));
+    write(stick / "loose" / "Cut.wav", wav(1, 1, 48000, 16, 1000, 10));
+    write(stick / "loose" / "Empty.wav", wav(1, 1, 48000, 16, 0));
+    write(stick / "loose" / "ADPCM.wav", wav(2, 1, 48000, 4, 100));
+    write(stick / "loose" / "Garbage.wav", "RIFF....WAVEjunk");
+    write(stick / "loose" / "Unknown length.flac", flac(48000, 1, 0));
+    write(stick / "loose" / "Not flac.flac", "ID3 tags first");
+    write(stick / "cabinet" / "room" / "Nearest wins.wav", wav(1, 1, 48000, 16, 100));
+    write(stick / "._Amp One.nam", "macOS resource fork");
+    write(stick / ".Trashes" / "Old.nam", model);
+    write(stick / "System Volume Information" / "x.wav", wav(1, 1, 48000, 16, 100));
+    write(stick / "notes.txt", "ignored");
+    auto deep = stick;
+    for (int i = 0; i < max_folder_depth + 2; ++i) deep /= "d";
+    write(deep / "Too deep.nam", model);
+
+    const auto found = find_files(stick);
+    const auto named = [](const std::vector<FoundFile>& list, const std::string& name) -> const FoundFile* {
+        const auto at = std::find_if(list.begin(), list.end(), [&](const FoundFile& f) { return f.name == name; });
+        return at == list.end() ? nullptr : &*at;
+    };
+    for (const char* name : {"Amp One.nam", "Amp Two.nam", "4x12.wav", "Hall.flac", "Short.wav", "Nearest wins.wav"}) check(named(found.files, name), name);
+    check(found.files.size() == 6 && found.truncated, "the stick's usable files not all found, or the deep folder not reported");
+    for (const char* name : {"No weights.nam", "No architecture.nam", "Cut.nam", "Text.nam", "Trailing.nam", "Huge.nam", "Booth.wav", "Long.wav", "Five.wav", "Cut.wav",
+                             "Empty.wav", "ADPCM.wav", "Garbage.wav", "Unknown length.flac", "Not flac.flac"})
+        check(named(found.rejected, name) && !named(found.rejected, name)->check.problem.empty(), name);
+    check(found.rejected.size() == 15, "hidden, system or other files were mentioned");
+    check(found.files[0].name == "4x12.wav" && found.files[1].name == "Amp One.nam", "found files not by name");
+    const auto& amp_two = *named(found.files, "Amp Two.nam");
+    check(amp_two.kind == FileKind::Model && amp_two.folder == "deep/er" && named(found.files, "Amp One.nam")->folder.empty(), "a model's folder misread");
+    const auto& cab = *named(found.files, "4x12.wav");
+    check(cab.kind == FileKind::Cabinet && cab.check.channels == 2 && cab.check.seconds == 0.2 && sounds_like_cabinet(cab.check.seconds), "a cabinet folder not recognised");
+    const auto& hall = *named(found.files, "Hall.flac");
+    check(hall.kind == FileKind::Reverb && hall.check.seconds == 3 && hall.check.channels == 2 && !sounds_like_cabinet(hall.check.seconds), "a reverb folder or FLAC misread");
+    check(named(found.files, "Short.wav")->kind == FileKind::Unsorted && named(found.files, "Short.wav")->check.seconds == 0.25, "a loose impulse response was sorted");
+    check(named(found.files, "Nearest wins.wav")->kind == FileKind::Reverb, "the nearest folder did not decide");
+    check(named(found.rejected, "Huge.nam")->check.problem.starts_with("Larger than 10 MB") && named(found.rejected, "Long.wav")->check.problem.starts_with("31.0 s long") &&
+          named(found.rejected, "Five.wav")->check.problem.starts_with("5 channels") && named(found.rejected, "Cut.wav")->check.problem == "The file is cut short",
+          "rejections not explained");
+
+    // Into the store: copied with no temporary left, then skipped, then numbered.
+    FileStore store(root / "files");
+    check(store.open().empty(), "file store did not open");
+    const auto copied = import_file(store, *named(found.files, "Amp One.nam"), FileKind::Model);
+    check(copied.result == ImportResult::Copied && copied.name == "Amp One.nam" && fs::file_size(root / "files" / "nam" / "Amp One.nam") == model.size(), "model not copied");
+    check(import_file(store, cab, FileKind::Cabinet).result == ImportResult::Copied && fs::exists(root / "files" / "ir" / "cab" / "4x12.wav"), "cabinet not copied");
+    const auto& loose = *named(found.files, "Short.wav");
+    check(import_file(store, loose, FileKind::Unsorted).result == ImportResult::Failed, "an unsorted file copied without an answer");
+    check(import_file(store, loose, FileKind::Model).result == ImportResult::Failed, "an impulse response went to the models");
+    check(import_file(store, loose, FileKind::Reverb).result == ImportResult::Copied && fs::exists(root / "files" / "ir" / "reverb" / "Short.wav"), "the player's answer not used");
+    check(import_file(store, *named(found.rejected, "Text.nam"), FileKind::Model).result == ImportResult::Failed, "a refused file was copied");
+    const auto again = import_file(store, *named(found.files, "Amp One.nam"), FileKind::Model);
+    check(again.result == ImportResult::Skipped && again.name == "Amp One.nam", "the same file imported twice");
+    // Another model with the name: numbered, and skipped the next time.
+    const std::string other_model = R"({"architecture": "LSTM", "weights": [1]})";
+    write(root / "stick2" / "Amp One.nam", other_model);
+    const auto other = find_files(root / "stick2");
+    check(other.files.size() == 1 && !other.truncated, "second stick misread");
+    const auto numbered = import_file(store, other.files[0], FileKind::Model);
+    check(numbered.result == ImportResult::Copied && numbered.name == "Amp One (2).nam" && fs::file_size(root / "files" / "nam" / "Amp One (2).nam") == other_model.size(),
+          "a different file with the name was not numbered");
+    check(import_file(store, other.files[0], FileKind::Model).result == ImportResult::Skipped, "a numbered file imported twice");
+    // The stick changed after it was looked at: nothing lands.
+    auto changed = other.files[0];
+    changed.name = "Changed.nam";
+    write(root / "stick2" / "Amp One.nam", R"({"architecture": "LSTM", "weights": ]1]})");
+    check(import_file(store, changed, FileKind::Model).result == ImportResult::Failed && !fs::exists(root / "files" / "nam" / "Changed.nam"), "a damaged file was copied");
+    write(root / "stick2" / "Amp One.nam", "{}");
+    check(import_file(store, changed, FileKind::Model).result == ImportResult::Failed && !fs::exists(root / "files" / "nam" / "Changed.nam"), "a shortened file was copied");
+    std::atomic<bool> stop{true};
+    check(import_file(store, hall, FileKind::Reverb, &stop).message == "Stopped" && !fs::exists(root / "files" / "ir" / "reverb" / "Hall.flac"), "a stopped copy landed");
+    for (const auto& entry : fs::recursive_directory_iterator(root / "files")) check(!entry.path().filename().string().starts_with(".import-"), "a temporary copy was left");
+    // An import cut off by a power cut is cleared when the store opens.
+    write(root / "files" / "ir" / "cab" / ".import-0123456789abcdef.part", "half");
+    check(store.open().empty() && !fs::exists(root / "files" / "ir" / "cab" / ".import-0123456789abcdef.part") && fs::exists(root / "files" / "ir" / "cab" / "4x12.wav"),
+          "an unfinished import not cleared");
+    check(find_files(root / "nowhere").files.empty(), "a missing stick listed files");
+}
 void foreign_bundles(const fs::path& root) {
     PatchStore patches(root);
     check(patches.open().empty(), "store did not open");
@@ -460,7 +590,8 @@ int main() {
         store(root / "store");
         simulated(root / "simulated");
         foreign_bundles(root / "foreign");
+        imports(root / "imports");
         fs::remove_all(root);
-        std::cout << "Bundles, revisions, interrupted saves, fallback, startup choice, foreign bundles, missing files, scenes and simulated save/load passed.\n";
+        std::cout << "Bundles, revisions, interrupted saves, fallback, startup choice, foreign bundles, missing files, scenes, simulated save/load and file imports passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

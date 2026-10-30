@@ -22,7 +22,16 @@ FileStore::FileStore(fs::path root, std::string engine_root) : root_(std::move(r
 }
 std::string FileStore::open() {
     std::error_code error;
-    for (const char* folder : {"nam", "ir/cab", "ir/reverb"}) fs::create_directories(root_ / folder, error);
+    for (const char* folder : {"nam", "ir/cab", "ir/reverb"}) {
+        fs::create_directories(root_ / folder, error);
+        if (error) break;
+        // What is left of an import that never finished (file_import.cpp).
+        std::error_code ignored;
+        for (const auto& entry : fs::directory_iterator(root_ / folder, ignored)) {
+            const auto name = entry.path().filename().string();
+            if (name.starts_with(".import-") && name.ends_with(".part")) fs::remove(entry.path(), ignored);
+        }
+    }
     usable_ = !error && fs::is_directory(root_, error);
     return usable_ ? std::string() : "Files folder unavailable: " + root_.generic_string();
 }
