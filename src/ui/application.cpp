@@ -412,6 +412,10 @@ void Application::navigate(Page page) {
     if (page_ == Page::Patch) list_scroll_.clear();
     // Leaving the Scenes page ends picking a scene.
     if (page != Page::Scenes) scene_pick_ = ScenePick::None;
+    // Leaving Files ends picking a file to delete.
+    if (page != Page::Files && page != Page::ConfirmAction) deleting_files_ = false;
+    if (page == Page::Files && page_ == Page::Settings)
+        message(mounted_stick() ? "Import copies what is new on the stick to Peepo." : "Plug in a USB stick to import models and impulse responses.");
     if (page == Page::Scenes && page_ != Page::Scenes && page_ != Page::NamePatch && page_ != Page::ConfirmAction) message("Tap a scene to play it.");
     // Leaving MIDI learn before anything was learned ends the engine's wait.
     if (page_ == Page::MidiLearn && page != Page::MidiLearn && (learn_waiting_ || learn_request_)) {
@@ -596,6 +600,8 @@ void Application::tick(unsigned ms) {
     update_metrics();
     if ((network_age_ += ms) >= 2000) { network_age_ = 0; update_network(); }
     if (system_ && (system_age_ += ms) >= 2000) { system_age_ = 0; update_system(); }
+    if (!usb_run_.empty() && (usb_age_ += ms) >= 1000) { usb_age_ = 0; update_usb(); }
+    if (importer_ && importer_->serial() != import_serial_) update_import();
     const auto* shown = page_ == Page::Parameters ? find_module(graph_, selected_) : nullptr;
     const auto layout = shown ? module_layout(*shown) : ModuleLayout::Generic;
     engine_.watch_tuner(shown && layout == ModuleLayout::Tuner ? std::optional<InstanceId>{shown->id} : std::nullopt);
@@ -1253,6 +1259,37 @@ void Application::handle(Binding& b, lv_event_t* e) {
         if (midi_) { midi_->request_restart(); message("The clock restarts: Stop, then Start."); }
         break;
     case Action::ChooseFile: selected_ = b.id; navigate(Page::FilePicker); break;
+    case Action::FilesImport: {
+        auto items = import_items();
+        if (items.empty() || !importer_ || import_.busy) break;
+        message("Copying " + std::to_string(items.size()) + (items.size() == 1 ? " file" : " files") + " to Peepo. The sound plays on.");
+        importer_->import(*files_, std::move(items));
+        update_import();
+        break;
+    }
+    case Action::FilesStop: if (importer_) importer_->stop(); break;
+    case Action::FilesSort:
+        unsorted_kind_ = b.number == 0 ? FileKind::Cabinet : FileKind::Reverb;
+        rebuild_ = true;
+        break;
+    case Action::FilesDelete: deleting_files_ = true; message("Delete which file? Tap it."); rebuild_ = true; break;
+    case Action::FilesCancel: deleting_files_ = false; message("Nothing deleted."); rebuild_ = true; break;
+    case Action::FilesPick: {
+        if (!files_) break;
+        const std::string folder = b.number == 0 ? "nam" : b.number == 1 ? "ir/cab" : "ir/reverb";
+        const auto found = files_->list(folder, {"nam", "wav", "flac"});
+        const auto it = std::find_if(found.begin(), found.end(), [&](const StoredFile& f) { return f.name == b.symbol; });
+        if (it == found.end()) { rebuild_ = true; break; }
+        const auto file = *it;
+        ask("Delete file?", file.name, "It is removed from " + folder + "/ on Peepo.\nA saved patch that uses it keeps its own copy and still plays.", "Delete", [this, file] {
+            const auto issue = files_->remove(file);
+            message(issue.empty() ? file.name + " deleted." : issue);
+            deleting_files_ = false;
+            navigate(Page::Files);
+        });
+        confirmation_.back = Page::Files;
+        break;
+    }
     case Action::PickFile:
         if (submit(SetFile{b.id, b.symbol})) message("Loading " + file_name(b.symbol) + ". The plugin reads it in the background.");
         navigate(Page::Parameters);
@@ -1525,6 +1562,7 @@ std::vector<Application::Pill> Application::header_pills() const {
     case Page::Settings:
         pills.push_back({"Controls", Action::Navigate, 0, {}, static_cast<int>(Page::Controls)});
         if (midi_) pills.push_back({"MIDI", Action::Navigate, 0, {}, static_cast<int>(Page::Midi)});
+        if (files_) pills.push_back({"Files", Action::Navigate, 0, {}, static_cast<int>(Page::Files)});
         pills.push_back({"Diagnostics", Action::Navigate, 0, {}, static_cast<int>(Page::Diagnostics)});
         if (power_off_ || restart_) pills.push_back({"Power", Action::Navigate, 0, {}, static_cast<int>(Page::Power)});
         break;
@@ -1564,6 +1602,17 @@ std::vector<Application::Pill> Application::header_pills() const {
         break;
     }
     case Page::Tempo: pills.push_back({"Tap", Action::Tap, 0, {}, 0, true}); break;
+    case Page::Files: {
+        // While a tap picks a file to delete, or a copy runs, only the way out.
+        if (deleting_files_) { pills.push_back({"Cancel", Action::FilesCancel, 0, {}, 0, true}); break; }
+        if (import_.busy && import_.job == ImportWorker::Status::Job::Import) { pills.push_back({"Stop", Action::FilesStop, 0, {}, 0, true}); break; }
+        pills.push_back({"Import", Action::FilesImport, 0, {}, 0, true, import_items().empty()});
+        bool stored = false;
+        for (const char* folder : {"nam", "ir/cab", "ir/reverb"})
+            if (files_ && !files_->list(folder, {"nam", "wav", "flac"}).empty()) stored = true;
+        pills.push_back({"Delete", Action::FilesDelete, 0, {}, 0, false, !stored});
+        break;
+    }
     case Page::MidiLearn: {
         const auto* m = find_module(graph_, learn_id_);
         const auto it = m ? std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == learn_symbol_; }) : std::vector<Parameter>::const_iterator{};
@@ -1606,7 +1655,7 @@ void Application::rebuild() {
     browser_list_ = browser_add_ = parameter_list_ = page_list_ = nullptr; browser_cards_.clear(); browser_pills_.clear();
     bars_.clear();
     bindings_.clear(); module_widgets_.clear(); input_jacks_.clear(); cv_inputs_.clear(); dots_.clear(); cables_.clear(); canvas_ = nullptr; footer_ = nullptr;
-    tempo_value_ = cpu_value_ = network_value_ = nullptr;
+    tempo_value_ = cpu_value_ = network_value_ = import_value_ = nullptr;
     tuner_note_ = tuner_detail_ = tuner_status_ = tuner_needle_ = nullptr;
     release_looper(); looper_cards_ = {}; looper_commands_.clear();
     euclidean_status_ = nullptr;
@@ -1677,6 +1726,7 @@ void Application::rebuild() {
         break;
     }
     case Page::Power: section = "SETTINGS"; title = "Power"; break;
+    case Page::Files: section = "SETTINGS"; title = "Files"; break;
     case Page::Midi: section = "SETTINGS"; title = "MIDI"; break;
     case Page::PatchMidi: section = "PATCHES"; title = "MIDI on load"; break;
     case Page::MidiLearn: {
@@ -1770,6 +1820,7 @@ void Application::rebuild() {
     case Page::FilePicker: file_picker(content); break;
     case Page::Tempo: tempo(content); break;
     case Page::Power: power(content); break;
+    case Page::Files: files_page(content); break;
     case Page::Midi: midi_page(content); break;
     case Page::MidiLearn: midi_learn(content); break;
     case Page::PatchMidi: patch_midi(content); break;
@@ -2946,7 +2997,7 @@ Page Application::back_page() const {
     // Back returns to where the page was opened from.
     switch (page_) {
     case Page::NamePatch: return naming_scene_ ? Page::Scenes : Page::Patches;
-    case Page::Controls: case Page::Diagnostics: case Page::Power: case Page::Midi: return Page::Settings;
+    case Page::Controls: case Page::Diagnostics: case Page::Power: case Page::Midi: case Page::Files: return Page::Settings;
     case Page::MidiLearn: return Page::Parameters;
     case Page::PatchMidi: case Page::PatchActions: return Page::Patches;
     case Page::ConfirmReplace: return confirm_origin_;
@@ -3475,6 +3526,202 @@ void Application::power(lv_obj_t* parent) {
     if (restart_) list_bar(list, "Restart", {.caption = "Back with its startup patch"}, Action::Restart);
     list_note(list, "Saved patches are safe. After Shut down, unplug the instrument when the screen goes dark. Restart starts the whole instrument again; it comes back by itself.");
     if (graph_.dirty) list_note(list, "This patch has unsaved edits. Save it in Patches first to keep them.", warning);
+}
+namespace {
+std::string file_size(std::uintmax_t bytes) {
+    if (bytes < 1024 * 1024) return std::to_string(std::max<std::uintmax_t>(1, (bytes + 1023) / 1024)) + " KB";
+    return decimal(bytes / 1048576.0, 1) + " MB";
+}
+std::string stick_name(const UsbStick& stick) { return stick.label.empty() ? "USB stick" : stick.label; }
+// A filesystem as players know it, not as blkid names it.
+std::string stick_format(const std::string& type) {
+    if (type.empty()) return "No format found";
+    if (type == "vfat") return "FAT32";
+    if (type == "exfat") return "exFAT";
+    if (type == "ntfs" || type == "ntfs3") return "NTFS";
+    return type;
+}
+// A stick's file already on Peepo: the same name and size in its folder.
+bool on_peepo(const FileStore& store, const FoundFile& file, FileKind kind) {
+    std::error_code error;
+    const auto u8 = std::u8string(file.name.begin(), file.name.end());
+    for (const auto k : kind == FileKind::Unsorted ? std::vector<FileKind>{FileKind::Cabinet, FileKind::Reverb} : std::vector<FileKind>{kind}) {
+        const auto path = store.root() / store_folder(k) / std::filesystem::path(u8);
+        if (std::filesystem::is_regular_file(path, error) && std::filesystem::file_size(path, error) == file.size && !error) return true;
+        error.clear();
+    }
+    return false;
+}
+// So many files on a stick are shown only so far; Import takes them all.
+constexpr std::size_t stick_shown = 40;
+}
+const UsbStick* Application::mounted_stick() const {
+    const auto it = std::find_if(sticks_.begin(), sticks_.end(), [](const UsbStick& s) { return s.state == UsbStick::State::Mounted; });
+    return it == sticks_.end() ? nullptr : &*it;
+}
+std::vector<ImportWorker::Item> Application::import_items() const {
+    const auto* stick = mounted_stick();
+    if (!files_ || !stick || import_.busy || import_.root != stick->root) return {};
+    std::vector<ImportWorker::Item> items;
+    bool any_new = false;
+    for (const auto& file : import_.found.files) {
+        if (file.kind == FileKind::Unsorted && !unsorted_kind_) return {};
+        const auto kind = file.kind == FileKind::Unsorted ? *unsorted_kind_ : file.kind;
+        if (!on_peepo(*files_, file, kind)) any_new = true;
+        items.push_back({file, kind});
+    }
+    if (!any_new) return {};
+    return items;
+}
+void Application::update_usb() {
+    auto now = list_usb_sticks(usb_run_);
+    if (now == sticks_) return;
+    const auto* before = mounted_stick();
+    const auto was = before ? std::optional<std::filesystem::path>(before->root) : std::nullopt;
+    const bool importing = import_.busy && import_.job == ImportWorker::Status::Job::Import;
+    sticks_ = std::move(now);
+    const auto* stick = mounted_stick();
+    if (page_ == Page::Files) rebuild_ = true;
+    if (stick && was == stick->root) return;
+    unsorted_kind_.reset();
+    if (importer_) importer_->stop();
+    if (stick && files_) {
+        // Looked through at once, so Files is ready when it is opened.
+        if (!importer_) importer_ = std::make_unique<ImportWorker>();
+        importer_->scan(stick->root);
+        update_import();
+        if (page_ != Page::Halting) message("USB stick " + stick_name(*stick) + ": Settings > Files imports from it.");
+    } else if (was) {
+        if (importing) message("The stick was pulled out during the import. Nothing half copied is left on Peepo.");
+        import_ = {};
+    } else if (!sticks_.empty() && page_ != Page::Halting) {
+        message("USB stick " + stick_name(sticks_.front()) + " cannot be read: " + sticks_.front().message + ".");
+    }
+}
+void Application::update_import() {
+    import_serial_ = importer_->serial();
+    const bool was_importing = import_.busy && import_.job == ImportWorker::Status::Job::Import;
+    import_ = importer_->status();
+    // A stick pulled out leaves nothing to show.
+    if (const auto* stick = mounted_stick(); !stick || stick->root != import_.root) { if (!import_.busy) import_ = {}; return; }
+    const bool importing = import_.busy && import_.job == ImportWorker::Status::Job::Import;
+    if (was_importing && !importing) {
+        std::string said = import_.stopped ? "Stopped: " : "Imported: ";
+        said += std::to_string(import_.copied) + " copied";
+        if (import_.skipped) said += ", " + std::to_string(import_.skipped) + " already on Peepo";
+        if (!import_.failed.empty()) said += ", " + std::to_string(import_.failed.size()) + " not copied";
+        message(said + ". The stick can be pulled out.");
+    }
+    if (page_ != Page::Files) return;
+    // While copying only the count changes; the page is built again at the end.
+    if (importing && import_value_) {
+        const auto value = "COPYING " + std::to_string(std::min(import_.done + 1, import_.total)) + " OF " + std::to_string(import_.total);
+        if (value != lv_label_get_text(import_value_)) lv_label_set_text(import_value_, value.c_str());
+    } else rebuild_ = true;
+}
+void Application::files_page(lv_obj_t* parent) {
+    auto* list = page_list(parent);
+    if (!files_) { list_note(list, "Peepo's files folder is not available here."); return; }
+    // While Delete waits for a tap, only the files on Peepo.
+    const auto* stick = deleting_files_ ? nullptr : mounted_stick();
+    if (!deleting_files_) list_heading(list, "USB stick");
+    for (const auto& s : sticks_) {
+        if (deleting_files_) break;
+        if (s.state == UsbStick::State::Mounted) continue;
+        const bool refused = s.state == UsbStick::State::Refused;
+        list_bar(list, stick_name(s), {.value = refused ? "NOT USED" : "UNREADABLE", .value_ink = warning, .caption = stick_format(s.type),
+                                       .keep_case = true, .still = true});
+        list_note(list, std::string(refused ? "Not used: " : "It cannot be read: ") + s.message + ".", warning);
+    }
+    if (!stick) {
+        if (sticks_.empty() && !deleting_files_)
+            list_note(list, usb_run_.empty() ? "This Peepo reads no USB sticks." :
+                            "No stick plugged in. Peepo takes .nam models, and .wav or .flac impulse responses, from any folder on a FAT32, exFAT or NTFS stick.");
+    } else {
+        const bool scanning = import_.root != stick->root || (import_.busy && import_.job == ImportWorker::Status::Job::Scan);
+        const bool importing = !scanning && import_.busy;
+        // What each file on the stick is, and whether it is on Peepo already.
+        std::size_t fresh = 0, cabinet_like = 0;
+        std::vector<std::pair<const FoundFile*, bool>> groups[4];
+        if (!scanning)
+            for (const auto& f : import_.found.files) {
+                const bool here = on_peepo(*files_, f, f.kind == FileKind::Unsorted && unsorted_kind_ ? *unsorted_kind_ : f.kind);
+                if (!here) ++fresh;
+                if (f.kind == FileKind::Unsorted && sounds_like_cabinet(f.check.seconds)) ++cabinet_like;
+                groups[static_cast<int>(f.kind)].push_back({&f, here});
+            }
+        BarLook look{.caption = stick_format(stick->type), .keep_case = true, .still = true};
+        look.value = scanning ? "LOOKING" : importing ? "COPYING " + std::to_string(std::min(import_.done + 1, import_.total)) + " OF " + std::to_string(import_.total)
+                   : fresh ? std::to_string(fresh) + " NEW" : "NOTHING NEW";
+        look.value_ink = scanning || importing || fresh ? accent : muted;
+        auto* bar = list_bar(list, stick_name(*stick), look);
+        if (importing) import_value_ = lv_obj_get_child(bar, 2);
+        if (scanning) list_note(list, "Looking through the stick...");
+        else {
+            if (import_.found.files.empty() && import_.found.rejected.empty()) list_note(list, "No .nam, .wav or .flac files on it.");
+            // A model's size or an impulse response's length, and its folder on the stick.
+            const auto caption = [](const FoundFile& f) {
+                const std::string what = f.kind == FileKind::Model ? file_size(f.size) : decimal(f.check.seconds, 2) + " s";
+                return what + "   " + (f.folder.empty() ? std::string("/") : f.folder);
+            };
+            const auto failed = [&](const FoundFile& f) -> const Imported* {
+                const auto it = std::find_if(import_.failed.begin(), import_.failed.end(), [&](const Imported& i) { return i.name == f.name; });
+                return it == import_.failed.end() ? nullptr : &*it;
+            };
+            const auto show = [&](const std::vector<std::pair<const FoundFile*, bool>>& files) {
+                for (std::size_t i = 0; i < files.size() && i < stick_shown; ++i) {
+                    const auto& [f, here] = files[i];
+                    const auto* not_copied = failed(*f);
+                    list_bar(list, f->name, {.caption = not_copied ? not_copied->message : here ? "On Peepo already" : caption(*f),
+                                             .caption_ink = not_copied ? warning : here ? faint : 0u, .keep_case = true, .still = true});
+                }
+                if (files.size() > stick_shown) list_note(list, "And " + std::to_string(files.size() - stick_shown) + " more. Import takes them all.");
+            };
+            constexpr const char* kinds[]{"Models", "Cabinet IRs", "Reverb IRs"};
+            for (int k = 0; k < 3; ++k) {
+                if (groups[k].empty()) continue;
+                list_heading(list, std::string(kinds[k]) + "  " + std::to_string(groups[k].size()));
+                show(groups[k]);
+            }
+            if (const auto& unsorted = groups[static_cast<int>(FileKind::Unsorted)]; !unsorted.empty()) {
+                // Asked once for the lot; their length suggests, the player decides.
+                const bool one = unsorted.size() == 1;
+                list_heading(list, "Cabinet or reverb?  " + std::to_string(unsorted.size()), unsorted_kind_ ? accent : warning);
+                choice_bar(list, {"Cabinet", "Reverb"}, !unsorted_kind_ ? -1 : *unsorted_kind_ == FileKind::Cabinet ? 0 : 1, Action::FilesSort);
+                const std::string length = cabinet_like == unsorted.size() ? std::string(one ? "It is" : "All are") + " shorter than half a second, like a cabinet."
+                                         : cabinet_like == 0 ? std::string(one ? "It is" : "All are") + " longer than half a second, like a reverb."
+                                         : std::to_string(cabinet_like) + " of " + std::to_string(unsorted.size()) + " are shorter than half a second, like a cabinet.";
+                list_note(list, std::string(one ? "It is" : "These are") + " in no folder named cab, reverb or room. " + length +
+                                (unsorted_kind_ ? "" : " Import waits for the answer."));
+                show(unsorted);
+            }
+            if (!import_.found.rejected.empty()) {
+                list_heading(list, "Not taken  " + std::to_string(import_.found.rejected.size()), warning);
+                for (std::size_t i = 0; i < import_.found.rejected.size() && i < stick_shown; ++i) {
+                    const auto& f = import_.found.rejected[i];
+                    list_bar(list, f.name, {.caption = f.check.problem, .caption_ink = warning, .keep_case = true, .still = true});
+                }
+                if (import_.found.rejected.size() > stick_shown) list_note(list, "And " + std::to_string(import_.found.rejected.size() - stick_shown) + " more.");
+            }
+            if (import_.found.truncated) list_note(list, "The stick holds more than Peepo looks through: at most 1000 files, 8 folders deep.", warning);
+        }
+    }
+    // What is on Peepo, by folder; with Delete lit, a tap asks to delete one.
+    list_heading(list, "On Peepo");
+    constexpr const char* folders[]{"nam", "ir/cab", "ir/reverb"};
+    constexpr const char* kinds[]{"Models", "Cabinet IRs", "Reverb IRs"};
+    for (int k = 0; k < 3; ++k) {
+        const auto stored = files_->list(folders[k], {"nam", "wav", "flac"});
+        list_heading(list, std::string(kinds[k]) + "  " + folders[k] + "/  " + std::to_string(stored.size()), muted);
+        if (stored.empty()) list_note(list, "None yet.", faint);
+        for (const auto& f : stored) {
+            std::error_code error;
+            const auto size = std::filesystem::file_size(f.path, error);
+            list_bar(list, f.name, {.value = error ? "" : file_size(size), .value_ink = muted, .keep_case = true, .still = !deleting_files_, .edge = deleting_files_ ? warning : 0u},
+                     Action::FilesPick, 0, f.name, k);
+        }
+    }
+    list_note(list, "A saved patch keeps its own copy of the files it uses, so deleting one here never stops a patch loading.", faint);
 }
 void Application::halting(lv_obj_t* parent) {
     label(parent, restarting_ ? "Peepo is restarting" : "Peepo is shutting down", 24, 96, 752, text, &peepo_bold_24);

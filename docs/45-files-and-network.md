@@ -1,6 +1,6 @@
 # Files and network: getting models and IRs onto Peepo
 
-**Planned 30 October 2026; order and open questions decided with the user the same day ([decisions](#decided-with-the-user-30-october-2026)). P14.1 (the stick mount) built and checked in WSL the same day ([record](evidence/usb-results.txt)); P14.2 (file checks and copy, `src/storage/file_import.hpp`) done the same day.** Today a NAM model or an IR reaches Peepo only by SSH from a computer on the same Wi-Fi, and the Pi knows one Wi-Fi network, joined by hand with `nmcli` ([instrument boot](24-instrument-boot.md)). Away from home the instrument cannot get online and cannot take a new file. Phase 14 of the [implementation plan](10-technical-implementation-plan.md#phase-14--files-and-network), where its steps are kept.
+**Planned 30 October 2026; order and open questions decided with the user the same day ([decisions](#decided-with-the-user-30-october-2026)). P14.1 (the stick mount) built and checked in WSL the same day ([record](evidence/usb-results.txt)); P14.2 (file checks and copy, `src/storage/file_import.hpp`) done the same day; P14.3 (Settings → Files) the same day, from an approved mockup.** Today a NAM model or an IR reaches Peepo only by SSH from a computer on the same Wi-Fi, and the Pi knows one Wi-Fi network, joined by hand with `nmcli` ([instrument boot](24-instrument-boot.md)). Away from home the instrument cannot get online and cannot take a new file. Phase 14 of the [implementation plan](10-technical-implementation-plan.md#phase-14--files-and-network), where its steps are kept.
 
 ## What exists
 
@@ -37,6 +37,16 @@ None of it may delay boot, the startup patch or the audio ([P10.3](10-technical-
 - Each file is checked before it is offered: `.nam` is JSON with `architecture` and `weights`, under 10 MB; `.wav` / `.flac` have a valid header, 1-4 channels, under 30 s. Rejected files are listed with the reason. The copy is checked again before it is renamed, since the stick may have changed after it was looked at, and an import keeps 64 MB free on the card. Hidden files (macOS's `._` files), Windows' system folders and anything deeper than 8 folders are passed over.
 
 **Power.** The Pi already reports undervoltage (`0x50005`, [instrument boot](24-instrument-boot.md)) with the Tascam and the touchscreen on USB, and in P13.10 plugging a USB device made the supply sag and the audio interface drop out until a restart. A stick draws more. Measure with the stick plugged and copying, and say so on the page if the supply cannot carry it.
+
+### On the screen: Settings → Files
+
+Built 30 October 2026 from the approved mockups (`images/mockup-files-1-stick.png`, `-2-cabinet-or-reverb.png`, `-3-delete.png`), like every other page: header pills, one list of bars two to a row, nothing on the patch page.
+
+- **Header:** **Import** (white; grey until there is something new and the question is answered) and **Delete**. While copying only **Stop**; while Delete waits for a tap only **Cancel**.
+- **USB stick:** its name and format (FAT32, exFAT, NTFS) and how many files are new; *LOOKING* while it is looked through, *COPYING n OF m* while importing. A stick Peepo cannot read, or refuses, shows peepo-usb's reason.
+- **Its files** by kind, each with size (models) or length (IRs) and its folder; *On Peepo already* for the same name and size. **Cabinet or reverb?** asks once for the unsorted IRs, saying how many are under half a second. **Not taken** lists refused files with the reason. At most 40 per group are shown; Import takes them all.
+- **On Peepo:** models, cabinet IRs and reverb IRs by folder, with sizes. With Delete lit only these show; a tap asks first.
+- Plugging a stick in says so in the footer on any page; the end of an import sums it up there and says the stick can be pulled out.
 
 **Later, not this phase:** export patches to the stick as a backup (the only time the stick would be mounted for writing).
 

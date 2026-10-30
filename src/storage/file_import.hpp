@@ -5,7 +5,10 @@
 #include <atomic>
 #include <cstdint>
 #include <filesystem>
+#include <functional>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace peepo {
@@ -86,4 +89,61 @@ Imported import_file(const FileStore& store, const FoundFile& file, FileKind kin
 // idle I/O class), so an import never holds up the engine loading a patch.
 // False where it is not available.
 bool set_idle_io_priority();
+
+// A USB stick as peepo-usb left it: `<run>/<device>.info` says how it went,
+// and a mounted one is read at `<run>/<device>/`.
+struct UsbStick {
+    enum class State { Mounted, Unreadable, Refused };
+    std::string device, label, type, message;
+    State state = State::Unreadable;
+    std::filesystem::path root;
+    bool operator==(const UsbStick&) const = default;
+};
+// The sticks in `run` (/run/peepo-usb), by device name; none when it is missing.
+std::vector<UsbStick> list_usb_sticks(const std::filesystem::path& run);
+
+// A stick looked through, then imported, on a thread of its own at idle I/O
+// priority, so the screen never waits on a slow stick. One job at a time; the
+// interface asks how it is going.
+class ImportWorker {
+public:
+    ImportWorker() = default;
+    ImportWorker(const ImportWorker&) = delete;
+    ImportWorker& operator=(const ImportWorker&) = delete;
+    // Stops a job in progress and waits for it.
+    ~ImportWorker();
+    struct Item { FoundFile file; FileKind kind; };
+    struct Status {
+        enum class Job { None, Scan, Import };
+        Job job = Job::None;
+        bool busy = false;
+        // The stick looked through, and what was found on it.
+        std::filesystem::path root;
+        FoundFiles found;
+        // An import: how far it is, the file being copied, and how it went.
+        std::size_t done = 0, total = 0;
+        std::string current;
+        std::size_t copied = 0, skipped = 0;
+        std::vector<Imported> failed;
+        bool stopped = false;
+    };
+    // Look through a stick, forgetting the last import.
+    void scan(std::filesystem::path root);
+    // Copy these files into the store, each as its kind.
+    void import(FileStore store, std::vector<Item> items);
+    // End the job in progress between files, or within a copy.
+    void stop();
+    // Changes whenever the status does, so a caller reads it only then.
+    unsigned serial() const { return serial_.load(); }
+    Status status() const;
+private:
+    // The job before ends first, so its last word never lands on the next.
+    void finish();
+    void start(std::function<void()> job);
+    mutable std::mutex mutex_;
+    Status status_;
+    std::atomic<unsigned> serial_{0};
+    std::atomic<bool> stop_{false};
+    std::thread thread_;
+};
 }

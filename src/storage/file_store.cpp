@@ -55,6 +55,19 @@ std::vector<StoredFile> FileStore::list(const std::string& folder, const std::ve
     std::sort(out.begin(), out.end(), [](const StoredFile& a, const StoredFile& b) { return lower(a.name) < lower(b.name); });
     return out;
 }
+std::string FileStore::remove(const StoredFile& file) const {
+    std::error_code error;
+    // Only a file in one of the store's folders, never anything outside them.
+    const auto folder = fs::weakly_canonical(file.path.parent_path(), error);
+    bool inside = false;
+    for (const char* known : {"nam", "ir/cab", "ir/reverb"})
+        if (!error && folder == fs::weakly_canonical(root_ / known, error)) inside = true;
+    const auto u8 = file.path.filename().u8string();
+    if (!usable_ || !inside || !listable(std::string(u8.begin(), u8.end())) || !fs::is_regular_file(fs::symlink_status(file.path, error)))
+        return "That file is no longer on Peepo.";
+    if (!fs::remove(file.path, error) || error) return "Could not delete " + std::string(u8.begin(), u8.end()) + ".";
+    return {};
+}
 std::string file_name(const std::string& path) {
     const auto slash = path.find_last_of("/\\");
     return slash == std::string::npos ? path : path.substr(slash + 1);

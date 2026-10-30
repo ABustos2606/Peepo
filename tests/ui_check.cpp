@@ -10,11 +10,13 @@
 #include <filesystem>
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cmath>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -1907,6 +1909,91 @@ int main(int argc, char** argv) {
             check(peepo::find_module(app.graph(), 3)->bypassed != was_bypassed, "a tap in tap mode played the stomp's assignment");
             step(app, 3100);
             check(exact_label(app.screen(), "BPM") != nullptr && app.message() == "Tap mode over: 121 BPM.", "tap mode did not end");
+        }
+        // Settings > Files: a USB stick looked through, the unsorted impulse
+        // responses answered, imported, and a file on Peepo deleted.
+        {
+            namespace fs = std::filesystem;
+            const auto base = fs::temp_directory_path() / "peepo-ui-files";
+            fs::remove_all(base);
+            peepo::PatchStore store(base / "patches");
+            peepo::FileStore files(base / "files");
+            check(store.open().empty() && files.open().empty(), "files test stores did not open");
+            const auto put = [](const fs::path& path, const std::string& bytes) {
+                fs::create_directories(path.parent_path());
+                std::ofstream(path, std::ios::binary) << bytes;
+            };
+            // A mono 16-bit WAV of so many seconds at 48 kHz.
+            const auto wav = [](double seconds) {
+                const auto le = [](std::string& out, std::uint32_t v, int bytes) { for (int i = 0; i < bytes; ++i) out += static_cast<char>((v >> (8 * i)) & 0xff); };
+                const auto data = static_cast<std::uint32_t>(seconds * 48000) * 2;
+                std::string out = "RIFF"; le(out, 36 + data, 4); out += "WAVEfmt "; le(out, 16, 4);
+                le(out, 1, 2); le(out, 1, 2); le(out, 48000, 4); le(out, 96000, 4); le(out, 2, 2); le(out, 16, 2);
+                out += "data"; le(out, data, 4); out += std::string(data, '\1');
+                return out;
+            };
+            const std::string model = R"({"version":"0.5.4","architecture":"WaveNet","config":{},"weights":[0.1,0.2,0.3]})";
+            put(base / "files" / "nam" / "Plexi crunch.nam", model);
+            put(base / "files" / "ir" / "cab" / "Greenback 4x12.wav", wav(0.2));
+            peepo::SimulatedEngine sim;
+            sim.submit(peepo::LoadGraph{peepo::empty_graph("Files")}); sim.advance(100);
+            peepo::Application app(sim, &store);
+            app.set_files(&files); app.set_usb(base / "usb"); step(app);
+            click(app, 724, 36); check(app.page() == peepo::Page::Settings, "Settings did not open");
+            tap_header(app, "FILES");
+            check(app.page() == peepo::Page::Files && text_label(app.screen(), "No stick plugged in") && disabled_button(exact_label(app.screen(), "IMPORT")),
+                  "Files without a stick did not say so");
+            // The stick, as peepo-usb leaves it.
+            const auto stick = base / "usb" / "sda1";
+            put(stick / "NAM" / "Fender Twin clean.nam", model);
+            put(stick / "NAM" / "Plexi crunch.nam", model);
+            put(stick / "NAM" / "Broken.nam", "{\"architecture\":");
+            put(stick / "Cabs" / "V30 4x12 SM57.wav", wav(0.17));
+            put(stick / "Impulses" / "Plate.wav", wav(2.4));
+            put(stick / "Impulses" / "Spring.wav", wav(1.6));
+            put(stick / "Impulses" / "Big hall.wav", wav(41));
+            put(stick / "._Plate.wav", "mac");
+            put(base / "usb" / "sda1.info", "state=mounted\nlabel=KINGSTON\ntype=vfat\nmessage=\n");
+            const auto settle = [&](const std::function<bool()>& done) {
+                // The worker runs in real time, the screen's clock does not.
+                for (int i = 0; i < 1000 && !done(); ++i) { step(app, 32); std::this_thread::sleep_for(std::chrono::milliseconds(10)); }
+                check(done(), "the stick was not looked through or imported in time");
+            };
+            settle([&] { return text_label(app.screen(), "MODELS  2") != nullptr; });
+            check(app.message() == "USB stick KINGSTON: Settings > Files imports from it.", "a new stick was not announced");
+            check(bar_value(app, "KINGSTON") == "4 NEW" && text_label(app.screen(), "CABINET IRS  1") && text_label(app.screen(), "CABINET OR REVERB?  2") &&
+                  text_label(app.screen(), "NOT TAKEN  2") && !text_label(app.screen(), "._Plate"), "the stick's files were not sorted by kind");
+            check(disabled_button(exact_label(app.screen(), "IMPORT")), "Import did not wait for Cabinet or Reverb");
+            capture(app, output / "100-files-stick.bmp");
+            tap(app, "REVERB");
+            capture(app, output / "101-files-answered.bmp");
+            check(!disabled_button(exact_label(app.screen(), "IMPORT")) && bar_value(app, "KINGSTON") == "4 NEW", "answering Reverb did not allow Import");
+            tap_header(app, "IMPORT");
+            settle([&] { return app.message().starts_with("Imported:"); });
+            check(app.message() == "Imported: 4 copied, 1 already on Peepo. The stick can be pulled out.", "the import was not summed up");
+            check(fs::exists(base / "files" / "nam" / "Fender Twin clean.nam") && fs::exists(base / "files" / "ir" / "cab" / "V30 4x12 SM57.wav") &&
+                  fs::exists(base / "files" / "ir" / "reverb" / "Plate.wav") && fs::exists(base / "files" / "ir" / "reverb" / "Spring.wav") &&
+                  !fs::exists(base / "files" / "nam" / "Broken.nam"), "the files were not copied to their folders");
+            step(app);
+            check(bar_value(app, "KINGSTON") == "NOTHING NEW" && disabled_button(exact_label(app.screen(), "IMPORT")), "the stick still offered its files");
+            // Delete: a tap on a file on Peepo, then the question.
+            tap_header(app, "DELETE");
+            check(exact_label(app.screen(), "CANCEL") != nullptr && !exact_label(app.screen(), "USB STICK") && text_label(app.screen(), "Fender Twin clean.nam"),
+                  "Delete did not show only the files on Peepo");
+            capture(app, output / "102-files-delete.bmp");
+            tap_containing(app, "Fender Twin clean.nam");
+            check(app.page() == peepo::Page::ConfirmAction, "a file tapped for Delete was not asked about");
+            tap_header(app, "DELETE");
+            check(app.page() == peepo::Page::Files && !fs::exists(base / "files" / "nam" / "Fender Twin clean.nam") && app.message() == "Fender Twin clean.nam deleted.",
+                  "the file was not deleted");
+            // Pulled out, and a stick Peepo cannot read.
+            fs::remove(base / "usb" / "sda1.info");
+            put(base / "usb" / "sdb1.info", "state=unreadable\nlabel=BACKUP\ntype=ext4\nmessage=formatted as ext4; Peepo reads FAT32, exFAT and NTFS\n");
+            step(app, 1100);
+            check(!text_label(app.screen(), "KINGSTON") && bar_value(app, "BACKUP") == "UNREADABLE" && text_label(app.screen(), "Peepo reads FAT32, exFAT and NTFS"),
+                  "a pulled stick or an unreadable one was shown wrongly");
+            click(app, 70, 456);
+            check(app.page() == peepo::Page::Settings, "Back from Files did not return to Settings");
         }
         // Release the headless devices before the global runtime.
         lv_indev_delete(indev);

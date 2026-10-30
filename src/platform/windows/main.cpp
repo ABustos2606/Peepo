@@ -158,6 +158,9 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, PWSTR command_line, int) {
     peepo::Application app(engine, store.get());
     app.set_files(files.get());
     app.set_midi(midi.get());
+    // A stick stands in as a folder beside the patches: usb/<name>/ with
+    // usb/<name>.info saying state=mounted, as peepo-usb writes on the instrument.
+    if (store) app.set_usb(store->root().parent_path() / L"usb");
     lv_unlock();
     const auto window = lv_windows_get_display_window_handle(display);
     original_procedure = reinterpret_cast<WNDPROC>(SetWindowLongPtrW(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(control_keys)));

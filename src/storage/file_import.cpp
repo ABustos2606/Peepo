@@ -390,4 +390,104 @@ bool set_idle_io_priority() {
     return false;
 #endif
 }
+
+std::vector<UsbStick> list_usb_sticks(const fs::path& run) {
+    std::vector<UsbStick> out;
+    std::error_code error;
+    for (const auto& entry : fs::directory_iterator(run, error)) {
+        const auto name = utf8(entry.path().filename());
+        // peepo-usb writes a hidden temporary, then renames it.
+        if (name.starts_with(".") || !name.ends_with(".info") || !entry.is_regular_file(error)) continue;
+        UsbStick stick;
+        stick.device = name.substr(0, name.size() - 5);
+        stick.root = run / from_utf8(stick.device);
+        std::ifstream in(entry.path());
+        std::string line, state;
+        while (std::getline(in, line)) {
+            if (!line.empty() && line.back() == '\r') line.pop_back();
+            const auto equals = line.find('=');
+            if (equals == std::string::npos) continue;
+            const auto key = line.substr(0, equals), value = line.substr(equals + 1);
+            if (key == "state") state = value;
+            else if (key == "label") stick.label = value;
+            else if (key == "type") stick.type = value;
+            else if (key == "message") stick.message = value;
+        }
+        stick.state = state == "mounted" ? UsbStick::State::Mounted : state == "refused" ? UsbStick::State::Refused : UsbStick::State::Unreadable;
+        if (stick.state == UsbStick::State::Unreadable && stick.message.empty()) stick.message = "it could not be read";
+        out.push_back(std::move(stick));
+    }
+    std::sort(out.begin(), out.end(), [](const UsbStick& a, const UsbStick& b) { return a.device < b.device; });
+    return out;
+}
+
+ImportWorker::~ImportWorker() { finish(); }
+void ImportWorker::finish() {
+    stop();
+    if (thread_.joinable()) thread_.join();
+}
+void ImportWorker::start(std::function<void()> job) {
+    stop_ = false;
+    thread_ = std::thread([this, job = std::move(job)] {
+        set_idle_io_priority();
+        job();
+        {
+            std::lock_guard lock(mutex_);
+            status_.busy = false;
+            status_.current.clear();
+            status_.stopped = stop_.load();
+        }
+        ++serial_;
+    });
+}
+void ImportWorker::scan(fs::path root) {
+    finish();
+    {
+        std::lock_guard lock(mutex_);
+        status_ = {};
+        status_.job = Status::Job::Scan;
+        status_.busy = true;
+        status_.root = root;
+    }
+    ++serial_;
+    start([this, root] {
+        auto found = find_files(root);
+        std::lock_guard lock(mutex_);
+        status_.found = std::move(found);
+    });
+}
+void ImportWorker::import(FileStore store, std::vector<Item> items) {
+    finish();
+    {
+        std::lock_guard lock(mutex_);
+        status_.job = Status::Job::Import;
+        status_.busy = true;
+        status_.done = status_.copied = status_.skipped = 0;
+        status_.total = items.size();
+        status_.failed.clear();
+        status_.stopped = false;
+    }
+    ++serial_;
+    start([this, store = std::move(store), items = std::move(items)] {
+        for (const auto& item : items) {
+            if (stop_) break;
+            {
+                std::lock_guard lock(mutex_);
+                status_.current = item.file.name;
+            }
+            ++serial_;
+            auto result = import_file(store, item.file, item.kind, &stop_);
+            std::lock_guard lock(mutex_);
+            ++status_.done;
+            if (result.result == ImportResult::Copied) ++status_.copied;
+            else if (result.result == ImportResult::Skipped) ++status_.skipped;
+            else if (!stop_) status_.failed.push_back(std::move(result));
+        }
+    });
+}
+void ImportWorker::stop() { stop_ = true; }
+ImportWorker::Status ImportWorker::status() const {
+    std::lock_guard lock(mutex_);
+    return status_;
+}
 }

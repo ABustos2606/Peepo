@@ -34,6 +34,9 @@ public:
     // cannot carry are left out.
     std::vector<StoredFile> list(const std::string& folder, const std::vector<std::string>& extensions) const;
     static constexpr std::size_t max_listed = 500;
+    // Delete one file `list` gave. A saved patch keeps its own copy, so none
+    // stops loading. Returns what went wrong, or "".
+    std::string remove(const StoredFile& file) const;
 private:
     std::filesystem::path root_;
     std::string engine_root_;

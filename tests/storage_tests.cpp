@@ -9,9 +9,11 @@
 #include "storage/file_store.hpp"
 #include "storage/patch_store.hpp"
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 
 using namespace peepo;
 namespace fs = std::filesystem;
@@ -481,6 +483,62 @@ void imports(const fs::path& root) {
           "an unfinished import not cleared");
     check(find_files(root / "nowhere").files.empty(), "a missing stick listed files");
 }
+// Sticks as peepo-usb reports them, the worker that looks through and
+// imports one off the screen's thread, and deleting a file from the store.
+void sticks(const fs::path& root) {
+    const auto run = root / "run";
+    check(list_usb_sticks(run).empty(), "a missing run directory listed sticks");
+    write(run / "sdb1.info", "state=mounted\nlabel=KINGSTON\ntype=vfat\nmessage=\n");
+    write(run / "sdc1.info", "state=unreadable\r\nlabel=\r\ntype=ext4\r\nmessage=formatted as ext4\r\n");
+    write(run / "sdd.info", "state=refused\nlabel=SYSTEM\ntype=ext4\nmessage=the disk is in use by the system (/)\n");
+    write(run / ".sde1.info.123", "state=mounted\n");
+    write(run / "sdb1" / "Cabs" / "4x12.wav", wav(1, 1, 48000, 16, 4800));
+    write(run / "sdb1" / "Amp.nam", model);
+    write(run / "sdb1" / "Loose.wav", wav(1, 1, 48000, 16, 96000));
+    const auto found = list_usb_sticks(run);
+    check(found.size() == 3 && found[0].device == "sdb1" && found[0].state == UsbStick::State::Mounted && found[0].label == "KINGSTON" && found[0].type == "vfat" &&
+          found[0].root == run / "sdb1" && found[1].state == UsbStick::State::Unreadable && found[1].label.empty() && found[1].message == "formatted as ext4" &&
+          found[2].state == UsbStick::State::Refused && found[2].message == "the disk is in use by the system (/)", "sticks misread");
+
+    FileStore files(root / "files");
+    check(files.open().empty(), "files store did not open");
+    ImportWorker worker;
+    const auto wait = [&] {
+        for (int i = 0; i < 500 && worker.status().busy; ++i) std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        check(!worker.status().busy, "the worker did not finish");
+    };
+    const auto before = worker.serial();
+    worker.scan(found[0].root);
+    wait();
+    auto status = worker.status();
+    check(worker.serial() != before && status.job == ImportWorker::Status::Job::Scan && status.root == found[0].root && status.found.files.size() == 3, "the stick was not looked through");
+    std::vector<ImportWorker::Item> items;
+    for (const auto& f : status.found.files) items.push_back({f, f.kind == FileKind::Unsorted ? FileKind::Reverb : f.kind});
+    worker.import(files, items);
+    wait();
+    status = worker.status();
+    check(status.job == ImportWorker::Status::Job::Import && status.done == 3 && status.copied == 3 && status.failed.empty() && !status.stopped && status.found.files.size() == 3 &&
+          fs::exists(root / "files" / "ir" / "reverb" / "Loose.wav") && fs::exists(root / "files" / "ir" / "cab" / "4x12.wav"), "the import did not copy every file");
+    worker.import(files, items);
+    wait();
+    status = worker.status();
+    check(status.copied == 0 && status.skipped == 3, "an import again did not skip what is there");
+    // Stopped before it starts: nothing copied, nothing left behind.
+    fs::remove(root / "files" / "nam" / "Amp.nam");
+    worker.import(files, items);
+    worker.stop();
+    wait();
+    check(worker.status().stopped || worker.status().done == 3, "stop was not reported");
+
+    // Delete: a listed file goes, nothing outside the store does.
+    const auto cabs = files.list("ir/cab", {"wav"});
+    check(cabs.size() == 1 && files.remove(cabs[0]).empty() && !fs::exists(cabs[0].path), "a stored file was not deleted");
+    check(!files.remove(cabs[0]).empty(), "deleting a file twice was not refused");
+    write(root / "outside.wav", "x");
+    check(!files.remove({"outside.wav", root / "outside.wav", "outside.wav"}).empty() && fs::exists(root / "outside.wav"), "a file outside the store was deleted");
+    check(!files.remove({"x.wav", root / "files" / "ir" / "cab" / ".." / ".." / ".." / "outside.wav", "x"}).empty() && fs::exists(root / "outside.wav"), "a path out of the store was followed");
+}
+
 void foreign_bundles(const fs::path& root) {
     PatchStore patches(root);
     check(patches.open().empty(), "store did not open");
@@ -591,7 +649,8 @@ int main() {
         simulated(root / "simulated");
         foreign_bundles(root / "foreign");
         imports(root / "imports");
+        sticks(root / "sticks");
         fs::remove_all(root);
-        std::cout << "Bundles, revisions, interrupted saves, fallback, startup choice, foreign bundles, missing files, scenes, simulated save/load and file imports passed.\n";
+        std::cout << "Bundles, revisions, interrupted saves, fallback, startup choice, foreign bundles, missing files, scenes, simulated save/load, file imports, sticks and deleting files passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

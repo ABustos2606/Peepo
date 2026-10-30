@@ -292,6 +292,8 @@ int main(int argc, char** argv) {
     peepo::Application app(*engine, store.get());
     app.set_files(files.get());
     app.set_midi(midi.get());
+    // Sticks peepo-usb mounts (config/pi/bin/peepo-usb).
+    if (files) app.set_usb("/run/peepo-usb");
     // Only the instrument, drawing on its own screen, may power the machine off or restart it.
     if (display_name == "drm" || display_name == "fbdev") {
         app.set_power_off([] { return std::system("systemctl poweroff") == 0 ? std::string() : std::string("Could not shut down: the system refused."); });

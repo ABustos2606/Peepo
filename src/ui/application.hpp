@@ -4,6 +4,7 @@
 #include "controls/controls.hpp"
 #include "engine/engine.hpp"
 #include "midi/settings.hpp"
+#include "storage/file_import.hpp"
 #include "storage/file_store.hpp"
 #include "storage/patch_store.hpp"
 #include "lvgl.h"
@@ -11,10 +12,11 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <memory>
 
 namespace peepo {
 enum class Page { Patch, Browser, Parameters, Patches, Settings, ModuleActions, NamePatch, ConfirmReplace, CvConnect, ConfirmAction,
-                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo, Midi, MidiLearn, PatchMidi, PatchActions, Scenes };
+                  Controls, AssignPicker, AssignmentDetail, Diagnostics, Power, Halting, FilePicker, Tempo, Midi, MidiLearn, PatchMidi, PatchActions, Scenes, Files };
 class Application {
 public:
     // Without a store the Patches page offers the in-memory session snapshot.
@@ -53,6 +55,9 @@ public:
     // Instrument-wide MIDI: the settings file and what peepo-midi hears.
     // Without it, Settings offers no MIDI page.
     void set_midi(const midi::Link* link) { midi_ = link; midi_settings_ = link ? link->settings() : midi::Settings{}; midi_age_ = 1000; rebuild_ = true; }
+    // Where peepo-usb mounts USB sticks (/run/peepo-usb), read every second;
+    // Settings > Files imports from them. Unset, Files offers no stick.
+    void set_usb(std::filesystem::path run) { usb_run_ = std::move(run); usb_age_ = 1000; rebuild_ = true; }
 private:
     enum class Action { Navigate, Add, Module, Port, SelectCable, DeleteCable, ClearCable, Pan, Home,
                         OpenActions, Edit, Duplicate, Parameter, Bypass, Remove, SaveSession, LoadSession, State, Reject,
@@ -63,7 +68,8 @@ private:
                         Restart, BrowserCategory, Revert, ChooseFile, PickFile, TempoStep, Tap, LooperCommand, LooperSection, LooperTarget, LooperSelect, LooperCount, LooperBind, ModulePage,
                         MidiToggle, MidiTempoSource, MidiChannel, MidiDevice, MidiLearn, MidiForget, ClockRestart,
                         LoadMessage, AddLoadMessage, RemoveLoadMessage,
-                        SceneSelect, SceneAdd, SceneRename, ScenePick, SceneCancel, SceneMode, SceneMark, SceneParameter };
+                        SceneSelect, SceneAdd, SceneRename, ScenePick, SceneCancel, SceneMode, SceneMark, SceneParameter,
+                        FilesImport, FilesStop, FilesSort, FilesDelete, FilesPick, FilesCancel };
     struct Binding {
         Application* app;
         Action action;
@@ -191,6 +197,17 @@ private:
     void settings(lv_obj_t*);
     void diagnostics(lv_obj_t*);
     void power(lv_obj_t*);
+    // Settings > Files: the stick and what is on it, Import, and the files
+    // on Peepo with Delete.
+    void files_page(lv_obj_t*);
+    // The sticks peepo-usb reports; a new one is looked through at once.
+    void update_usb();
+    // What the import worker has done since it was last asked.
+    void update_import();
+    const UsbStick* mounted_stick() const;
+    // The files on the stick an Import would take, each as its kind; empty
+    // while Cabinet or Reverb is unanswered for the unsorted ones.
+    std::vector<ImportWorker::Item> import_items() const;
     void halting(lv_obj_t*);
     void power_action(bool restart);
     void update_system();
@@ -294,6 +311,20 @@ private:
     std::function<System()> system_;
     FileStore* files_ = nullptr;
     const midi::Link* midi_ = nullptr;
+    // USB sticks: where they are mounted, and what was last seen there.
+    std::filesystem::path usb_run_;
+    unsigned usb_age_ = 0;
+    std::vector<UsbStick> sticks_;
+    // The stick looked through and imported, off the screen's thread.
+    std::unique_ptr<ImportWorker> importer_;
+    ImportWorker::Status import_;
+    unsigned import_serial_ = 0;
+    // The player's answer for impulse responses in no cab or reverb folder.
+    std::optional<FileKind> unsorted_kind_;
+    // Delete is lit: a tap on a file on Peepo asks to delete it.
+    bool deleting_files_ = false;
+    // The stick bar's value, counting the files copied while importing.
+    lv_obj_t* import_value_ = nullptr;
     midi::Settings midi_settings_;
     // What peepo-midi last said it hears, read every second.
     midi::Status midi_status_;
