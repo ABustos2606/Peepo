@@ -38,11 +38,9 @@ public:
     std::vector<EngineEvent> advance(unsigned milliseconds);
     EngineState state() const { return state_; }
     const Graph& snapshot() const { return graph_; }
-    EngineTelemetry telemetry() const {
-        const bool ready = state_ == EngineState::Ready;
-        return {ready ? std::optional<double>{graph_.tempo} : std::nullopt, ready ? cpu_ : std::nullopt};
-    }
+    EngineTelemetry telemetry() const;
     void watch_tuner(std::optional<InstanceId>);
+    void watch_levels(bool on);
     std::optional<double> tuner_frequency(InstanceId) const;
     void watch_euclidean(std::optional<InstanceId>);
     EuclideanSteps euclidean_steps(InstanceId) const;
@@ -159,6 +157,14 @@ private:
     // ended here. Ingen cannot end a wait, so a binding that still arrives on
     // that port is removed again.
     std::string learning_, cancelled_learn_;
+    // Level meters: the engine sends the peak of IN and OUT 25 times a
+    // second while their ports are watched, silence included. Watching is
+    // asked again when readings stop, as after a patch load replaced a port.
+    void watch_levels_now();
+    void take_level(const std::string& port, const Value&);
+    bool levels_wanted_ = false, levels_watched_ = false;
+    unsigned levels_age_ = 10000, levels_retry_ = 0;
+    std::array<std::optional<double>, 4> peaks_{};
     std::optional<InstanceId> looper_;
     std::array<std::string, looper_outputs> looper_ports_{};
     LooperStatus looper_status_{};

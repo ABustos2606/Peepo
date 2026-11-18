@@ -57,7 +57,7 @@ A separate deliberate JACK `SIGKILL` recovered automatically: JACK PID 736 becam
 
 A passive 22-second post-boot monitor observed 8,250 blocks with no frame gaps or xruns and finite samples throughout. It also recorded 96 left and 86 right exactly silent blocks, so this run is **not** a sustained-playing/no-silence acceptance test. A subsequent audit saw a dirty graph during the touch session; the later recovery audit verified the saved revision. No audio was injected or recorded by the monitor.
 
-Phase 10 remains partial: physical offline boot, five cold power cycles, late physical USB availability, controller recovery, missing-plugin/asset startup cases and shutdown/power-loss storage acceptance remain open. Existing undervoltage history (`throttled=0x50000`) remains a performance limitation.
+Phase 10 remains partial: physical offline boot, five cold power cycles, late physical USB availability, controller recovery, missing-plugin/asset startup cases and shutdown/power-loss storage acceptance remain open. The undervoltage (`throttled=0x50000`) was the old supply; since 18 November 2026 a 5 A supply keeps the rail at 5.1 V with no throttling ([power supply](23-pi-bring-up.md#new-power-supply-18-november-2026)).
 
 Evidence: [instrument boot results](evidence/pi-instrument-boot-results.txt). The boot utility and service changes were deployed without rebuilding or replacing the engine, plugins or touchscreen application; the patch-preservation CLI was compiled natively against the already deployed core library. Bash syntax and systemd unit verification passed on the Pi.
 

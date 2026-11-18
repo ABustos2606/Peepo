@@ -411,6 +411,12 @@ private:
     Page confirm_origin_ = Page::Patches;
     lv_obj_t *screen_ = nullptr, *canvas_ = nullptr, *footer_ = nullptr;
     lv_obj_t *tempo_value_ = nullptr, *cpu_value_ = nullptr;
+    // The IN and OUT meters in the footer: each a green part up to -6 dB and
+    // an orange part above it, both red for a while after a clip.
+    struct Meter { lv_obj_t *low = nullptr, *high = nullptr; double shown_db = -120; unsigned long long red_until = 0; bool red = false; };
+    std::array<Meter, 2> meters_{};
+    unsigned long long meters_clock_ = 0;
+    void update_meters();
     lv_obj_t *tuner_note_ = nullptr, *tuner_detail_ = nullptr, *tuner_status_ = nullptr, *tuner_needle_ = nullptr;
     int looper_section_ = 0, looper_target_ = 0, looper_selected_ = 1;
     // The tab in view on a page with two: 0 the main controls, 1 the rest.

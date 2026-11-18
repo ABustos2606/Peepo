@@ -922,6 +922,41 @@ void tuner_monitor() {
     engine.watch_tuner(3); rig.settle(); engine.disconnect();
     check(!engine.tuner_frequency(3), "offline tuner retained a reading");
 }
+void level_meters() {
+    using namespace peepo;
+    using namespace peepo::ingen;
+    FakeEngine fake;
+    Rig rig(fake);
+    auto& engine = *rig.engine;
+    engine.connect(); rig.settle();
+    check(!engine.telemetry().input_peak && !engine.telemetry().output_peak, "unwatched meters exposed a level");
+    engine.watch_levels(true);
+    engine.advance(10);
+    check(rig.settle().empty(), "watching the meters rebuilt the patch");
+    for (const auto* port : {"in_l", "in_r", "out_l", "out_r"}) {
+        const auto* on = property(fake, std::string("ingen:/main/") + port, full(uri::ingen, "broadcast"));
+        check(on && on->boolean, "an endpoint was not watched for its level");
+    }
+    const auto activity = full(uri::ingen, "activity");
+    rig.transport->deliver(fake.put(1, "ingen:/main/in_l", {{activity, number_value(0.25)}}));
+    rig.transport->deliver(fake.put(1, "ingen:/main/in_r", {{activity, number_value(0.5)}}));
+    rig.transport->deliver(fake.put(1, "ingen:/main/out_r", {{activity, number_value(1.0)}}));
+    check(rig.settle().empty() && !rig.graph().dirty, "a level reading rebuilt or modified the patch");
+    const auto t = engine.telemetry();
+    check(t.input_peak == 0.5 && t.output_peak == 1.0, "the meters do not read the louder side of IN and OUT");
+    // Readings stop: the meters empty rather than hold a stale level, and
+    // the ports are watched again.
+    fake.objects["ingen:/main/in_l"].erase(std::remove_if(fake.objects["ingen:/main/in_l"].begin(), fake.objects["ingen:/main/in_l"].end(),
+        [](const auto& e) { return e.first == full(uri::ingen, "broadcast"); }), fake.objects["ingen:/main/in_l"].end());
+    engine.advance(600); rig.settle();
+    check(!engine.telemetry().input_peak, "a stale level stayed on the meter");
+    engine.advance(1000); rig.settle(); engine.advance(2100); rig.settle();
+    const auto* again = property(fake, "ingen:/main/in_l", full(uri::ingen, "broadcast"));
+    check(again && again->boolean, "a lost meter watch was not asked again");
+    engine.watch_levels(false); rig.settle();
+    const auto* off = property(fake, "ingen:/main/out_l", full(uri::ingen, "broadcast"));
+    check(off && !off->boolean, "leaving the meters kept the ports watched");
+}
 void euclidean_monitor() {
     using namespace peepo;
     using namespace peepo::ingen;
@@ -1219,6 +1254,7 @@ int main() {
         midi_learn();
         scenes();
         tuner_monitor();
+        level_meters();
         euclidean_monitor();
         looper_monitor();
         std::cout << "Ingen protocol reading, command mapping, acknowledgment, second client, scenes, timeout, reconnect and restart passed.\n";

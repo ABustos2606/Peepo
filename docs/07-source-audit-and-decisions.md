@@ -108,7 +108,7 @@ The [technical implementation plan](10-technical-implementation-plan.md), prepar
 2. Resolved for the current baseline: Debian 12 bookworm arm64, kernel and service inventory recorded in [Pi bring-up](23-pi-bring-up.md).
 3. Screen controller and actual pixel mode. The user confirms a capacitive panel with five touch points, touch and power over USB and video over HDMI, working under Zynthian and Patchbox/MODEP.
 4. Answered 14 October 2026: four 20-pulse push encoders and three momentary SPST footswitches. Still open: the enclosure arrangement (its size depends mainly on the audio interface and power design; see [I²S audio interface](27-i2s-audio-interface.md)), and the encoders' detent count on the bench.
-5. Cooling, storage, and whether a spare card is available for development. The power supply is the official 27 W unit.
+5. Cooling, storage, and whether a spare card is available for development. The power supply is a 5 V / 5 A USB-C unit, in use since 18 November 2026; the firmware negotiates 5 A with it ([power supply](23-pi-bring-up.md#new-power-supply-18-november-2026)).
 6. Which conventional effects are essential in the first usable patch, alongside Clouds.
 7. Resolved: SSH access to the Pi is configured and has been used for deployment and native tests.
 8. Look-and-feel preferences, colour theme, or branding references for the instrument's visual styling (when ready).

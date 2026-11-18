@@ -12,7 +12,7 @@
 | System | Patchbox OS on Debian 12 (bookworm), arm64 userland, 64-bit kernel `6.6.74+rpt-rpi-2712` (PREEMPT, not real-time), glibc 2.36 |
 | Storage | 32 GB microSD, 6.5 GB used |
 | CPU | `ondemand` governor, 2.4 GHz maximum |
-| Power | **Undervoltage.** 4.89 V on the 5 V rail at idle; the kernel reported undervoltage twice within two hours, and the firmware flags (`throttled=0x50000`) say undervoltage and throttling occurred. The supply is not adequate for a Pi 5. |
+| Power | **Undervoltage** with the first supply (replaced 18 November 2026, [below](#new-power-supply-18-november-2026)). 4.89 V on the 5 V rail at idle; the kernel reported undervoltage twice within two hours, and the firmware flags (`throttled=0x50000`) say undervoltage and throttling occurred. The supply is not adequate for a Pi 5. |
 | Network | Wi-Fi only in use (the new PC has no Ethernet port); weak signal, about 225 ms round trip with occasional loss. SSH as `patch` with a key; passwordless sudo. |
 | Display | HDMI panel, connector `HDMI-A-1`, **800 × 480** mode, DRM/KMS (`vc4-kms-v3d`). A Wayfire desktop ran on it under LightDM. |
 | Touch | USB `QDtech MPI5001` (0484:5750), recognized as a touch screen. |
@@ -87,10 +87,29 @@ Evidence: [patch persistence and UI restart results](evidence/pi-persistence-res
 - **Bypass passes the dry signal.** Clouds, Warps and Rings were bypassed by clearing their own `enabled` control, which mutes them. They now use the engine's block bypass, and `enabled` stays at 1. On the WSL engine, bypassed Clouds measured 0.1768 RMS out for a 0.1768 RMS direct cable. A patch saved under the old behaviour loads as bypassed, and **Enable** switches the plugin back on.
 - **Descriptions.** The catalogue regenerated on the Pi (226 entries, 186 available) has no author text in any description, and the installed overlay gives every visible module a description in plain ASCII. The Pi-generated catalogue is kept in `build/pi/catalogue-pi-20261015.json`.
 
+## New power supply, 18 November 2026
+
+The Pi now runs on a 5 V / 5 A USB-C supply. The firmware negotiates 5 A with it over USB-PD (`/proc/device-tree/chosen/power/max_current` = 5000, not forced in `config.txt`), so the USB ports get their full current. The Tascam, the touchscreen and a USB stick were plugged in throughout.
+
+A passive JACK listener (`build/scratch/power/monitor.py`) read the Pi every 5 seconds without touching the patch: the 5 V rail from the PMIC (`EXT5V_V`), `vcgencmd get_throttled`, temperature, CPU clock, JACK DSP load, xruns, gaps between audio blocks, memory and fan. Raw output: [power supply results](evidence/power-supply-results.txt).
+
+| Run | 5 V rail (lowest) | Flags | Hottest | DSP load (highest) | Xruns / block gaps |
+| --- | --- | --- | --- | --- | --- |
+| 10 min normal use, the user editing and playing | 5.095 V | `0x0` | 53.5 C | 26.5 % | 0 / 0 |
+| 5 min with all four cores busy at idle priority | 5.097 V | `0x0` | 78.2 C (fan 5,700 rpm) | 26.0 % | 7 / 10 |
+| 10 min playing two NAM models and a cabinet IR | 5.095 V | `0x0` | 54.5 C | 23.5 % | 0 / 0 |
+
+- **The supply is adequate.** The rail never fell below 5.09 V, the throttle flags stayed `0x0` and the kernel logged no undervoltage, also while four models were copied from a USB stick (5.14 V). With the old supply it was 4.89 V at idle and `0x50005`.
+- **The xruns of the stress run are CPU contention, not power.** The rail and the clock held (2.4 GHz, no throttling); four busy cores, even at the lowest priority, still take memory bandwidth and caches from the audio thread. Playing never comes near that load.
+- **The guitar input reaches full scale.** Peak input was 1.0 in the first run and 0.94 in the playing run: the Tascam's input gain is too high and clips.
+- The monitor crashed at the end of the stress phase (a bug, fixed), so the stress run has no cool-down phase.
+
+Still to measure on this supply: round-trip latency and other buffer sizes (needs a loopback cable), the 30-minute session with switching (P8.6), cold boots (P10.6) and the import from the Files page (P14.4).
+
 ## Open points
 
-- **Power supply first.** No latency, xrun or load measurement is meaningful while the Pi throttles for undervoltage. A 5.1 V / 5 A USB-C supply (the official 27 W one) is needed.
-- **The xruns.** Find out whether they come from graph edits, plugin instantiation or the undervoltage throttling, once the supply is fixed.
+- **Power supply: done** 18 November 2026, [above](#new-power-supply-18-november-2026).
+- **The xruns.** Undervoltage is ruled out: with the new supply, 20 minutes of normal use and playing had none. Still to see whether graph edits or plugin instantiation cause them.
 - **Latency and periods (P0.3, P3.4).** Measure round-trip latency and xruns at 128 × 3, 64 × 3 and 128 × 2. The US-100 is USB 1.1 and 16-bit; it is fine for development, its guitar input level and noise are still to judge.
 - **Ownership of the screen and audio at boot: implemented.** Peepo is enabled, LightDM/MODEP and the automatic console login are masked, and a reboot restored Clouds with all audio connections. The user confirmed the screen and touch. Offline and repeated physical cold boots remain Phase 10 acceptance; see [direct instrument boot](24-instrument-boot.md).
 - **Not done on the Pi yet:** controls (P0.5, P7.3), the MODEP baseline (P0.7; MODEP was not running), file-based plugin-state/asset persistence, and power-loss recovery tests. Guitar through Clouds, patch save/load and an interface-only restart during playing are now verified above.

@@ -213,9 +213,9 @@ int main(int argc, char** argv) {
             click(app, 150, 218);
             check(app.graph().connections.size() == 8 && !app.pending(), "cable selection changed graph");
             capture(app, output / "10-selected-cable.bmp");
-            click(app, 344, 456);
+            click(app, 264, 456);
             check(app.graph().connections.size() == 8, "deselect deleted cable");
-            click(app, 150, 218); click(app, 500, 456);
+            click(app, 150, 218); click(app, 428, 456);
             check(app.graph().connections.size() == 7, "explicit cable delete failed");
             check(app.graph().connections.front().from == 3, "cable hit test removed the wrong cable");
             pointer = {116, 218}; pressed = true; step(app, 64);
@@ -1089,7 +1089,7 @@ int main(int argc, char** argv) {
             const auto id = app.graph().modules.back().id;
             const auto rate = [&] { return peepo::find_module(app.graph(), id)->parameters[0].value; };
             check(app.graph().tempo == 120 && rate() == 120, "an added module did not follow the default tempo");
-            click(app, 660, 446);
+            click(app, 572, 446);
             check(app.page() == peepo::Page::Tempo && exact_label(app.screen(), "120 BPM") && text_label(app.screen(), "Model player"), "the footer BPM did not open the Tempo page");
             // Dragged like a module's bar: the whole width for the whole range.
             slide(app, "TEMPO", 27.0 / (peepo::maximum_tempo - peepo::minimum_tempo)); step(app, 256);

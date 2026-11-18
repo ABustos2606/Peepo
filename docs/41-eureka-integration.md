@@ -35,7 +35,8 @@ Slowmo; the other effects and four short chains had none. Two-minute chain
 tests recorded 0/9/10/6 xruns (Flock-Spool-Slowmo / Skip-Granny-Crinkle /
 Spark-Chime-Prism / Slowmo-Hush-Prism), despite no measured callback overruns.
 Before/after power snapshots were `0x50005`, including active undervoltage and
-throttling; later probes returned `0x50000`. Stable-power endurance is not passed.
+throttling; later probes returned `0x50000`. Stable-power endurance is not passed. The supply was
+replaced on 18 November 2026 ([power supply](23-pi-bring-up.md#new-power-supply-18-november-2026)); the endurance run is still to do on it.
 
 Parallel dry Flock/Prism branches report 89/482 frames and arrive 393 frames
 (8.1875 ms) apart in both engines. Ingen does not compensate this graph.

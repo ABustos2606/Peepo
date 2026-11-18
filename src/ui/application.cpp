@@ -310,6 +310,12 @@ void paint_bar(lv_obj_t* bar, const Parameter& p) {
 // The rail left of the module page's list, as on Beebo: a line, and a ball
 // where the list is scrolled to.
 constexpr int rail_width = 56, rail_ball = 14, rail_inset = 14;
+// Footer level meters: -48 to 0 dBFS, orange from -6 dB, red for two
+// seconds after full scale; a peak falls back at 36 dB a second.
+constexpr int meter_x = 186, meter_width = 72, meter_height = 8;
+constexpr double meter_floor_db = -48, meter_orange_db = -6, meter_fall_db_per_s = 36;
+constexpr unsigned meter_red_ms = 2000;
+constexpr std::uint32_t clip_ink = 0xef4444;
 void place_rail_ball(lv_obj_t* rail, lv_obj_t* list) {
     const int scrolled = lv_obj_get_scroll_y(list), rest = lv_obj_get_scroll_bottom(list);
     const int travel = lv_obj_get_height(rail) - 2 * rail_inset - rail_ball;
@@ -396,7 +402,7 @@ std::string Application::engine_banner() const {
     default: return "Engine error" + reason + ". Edits are paused.";
     }
 }
-Application::~Application() { release_looper(); engine_.watch_looper(std::nullopt); engine_.watch_tuner(std::nullopt); engine_.watch_euclidean(std::nullopt); if (screen_) lv_obj_delete(screen_); }
+Application::~Application() { release_looper(); engine_.watch_levels(false); engine_.watch_looper(std::nullopt); engine_.watch_tuner(std::nullopt); engine_.watch_euclidean(std::nullopt); if (screen_) lv_obj_delete(screen_); }
 void Application::message(std::string value) {
     message_ = std::move(value);
     message_ms_ = clock_ms_;
@@ -604,6 +610,7 @@ void Application::tick(unsigned ms) {
     if (importer_ && importer_->serial() != import_serial_) update_import();
     const auto* shown = page_ == Page::Parameters ? find_module(graph_, selected_) : nullptr;
     const auto layout = shown ? module_layout(*shown) : ModuleLayout::Generic;
+    engine_.watch_levels(true);
     engine_.watch_tuner(shown && layout == ModuleLayout::Tuner ? std::optional<InstanceId>{shown->id} : std::nullopt);
     engine_.watch_euclidean(shown && layout == ModuleLayout::Euclidean ? std::optional<InstanceId>{shown->id} : std::nullopt);
     engine_.watch_looper(shown && layout == ModuleLayout::Looper ? std::optional<InstanceId>{shown->id} : std::nullopt);
@@ -612,8 +619,43 @@ void Application::tick(unsigned ms) {
     update_flow();
     update_looper();
 }
+void Application::update_meters() {
+    const auto readings = engine_.telemetry();
+    const double seconds = static_cast<double>(clock_ms_ - meters_clock_) / 1000.0;
+    meters_clock_ = clock_ms_;
+    const auto x_of = [](double db) {
+        return static_cast<int>(std::lround(meter_width * (std::clamp(db, meter_floor_db, 0.0) - meter_floor_db) / -meter_floor_db));
+    };
+    for (std::size_t i = 0; i < meters_.size(); ++i) {
+        auto& m = meters_[i];
+        if (!m.low) continue;
+        const auto peak = i == 0 ? readings.input_peak : readings.output_peak;
+        // A new peak shows at once; the bar then falls back slowly. No
+        // reading (no engine, or none yet) leaves the track empty.
+        const double db = peak && *peak > 0 ? 20 * std::log10(*peak) : -120;
+        m.shown_db = peak ? std::max(db, m.shown_db - meter_fall_db_per_s * seconds) : -120;
+        if (peak && *peak >= 0.999) m.red_until = clock_ms_ + meter_red_ms;
+        const bool red = clock_ms_ < m.red_until;
+        const int level = x_of(m.shown_db), split = x_of(meter_orange_db);
+        const int low = m.shown_db <= meter_floor_db ? 0 : std::min(level, split), high = std::max(0, level - split);
+        if (red != m.red) {
+            m.red = red;
+            lv_obj_set_style_bg_color(m.low, color(red ? clip_ink : accent), 0);
+            lv_obj_set_style_bg_color(m.high, color(red ? clip_ink : warning), 0);
+        }
+        if (lv_obj_get_width(m.low) != low) lv_obj_set_width(m.low, low);
+        if (lv_obj_has_flag(m.low, LV_OBJ_FLAG_HIDDEN) != (low == 0)) {
+            if (low == 0) lv_obj_add_flag(m.low, LV_OBJ_FLAG_HIDDEN); else lv_obj_remove_flag(m.low, LV_OBJ_FLAG_HIDDEN);
+        }
+        if (lv_obj_get_width(m.high) != high) { lv_obj_set_x(m.high, split); lv_obj_set_width(m.high, high); }
+        if (lv_obj_has_flag(m.high, LV_OBJ_FLAG_HIDDEN) != (high == 0)) {
+            if (high == 0) lv_obj_add_flag(m.high, LV_OBJ_FLAG_HIDDEN); else lv_obj_remove_flag(m.high, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+}
 void Application::update_metrics() {
     if (!tempo_value_ || !cpu_value_) return;
+    update_meters();
     const auto readings = engine_.telemetry();
     const auto tempo = metric_text(readings.tempo_bpm, false), cpu = metric_text(readings.cpu_percent, true);
     if (tempo != lv_label_get_text(tempo_value_)) lv_label_set_text(tempo_value_, tempo.c_str());
@@ -1656,6 +1698,7 @@ void Application::rebuild() {
     bars_.clear();
     bindings_.clear(); module_widgets_.clear(); input_jacks_.clear(); cv_inputs_.clear(); dots_.clear(); cables_.clear(); canvas_ = nullptr; footer_ = nullptr;
     tempo_value_ = cpu_value_ = network_value_ = import_value_ = nullptr;
+    for (auto& m : meters_) m.low = m.high = nullptr;
     tuner_note_ = tuner_detail_ = tuner_status_ = tuner_needle_ = nullptr;
     release_looper(); looper_cards_ = {}; looper_commands_.clear();
     euclidean_status_ = nullptr;
@@ -1860,17 +1903,35 @@ void Application::rebuild() {
         }
     }
     const int message_x = page_ == Page::Halting ? 24 : 142;
-    footer_ = label(foot, message_, message_x, 7, patch && selected_cable_ ? 280 - message_x - 8 : 592 - message_x, faint, &peepo_mono_14);
+    footer_ = label(foot, message_, message_x, 7, patch && selected_cable_ ? 200 - message_x - 8 : 512 - message_x, faint, &peepo_mono_14);
     lv_obj_set_height(footer_, 34); lv_label_set_long_mode(footer_, LV_LABEL_LONG_DOT);
     if (patch && selected_cable_) {
-        slim(button(foot, "Deselect", 280, 0, 128, Action::ClearCable));
-        slim(button(foot, "Delete cable", 424, 0, 168, Action::DeleteCable));
+        slim(button(foot, "Deselect", 200, 0, 128, Action::ClearCable));
+        slim(button(foot, "Delete cable", 344, 0, 168, Action::DeleteCable));
     }
-    auto* metrics = panel(foot, 608, 4, 178, 40, background);
+    auto* metrics = panel(foot, 520, 4, 266, 40, background);
     lv_obj_set_style_border_width(metrics, 0, 0);
     lv_obj_remove_flag(metrics, LV_OBJ_FLAG_CLICKABLE);
     tempo_value_ = label(metrics, "--", 8, 0, 76, accent, &peepo_bold_18);
     cpu_value_ = label(metrics, "--", 92, 0, 80, text, &peepo_bold_18);
+    // IN above OUT, beside CPU: each a track with a green part up to -6 dB
+    // and an orange one above it, filled by update_meters.
+    for (std::size_t i = 0; i < meters_.size(); ++i) {
+        auto* track = panel(metrics, meter_x, 2 + 11 * static_cast<int>(i), meter_width, meter_height, 0x1f1f1f);
+        lv_obj_set_style_border_width(track, 0, 0); lv_obj_set_style_radius(track, 2, 0);
+        lv_obj_remove_flag(track, LV_OBJ_FLAG_CLICKABLE);
+        auto& m = meters_[i];
+        m.low = panel(track, 0, 0, 0, meter_height, accent); m.high = panel(track, 0, 0, 0, meter_height, warning);
+        for (auto* part : {m.low, m.high}) {
+            lv_obj_set_style_border_width(part, 0, 0); lv_obj_set_style_radius(part, 0, 0);
+            lv_obj_remove_flag(part, LV_OBJ_FLAG_CLICKABLE); lv_obj_add_flag(part, LV_OBJ_FLAG_HIDDEN);
+        }
+        m.red = false;
+    }
+    {
+        auto* caption = label(metrics, "IN/OUT", meter_x, 22, meter_width, faint, &peepo_mono_14);
+        lv_obj_set_style_text_align(caption, LV_TEXT_ALIGN_RIGHT, 0);
+    }
     for (auto* value : {tempo_value_, cpu_value_}) {
         lv_obj_set_height(value, 22); lv_label_set_long_mode(value, LV_LABEL_LONG_DOT);
         lv_obj_set_style_text_align(value, LV_TEXT_ALIGN_RIGHT, 0);

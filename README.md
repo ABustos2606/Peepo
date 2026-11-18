@@ -134,7 +134,7 @@ Initialize the top-level references first, then the three repositories with decl
 - The current NeuralAudio-based NAM LV2 implementation is selected and has a model selector. Model loading and host/state behavior have been checked; musical listening and dense-patch performance budgets remain separate work ([NAM](docs/21-nam.md), [file handling](docs/29-parameters-files-tempo.md)).
 - Beebo's interface repository (`digit_ui`) is **reference material only**. No code, QML, icons, fonts, or other assets from it will be copied into the new interface.
 
-Original application code and CMake build files now exist under `src/` and `config/`. The simulator is a UI development foundation; it does not process audio. On 14 October 2026 the Pi was profiled and first played guitar through the Peepo engine and interface ([Pi bring-up](docs/23-pi-bring-up.md)); hardware measurements wait for an adequate power supply. Upstream reference repositories remain unchanged.
+Original application code and CMake build files now exist under `src/` and `config/`. The simulator is a UI development foundation; it does not process audio. On 14 October 2026 the Pi was profiled and first played guitar through the Peepo engine and interface ([Pi bring-up](docs/23-pi-bring-up.md)); since 18 November 2026 it runs on a 5 V / 5 A supply with no undervoltage ([power supply](docs/23-pi-bring-up.md#new-power-supply-18-november-2026)), so hardware measurements can be taken. Upstream reference repositories remain unchanged.
 
 ## Remaining validation
 

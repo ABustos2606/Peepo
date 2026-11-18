@@ -22,6 +22,9 @@ struct EngineTelemetry {
     // Missing readings remain unknown, rather than displaying zero or stale load.
     std::optional<double> tempo_bpm;
     std::optional<double> cpu_percent;
+    // Peak sample of the patch's IN and OUT (left or right, whichever is
+    // louder) over the engine's last 40 ms; 1 is full scale.
+    std::optional<double> input_peak, output_peak;
 };
 using RequestId = std::uint64_t;
 struct AddModule { std::string uri; int x, y; };
@@ -134,6 +137,8 @@ public:
     virtual EngineTelemetry telemetry() const { return {}; }
     // Live tuner and sequencer outputs are telemetry, never editable/saved parameters.
     virtual void watch_tuner(std::optional<InstanceId>) {}
+    // The IN and OUT levels in telemetry, while on.
+    virtual void watch_levels(bool) {}
     virtual std::optional<double> tuner_frequency(InstanceId) const { return {}; }
     virtual void watch_euclidean(std::optional<InstanceId>) {}
     virtual EuclideanSteps euclidean_steps(InstanceId) const { return {}; }

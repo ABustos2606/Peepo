@@ -1,0 +1,33 @@
+diff --git a/src/server/PortImpl.cpp b/src/server/PortImpl.cpp
+--- a/src/server/PortImpl.cpp
++++ b/src/server/PortImpl.cpp
+@@ -468,8 +468,15 @@
+ 	case PortType::UNKNOWN:
+ 		break;
+ 	case PortType::AUDIO:
++		/* Peepo: an audio buffer has no value buffer, so the check above
++		   never holds it back and a changing peak was sent every cycle.
++		   Gather the peak over the monitor period and send it once. */
++		_peak = std::max(_peak, buffer(0)->peak(ctx));
++		if (!time_to_send) {
++			return;
++		}
+ 		key = uris.ingen_activity;
+-		val = _peak = std::max(_peak, buffer(0)->peak(ctx));
++		val = _peak;
+ 		break;
+ 	case PortType::CONTROL:
+ 	case PortType::CV:
+@@ -516,8 +523,11 @@
+ 	// Explicit control monitors (for example tuner pitch) need an initial
+ 	// reading and a heartbeat even when the value remains exactly constant.
+ 	// Ordinary unmonitored ports retain changed-only notifications.
++	// Peepo: a watched audio port (a level meter) has a heartbeat too, so
++	// silence still reads as a level rather than as a lost meter.
+ 	if (key && (val != _monitor_value ||
+-	            (_monitored && _type == PortType::CONTROL && time_to_send))) {
++	            (_monitored && (_type == PortType::CONTROL || _type == PortType::AUDIO) &&
++	             time_to_send))) {
+ 		if (ctx.notify(key, ctx.start(), this, sizeof(float), forge.Float, &val)) {
+ 			/* Update frames since last update to conceptually zero, but keep
+ 			   the remainder to preserve load balancing. */

@@ -12,6 +12,8 @@
 namespace peepo::ingen {
 namespace {
 const std::string main_path = "ingen:/main";
+// The audio endpoints the level meters read, IN then OUT.
+constexpr const char* level_ports[] = {"in_l", "in_r", "out_l", "out_r"};
 // The graph's own audio and MIDI ports stand for the fixed IN and OUT modules.
 // Seen from inside the graph an engine input is a source, so it is one of IN's
 // outputs. The graph's first two ports, control and notify, are Ingen's own.
@@ -35,6 +37,7 @@ const std::string output_level_key = iri(uri::peepo, "outputLevel");
 const std::string file_key = iri(uri::peepo, "file");
 // MIDI learn's result on a control port: [ a midi:Controller ; midi:controllerNumber 519 ].
 const std::string binding_key = iri(uri::midi, "binding");
+const std::string activity_key = iri(uri::ingen, "activity");
 // One graph property per pinned control: peepo:control-enc1 "parameter|m3|...".
 const std::string control_prefix = iri(uri::peepo, "control-");
 // Scenes (docs/44-scenes.md): peepo:scene-count, -current, -params, and -N-name and -N for each.
@@ -257,6 +260,53 @@ void Session::merge(const std::string& path, const Properties& properties) {
     // Output meters must not rebuild the graph or interrupt touch gestures.
     if (!output_value && !monitored_output) mirror_changed_ = unreported_ = true;
 }
+EngineTelemetry Session::telemetry() const {
+    const bool ready = state_ == EngineState::Ready;
+    EngineTelemetry t{ready ? std::optional<double>{graph_.tempo} : std::nullopt, ready ? cpu_ : std::nullopt};
+    // A meter with no fresh reading shows nothing rather than a stale level.
+    if (ready && levels_watched_ && levels_age_ < 500) {
+        const auto louder = [](const std::optional<double>& a, const std::optional<double>& b) -> std::optional<double> {
+            if (!a) return b;
+            if (!b) return a;
+            return std::max(*a, *b);
+        };
+        t.input_peak = louder(peaks_[0], peaks_[1]);
+        t.output_peak = louder(peaks_[2], peaks_[3]);
+    }
+    return t;
+}
+void Session::watch_levels(bool on) {
+    if (on == levels_wanted_) return;
+    levels_wanted_ = on;
+    if (on) { levels_watched_ = false; return; }
+    if (state_ == EngineState::Ready && levels_watched_) {
+        auto& tx = begin(0, Purpose::Monitor);
+        for (const auto* symbol : level_ports) {
+            const auto port = child(main_path, symbol);
+            if (!objects_.contains(port)) continue;
+            const auto seq = sequence();
+            send(tx, set(seq, port, "ingen:broadcast", "false"), seq);
+        }
+        if (tx.waiting.empty()) transactions_.erase(tx.id);
+    }
+    levels_watched_ = false; peaks_ = {};
+}
+void Session::take_level(const std::string& port, const Value& value) {
+    for (std::size_t i = 0; i < std::size(level_ports); ++i)
+        if (port == child(main_path, level_ports[i]))
+            if (const auto peak = finite(&value); peak && *peak >= 0) { peaks_[i] = *peak; levels_age_ = 0; }
+}
+void Session::watch_levels_now() {
+    auto& tx = begin(0, Purpose::Monitor);
+    for (const auto* symbol : level_ports) {
+        const auto port = child(main_path, symbol);
+        if (!objects_.contains(port)) continue;
+        const auto seq = sequence();
+        send(tx, set(seq, port, "ingen:broadcast", "true"), seq);
+    }
+    if (tx.waiting.empty()) transactions_.erase(tx.id);
+    levels_watched_ = true; levels_retry_ = 0;
+}
 void Session::watch_tuner(std::optional<InstanceId> id) {
     std::string port;
     if (id && state_ == EngineState::Ready) {
@@ -424,11 +474,15 @@ void Session::apply(const Message& message) {
             if (!arc.first.empty() && !arc.second.empty() && std::find(arcs_.begin(), arcs_.end(), arc) == arcs_.end()) {
                 arcs_.push_back(arc); mirror_changed_ = unreported_ = true;
             }
+        } else if (under_main(message.subject) && message.body.size() == 1 && message.body.front().first == activity_key) {
+            take_level(message.subject, message.body.front().second);
         } else if (under_main(message.subject)) merge(message.subject, message.body);
         else if (has(message.body, type, iri(uri::lv2, "Plugin")) || has(message.body, type, iri(uri::ingen, "Internal"))) plugins_.insert(message.subject);
         break;
     case Message::Type::Set:
         if (!under_main(message.subject)) break;
+        // A port's activity is a meter reading, never part of the graph.
+        if (message.property == activity_key) { take_level(message.subject, message.value); break; }
         merge(message.subject, {{message.property, message.value}});
         if (message.property == binding_key && message.value.kind == Value::Kind::Object) learned(message.subject);
         break;
@@ -554,6 +608,8 @@ void Session::ensure_endpoints() {
 }
 void Session::ready() {
     state_ = EngineState::Ready;
+    // A new connection or graph: the ports are watched afresh.
+    levels_watched_ = false; peaks_ = {}; levels_age_ = 10000;
     mirror_changed_ = true;
     emit(0, true, "");
 }
@@ -1346,6 +1402,13 @@ RequestId Session::submit(Command command) {
     return id;
 }
 std::vector<EngineEvent> Session::advance(unsigned milliseconds) {
+    if (levels_wanted_ && state_ == EngineState::Ready) {
+        levels_age_ = std::min(10000u, levels_age_ + milliseconds);
+        // Readings come 25 times a second; none for a second means the
+        // watch was lost, so it is asked again, at most every two seconds.
+        if (levels_watched_ && levels_age_ >= 1000) levels_retry_ += milliseconds;
+        if (!levels_watched_ || levels_retry_ >= 2000) watch_levels_now();
+    }
     if (!tuner_port_.empty() && state_ == EngineState::Ready) {
         tuner_age_ = std::min(10000u, tuner_age_ + milliseconds);
     }
