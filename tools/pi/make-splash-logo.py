@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Draw the placeholder Peepo logo used by the boot splash: a monoline
 # "peepo" built from circles and strokes, so no font is involved, with a pair
-# of eyes peeping over it. Writes config/pi/splash/peepo/logo.png.
+# of heavy-lidded frog eyes peeping over it. Writes config/pi/splash/peepo/logo.png.
 #   python tools/pi/make-splash-logo.py
 import math
 from pathlib import Path
@@ -73,11 +73,41 @@ x = letter_e(x)
 x = letter_p(x)
 letter_o(x)
 
-# The eyes, peeping over the word and glancing to the right.
-for ex in (WIDTH / 2 - 34, WIDTH / 2 + 34):
-    dot(ex, 62, 56, WHITE)
-    dot(ex + 10, 68, 26, PUPIL)
-    dot(ex + 15, 62, 8, WHITE)
+# The eyes, peeping over the word in the manner of the Peepo frog: two big
+# oval eyes pressed together, lids resting over the top third, and the pupils
+# just under the lids, glancing to the right.
+OUTLINE = (0x05, 0x08, 0x0b, 255)
+eye_rx, eye_ry = 37, 26        # half-width and half-height of each eye
+rim = 5                        # dark outline round the eyes and along the lids
+eye_y = 72
+
+
+def oval(cx, cy, rx, ry, fill):
+    draw.ellipse([S(cx - rx), S(cy - ry), S(cx + rx), S(cy + ry)], fill=fill)
+
+
+def arc_points(cx, cy, rx, ry, a0, a1, steps=48):
+    # Points on an ellipse from a0 to a1 degrees, clockwise from three o'clock.
+    return [(S(cx + rx * math.cos(math.radians(a0 + (a1 - a0) * i / steps))),
+             S(cy + ry * math.sin(math.radians(a0 + (a1 - a0) * i / steps)))) for i in range(steps + 1)]
+
+
+def eye(cx, lid_from, lid_to):
+    oval(cx, eye_y, eye_rx + rim / 2, eye_ry + rim / 2, OUTLINE)
+    ix, iy = eye_rx - rim / 2, eye_ry - rim / 2
+    oval(cx, eye_y, ix, iy, WHITE)
+    dot(cx + 11, eye_y + 2, 22, PUPIL)
+    dot(cx + 15, eye_y, 6, WHITE)
+    # The lid: the top of the eye above a slightly tilted chord.
+    draw.polygon(arc_points(cx, eye_y, ix, iy, lid_from, lid_to), fill=INK)
+    (x0, y0), (x1, y1) = arc_points(cx, eye_y, eye_rx, eye_ry, lid_from, lid_to, 1)
+    draw.line([x0, y0, x1, y1], fill=OUTLINE, width=S(rim))
+
+
+# Each lid sits a little lower at the outer corner, for the sleepy Peepo look;
+# the right eye is drawn last so its rim separates the two where they overlap.
+eye(WIDTH / 2 - 33, 194, 338)
+eye(WIDTH / 2 + 33, 202, 346)
 
 out = Path(__file__).resolve().parents[2] / "config" / "pi" / "splash" / "peepo" / "logo.png"
 out.parent.mkdir(parents=True, exist_ok=True)
