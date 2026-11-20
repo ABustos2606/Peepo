@@ -28,7 +28,8 @@ def prune(prefix, manifest, backup):
         if target.exists():
             if not target.is_dir() or not (target / 'manifest.ttl').is_file():
                 raise ValueError('Not an LV2 bundle: ' + name)
-            targets.append(target)
+            if target not in targets:  # one bundle can hold several retired plugins
+                targets.append(target)
     if not targets:
         return None
     if backup.is_relative_to((prefix / 'lib').resolve()):

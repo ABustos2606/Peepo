@@ -1,12 +1,14 @@
 # Complete module list
 
-**Updated 26 October 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
+**Updated 20 November 2026.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.
 
-**371 plugin identities:** 351 installed in the Pi export and 20 not installed. All **101 selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.
+**274 plugin identities:** 254 installed in the Pi export and 20 not installed. **31 Guitarix identities** are kept, 14 of them from the 43 GxPlugins, with the **three Dragonfly reverbs**.
 
 **Removed effects:** Bollie Delay XT and Faust Granulator have been removed from Peepo and this inventory. The Granulator - Mono and Granulator - Stereo entries below are separate AVW plugins. [Removal details](35-patchstorage-expansion.md).
 
 **First catalogue purge:** Gx Live looper, Ambience, MVerb, Gx Reverb stereo, Gx Room simulator, Gx Zita reverb stereo and Dragonfly Early Reflections are retired. IR effects now use the Cabinet and IR Reverb families; alternate convolution identities are hidden for older patches. [Purge details](36-catalogue-purge.md).
+
+**Auditions:** the drive, amp, modulation, delay, filter, dynamics, pitch, reverb and cabinet sessions and the utility decisions retired more modules, by ear or by function; 104 identities are retired in all, listed under [retired identities](#retired-identities) and no longer installed. [Session results](36-catalogue-purge.md).
 
 The tables below list every identity once. IN and OUT are fixed patch endpoints, described separately.
 
@@ -14,8 +16,8 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Status | Count | Meaning |
 | --- | ---: | --- |
-| Ready | 333 | Can be added to a patch. This does not imply a guitar listening test of every module. |
-| Needs adaptation | 2 | Installed, but disabled in Add for the stated limitation. |
+| Ready | 237 | Can be added to a patch. This does not imply a guitar listening test of every module. |
+| Needs adaptation | 1 | Installed, but disabled in Add for the stated limitation. |
 | Unavailable | 7 | Present in the Pi export but unusable by the current host; see each reason. |
 | Hidden | 9 | Omitted from Add as a duplicate or redundant module; retained for saved patches. |
 | Not installed | 20 | Selected reference identity without an installed implementation. |
@@ -30,82 +32,48 @@ The tables below list every identity once. IN and OUT are fixed patch endpoints,
 
 | Category | Ready / listed |
 | --- | ---: |
-| [Drive](#drive) | 55 / 55 |
-| [Amp](#amp) | 20 / 20 |
-| [Cabinet](#cabinet) | 5 / 5 |
-| [Dynamics](#dynamics) | 14 / 14 |
-| [Filter](#filter) | 23 / 24 |
-| [Modulation](#modulation) | 37 / 37 |
-| [Pitch](#pitch) | 8 / 8 |
-| [Delay](#delay) | 22 / 23 |
-| [Reverb](#reverb) | 11 / 11 |
-| [Texture](#texture) | 17 / 17 |
+| [Drive](#drive) | 21 / 21 |
+| [Amp](#amp) | 8 / 8 |
+| [Cabinet](#cabinet) | 4 / 4 |
+| [Dynamics](#dynamics) | 9 / 9 |
+| [Filter](#filter) | 14 / 14 |
+| [Modulation](#modulation) | 20 / 20 |
+| [Pitch](#pitch) | 7 / 7 |
+| [Delay](#delay) | 15 / 16 |
+| [Reverb](#reverb) | 9 / 9 |
+| [Texture](#texture) | 25 / 25 |
 | [Resonator](#resonator) | 4 / 4 |
-| [Sound source](#sound-source) | 11 / 13 |
-| [Control](#control) | 33 / 34 |
-| [Utility](#utility) | 73 / 77 |
+| [Sound source](#sound-source) | 10 / 12 |
+| [Control](#control) | 35 / 36 |
+| [Utility](#utility) | 56 / 60 |
 
-Also: [hidden identities](#hidden-identities), [not installed](#not-installed), [fixed endpoints](#fixed-endpoints), [all 43 GxPlugins](32-gxplugins.md#all-43-gxplugins).
+Also: [hidden identities](#hidden-identities), [retired identities](#retired-identities), [not installed](#not-installed), [fixed endpoints](#fixed-endpoints), [all 43 GxPlugins](32-gxplugins.md#all-43-gxplugins).
 
 ## Drive
 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
-| Axis Face (GxPlugins) | Based on the Axis Face Silicon fuzz. | audio 1 in / 1 out | Ready |
-| Baja Tube Driver (GxPlugins) | Based on the BaJaTubeDriver. | audio 1 in / 1 out | Ready |
 | Bandisto | Distortion with separate low, middle and high bands. | audio 2 in / 2 out | Ready |
-| Boob Tube (GxPlugins) | Based on the Boob Tube. | audio 1 in / 1 out | Ready |
 | Bottle Rocket (GxPlugins) | Based on the Mesa V1 Bottle Rocket tube overdrive. | audio 1 in / 1 out | Ready |
-| Club Drive (GxPlugins) | Overdrive Pedal Simulation based on a EF86 Pentode Valve Simulation. | audio 1 in / 1 out | Ready |
 | Degrade | Lo-fi distortion through reduced sample rate and resolution. | audio 2 in / 2 out | Ready |
 | Dither | Reduces bit depth with dither, for lo-fi grit or clean level reduction. | audio 2 in / 2 out | Ready |
-| DOP 250 (GxPlugins) | Based on the Analog Man DOD OD-250 Yellow Overdrive. | audio 1 in / 1 out | Ready |
+| DOP 250 (GxPlugins) | Based on the DOD OD-250 Yellow Overdrive. | audio 1 in / 1 out | Ready |
 | Downsampler - Mono | Lo-fi crusher that lowers the sample rate for gritty, aliased tones. | audio 1 in / 1 out | Ready |
 | Downsampler - Stereo | Stereo lo-fi crusher that lowers the sample rate for gritty, aliased tones. | audio 2 in / 2 out | Ready |
-| Eternity (GxPlugins) | Low compression overdrive pedal. | audio 1 in / 1 out | Ready |
 | Gain | Changes signal level. Clean gain or attenuation from -90 dB to +24 dB. | audio 1 in / 1 out | Ready |
 | Guvnor (GxPlugins) | Based on the Marshall "The Guv'nor" Overdrive. | audio 1 in / 1 out | Ready |
-| Gx Booster | Raises the signal level. | audio 1 in / 1 out | Ready |
 | Gx ColorSound Tonebender | Tonebender-style fuzz distortion. | audio 1 in / 1 out | Ready |
-| Gx Fuzz | Guitarix fuzz distortion. | audio 1 in / 1 out | Ready |
 | Gx Fuzz Face Fuller | Fuzz Face-style distortion with the Fuller modification. | audio 1 in / 1 out | Ready |
-| Gx Fuzz Face JH-2 | Fuzz Face-style distortion, JH-2 variant. | audio 1 in / 1 out | Ready |
-| Gx Fuzz Master | Fuzz distortion with tone and output controls. | audio 1 in / 1 out | Ready |
-| Gx HF Brightener | Brightens the signal's upper frequencies. | audio 1 in / 1 out | Ready |
-| Gx Hogs Foot | Bass booster emphasizing low frequencies. | audio 1 in / 1 out | Ready |
-| Gx Hornet | Guitarix Hornet distortion effect. | audio 1 in / 1 out | Ready |
-| Gx Mole | Low-frequency booster for adding weight to the signal. | audio 1 in / 1 out | Ready |
 | Gx Muff | Muff-style fuzz distortion. | audio 1 in / 1 out | Ready |
-| Gx Multiband distortion | Applies distortion to separate frequency bands. | audio 1 in / 1 out | Ready |
 | Gx Rangemaster | Rangemaster-style treble booster. | audio 1 in / 1 out | Ready |
 | Gx Screaming Bird | Treble booster for bright, cutting tones. | audio 1 in / 1 out | Ready |
 | Gx Tube Screamer | Tube Screamer-style overdrive. | audio 1 in / 1 out | Ready |
-| Heathkit (GxPlugins) | Based on the Heathkit TA-28 distortion/booster/fuzz. | audio 1 in / 1 out | Ready |
-| Hot Box (GxPlugins) | Based on the Matchless Hot Box tube overdrive. | audio 1 in / 1 out | Ready |
-| Hyperion (GxPlugins) | Based on the Devi Ever FX Hyperion fuzz. | audio 1 in / 1 out | Ready |
-| Knight Fuzz (GxPlugins) | Fuzz based on the Basic Audio Knight Fuzz pedal. | audio 1 in / 1 out | Ready |
-| Liquid Drive (GxPlugins) | Based on the Liquid Drive fuzz, a modified Ross Distortion. | audio 1 in / 1 out | Ready |
-| Luna (GxPlugins) | Gnarly overdrive pedal simulation. | audio 1 in / 1 out | Ready |
-| Maestro FZ-1B (GxPlugins) | Based on the Robert Moog-designed Maestro FZ-1B fuzz. | audio 1 in / 1 out | Ready |
-| Maestro FZ-1S (GxPlugins) | Based on the Maestro FZ-1S Super-Fuzz. | audio 1 in / 1 out | Ready |
 | Micro Amp (GxPlugins) | A simple booster. | audio 1 in / 1 out | Ready |
-| Overdrive | Soft-clipping distortion with tone and level controls. | audio 2 in / 2 out | Ready |
-| Saturator (GxPlugins) | Based on the Joe Satriani-specified Vox Satchurator distortion. | audio 1 in / 1 out | Ready |
 | SD-1 (GxPlugins) | Based on the Boss SD-1 Super Overdrive. | audio 1 in / 1 out | Ready |
 | SD-2 Lead (GxPlugins) | Based on the Boss SD-2 Dual Overdrive. | audio 1 in / 1 out | Ready |
-| Shaka Tube (GxPlugins) | Based on the ShakaTube. | audio 1 in / 1 out | Ready |
-| Sigmoid Booster | Soft saturation and boost. | audio 1 in / 1 out | Ready |
-| Sloopy Blue (GxPlugins) | Overdrive pedal simulation. | audio 1 in / 1 out | Ready |
 | Sun Face (GxPlugins) | Based on the Analog Man Sun Face fuzz. | audio 1 in / 1 out | Ready |
 | Super Fuzz (GxPlugins) | Based on the Univox Super-Fuzz. | audio 1 in / 1 out | Ready |
-| Suppa Tone Bender (GxPlugins) | Based on the Vox Supa Tonebender fuzz. | audio 1 in / 1 out | Ready |
-| Tim Ray (GxPlugins) | Based on the Vemuram Jan Ray. | audio 1 in / 1 out | Ready |
-| Tone Machine (GxPlugins) | Based on the Foxx Tone Machine fuzz. | audio 1 in / 1 out | Ready |
-| Tube Distortion (GxPlugins) | Generic tube distortion based on http://www.montagar.com/~patj/tubedist.gif. | audio 1 in / 1 out | Ready |
 | Tubewarmth | Tube triode emulation for warmth and gentle drive. | audio 1 in / 1 out | Ready |
-| Valve Caster (GxPlugins) | Based on the Valve Caster. | audio 1 in / 1 out | Ready |
-| Vintage Fuzz Master (GxPlugins) | Based on the Devi Ever Vintage Fuzz Master. | audio 1 in / 1 out | Ready |
-| Voodoo Fuzz (GxPlugins) | Based on the Voodoo Lab SuperFuzz. | audio 1 in / 1 out | Ready |
 
 ## Amp
 
@@ -114,23 +82,11 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Bass amp (SVT) (GxPlugins) | Classic tube bass amp simulation. | audio 1 in / 1 out | Ready |
 | Blue Amp (GxPlugins) | Single-ended amp inspired by late 1950s Fender Princeton and Champ designs. | audio 1 in / 1 out | Ready |
 | Combo | A conventional guitar amp and speaker simulation; no model file needed. | audio 2 in / 2 out | Ready |
-| Epic (GxPlugins) | Based on Valve Junior. | audio 1 in / 1 out | Ready |
-| Gx Alembic preamp | Studio preamp with tone controls. | audio 1 in / 1 out | Ready |
-| Gx Amplifier | Guitarix guitar amp with tone controls and cabinet processing. | audio 1 in / 1 out | Ready |
-| Gx Amplifier stereo | Stereo Guitarix amp with tone controls and cabinet processing. | audio 2 in / 2 out | Ready |
 | Gx JCM800 preamp | JCM800-style guitar preamp. | audio 1 in / 1 out | Ready |
 | Gx JCM800 preamp stereo | Stereo JCM800-style guitar preamp. | audio 2 in / 2 out | Ready |
-| Gx Redeye Big Chump | Big Chump variant of the Redeye guitar amp models. | audio 1 in / 1 out | Ready |
-| Gx Redeye Chump | Chump variant of the Redeye guitar amp models. | audio 1 in / 1 out | Ready |
-| Gx Redeye Vibro Chump | Vibro Chump variant of the Redeye guitar amp models. | audio 1 in / 1 out | Ready |
-| Gx Studio preamp stereo | Stereo studio preamp with tone controls. | audio 2 in / 2 out | Ready |
 | NAM | Amp model player. Loads models trained on real amps and pedals. | audio 1 in / 1 out | Ready |
 | Plexi (GxPlugins) | Plexi power amp simulation. | audio 1 in / 1 out | Ready |
-| Power amp (Cream) (GxPlugins) | Cream-coloured power amp emulation with bass and treble. | audio 1 in / 1 out | Ready |
-| Power amp (Supersonic) (GxPlugins) | Vintage American power amp emulation. | audio 1 in / 1 out | Ready |
 | UVox 720k (GxPlugins) | Based on Univox 720k keyboard amp from 1978. | audio 1 in / 1 out | Ready |
-| VBass Pre Amp (GxPlugins) | Simulation of the 1984 Vox Venue Bass 100 Pre Amp section. | audio 1 in / 1 out | Ready |
-| Vox MKII (GxPlugins) | Based on Vox MKII solid state preamp of the late 60s. | audio 1 in / 1 out | Ready |
 
 ## Cabinet
 
@@ -140,7 +96,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Cabinet - Mono to Stereo | Cabinet from an impulse response file. Mono input and stereo output; use a stereo IR. | audio 1 in / 2 out | Ready |
 | Cabinet - Stereo | Cabinet from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses. | audio 2 in / 2 out | Ready |
 | Gx Cabinet (built-in) | Cabinet simulator with built-in speaker models. No impulse response file needed. | audio 1 in / 1 out | Ready |
-| Ultra Cab (built-in) (GxPlugins) | Cabinet simulator pedal with built-in processing. No impulse response file needed. | audio 2 in / 2 out | Ready |
 
 ## Dynamics
 
@@ -150,11 +105,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Compressor stereo | Controls dynamics of a stereo signal. | audio 2 in / 2 out | Ready |
 | De-ess | Reduces harsh high-frequency peaks. | audio 2 in / 2 out | Ready |
 | Dynamics | Compressor, limiter and gate for controlling signal level. | audio 2 in / 2 out | Ready |
-| Gx Compressor | Controls signal dynamics with compression and output gain. | audio 1 in / 1 out | Ready |
-| Gx Expander | Expands dynamics to reduce quiet background sound. | audio 1 in / 1 out | Ready |
-| Gx Multiband compressor | Compresses separate frequency bands. | audio 1 in / 1 out | Ready |
-| Gx Sustainer | Controls level to extend sustain. | audio 1 in / 1 out | Ready |
-| Limiter | Limits loud peaks. | audio 2 in / 2 out | Ready |
 | Loudness | Changes perceived loudness with level-dependent filtering. | audio 2 in / 2 out | Ready |
 | MultiBand | Compresses low, middle and high frequency bands separately. | audio 2 in / 2 out | Ready |
 | Slow gear (GxPlugins) | Automatically swells volume to remove note attack, for violin-like playing. | audio 1 in / 1 out | Ready |
@@ -166,20 +116,12 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Module | What it does | Connections | Status |
 | --- | --- | --- | --- |
 | Diode ladder | A diode ladder low pass filter similar to the vintage Japanese designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
-| Gx Auto wah | Automatic wah filtering driven by the input signal. | audio 1 in / 1 out | Ready |
-| Gx Bark graphic EQ | Graphic equalizer with frequency bands spaced on the Bark scale. | audio 1 in / 1 out | Ready |
 | Gx Crybaby GCB95 | Crybaby-style wah filter with a sweep control. | audio 1 in / 1 out | Ready |
 | Gx Graphic EQ | Graphic equalizer with separate frequency-band gains. | audio 1 in / 1 out | Ready |
-| Gx Switchless wah | Wah filter with automatic switching. | audio 1 in / 1 out | Ready |
-| Gx Tilt tone | Tilts the balance between low and high frequencies. | audio 1 in / 1 out | Ready |
-| Gx Wah | Wah filter with a manual sweep control. | audio 1 in / 1 out | Ready |
-| Gx Wahwah | Wah filter with a sweep control. | audio 1 in / 1 out | Ready |
 | Korg 35 high-pass | A high pass filter similar to the vintage Japanese designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
 | Korg 35 low-pass | A low pass filter similar to the vintage Japanese designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
 | Moog half ladder | A low pass filter inspired by vintage American designs. | audio 1 in / 1 out; CV 2 in / 0 out | Ready |
-| Moog ladder | Classic resonant ladder low pass filter inspired by vintage American designs. | audio 1 in / 1 out; CV 2 in / 0 out | Needs adaptation: Produced non-finite samples from a plain sine in the compatibility check. |
 | Moog Low-Pass Filter 1 | Resonant ladder low pass filter with modulation inputs for cutoff and resonance. | audio 1 in / 1 out; CV 3 in / 0 out | Ready |
-| Moog LPF | Resonant ladder low pass filter in the style of vintage American synths. | audio 1 in / 1 out; CV 3 in / 0 out | Ready |
 | Oberheim filter | A multi out filter inspired by vintage American designs. | audio 1 in / 4 out; CV 2 in / 0 out | Ready |
 | Parametric EQ | Adjusts selected frequency bands of a mono signal. | audio 1 in / 1 out | Ready |
 | Parametric EQ stereo | Adjusts selected frequency bands of a stereo signal. | audio 2 in / 2 out | Ready |
@@ -187,8 +129,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | RezFilter | Resonant filter with envelope and LFO modulation. | audio 2 in / 2 out | Ready |
 | TalkBox | Shapes a carrier with another signal; needs both audio inputs connected. | audio 2 in / 2 out | Ready |
 | VCF | Resonant multi-mode filter whose cutoff follows a control signal. | audio 1 in / 1 out; CV 4 in / 0 out | Ready |
-| VocInput | Prepares a voice or other input for a vocoder. | audio 2 in / 2 out | Ready |
-| Vocoder | Shapes a carrier with another signal; needs both audio inputs connected. | audio 2 in / 2 out | Ready |
 
 ## Modulation
 
@@ -200,18 +140,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Eureka Ripple | Resonant stereo phaser. Pause sweep holds the filter position while audio keeps passing through it. | audio 2 in / 2 out; CV 5 in / 0 out | Ready |
 | Flanger | Flanger with internal LFO. | audio 1 in / 1 out | Ready |
 | Flanger (CV) | Flanger with CV for the LFO. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
-| Gx Chorus stereo | Stereo chorus with rate and depth controls. | audio 2 in / 2 out | Ready |
-| Gx Flanger | Sweeping comb-filter modulation with rate and depth controls. | audio 1 in / 1 out | Ready |
-| Gx Phaser | Sweeping phase-shift effect. | audio 1 in / 1 out | Ready |
-| Gx Switched tremolo | Switched tremolo for pronounced rhythmic level changes. | audio 1 in / 1 out | Ready |
 | Gx Tremolo | Rhythmic volume modulation. | audio 1 in / 1 out | Ready |
-| Gx Tube tremolo | Tube-style rhythmic volume modulation. | audio 1 in / 1 out | Ready |
-| Gx Tube vibrato | Tube-style pitch modulation. | audio 1 in / 1 out | Ready |
 | Harmonic tremolo | Harmonic tremolo with internal LFO. | audio 1 in / 1 out | Ready |
 | Harmonic tremolo (CV) | Harmonic tremolo with CV for the LFO. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
-| Leslie | Rotating speaker simulation. | audio 2 in / 2 out | Ready |
 | Ring Modulator - Audio | Ring modulator: multiplies two audio signals for metallic, bell-like tones. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
-| Ring Modulator - CV | Multiplies two control signals. | CV 2 in / 1 out | Ready |
 | RingMod | Ring modulation for metallic, bell-like tones. | audio 2 in / 2 out | Ready |
 | Rotary speaker | A rotating loudspeaker using physical modelling. | audio 1 in / 2 out | Ready |
 | Rotary speaker (full) | A rotating loudspeaker using physical modelling. Same sound, more controls. | audio 1 in / 2 out | Ready |
@@ -219,15 +151,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Stone phaser | Warm vintage-style phaser with an internal LFO. | audio 1 in / 1 out | Ready |
 | Stone phaser stereo | Warm vintage-style stereo phaser with an internal LFO. | audio 2 in / 2 out | Ready |
 | ThruZero | Through-zero flanging. | audio 2 in / 2 out | Ready |
-| Twist Binaural Doppler Panner | Binaural panner, allows positioning in 3D. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Bitmangler | Brutal bitmangler. Warning, can get very loud. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Chebyshev | Chebyshev wave folder for bright, harmonically rich distortion. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Comparator | Combines two signals by comparing them, for harsh digital tones. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Delay | A delay where speed and length interact with quality. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Frequency Shifter | Shifts every frequency by the same amount, for clangorous and barber-pole effects. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Meta | A powerful cross modulation module which applies an algorithm to the two inputs. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Vocoder | Vocoder: shapes the carrier with the spectrum of the modulator. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
-| Twist Wavefolder | Wave folder for complex, buzzy overtones. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Vibrato | Vibrato with internal LFO. | audio 1 in / 1 out | Ready |
 | Vibrato (CV) | Vibrato with CV for the LFO. | audio 1 in / 1 out; CV 1 in / 0 out | Ready |
 | YK Chorus | Chorus for widening and thickening the input. | audio 2 in / 2 out | Ready |
@@ -243,7 +166,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Pitch Shifter | Changes the pitch of the incoming audio. | audio 1 in / 1 out | Ready |
 | RePsycho! | Audio-triggered pitch shifting and sample playback. | audio 2 in / 2 out | Ready |
 | Shepard | Shepard-tone processing for an endlessly rising or falling illusion. | audio 2 in / 2 out | Ready |
-| SubSynth | Adds synthesized low-frequency content below the input. | audio 2 in / 2 out | Ready |
 
 ## Delay
 
@@ -251,27 +173,20 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | --- | --- | --- | --- |
 | Aura | An always-listening micro-looper and reverb, delay or sampler sharing one clock. Clock slows both together. Stereo Spread and six CV inputs shape the sound. | audio 2 in / 2 out; CV 6 in / 0 out | Ready; tail rings on when bypassed |
 | Bitcrushed delay | Flexible delay module with bitcrushed repeats. | audio 1 in / 1 out; CV 6 in / 0 out | Ready; tail rings on when bypassed |
-| CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
 | Discipline | Delay with a 3-minute memory you can scan back into. Works alone. Modifier Outside sends the repeats through your modules to a Discipline Return. | audio 2 in / 4 out; CV 6 in / 1 out | Ready; tail rings on when bypassed |
 | DubDelay | Modulated echo with feedback for dub-style repeats. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Euclidelay | Echoes on four Euclidean rhythms. Steps, Hits and Shift set each voice's pattern; each voice loops it with feedback, with its own level and pan. | audio 1 in / 2 out | Ready; tail rings on when bypassed |
 | Eureka Skip | Pitched multi-tap delay. Repeat heads sets tap count. Sync uses BPM and Beat division instead of Delay time. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
 | Eureka Spool | Variable-speed stereo tape echo with drift. Sync follows patch tempo; Infinite holds echoes. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
-| Gx Delay stereo | Stereo delay with time, feedback and mix controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
-| Gx Digital delay | Mono digital delay with feedback and mix controls. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
-| Gx Digital delay stereo | Stereo digital delay with feedback and mix controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Gx Duck delay | Mono delay that reduces the repeats while the input is playing. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
 | Gx Duck delay stereo | Stereo delay that reduces the repeats while the input is playing. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Gx Echo Cat | Echo effect with controls for its repeat character. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
-| Gx Echo stereo | Stereo echo effect with feedback and level controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
-| Gx Multiband delay | Applies delay to separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
-| Gx Multiband echo | Echo processing with separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
-| Gx Tube delay | Tube-style delay effect. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
 | Loo-pi | Eight stereo loops: record, overdub, multiply, insert, reverse, half and double speed, sync to the tempo or a loop. Open its page for loop cards and commands. | audio 2 in / 2 out; CV 0 in / 2 out | Ready |
 | Mist Beat Repeat | Clocked beat repeat: loops and slices recent audio, with pitch and feedback. | audio 2 in / 2 out; CV 12 in / 0 out | Needs adaptation: Most controls do nothing in this port: its beat-repeat settings are never set (see docs/20-clouds.md, the Mist modules). |
 | Mist Looper | Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer. | audio 2 in / 2 out; CV 12 in / 0 out | Ready; tail rings on when bypassed |
 | Stereo delay | Stereo echo with independent left/right delay times, feedback and filtering. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Tempo delay | Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready; tail rings on when bypassed |
+| Twist Delay | A delay where speed and length interact with quality. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 
 ## Reverb
 
@@ -282,8 +197,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Dragonfly Room | Room reverb with separate early and late levels, size, filters and decay controls. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | Eureka Hush | Diffuse stereo reverb. Spread changes the stereo pattern; Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
 | Eureka Slowmo | Long stereo reverb with size and diffusion controls. Freeze holds the tail. | audio 2 in / 2 out; CV 5 in / 0 out | Ready; tail rings on when bypassed |
-| Gx Multiband reverb | Reverb processing with separate frequency bands. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
-| Gx Shimmizita | Shimmer reverb combining pitch shifting and a reverb tail. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
 | IR Reverb - Mono | IR Reverb from an impulse response file. Mono input and output; use a mono IR. | audio 1 in / 1 out | Ready; tail rings on when bypassed |
 | IR Reverb - Mono to Stereo | IR Reverb from an impulse response file. Mono input and stereo output; use a stereo IR. | audio 1 in / 2 out | Ready; tail rings on when bypassed |
 | IR Reverb - Stereo | IR Reverb from an impulse response file. Stereo input and output. Mono or stereo IRs process left and right separately; four-channel IRs add cross-channel responses. | audio 2 in / 2 out | Ready; tail rings on when bypassed |
@@ -309,6 +222,14 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Power cut | Simulates turning off a turntable: the sound slows down and stops. | audio 1 in / 1 out | Ready |
 | Reverse (Reflector) | Reverse effect. Try a short fragment length for a weird tremolo. | audio 1 in / 1 out | Ready |
 | Stuck (freeze) | Holds what you are playing when the control level is active, creating a drone. | audio 1 in / 1 out | Ready |
+| Twist Binaural Doppler Panner | Binaural panner, allows positioning in 3D. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Bitmangler | Brutal bitmangler. Warning, can get very loud. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Chebyshev | Chebyshev wave folder for bright, harmonically rich distortion. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Comparator | Combines two signals by comparing them, for harsh digital tones. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Frequency Shifter | Shifts every frequency by the same amount, for clangorous and barber-pole effects. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Meta | A powerful cross modulation module which applies an algorithm to the two inputs. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Vocoder | Vocoder: shapes the carrier with the spectrum of the modulator. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
+| Twist Wavefolder | Wave folder for complex, buzzy overtones. | audio 2 in / 2 out; CV 4 in / 0 out | Ready |
 | Vinyl | Emulates dirty old lo-fi vinyl records: crackle, hum, wow and flutter. | audio 2 in / 2 out; MIDI/events 1 in / 1 out | Ready |
 
 ## Resonator
@@ -332,7 +253,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | JX10 | Polyphonic analog-style synthesizer. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Ready |
 | Noise2 - Audio | Noise source: white, random or pink noise as audio. | audio 0 in / 1 out | Ready |
 | Piano | Acoustic piano instrument. | audio 0 in / 2 out; MIDI/events 1 in / 0 out | Ready |
-| TestTone | Generates test tones for checking a patch. | audio 2 in / 2 out | Ready |
 | Tracker | Pitch-tracking oscillator played by incoming audio. | audio 2 in / 2 out | Ready |
 | vco2_audio | Oscillator with several wave shapes, tuned by a pitch control signal. | No patchable connectors | Unavailable: This module has no audio, control or MIDI connectors to patch. |
 | vco2_cv | Oscillator with several wave shapes that sends a control signal. | No patchable connectors | Unavailable: This module has no audio, control or MIDI connectors to patch. |
@@ -350,6 +270,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Advanced Envelope | Multi-stage envelope generator with four attack and three release stages. Takes in a gate. | CV 2 in / 2 out | Ready |
 | Analog Driver | Adds slow drift and detune to a pitch CV, for the slightly unstable feel of analog oscillators. | CV 1 in / 2 out | Ready |
 | Clock divider | Outputs a trigger every n triggers. | CV 1 in / 1 out | Ready |
+| CV delay | Delays a control signal by up to 10 seconds. Use with LFOs, envelopes or sequencers. | CV 1 in / 1 out | Ready |
 | CV Source | Four fixed control voltages, each with coarse and fine knobs. | CV 0 in / 4 out | Ready |
 | CV to trigger | A Schmitt trigger that converts a control signal to on and off triggers. | CV 1 in / 1 out | Ready |
 | Dice Random Sampler | Powerful repeatable randomness source: random gates and control signals. | CV 9 in / 7 out | Ready |
@@ -372,6 +293,7 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Product | a times b for control signals. | No patchable connectors | Unavailable: This module has no audio, control or MIDI connectors to patch. |
 | Quantizer | Quantizes a volt per octave signal to a musical scale. | CV 1 in / 2 out | Ready |
 | Retriggerable DAHDSR Envelope | A delay attack hold decay sustain release envelope generator. Can be retriggered. | CV 2 in / 1 out | Ready |
+| Ring Modulator - CV | Multiplies two control signals. | CV 2 in / 1 out | Ready |
 | Sample&Hold | Samples a control value when a trigger arrives and holds it until the next one. | CV 2 in / 2 out | Ready |
 | Strum | MIDI and volt per octave controller based on strumming. | CV 0 in / 2 out; MIDI/events 0 in / 1 out | Ready |
 | Toggle | Toggles the output value on every trigger. | CV 1 in / 1 out | Ready |
@@ -391,12 +313,10 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | CV to MIDI Note | Converts volt per octave pitch to MIDI notes. Velocity is optional. | CV 3 in / 0 out; MIDI/events 0 in / 1 out | Ready |
 | Difference | a - b for control signals. | CV 2 in / 1 out | Ready |
 | Discipline Return | Brings Discipline's repeats back in when its Modifier is Outside. One per patch. | audio 2 in / 0 out | Ready |
-| Fifths | Adds a fifth above every MIDI note. | MIDI/events 1 in / 1 out | Ready |
 | Hz to VC | Converts a frequency in Hz into a volt per octave pitch signal. | CV 1 in / 1 out | Ready |
 | Image | Adjusts stereo width and the balance of mid and side. | audio 2 in / 2 out | Ready |
 | Inv | Inverts a control signal: up becomes down. | CV 1 in / 1 out | Ready |
 | Maximum | Max of a, b; also logical or. | CV 2 in / 1 out | Ready |
-| Metronome | Metronome click that follows the host tempo. | audio 0 in / 1 out | Ready |
 | MIDI CC Map | Changes one MIDI control message into another. | MIDI/events 1 in / 1 out | Ready |
 | MIDI CC to Note | Translates MIDI control changes to note on and off messages. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Channel Filter | Discards MIDI messages per channel. | MIDI/events 1 in / 1 out | Ready |
@@ -405,31 +325,17 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | MIDI Choke | Triggers note-off events to create exclusive note groups. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Chord | Creates MIDI chords from a single note in a given musical scale. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Chromatic Transpose | Chromatically transposes MIDI notes. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Delayline | Delays MIDI events, with optional randomization. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Duplicate Blocker | Blocks duplicate MIDI notes. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Enforce Scale | Forces MIDI notes onto a given musical scale. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Event Filter | Notch-style MIDI filter that suppresses specific messages. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Gate | Lets audio through only while a MIDI note is held. | audio 1 in / 1 out; MIDI/events 1 in / 0 out | Ready |
-| MIDI Key-Range Filter | Discards MIDI notes outside a given range. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Keysplit | Changes MIDI channel depending on the note, with optional transpose. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Monophonic Legato | Holds a MIDI note until the next note arrives. | MIDI/events 1 in / 1 out | Ready |
 | MIDI N-Tap Delay | Repeats MIDI notes a number of times, with tempo ramps. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Note to CC | Converts MIDI note-on messages to control changes. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Note to PC | Converts MIDI notes to program change messages. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Note Toggle | Play a MIDI note to turn it on, play it again to turn it off. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Note Transpose | Flexible 12-tone MIDI note map. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Note/Channel Map | Sends each of the 12 notes to its own MIDI channel. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Quantization | Quantizes live MIDI events to a time grid. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Remove Active Sensing | Strips MIDI active-sensing messages. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Scale CC Value | Scales the value of a MIDI control change. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Simple Channel Filter | Basic MIDI channel filter. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Sostenuto | Delays MIDI note-offs, like a piano sostenuto pedal. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Strum | MIDI arpeggio that simulates strumming a guitar. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Tonal Pedal | Holds the notes being played while the sustain pedal is down. | MIDI/events 1 in / 1 out | Ready |
 | MIDI Velocity Adjust | Scales and offsets MIDI note velocity. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Velocity Gamma | Reshapes the MIDI velocity curve. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Velocity Randomization | Randomly changes the velocity of MIDI notes. | MIDI/events 1 in / 1 out | Ready |
-| MIDI Velocity-Range Filter | Filters MIDI notes by velocity. | MIDI/events 1 in / 1 out | Ready |
 | Minimum | Min of a, b; also logical and. | CV 2 in / 1 out | Ready |
 | Mixer 2 channels - Audio | Mixes two audio signals with a level for each. | audio 2 in / 1 out | Ready |
 | Mixer 2 channels - CV | Mixes two control signals with a level for each. | CV 2 in / 1 out | Ready |
@@ -445,7 +351,6 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | Scope (Stereo) | Oscilloscope view of a stereo signal. Audio passes through unchanged. | audio 2 in / 2 out | Ready |
 | Signal Absolute Value | Rectifies a control signal: negative values become positive. | CV 1 in / 1 out | Ready |
 | Slew Limiter | Slows how fast a control signal changes, with separate rise and fall times. Useful with foot switches. | CV 1 in / 1 out | Ready |
-| Stereo | Turns a mono signal into a wide stereo image with a short delay. | audio 2 in / 2 out | Ready |
 | Sum | a + b for control signals. | CV 2 in / 1 out | Ready |
 | tempo_ratio | Ratio between tempos, like 3/4 of the input tempo. | No patchable connectors | Unavailable: This module has no audio, control or MIDI connectors to patch. |
 | Tuner | Chromatic instrument tuner. Shows the note and how flat or sharp it is; connect your input and play one string. | audio 1 in / 1 out; MIDI/events 0 in / 1 out | Ready |
@@ -472,6 +377,117 @@ Also: [hidden identities](#hidden-identities), [not installed](#not-installed), 
 | LV2 Convolution Stereo | Reverb | Legacy convolution identity; use Cabinet or IR Reverb for new patches. | `http://gareus.org/oss/lv2/convoLV2#Stereo` |
 | Tuner | Utility | Duplicate tuner; use Tuner. | `http://gareus.org/oss/lv2/tuna#one` |
 | Tuner | Utility | Duplicate tuner; use Tuner. | `http://gareus.org/oss/lv2/tuna#two` |
+
+## Retired identities
+
+Removed from the inventory and from builds; standalone bundles were moved to recovery storage on the Pi. A saved patch that uses one needs its recovery bundle. [Purge and auditions](36-catalogue-purge.md).
+
+| Plugin name | Why it was retired | Plugin identity |
+| --- | --- | --- |
+| Dragonfly Early Reflections | First catalogue purge requested by the user. | `urn:dragonfly:early` |
+| Example Fifths | Utility and Sound source decision (examples) (20 November 2026): not kept; removed at the user's request. | `http://lv2plug.in/plugins/eg-fifths` |
+| Example Metronome | Utility and Sound source decision (examples) (20 November 2026): not kept; removed at the user's request. | `http://lv2plug.in/plugins/eg-metro` |
+| Example MIDI Gate | Utility and Sound source decision (examples) (20 November 2026): not kept; removed at the user's request. | `http://lv2plug.in/plugins/eg-midigate` |
+| Gx Studio Preamp Stereo | Amp audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_studiopre_st#studiopre_st` |
+| GxAlembic | Amp audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre` |
+| GxAmplifier Stereo | Amp audition session 2 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_amp_stereo#GUITARIX_ST` |
+| GxAmplifier-X | Amp audition session 2 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_amp#GUITARIX` |
+| GxAutoWah | Filter audition session 2 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gxautowah#autowah` |
+| GxAxisFace | Drive audition session 7 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_AxisFace_#_AxisFace_` |
+| GxBaJaTubeDriver | Drive audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_bajatubedriver_#_bajatubedriver_` |
+| GxBarkGraphicEQ | Filter audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_barkgraphiceq_#_barkgraphiceq_` |
+| GxBoobTube | Drive audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_boobtube_#_boobtube_` |
+| GxBooster | Drive audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gxbooster#booster` |
+| GxChorus-Stereo | Modulation audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_chorus_stereo#_chorus_stereo` |
+| GxClubDrive | Drive audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_clubdrive_#_clubdrive_` |
+| GxCompressor | Dynamics audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_compressor#_compressor` |
+| GxCreamMachine | Amp audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_CreamMachine_#_CreamMachine_` |
+| GxDelay-Stereo | Delay audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_delay_stereo#_delay_stereo` |
+| Gxdigital_delay | Delay audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_digital_delay_#_digital_delay_` |
+| Gxdigital_delay_st | Delay audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_digital_delay_st_#_digital_delay_st_` |
+| GxEcho-Stereo | Delay audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo` |
+| GxEpic | Amp audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_epic_#_epic_` |
+| GxEternity | Drive audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_eternity_#_eternity_` |
+| GxExpander | Dynamics audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_expander#_expander` |
+| GxFlanger | Modulation audition session 2 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_flanger#_flanger` |
+| GxFuzz | Drive audition session 10 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_fuzz_#fuzz_` |
+| GxFuzzFaceJH-2 | Drive audition session 7 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_fuzzface_#_fuzzface_` |
+| GxFuzzMaster | Drive audition session 10 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_fumaster_#_fumaster_` |
+| GxFz1b | Drive audition session 10 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_maestro_fz1b_#_maestro_fz1b_` |
+| GxFz1s | Drive audition session 10 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_maestro_fz1s_#_maestro_fz1s_` |
+| GxHeathkit | Drive audition session 10 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_Heathkit_#_Heathkit_` |
+| GxHighFrequencyBrightener | Drive audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_hfb_#_hfb_` |
+| GxHogsFoot | Drive audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_` |
+| GxHornet | Drive audition session 6 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_` |
+| GxHotBox | Drive audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_hotbox_#_hotbox_` |
+| GxHyperion | Drive audition session 10 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_hyperion_#_hyperion_` |
+| GxKnightFuzz | Drive audition session 8 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_KnightFuzz_#_KnightFuzz_` |
+| GxLiquidDrive | Drive audition session 6 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_liquiddrive_#_liquiddrive_` |
+| Gxlivelooper | First catalogue purge requested by the user. | `http://guitarix.sourceforge.net/plugins/gx_livelooper_#_livelooper_` |
+| GxLuna | Drive audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_luna_#_luna_` |
+| GxMole | Drive audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_` |
+| GxMultiBandCompressor | Dynamics audition session 2 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_` |
+| GxMultiBandDelay | Delay audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_` |
+| GxMultiBandDistortion | Drive audition session 11 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_` |
+| GxMultiBandEcho | Delay audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_mbecho_#_mbecho_` |
+| GxMultiBandReverb | Pitch, reverb and cabinet audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_` |
+| GxPhaser | Modulation audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser` |
+| GxRedeye Big Chump | Amp audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump` |
+| GxRedeye Chump | Amp audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_redeye#chump` |
+| GxRedeye Vibro Chump | Amp audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump` |
+| GxReverb-Stereo | First catalogue purge requested by the user. | `http://guitarix.sourceforge.net/plugins/gx_reverb_stereo#_reverb_stereo` |
+| Gxroom_simulator | First catalogue purge requested by the user. | `http://guitarix.sourceforge.net/plugins/gx_room_simulator_#_room_simulator_` |
+| GxSaturator | Drive audition session 6 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_saturate_#_saturate_` |
+| GxShakaTube | Drive audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_shakatube_#_shakatube_` |
+| Gxshimmizita | Pitch, reverb and cabinet audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_` |
+| GxSloopyBlue | Drive audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_sloopyblue_#_sloopyblue_` |
+| GxSupersonic | Amp audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_supersonic_#_supersonic_` |
+| GxSuppaToneBender | Drive audition session 8 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_vstb_#_vstb_` |
+| GxSustainer | Dynamics audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_` |
+| Gxswitched_tremolo | Modulation audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_` |
+| GxSwitchlessWah | Filter audition session 1 (20 November 2026): a pedal wah needs a pedal; one kept (Crybaby). Removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah` |
+| GxTiltTone | Filter audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gxtilttone#tilttone` |
+| GxTimRay | Drive audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_timray_#_timray_` |
+| GxToneMachine | Drive audition session 9 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_tonemachine_#_tonemachine_` |
+| GxTubeDelay | Delay audition session 2 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay` |
+| GxTubeDistortion | Drive audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_TubeDistortion_#_TubeDistortion_` |
+| GxTubeTremelo | Modulation audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo` |
+| GxTubeVibrato | Modulation audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato` |
+| GxUltraCab | Pitch, reverb and cabinet audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_ultracab_#_ultracab_` |
+| GxValveCaster | Drive audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_valvecaster_#_valvecaster_` |
+| GxVBassPreAmp | Amp audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_voxbass_#_voxbass_` |
+| GxVintageFuzzMaster | Drive audition session 10 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_vfm_#_vfm_` |
+| GxVMK2 | Amp audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_vmk2d_#_vmk2d_` |
+| GxVoodooFuzz | Drive audition session 9 (20 November 2026): not kept; removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_voodoo_#_voodoo_` |
+| GxWah | Filter audition session 1 (20 November 2026): a pedal wah needs a pedal; one kept (Crybaby). Removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gxautowah#wah` |
+| GxWahwah | Filter audition session 1 (20 November 2026): a pedal wah needs a pedal; one kept (Crybaby). Removed at the user's request. | `http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_` |
+| GxZita_rev1-Stereo | First catalogue purge requested by the user. | `http://guitarix.sourceforge.net/plugins/gx_zita_rev1_stereo#_zita_rev1_stereo` |
+| MDA Ambience | First catalogue purge requested by the user. | `http://drobilla.net/plugins/mda/Ambience` |
+| MDA Leslie | Modulation audition session 6 (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/Leslie` |
+| MDA Limiter | Dynamics audition session 3 (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/Limiter` |
+| MDA Overdrive | Drive audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/Overdrive` |
+| MDA Stereo | Utility and Sound source decision (stereo tools) (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/Stereo` |
+| MDA SubSynth | Pitch, reverb and cabinet audition session 2 (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/SubSynth` |
+| MDA TestTone | Utility and Sound source decision (sound source) (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/TestTone` |
+| MDA VocInput | Filter audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/VocInput` |
+| MDA Vocoder | Filter audition session 5 (20 November 2026): not kept; removed at the user's request. | `http://drobilla.net/plugins/mda/Vocoder` |
+| MIDI Delayline | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#mididelay` |
+| MIDI Duplicate Blocker | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#nodup` |
+| MIDI Event Filter | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#eventblocker` |
+| MIDI Key-Range Filter | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#keyrange` |
+| MIDI Note Transpose | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#mapkeyscale` |
+| MIDI Note/Channel Map | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#mapkeychannel` |
+| MIDI Remove Active Sensing | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#noactivesensing` |
+| MIDI Simple Channel Filter | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#onechannelfilter` |
+| MIDI Sostenuto | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#sostenuto` |
+| MIDI Tonal Pedal | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#tonalpedal` |
+| MIDI Velocity Gamma | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#velocitygamma` |
+| MIDI Velocity Randomization | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#randvelocity` |
+| MIDI Velocity-Range Filter | Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request. | `http://gareus.org/oss/lv2/midifilter#velocityrange` |
+| moog ladder | Filter audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://polyeffects.com/lv2/polyfilter#moog_ladder` |
+| Moog LPF | Filter audition session 4 (20 November 2026): not kept; removed at the user's request. | `http://avwlv2.sourceforge.net/plugins/avw/mooglpf` |
+| MVerb | First catalogue purge requested by the user. | `http://distrho.sf.net/plugins/MVerb` |
+| TAP Sigmoid Booster | Drive audition session 1 (20 November 2026): not kept; removed at the user's request. | `http://moddevices.com/plugins/tap/sigmoid` |
 
 ## Not installed
 
@@ -509,7 +525,7 @@ These are reference identities, not available effects. The installed Foot switch
 
 ## Source and updates
 
-Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261023-euclidelay.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
+Generated by `tools/document-catalogue.py` from the [Pi export](evidence/catalogue-pi-20261120-auditions.json), [presentation overlay](../config/catalogue/overlay.json) and [selected inventory](../config/catalogue/inventory.txt). The export contains installed identities; the overlay supplies Peepo's names, categories, hidden flags and restrictions. Exact URIs and control metadata for installed modules are in the export.
 
 The older [compatibility matrix](evidence/compatibility-matrix.md) is a historical test record. [GxPlugins results](32-gxplugins.md) supplement it. Availability in this list follows the recorded Pi export and current overlay, not the historical PC matrix.
 

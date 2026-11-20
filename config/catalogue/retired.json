@@ -1,7 +1,7 @@
 {
   "format": "peepo-retired-modules",
   "version": 1,
-  "date": "2026-10-19",
+  "date": "2026-11-20",
   "modules": [
     {
       "uri": "http://distrho.sf.net/plugins/MVerb",
@@ -44,6 +44,588 @@
       "name": "Dragonfly Early Reflections",
       "bundle": "lib/lv2/DragonflyEarlyReflections.lv2",
       "reason": "First catalogue purge requested by the user."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxbooster#booster",
+      "name": "GxBooster",
+      "bundle": "lib/lv2/gxbooster.lv2",
+      "reason": "Drive audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://moddevices.com/plugins/tap/sigmoid",
+      "name": "TAP Sigmoid Booster",
+      "bundle": "lib/lv2/tap-sigmoid.lv2",
+      "reason": "Drive audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_",
+      "name": "GxHogsFoot",
+      "bundle": "lib/lv2/gx_hogsfoot.lv2",
+      "reason": "Drive audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_",
+      "name": "GxMole",
+      "bundle": "lib/lv2/gx_mole.lv2",
+      "reason": "Drive audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hfb_#_hfb_",
+      "name": "GxHighFrequencyBrightener",
+      "bundle": "lib/lv2/gx_hfb.lv2",
+      "reason": "Drive audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_eternity_#_eternity_",
+      "name": "GxEternity",
+      "bundle": "lib/lv2/gx_eternity.lv2",
+      "reason": "Drive audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_timray_#_timray_",
+      "name": "GxTimRay",
+      "bundle": "lib/lv2/gx_timray.lv2",
+      "reason": "Drive audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/Overdrive",
+      "name": "MDA Overdrive",
+      "bundle": null,
+      "reason": "Drive audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_luna_#_luna_",
+      "name": "GxLuna",
+      "bundle": "lib/lv2/gx_luna.lv2",
+      "reason": "Drive audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_sloopyblue_#_sloopyblue_",
+      "name": "GxSloopyBlue",
+      "bundle": "lib/lv2/gx_sloopyblue.lv2",
+      "reason": "Drive audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hotbox_#_hotbox_",
+      "name": "GxHotBox",
+      "bundle": "lib/lv2/gx_hotbox.lv2",
+      "reason": "Drive audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_clubdrive_#_clubdrive_",
+      "name": "GxClubDrive",
+      "bundle": "lib/lv2/gx_clubdrive.lv2",
+      "reason": "Drive audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_valvecaster_#_valvecaster_",
+      "name": "GxValveCaster",
+      "bundle": "lib/lv2/gx_valvecaster.lv2",
+      "reason": "Drive audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_bajatubedriver_#_bajatubedriver_",
+      "name": "GxBaJaTubeDriver",
+      "bundle": "lib/lv2/gx_bajatubedriver.lv2",
+      "reason": "Drive audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_shakatube_#_shakatube_",
+      "name": "GxShakaTube",
+      "bundle": "lib/lv2/gx_shakatube.lv2",
+      "reason": "Drive audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_boobtube_#_boobtube_",
+      "name": "GxBoobTube",
+      "bundle": "lib/lv2/gx_boobtube.lv2",
+      "reason": "Drive audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_TubeDistortion_#_TubeDistortion_",
+      "name": "GxTubeDistortion",
+      "bundle": "lib/lv2/gx_TubeDistortion.lv2",
+      "reason": "Drive audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_saturate_#_saturate_",
+      "name": "GxSaturator",
+      "bundle": "lib/lv2/gx_saturate.lv2",
+      "reason": "Drive audition session 6 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_liquiddrive_#_liquiddrive_",
+      "name": "GxLiquidDrive",
+      "bundle": "lib/lv2/gx_liquiddrive.lv2",
+      "reason": "Drive audition session 6 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_",
+      "name": "GxHornet",
+      "bundle": "lib/lv2/gx_hornet.lv2",
+      "reason": "Drive audition session 6 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzzface_#_fuzzface_",
+      "name": "GxFuzzFaceJH-2",
+      "bundle": "lib/lv2/gx_fuzzface.lv2",
+      "reason": "Drive audition session 7 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_AxisFace_#_AxisFace_",
+      "name": "GxAxisFace",
+      "bundle": "lib/lv2/gx_AxisFace.lv2",
+      "reason": "Drive audition session 7 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vstb_#_vstb_",
+      "name": "GxSuppaToneBender",
+      "bundle": "lib/lv2/gx_vstb.lv2",
+      "reason": "Drive audition session 8 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_KnightFuzz_#_KnightFuzz_",
+      "name": "GxKnightFuzz",
+      "bundle": "lib/lv2/gx_KnightFuzz.lv2",
+      "reason": "Drive audition session 8 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_voodoo_#_voodoo_",
+      "name": "GxVoodooFuzz",
+      "bundle": "lib/lv2/gx_voodoo.lv2",
+      "reason": "Drive audition session 9 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_tonemachine_#_tonemachine_",
+      "name": "GxToneMachine",
+      "bundle": "lib/lv2/gx_tonemachine.lv2",
+      "reason": "Drive audition session 9 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_maestro_fz1b_#_maestro_fz1b_",
+      "name": "GxFz1b",
+      "bundle": "lib/lv2/gx_maestro_fz1b.lv2",
+      "reason": "Drive audition session 10 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_maestro_fz1s_#_maestro_fz1s_",
+      "name": "GxFz1s",
+      "bundle": "lib/lv2/gx_maestro_fz1s.lv2",
+      "reason": "Drive audition session 10 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_Heathkit_#_Heathkit_",
+      "name": "GxHeathkit",
+      "bundle": "lib/lv2/gx_Heathkit.lv2",
+      "reason": "Drive audition session 10 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_hyperion_#_hyperion_",
+      "name": "GxHyperion",
+      "bundle": "lib/lv2/gx_hyperion.lv2",
+      "reason": "Drive audition session 10 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vfm_#_vfm_",
+      "name": "GxVintageFuzzMaster",
+      "bundle": "lib/lv2/gx_vfm.lv2",
+      "reason": "Drive audition session 10 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fumaster_#_fumaster_",
+      "name": "GxFuzzMaster",
+      "bundle": "lib/lv2/gx_fumaster.lv2",
+      "reason": "Drive audition session 10 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_fuzz_#fuzz_",
+      "name": "GxFuzz",
+      "bundle": "lib/lv2/gx_fuzz.lv2",
+      "reason": "Drive audition session 10 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_",
+      "name": "GxMultiBandDistortion",
+      "bundle": "lib/lv2/gx_mbdistortion.lv2",
+      "reason": "Drive audition session 11 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_epic_#_epic_",
+      "name": "GxEpic",
+      "bundle": "lib/lv2/gx_epic.lv2",
+      "reason": "Amp audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#chump",
+      "name": "GxRedeye Chump",
+      "bundle": "lib/lv2/gx_redeye.lv2",
+      "reason": "Amp audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump",
+      "name": "GxRedeye Vibro Chump",
+      "bundle": "lib/lv2/gx_redeye.lv2",
+      "reason": "Amp audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump",
+      "name": "GxRedeye Big Chump",
+      "bundle": "lib/lv2/gx_redeye.lv2",
+      "reason": "Amp audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_amp#GUITARIX",
+      "name": "GxAmplifier-X",
+      "bundle": "lib/lv2/gx_amp.lv2",
+      "reason": "Amp audition session 2 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_amp_stereo#GUITARIX_ST",
+      "name": "GxAmplifier Stereo",
+      "bundle": "lib/lv2/gx_amp_stereo.lv2",
+      "reason": "Amp audition session 2 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre",
+      "name": "GxAlembic",
+      "bundle": "lib/lv2/gx_studiopre.lv2",
+      "reason": "Amp audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_studiopre_st#studiopre_st",
+      "name": "Gx Studio Preamp Stereo",
+      "bundle": "lib/lv2/gx_studiopre_st.lv2",
+      "reason": "Amp audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_vmk2d_#_vmk2d_",
+      "name": "GxVMK2",
+      "bundle": "lib/lv2/gx_vmk2d.lv2",
+      "reason": "Amp audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_CreamMachine_#_CreamMachine_",
+      "name": "GxCreamMachine",
+      "bundle": "lib/lv2/gx_CreamMachine.lv2",
+      "reason": "Amp audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_supersonic_#_supersonic_",
+      "name": "GxSupersonic",
+      "bundle": "lib/lv2/gx_supersonic.lv2",
+      "reason": "Amp audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_voxbass_#_voxbass_",
+      "name": "GxVBassPreAmp",
+      "bundle": "lib/lv2/gx_voxbass.lv2",
+      "reason": "Amp audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_chorus_stereo#_chorus_stereo",
+      "name": "GxChorus-Stereo",
+      "bundle": "lib/lv2/gx_chorus.lv2",
+      "reason": "Modulation audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_flanger#_flanger",
+      "name": "GxFlanger",
+      "bundle": "lib/lv2/gx_flanger.lv2",
+      "reason": "Modulation audition session 2 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser",
+      "name": "GxPhaser",
+      "bundle": "lib/lv2/gx_phaser.lv2",
+      "reason": "Modulation audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo",
+      "name": "GxTubeTremelo",
+      "bundle": "lib/lv2/gxtubetremelo.lv2",
+      "reason": "Modulation audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_",
+      "name": "Gxswitched_tremolo",
+      "bundle": "lib/lv2/gx_switched_tremolo.lv2",
+      "reason": "Modulation audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato",
+      "name": "GxTubeVibrato",
+      "bundle": "lib/lv2/gxtubevibrato.lv2",
+      "reason": "Modulation audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/Leslie",
+      "name": "MDA Leslie",
+      "bundle": null,
+      "reason": "Modulation audition session 6 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_#_digital_delay_",
+      "name": "Gxdigital_delay",
+      "bundle": "lib/lv2/gx_digital_delay.lv2",
+      "reason": "Delay audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_digital_delay_st_#_digital_delay_st_",
+      "name": "Gxdigital_delay_st",
+      "bundle": "lib/lv2/gx_digital_delay_st.lv2",
+      "reason": "Delay audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_delay_stereo#_delay_stereo",
+      "name": "GxDelay-Stereo",
+      "bundle": "lib/lv2/gx_delay.lv2",
+      "reason": "Delay audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo",
+      "name": "GxEcho-Stereo",
+      "bundle": "lib/lv2/gx_echo.lv2",
+      "reason": "Delay audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay",
+      "name": "GxTubeDelay",
+      "bundle": "lib/lv2/gxtubedelay.lv2",
+      "reason": "Delay audition session 2 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_",
+      "name": "GxMultiBandDelay",
+      "bundle": "lib/lv2/gx_mbdelay.lv2",
+      "reason": "Delay audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbecho_#_mbecho_",
+      "name": "GxMultiBandEcho",
+      "bundle": "lib/lv2/gx_mbecho.lv2",
+      "reason": "Delay audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#wah",
+      "name": "GxWah",
+      "bundle": "lib/lv2/gxwah.lv2",
+      "reason": "Filter audition session 1 (20 November 2026): a pedal wah needs a pedal; one kept (Crybaby). Removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_",
+      "name": "GxWahwah",
+      "bundle": "lib/lv2/gx_colwah.lv2",
+      "reason": "Filter audition session 1 (20 November 2026): a pedal wah needs a pedal; one kept (Crybaby). Removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah",
+      "name": "GxSwitchlessWah",
+      "bundle": "lib/lv2/GxSwitchlessWah.lv2",
+      "reason": "Filter audition session 1 (20 November 2026): a pedal wah needs a pedal; one kept (Crybaby). Removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxautowah#autowah",
+      "name": "GxAutoWah",
+      "bundle": "lib/lv2/gxwah.lv2",
+      "reason": "Filter audition session 2 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_barkgraphiceq_#_barkgraphiceq_",
+      "name": "GxBarkGraphicEQ",
+      "bundle": "lib/lv2/gx_barkgraphiceq.lv2",
+      "reason": "Filter audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gxtilttone#tilttone",
+      "name": "GxTiltTone",
+      "bundle": "lib/lv2/gxtilttone.lv2",
+      "reason": "Filter audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://polyeffects.com/lv2/polyfilter#moog_ladder",
+      "name": "moog ladder",
+      "bundle": null,
+      "reason": "Filter audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://avwlv2.sourceforge.net/plugins/avw/mooglpf",
+      "name": "Moog LPF",
+      "bundle": null,
+      "reason": "Filter audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/Vocoder",
+      "name": "MDA Vocoder",
+      "bundle": null,
+      "reason": "Filter audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/VocInput",
+      "name": "MDA VocInput",
+      "bundle": null,
+      "reason": "Filter audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_compressor#_compressor",
+      "name": "GxCompressor",
+      "bundle": "lib/lv2/gx_compressor.lv2",
+      "reason": "Dynamics audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_",
+      "name": "GxSustainer",
+      "bundle": "lib/lv2/gx_susta.lv2",
+      "reason": "Dynamics audition session 1 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_",
+      "name": "GxMultiBandCompressor",
+      "bundle": "lib/lv2/gx_mbcompressor.lv2",
+      "reason": "Dynamics audition session 2 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_expander#_expander",
+      "name": "GxExpander",
+      "bundle": "lib/lv2/gx_expander.lv2",
+      "reason": "Dynamics audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/Limiter",
+      "name": "MDA Limiter",
+      "bundle": null,
+      "reason": "Dynamics audition session 3 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/SubSynth",
+      "name": "MDA SubSynth",
+      "bundle": null,
+      "reason": "Pitch, reverb and cabinet audition session 2 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_",
+      "name": "Gxshimmizita",
+      "bundle": "lib/lv2/gx_shimmizita.lv2",
+      "reason": "Pitch, reverb and cabinet audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_",
+      "name": "GxMultiBandReverb",
+      "bundle": "lib/lv2/gx_mbreverb.lv2",
+      "reason": "Pitch, reverb and cabinet audition session 4 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://guitarix.sourceforge.net/plugins/gx_ultracab_#_ultracab_",
+      "name": "GxUltraCab",
+      "bundle": "lib/lv2/gx_ultracab.lv2",
+      "reason": "Pitch, reverb and cabinet audition session 5 (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://lv2plug.in/plugins/eg-fifths",
+      "name": "Example Fifths",
+      "bundle": null,
+      "reason": "Utility and Sound source decision (examples) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://lv2plug.in/plugins/eg-midigate",
+      "name": "Example MIDI Gate",
+      "bundle": null,
+      "reason": "Utility and Sound source decision (examples) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://lv2plug.in/plugins/eg-metro",
+      "name": "Example Metronome",
+      "bundle": null,
+      "reason": "Utility and Sound source decision (examples) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/Stereo",
+      "name": "MDA Stereo",
+      "bundle": null,
+      "reason": "Utility and Sound source decision (stereo tools) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://drobilla.net/plugins/mda/TestTone",
+      "name": "MDA TestTone",
+      "bundle": null,
+      "reason": "Utility and Sound source decision (sound source) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#onechannelfilter",
+      "name": "MIDI Simple Channel Filter",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#mapkeychannel",
+      "name": "MIDI Note/Channel Map",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#mapkeyscale",
+      "name": "MIDI Note Transpose",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#keyrange",
+      "name": "MIDI Key-Range Filter",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#sostenuto",
+      "name": "MIDI Sostenuto",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#tonalpedal",
+      "name": "MIDI Tonal Pedal",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#nodup",
+      "name": "MIDI Duplicate Blocker",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#eventblocker",
+      "name": "MIDI Event Filter",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#noactivesensing",
+      "name": "MIDI Remove Active Sensing",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#mididelay",
+      "name": "MIDI Delayline",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#velocitygamma",
+      "name": "MIDI Velocity Gamma",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#randvelocity",
+      "name": "MIDI Velocity Randomization",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
+    },
+    {
+      "uri": "http://gareus.org/oss/lv2/midifilter#velocityrange",
+      "name": "MIDI Velocity-Range Filter",
+      "bundle": null,
+      "reason": "Utility decision (MIDI filters) (20 November 2026): not kept; removed at the user's request."
     }
   ]
 }

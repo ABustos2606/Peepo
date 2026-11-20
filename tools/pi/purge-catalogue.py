@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Deploy the first catalogue purge without restarting the audio engine.
+"""Deploy catalogue retirements without restarting the audio engine.
 
 Run as root on the Pi: python3 tools/pi/purge-catalogue.py WORK
 WORK is the repository (or a transfer containing config/catalogue and tools).
+Removes whatever in config/catalogue/retired.json is still installed, so it
+runs again after every purge round; nothing to remove is not an error. It
+refuses if the playing patch or a saved patch uses a module being removed.
 The current graph and prior metadata/bundles are retained for recovery.
 """
 from datetime import datetime, timezone
@@ -65,14 +68,21 @@ def main():
     assert not retired & inventory
     old = json.loads((share / 'catalogue.json').read_text())
     old_uris = {m['uri'] for m in old['modules']}
-    assert retired <= old_uris or retired.isdisjoint(old_uris), 'Catalogue is only partially purged'
+    # Earlier rounds are already gone; only what is still installed is removed now.
+    removing = retired & old_uris
+    if not removing:
+        print('Nothing to remove: every retired module is already gone.')
+        return
+    saved = sorted(str(path) for path in Path('/var/lib/peepo/patches').rglob('*.ttl')
+                   if any(uri in path.read_text(errors='replace') for uri in removing))
+    assert not saved, 'Saved patches use a module being removed; keep or edit them first: ' + ', '.join(saved)
     previous_pids = pids()
     assert all(pid != '0' for pid in previous_pids.values())
     record = Path(tempfile.mkdtemp(prefix='catalogue-purge-', dir='/var/lib/peepo'))
     shutil.chown(record, user='peepo', group='peepo')
     snapshot(record / 'before.ingen')
     before_text = (record / 'before.ingen/main.ttl').read_text()
-    assert not any(uri in before_text for uri in retired), 'Current patch uses a retiring effect; preserve it before purging'
+    assert not any(uri in before_text for uri in removing), 'Current patch uses a retiring effect; preserve it before purging'
     metadata = {'inventory.txt': 'catalogue-inventory.txt', 'overlay.json': 'catalogue-overlay.json',
                 'patchstorage.json': 'patchstorage-manifest.json', 'retired.json': 'catalogue-retired.json'}
     backup = record / 'metadata'
@@ -106,9 +116,11 @@ def main():
         assert equal(record / 'before.ingen', record / 'after.ingen'), 'Current patch changed during deployment'
         assert pids() == previous_pids, 'The audio engine or JACK restarted'
         assert run('systemctl', 'is-active', 'peepo-ui') == 'active'
-        report = {'timestamp': datetime.now(timezone.utc).isoformat(), 'removed_uris': sorted(retired),
+        shared = sorted(m['uri'] for m in retirement['modules'] if m['uri'] in removing and not m.get('bundle'))
+        report = {'timestamp': datetime.now(timezone.utc).isoformat(), 'removed_uris': sorted(removing),
                   'removed_standalone_bundles': sorted(p.name for p in bundles.iterdir()) if bundles else [],
-                  'shared_mda_bundle_unchanged': True, 'installed_before': len(old_uris),
+                  'identities_only_shared_bundle_kept': shared, 'saved_patches_checked': True,
+                  'installed_before': len(old_uris),
                   'installed_after': len(fresh_uris), 'ready_to_add': sum(documenter.state(m) == 'Ready' for m in shown),
                   'hidden': sum(documenter.state(m) == 'Hidden' for m in shown),
                   'ir_families': [m['name'] for m in visible_ir], 'current_patch_unchanged': True,

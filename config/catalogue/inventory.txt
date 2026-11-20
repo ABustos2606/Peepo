@@ -70,7 +70,6 @@ http://avwlv2.sourceforge.net/plugins/avw/mixer_2ch_audio
 http://avwlv2.sourceforge.net/plugins/avw/mixer_2ch_cv
 http://avwlv2.sourceforge.net/plugins/avw/mixer_4ch_audio
 http://avwlv2.sourceforge.net/plugins/avw/mixer_4ch_cv
-http://avwlv2.sourceforge.net/plugins/avw/mooglpf
 http://avwlv2.sourceforge.net/plugins/avw/noise2_audio
 http://avwlv2.sourceforge.net/plugins/avw/noise2_cv
 http://avwlv2.sourceforge.net/plugins/avw/percussiveenv
@@ -131,7 +130,6 @@ http://polyeffects.com/lv2/polyfilter#diode_ladder  # Beebo: diode_ladder_lpf
 http://polyeffects.com/lv2/polyfilter#korg_hpf  # Beebo: k_org_hpf
 http://polyeffects.com/lv2/polyfilter#korg_lpf  # Beebo: k_org_lpf
 http://polyeffects.com/lv2/polyfilter#moog_half_ladder  # Beebo: oog_half_lpf
-http://polyeffects.com/lv2/polyfilter#moog_ladder
 http://polyeffects.com/lv2/polyfilter#oberheim  # Beebo: filter_uberheim
 
 # polyconvo.lv2
@@ -169,47 +167,31 @@ http://gareus.org/oss/lv2/midifilter#channelfilter  # Beebo: midi_channel_filter
 http://gareus.org/oss/lv2/midifilter#channelmap  # Beebo: midi_channel_map
 http://gareus.org/oss/lv2/midifilter#chokefilter  # Beebo: midi_choke_filter
 http://gareus.org/oss/lv2/midifilter#enforcescale  # Beebo: midi_enforce_scale
-http://gareus.org/oss/lv2/midifilter#eventblocker  # Beebo: midi_event_blocker
-http://gareus.org/oss/lv2/midifilter#keyrange  # Beebo: midi_keyrange
 http://gareus.org/oss/lv2/midifilter#keysplit  # Beebo: midi_keysplit
 http://gareus.org/oss/lv2/midifilter#mapcc  # Beebo: midi_mapcc
-http://gareus.org/oss/lv2/midifilter#mapkeychannel  # Beebo: midi_map_key_channel
-http://gareus.org/oss/lv2/midifilter#mapkeyscale  # Beebo: midi_map_key_scale
 http://gareus.org/oss/lv2/midifilter#midichord  # Beebo: midi_chord
-http://gareus.org/oss/lv2/midifilter#mididelay  # Beebo: midi_delay
 http://gareus.org/oss/lv2/midifilter#mididup  # Beebo: midi_dup
 http://gareus.org/oss/lv2/midifilter#midistrum  # Beebo: midi_strum
 http://gareus.org/oss/lv2/midifilter#miditranspose  # Beebo: midi_transpose
 http://gareus.org/oss/lv2/midifilter#monolegato  # Beebo: midi_mono_legato
-http://gareus.org/oss/lv2/midifilter#noactivesensing  # Beebo: midi_no_active_sensing
-http://gareus.org/oss/lv2/midifilter#nodup  # Beebo: midi_nodup
 http://gareus.org/oss/lv2/midifilter#notetocc  # Beebo: midi_note_to_cc
 http://gareus.org/oss/lv2/midifilter#notetoggle  # Beebo: midi_note_toggle
 http://gareus.org/oss/lv2/midifilter#notetopgm  # Beebo: midi_note_to_pgm
 http://gareus.org/oss/lv2/midifilter#ntapdelay  # Beebo: midi_ntap_delay
-http://gareus.org/oss/lv2/midifilter#onechannelfilter  # Beebo: midi_one_channel_filter
 http://gareus.org/oss/lv2/midifilter#quantize  # Beebo: midi_quantize
-http://gareus.org/oss/lv2/midifilter#randvelocity  # Beebo: midi_rand_velocity
 http://gareus.org/oss/lv2/midifilter#scalecc  # Beebo: midi_scale_cc
-http://gareus.org/oss/lv2/midifilter#sostenuto  # Beebo: midi_sostenuto
-http://gareus.org/oss/lv2/midifilter#tonalpedal  # Beebo: midi_tonal_pedal
-http://gareus.org/oss/lv2/midifilter#velocitygamma  # Beebo: midi_velocity_gamma
-http://gareus.org/oss/lv2/midifilter#velocityrange  # Beebo: midi_velocity_range
 http://gareus.org/oss/lv2/midifilter#velocityscale  # Beebo: midi_velocity_scale
 http://gareus.org/oss/lv2/zeroconvolv#CfgMono  # Beebo: mono_cab
 http://gareus.org/oss/lv2/zeroconvolv#CfgMonoToStereo  # Beebo: stereo_reverb
 http://gareus.org/oss/lv2/zeroconvolv#CfgStereo  # Beebo: quad_ir_reverb
 http://github.com/blablack/midimsg-lv2/controller  # Beebo: midi_cc
-http://guitarix.sourceforge.net/plugins/gx_CreamMachine_#_CreamMachine_  # Beebo: power_amp_cream
 http://guitarix.sourceforge.net/plugins/gx_ampegsvt_#_ampegsvt_  # Beebo: amp_bass
 http://guitarix.sourceforge.net/plugins/gx_slowgear_#_slowgear_  # Beebo: auto_swell
-http://guitarix.sourceforge.net/plugins/gx_supersonic_#_supersonic_  # Beebo: power_amp_super
 http://jpcima.sdf1.org/lv2/stone-phaser  # Beebo: phaser
 http://jpcima.sdf1.org/lv2/stone-phaser-stereo  # Beebo: stereo_phaser
 http://moddevices.com/plugins/mod-devel/mod-cv-meter  # Beebo: cv_meter
 http://moddevices.com/plugins/tap/pitch  # Beebo: pitch_shift
 http://moddevices.com/plugins/tap/reflector  # Beebo: reverse
-http://moddevices.com/plugins/tap/sigmoid  # Beebo: saturator
 http://moddevices.com/plugins/tap/tubewarmth  # Beebo: warmth
 http://polyeffects.com/lv2/bitcrusher  # Beebo: bitcrusher
 http://polyeffects.com/lv2/detect#onset  # Beebo: onset_detect
@@ -259,45 +241,18 @@ https://github.com/ABustos2606/midi-pc#pc
 https://github.com/ABustos2606/euclidelay#euclidelay
 
 # GxPlugins: full collection (source pins in config/catalogue/gxplugins.json)
-http://guitarix.sourceforge.net/plugins/gx_AxisFace_#_AxisFace_
-http://guitarix.sourceforge.net/plugins/gx_bajatubedriver_#_bajatubedriver_
 http://guitarix.sourceforge.net/plugins/gx_blueamp_#_blueamp_
-http://guitarix.sourceforge.net/plugins/gx_boobtube_#_boobtube_
 http://guitarix.sourceforge.net/plugins/gx_bottlerocket_#_bottlerocket_
-http://guitarix.sourceforge.net/plugins/gx_clubdrive_#_clubdrive_
 http://guitarix.sourceforge.net/plugins/gx_DOP250_#_DOP250_
-http://guitarix.sourceforge.net/plugins/gx_epic_#_epic_
-http://guitarix.sourceforge.net/plugins/gx_eternity_#_eternity_
-http://guitarix.sourceforge.net/plugins/gx_maestro_fz1b_#_maestro_fz1b_
-http://guitarix.sourceforge.net/plugins/gx_maestro_fz1s_#_maestro_fz1s_
 http://guitarix.sourceforge.net/plugins/gx_guvnor_#_guvnor_
-http://guitarix.sourceforge.net/plugins/gx_Heathkit_#_Heathkit_
-http://guitarix.sourceforge.net/plugins/gx_hotbox_#_hotbox_
-http://guitarix.sourceforge.net/plugins/gx_hyperion_#_hyperion_
-http://guitarix.sourceforge.net/plugins/gx_KnightFuzz_#_KnightFuzz_
-http://guitarix.sourceforge.net/plugins/gx_liquiddrive_#_liquiddrive_
-http://guitarix.sourceforge.net/plugins/gx_luna_#_luna_
 http://guitarix.sourceforge.net/plugins/gx_MicroAmp_#_MicroAmp_
 http://guitarix.sourceforge.net/plugins/gx_plexi_#_plexi_
 http://guitarix.sourceforge.net/plugins/gx_quack_#_quack_
 http://guitarix.sourceforge.net/plugins/gx_sd1sim_#_sd1sim_
 http://guitarix.sourceforge.net/plugins/gx_sd2lead_#_sd2lead_
-http://guitarix.sourceforge.net/plugins/gx_saturate_#_saturate_
-http://guitarix.sourceforge.net/plugins/gx_shakatube_#_shakatube_
-http://guitarix.sourceforge.net/plugins/gx_sloopyblue_#_sloopyblue_
 http://guitarix.sourceforge.net/plugins/gx_SunFace_#_SunFace_
 http://guitarix.sourceforge.net/plugins/gx_sfp_#_sfp_
-http://guitarix.sourceforge.net/plugins/gx_vstb_#_vstb_
-http://guitarix.sourceforge.net/plugins/gx_timray_#_timray_
-http://guitarix.sourceforge.net/plugins/gx_tonemachine_#_tonemachine_
-http://guitarix.sourceforge.net/plugins/gx_TubeDistortion_#_TubeDistortion_
 http://guitarix.sourceforge.net/plugins/gx_uvox_#_uvox_
-http://guitarix.sourceforge.net/plugins/gx_ultracab_#_ultracab_
-http://guitarix.sourceforge.net/plugins/gx_voxbass_#_voxbass_
-http://guitarix.sourceforge.net/plugins/gx_valvecaster_#_valvecaster_
-http://guitarix.sourceforge.net/plugins/gx_vfm_#_vfm_
-http://guitarix.sourceforge.net/plugins/gx_vmk2d_#_vmk2d_
-http://guitarix.sourceforge.net/plugins/gx_voodoo_#_voodoo_
 
 # Development: MDA effects (also packaged for MODEP) and the LV2 examples the tests use
 http://drobilla.net/plugins/mda/Bandisto
@@ -314,11 +269,8 @@ http://drobilla.net/plugins/mda/Dynamics
 http://drobilla.net/plugins/mda/EPiano
 http://drobilla.net/plugins/mda/Image
 http://drobilla.net/plugins/mda/JX10
-http://drobilla.net/plugins/mda/Leslie
-http://drobilla.net/plugins/mda/Limiter
 http://drobilla.net/plugins/mda/Loudness
 http://drobilla.net/plugins/mda/MultiBand
-http://drobilla.net/plugins/mda/Overdrive
 http://drobilla.net/plugins/mda/Piano
 http://drobilla.net/plugins/mda/RePsycho
 http://drobilla.net/plugins/mda/RezFilter
@@ -326,81 +278,32 @@ http://drobilla.net/plugins/mda/RingMod
 http://drobilla.net/plugins/mda/RoundPan
 http://drobilla.net/plugins/mda/Shepard
 http://drobilla.net/plugins/mda/Splitter
-http://drobilla.net/plugins/mda/Stereo
-http://drobilla.net/plugins/mda/SubSynth
 http://drobilla.net/plugins/mda/TalkBox
-http://drobilla.net/plugins/mda/TestTone
 http://drobilla.net/plugins/mda/Tracker
 http://drobilla.net/plugins/mda/Transient
-http://drobilla.net/plugins/mda/VocInput
-http://drobilla.net/plugins/mda/Vocoder
 http://lv2plug.in/plugins/eg-amp
-http://lv2plug.in/plugins/eg-fifths
-http://lv2plug.in/plugins/eg-metro
-http://lv2plug.in/plugins/eg-midigate
 http://lv2plug.in/plugins/eg-params
 http://lv2plug.in/plugins/eg-scope#Mono
 http://lv2plug.in/plugins/eg-scope#Stereo
 
 # Requested Patchstorage expansion: full Guitarix LV2 set and Dragonfly
-http://guitarix.sourceforge.net/plugins/gx_amp#GUITARIX
-http://guitarix.sourceforge.net/plugins/gx_amp_stereo#GUITARIX_ST
-http://guitarix.sourceforge.net/plugins/gx_barkgraphiceq_#_barkgraphiceq_
 http://guitarix.sourceforge.net/plugins/gx_cabinet#CABINET
-http://guitarix.sourceforge.net/plugins/gx_chorus_stereo#_chorus_stereo
-http://guitarix.sourceforge.net/plugins/gx_colwah_#_colwah_
-http://guitarix.sourceforge.net/plugins/gx_compressor#_compressor
 http://guitarix.sourceforge.net/plugins/gx_cstb_#_cstb_
-http://guitarix.sourceforge.net/plugins/gx_delay_stereo#_delay_stereo
 http://guitarix.sourceforge.net/plugins/gx_detune_#_detune_
-http://guitarix.sourceforge.net/plugins/gx_digital_delay_#_digital_delay_
-http://guitarix.sourceforge.net/plugins/gx_digital_delay_st_#_digital_delay_st_
 http://guitarix.sourceforge.net/plugins/gx_duck_delay_#_duck_delay_
 http://guitarix.sourceforge.net/plugins/gx_duck_delay_st_#_duck_delay_st_
-http://guitarix.sourceforge.net/plugins/gx_echo_stereo#_echo_stereo
-http://guitarix.sourceforge.net/plugins/gx_expander#_expander
-http://guitarix.sourceforge.net/plugins/gx_flanger#_flanger
-http://guitarix.sourceforge.net/plugins/gx_fumaster_#_fumaster_
-http://guitarix.sourceforge.net/plugins/gx_fuzz_#fuzz_
-http://guitarix.sourceforge.net/plugins/gx_fuzzface_#_fuzzface_
 http://guitarix.sourceforge.net/plugins/gx_fuzzfacefm_#_fuzzfacefm_
 http://guitarix.sourceforge.net/plugins/gx_gcb_95_#_gcb_95_
 http://guitarix.sourceforge.net/plugins/gx_graphiceq_#_graphiceq_
-http://guitarix.sourceforge.net/plugins/gx_hfb_#_hfb_
-http://guitarix.sourceforge.net/plugins/gx_hogsfoot_#_hogsfoot_
-http://guitarix.sourceforge.net/plugins/gx_hornet_#_hornet_
 http://guitarix.sourceforge.net/plugins/gx_jcm800pre_#_jcm800pre_
 http://guitarix.sourceforge.net/plugins/gx_jcm800pre_st#_jcm800pre_st
-http://guitarix.sourceforge.net/plugins/gx_mbcompressor_#_mbcompressor_
-http://guitarix.sourceforge.net/plugins/gx_mbdelay_#_mbdelay_
-http://guitarix.sourceforge.net/plugins/gx_mbdistortion_#_mbdistortion_
-http://guitarix.sourceforge.net/plugins/gx_mbecho_#_mbecho_
-http://guitarix.sourceforge.net/plugins/gx_mbreverb_#_mbreverb_
-http://guitarix.sourceforge.net/plugins/gx_mole_#_mole_
 http://guitarix.sourceforge.net/plugins/gx_muff_#_muff_
 http://guitarix.sourceforge.net/plugins/gx_oc_2_#_oc_2_
-http://guitarix.sourceforge.net/plugins/gx_phaser#_phaser
 http://guitarix.sourceforge.net/plugins/gx_rangem_#_rangem_
-http://guitarix.sourceforge.net/plugins/gx_redeye#bigchump
-http://guitarix.sourceforge.net/plugins/gx_redeye#chump
-http://guitarix.sourceforge.net/plugins/gx_redeye#vibrochump
 http://guitarix.sourceforge.net/plugins/gx_scream_#_scream_
-http://guitarix.sourceforge.net/plugins/gx_shimmizita_#_shimmizita_
-http://guitarix.sourceforge.net/plugins/gx_studiopre#studiopre
-http://guitarix.sourceforge.net/plugins/gx_studiopre_st#studiopre_st
-http://guitarix.sourceforge.net/plugins/gx_susta_#_susta_
-http://guitarix.sourceforge.net/plugins/gx_switched_tremolo_#_switched_tremolo_
-http://guitarix.sourceforge.net/plugins/gx_switchless_wah#wah
 http://guitarix.sourceforge.net/plugins/gx_tremolo#_tremolo
-http://guitarix.sourceforge.net/plugins/gxautowah#autowah
-http://guitarix.sourceforge.net/plugins/gxautowah#wah
-http://guitarix.sourceforge.net/plugins/gxbooster#booster
 http://guitarix.sourceforge.net/plugins/gxechocat#echocat
-http://guitarix.sourceforge.net/plugins/gxtilttone#tilttone
 http://guitarix.sourceforge.net/plugins/gxts9#ts9sim
-http://guitarix.sourceforge.net/plugins/gxtubedelay#tubedelay
-http://guitarix.sourceforge.net/plugins/gxtubetremelo#tubetremelo
-http://guitarix.sourceforge.net/plugins/gxtubevibrato#tubevibrato
 https://github.com/michaelwillis/dragonfly-reverb
 urn:dragonfly:plate
 urn:dragonfly:room

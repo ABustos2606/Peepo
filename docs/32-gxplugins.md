@@ -27,53 +27,53 @@ engine's general Output is used. Desktop fixtures include the 39 new identities.
 <!-- gxplugins-list:start -->
 ## All 43 GxPlugins
 
-These are the names shown in Peepo. All 43 are installed and ready to add; see the [complete module list](33-module-list.md) for the rest of the instrument.
+These are the names shown in Peepo. 14 are installed and ready to add; the other 29 were retired in the [auditions](36-catalogue-purge.md) and are no longer installed. See the [complete module list](33-module-list.md) for the rest of the instrument.
 
-| Module in Peepo | Category | What it does |
-| --- | --- | --- |
-| Bass amp (SVT) | Amp | Classic tube bass amp simulation. |
-| Blue Amp | Amp | Single-ended amp inspired by late 1950s Fender Princeton and Champ designs. |
-| Epic | Amp | Based on Valve Junior. |
-| Plexi | Amp | Plexi power amp simulation. |
-| Power amp (Cream) | Amp | Cream-coloured power amp emulation with bass and treble. |
-| Power amp (Supersonic) | Amp | Vintage American power amp emulation. |
-| UVox 720k | Amp | Based on Univox 720k keyboard amp from 1978. |
-| VBass Pre Amp | Amp | Simulation of the 1984 Vox Venue Bass 100 Pre Amp section. |
-| Vox MKII | Amp | Based on Vox MKII solid state preamp of the late 60s. |
-| Ultra Cab (built-in) | Cabinet | Cabinet simulator pedal with built-in processing. No impulse response file needed. |
-| Axis Face | Drive | Based on the Axis Face Silicon fuzz. |
-| Baja Tube Driver | Drive | Based on the BaJaTubeDriver. |
-| Boob Tube | Drive | Based on the Boob Tube. |
-| Bottle Rocket | Drive | Based on the Mesa V1 Bottle Rocket tube overdrive. |
-| Club Drive | Drive | Overdrive Pedal Simulation based on a EF86 Pentode Valve Simulation. |
-| DOP 250 | Drive | Based on the Analog Man DOD OD-250 Yellow Overdrive. |
-| Eternity | Drive | Low compression overdrive pedal. |
-| Guvnor | Drive | Based on the Marshall "The Guv'nor" Overdrive. |
-| Heathkit | Drive | Based on the Heathkit TA-28 distortion/booster/fuzz. |
-| Hot Box | Drive | Based on the Matchless Hot Box tube overdrive. |
-| Hyperion | Drive | Based on the Devi Ever FX Hyperion fuzz. |
-| Knight Fuzz | Drive | Fuzz based on the Basic Audio Knight Fuzz pedal. |
-| Liquid Drive | Drive | Based on the Liquid Drive fuzz, a modified Ross Distortion. |
-| Luna | Drive | Gnarly overdrive pedal simulation. |
-| Maestro FZ-1B | Drive | Based on the Robert Moog-designed Maestro FZ-1B fuzz. |
-| Maestro FZ-1S | Drive | Based on the Maestro FZ-1S Super-Fuzz. |
-| Micro Amp | Drive | A simple booster. |
-| Saturator | Drive | Based on the Joe Satriani-specified Vox Satchurator distortion. |
-| SD-1 | Drive | Based on the Boss SD-1 Super Overdrive. |
-| SD-2 Lead | Drive | Based on the Boss SD-2 Dual Overdrive. |
-| Shaka Tube | Drive | Based on the ShakaTube. |
-| Sloopy Blue | Drive | Overdrive pedal simulation. |
-| Sun Face | Drive | Based on the Analog Man Sun Face fuzz. |
-| Super Fuzz | Drive | Based on the Univox Super-Fuzz. |
-| Suppa Tone Bender | Drive | Based on the Vox Supa Tonebender fuzz. |
-| Tim Ray | Drive | Based on the Vemuram Jan Ray. |
-| Tone Machine | Drive | Based on the Foxx Tone Machine fuzz. |
-| Tube Distortion | Drive | Generic tube distortion based on http://www.montagar.com/~patj/tubedist.gif. |
-| Valve Caster | Drive | Based on the Valve Caster. |
-| Vintage Fuzz Master | Drive | Based on the Devi Ever Vintage Fuzz Master. |
-| Voodoo Fuzz | Drive | Based on the Voodoo Lab SuperFuzz. |
-| Slow gear | Dynamics | Automatically swells volume to remove note attack, for violin-like playing. |
-| Quack | Filter | Autowah. |
+| Module in Peepo | Category | What it does | Status |
+| --- | --- | --- | --- |
+| Bass amp (SVT) | Amp | Classic tube bass amp simulation. | Ready |
+| Blue Amp | Amp | Single-ended amp inspired by late 1950s Fender Princeton and Champ designs. | Ready |
+| Epic | Amp | Based on Valve Junior. | Retired |
+| Plexi | Amp | Plexi power amp simulation. | Ready |
+| Power amp (Cream) | Amp | Cream-coloured power amp emulation with bass and treble. | Retired |
+| Power amp (Supersonic) | Amp | Vintage American power amp emulation. | Retired |
+| UVox 720k | Amp | Based on Univox 720k keyboard amp from 1978. | Ready |
+| VBass Pre Amp | Amp | Simulation of the 1984 Vox Venue Bass 100 Pre Amp section. | Retired |
+| Vox MKII | Amp | Based on Vox MKII solid state preamp of the late 60s. | Retired |
+| Ultra Cab (built-in) | Cabinet | Cabinet simulator pedal with built-in processing. No impulse response file needed. | Retired |
+| Axis Face | Drive | Based on the Axis Face Silicon fuzz. | Retired |
+| Baja Tube Driver | Drive | Based on the BaJaTubeDriver. | Retired |
+| Boob Tube | Drive | Based on the Boob Tube. | Retired |
+| Bottle Rocket | Drive | Based on the Mesa V1 Bottle Rocket tube overdrive. | Ready |
+| Club Drive | Drive | Overdrive Pedal Simulation based on a EF86 Pentode Valve Simulation. | Retired |
+| DOP 250 | Drive | Based on the DOD OD-250 Yellow Overdrive. | Ready |
+| Eternity | Drive | Low compression overdrive pedal. | Retired |
+| Guvnor | Drive | Based on the Marshall "The Guv'nor" Overdrive. | Ready |
+| Heathkit | Drive | Based on the Heathkit TA-28 distortion/booster/fuzz. | Retired |
+| Hot Box | Drive | Based on the Matchless Hot Box tube overdrive. | Retired |
+| Hyperion | Drive | Based on the Devi Ever FX Hyperion fuzz. | Retired |
+| Knight Fuzz | Drive | Fuzz based on the Basic Audio Knight Fuzz pedal. | Retired |
+| Liquid Drive | Drive | Based on the Liquid Drive fuzz, a modified Ross Distortion. | Retired |
+| Luna | Drive | Gnarly overdrive pedal simulation. | Retired |
+| Maestro FZ-1B | Drive | Based on the Robert Moog-designed Maestro FZ-1B fuzz. | Retired |
+| Maestro FZ-1S | Drive | Based on the Maestro FZ-1S Super-Fuzz. | Retired |
+| Micro Amp | Drive | A simple booster. | Ready |
+| Saturator | Drive | Based on the Joe Satriani-specified Vox Satchurator distortion. | Retired |
+| SD-1 | Drive | Based on the Boss SD-1 Super Overdrive. | Ready |
+| SD-2 Lead | Drive | Based on the Boss SD-2 Dual Overdrive. | Ready |
+| Shaka Tube | Drive | Based on the ShakaTube. | Retired |
+| Sloopy Blue | Drive | Overdrive pedal simulation. | Retired |
+| Sun Face | Drive | Based on the Analog Man Sun Face fuzz. | Ready |
+| Super Fuzz | Drive | Based on the Univox Super-Fuzz. | Ready |
+| Suppa Tone Bender | Drive | Based on the Vox Supa Tonebender fuzz. | Retired |
+| Tim Ray | Drive | Based on the Vemuram Jan Ray. | Retired |
+| Tone Machine | Drive | Based on the Foxx Tone Machine fuzz. | Retired |
+| Tube Distortion | Drive | Generic tube distortion based on http://www.montagar.com/~patj/tubedist.gif. | Retired |
+| Valve Caster | Drive | Based on the Valve Caster. | Retired |
+| Vintage Fuzz Master | Drive | Based on the Devi Ever Vintage Fuzz Master. | Retired |
+| Voodoo Fuzz | Drive | Based on the Voodoo Lab SuperFuzz. | Retired |
+| Slow gear | Dynamics | Automatically swells volume to remove note attack, for violin-like playing. | Ready |
+| Quack | Filter | Autowah. | Ready |
 
 <!-- gxplugins-list:end -->
 

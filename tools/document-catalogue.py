@@ -2,6 +2,10 @@
 # Copyright (C) 2026 Peepo contributors
 """Regenerate the complete user-facing module reference from a Pi export.
 
+Writes docs/33-module-list.md, the GxPlugins list in docs/32-gxplugins.md and
+the Modules section of README.md (one row per card in Add, between the
+module-list markers).
+
     python tools/document-catalogue.py
     python tools/document-catalogue.py --catalogue path/to/pi-export.json --date YYYY-MM-DD
 
@@ -93,10 +97,48 @@ def connections(module):
     return "; ".join(parts) or "No patchable connectors"
 
 
+def write_readme(visible, families, categories, recorded):
+    """The README's module list: one row per card in Add, as the player sees it."""
+    ready = {m["uri"]: m for m in visible if state(m) == "Ready"}
+    family_of = {v["uri"]: f for f in families for v in f["variants"]}
+    cards = {}
+    for uri, module in ready.items():
+        family = family_of.get(uri)
+        if family:
+            labels = [v["label"] for v in family["variants"] if v["uri"] in ready]
+            cards[family["name"]] = (module["category"], f"{family['name']} ({', '.join(labels)})",
+                                     family.get("description") or module["description"])
+        else:
+            cards[uri] = (module["category"], module["name"], module["description"])
+    rows = sorted(cards.values(), key=lambda c: c[1].casefold())
+    lines = ["<!-- module-list:start -->", "## Modules", "",
+             f"Everything you can add to a patch, as listed in Add on the instrument ({recorded}): **{len(rows)} modules** in "
+             f"{len({c[0] for c in rows})} categories. A name with options in brackets is one card with a pill for each "
+             "variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the "
+             "[complete module list](docs/33-module-list.md).", ""]
+    for category in categories:
+        group = [c for c in rows if c[0] == category]
+        if not group:
+            continue
+        lines += [f"### {category}", "", "| Module | What it does |", "| --- | --- |"]
+        lines += ["| " + cell(name) + " | " + cell(description) + " |" for _, name, description in group]
+        lines.append("")
+    lines += ["<!-- module-list:end -->", ""]
+    text = "\n".join(lines)
+    assert text.isascii(), "README module list must be plain ASCII"
+    path = ROOT / "README.md"
+    readme = path.read_text(encoding="utf-8")
+    if "<!-- module-list:start -->" in readme:
+        readme = re.sub(r"<!-- module-list:start -->.*?<!-- module-list:end -->\n", lambda _: text, readme, flags=re.S)
+    else:
+        readme = readme.replace("## Documentation", text + "## Documentation", 1)
+    path.write_text(readme, encoding="utf-8", newline="\n")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--catalogue", type=Path, default=ROOT / "docs/evidence/catalogue-pi-20261022.json")
-    parser.add_argument("--date", default="2026-10-22")
+    parser.add_argument("--catalogue", type=Path, default=ROOT / "docs/evidence/catalogue-pi-20261120-auditions.json")
+    parser.add_argument("--date", default="2026-11-20")
     args = parser.parse_args()
     recorded = date.fromisoformat(args.date).strftime("%d %B %Y").lstrip("0")
     export = read_json(args.catalogue)
@@ -112,23 +154,30 @@ def main():
     missing = [uri for uri in inventory if uri not in installed]
     counts = Counter(state(m) for m in installed.values())
     assert sum(counts.values()) + len(missing) == len(inventory)
+    retired = read_json(ROOT / "config/catalogue/retired.json")["modules"]
+    retired_uris = {m["uri"] for m in retired}
+    assert not retired_uris & set(installed), "Pi export still includes retired identities"
     gx = read_json(ROOT / "config/catalogue/gxplugins.json")["plugins"]
     gx_uris = {p["uri"] for p in gx}
-    assert len(gx_uris) == 43 and gx_uris <= set(installed)
-    assert all(state(installed[uri]) == "Ready" for uri in gx_uris)
+    # The source pins keep the whole collection; the auditions retired some of it.
+    gx_kept = gx_uris - retired_uris
+    assert len(gx_uris) == 43 and gx_kept <= set(installed)
+    assert all(state(installed[uri]) == "Ready" for uri in gx_kept)
     expansion = read_json(ROOT / "config/catalogue/patchstorage.json")["entries"]
-    all_gx_uris = gx_uris | {p["uri"] for entry in expansion for p in entry["plugins"]
-                            if p["uri"].startswith("http://guitarix.sourceforge.net/plugins/")}
+    all_gx_uris = gx_kept | {p["uri"] for entry in expansion for p in entry["plugins"]
+                             if p["uri"].startswith("http://guitarix.sourceforge.net/plugins/")} - retired_uris
     assert all(uri in installed and state(installed[uri]) == "Ready" for uri in all_gx_uris)
+    families = read_json(ROOT / "config/catalogue/overlay.json").get("families", [])
     technical = {p["uri"]: p for p in read_json(ROOT / "docs/evidence/compatibility.json")["entries"]}
     reference = read_json(ROOT / "docs/lv2-plugin-comparison-data.json")
     source_names = {p["uri"]: p["name"] for p in reference["poly_plugins"]}
     mappings = {p["uri"]: p for p in reference["beebo_mappings"]}
     snapshot = args.catalogue.resolve().relative_to(ROOT / "docs").as_posix()
     lines = ["# Complete module list", "", f"**Updated {recorded}.** This is the full selected Peepo module inventory, using the names and categories shown on the touchscreen.", "",
-             f"**{len(inventory)} plugin identities:** {len(installed)} installed in the Pi export and {len(missing)} not installed. All **{len(all_gx_uris)} selected Guitarix identities**, including the original **43 GxPlugins**, and the **three retained Dragonfly reverbs** are included.", "",
+             f"**{len(inventory)} plugin identities:** {len(installed)} installed in the Pi export and {len(missing)} not installed. **{len(all_gx_uris)} Guitarix identities** are kept, {len(gx_kept)} of them from the 43 GxPlugins, with the **three Dragonfly reverbs**.", "",
              "**Removed effects:** Bollie Delay XT and Faust Granulator have been removed from Peepo and this inventory. The Granulator - Mono and Granulator - Stereo entries below are separate AVW plugins. [Removal details](35-patchstorage-expansion.md).", "",
              "**First catalogue purge:** Gx Live looper, Ambience, MVerb, Gx Reverb stereo, Gx Room simulator, Gx Zita reverb stereo and Dragonfly Early Reflections are retired. IR effects now use the Cabinet and IR Reverb families; alternate convolution identities are hidden for older patches. [Purge details](36-catalogue-purge.md).", "",
+             f"**Auditions:** the drive, amp, modulation, delay, filter, dynamics, pitch, reverb and cabinet sessions and the utility decisions retired more modules, by ear or by function; {len(retired)} identities are retired in all, listed under [retired identities](#retired-identities) and no longer installed. [Session results](36-catalogue-purge.md).", "",
              "The tables below list every identity once. IN and OUT are fixed patch endpoints, described separately.", "",
              "## Availability", "", "| Status | Count | Meaning |", "| --- | ---: | --- |",
              f"| Ready | {counts['Ready']} | Can be added to a patch. This does not imply a guitar listening test of every module. |",
@@ -146,7 +195,7 @@ def main():
         group = [m for m in visible if m["category"] == category]
         anchor = category.lower().replace(" ", "-")
         lines.append(f"| [{category}](#{anchor}) | {sum(state(m) == 'Ready' for m in group)} / {len(group)} |")
-    lines += ["", "Also: [hidden identities](#hidden-identities), [not installed](#not-installed), [fixed endpoints](#fixed-endpoints), [all 43 GxPlugins](32-gxplugins.md#all-43-gxplugins).", ""]
+    lines += ["", "Also: [hidden identities](#hidden-identities), [retired identities](#retired-identities), [not installed](#not-installed), [fixed endpoints](#fixed-endpoints), [all 43 GxPlugins](32-gxplugins.md#all-43-gxplugins).", ""]
     listed_uris = []
     for category in categories:
         lines += [f"## {category}", "", "| Module | What it does | Connections | Status |", "| --- | --- | --- | --- |"]
@@ -165,6 +214,11 @@ def main():
         listed_uris.append(module["uri"])
         reason = module.get("reason") or ("Duplicate tuner; use Tuner." if "tuna#" in module["uri"] else "Redundant clean boost; use Gain.")
         lines.append("| " + " | ".join(map(cell, (module["name"], module["category"], reason, "`"+module["uri"]+"`"))) + " |")
+    lines += ["", "## Retired identities", "",
+              "Removed from the inventory and from builds; standalone bundles were moved to recovery storage on the Pi. A saved patch that uses one needs its recovery bundle. [Purge and auditions](36-catalogue-purge.md).", "",
+              "| Plugin name | Why it was retired | Plugin identity |", "| --- | --- | --- |"]
+    for module in sorted(retired, key=lambda m: m["name"].casefold()):
+        lines.append("| " + " | ".join(map(cell, (module["name"], module["reason"], "`" + module["uri"] + "`"))) + " |")
     lines += ["", "## Not installed", "", "These are reference identities, not available effects. The installed Foot switch, mixers and other modules can cover some use cases without implementing the original identity.", "",
               "| Reference module | Reason / reference description | Plugin identity |", "| --- | --- | --- |"]
     missing_rows = []
@@ -193,11 +247,13 @@ def main():
     assert set(listed_uris) == set(inventory)
     (ROOT / "docs/33-module-list.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
     gx_lines = ["<!-- gxplugins-list:start -->", "## All 43 GxPlugins", "",
-                "These are the names shown in Peepo. All 43 are installed and ready to add; see the [complete module list](33-module-list.md) for the rest of the instrument.", "",
-                "| Module in Peepo | Category | What it does |", "| --- | --- | --- |"]
-    for plugin in sorted(gx, key=lambda p: (installed[p["uri"]]["category"], installed[p["uri"]]["name"].casefold())):
-        module = installed[plugin["uri"]]
-        gx_lines.append("| " + " | ".join(map(cell, (module["name"], module["category"], module["description"]))) + " |")
+                f"These are the names shown in Peepo. {len(gx_kept)} are installed and ready to add; the other {len(gx_uris - gx_kept)} were retired in the [auditions](36-catalogue-purge.md) and are no longer installed. See the [complete module list](33-module-list.md) for the rest of the instrument.", "",
+                "| Module in Peepo | Category | What it does | Status |", "| --- | --- | --- | --- |"]
+    shown = {p["uri"]: installed.get(p["uri"]) or present({**p, "availability": "available"}, rules) for p in gx}
+    for plugin in sorted(gx, key=lambda p: (shown[p["uri"]]["category"], shown[p["uri"]]["name"].casefold())):
+        module = shown[plugin["uri"]]
+        status = "Ready" if plugin["uri"] in gx_kept else "Retired"
+        gx_lines.append("| " + " | ".join(map(cell, (module["name"], module["category"], module["description"], status))) + " |")
     gx_lines += ["", "<!-- gxplugins-list:end -->", ""]
     gx_path = ROOT / "docs/32-gxplugins.md"
     gx_doc = gx_path.read_text(encoding="utf-8")
@@ -206,6 +262,7 @@ def main():
     else:
         gx_doc = gx_doc.replace("## Build and verification", "\n".join(gx_lines) + "\n## Build and verification", 1)
     gx_path.write_text(gx_doc, encoding="utf-8", newline="\n")
+    write_readme(visible, families, categories, recorded)
     print(f"Wrote all {len(inventory)} identities: {dict(counts)}, {len(missing)} not installed")
 
 
