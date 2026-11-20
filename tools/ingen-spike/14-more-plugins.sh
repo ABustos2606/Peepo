@@ -271,6 +271,12 @@ third eureka https://github.com/ABustos2606/eureka.git 4b52532c3f0f426a38005c01c
 third euclidelay https://github.com/ABustos2606/euclidelay.git 4ee5c87c266691ba415049885734b297ef327e8f "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 
+# --- Octant (octaves two down to two up, follows chords; phase vocoder), the
+# project's own. Its Makefile adds -fno-fast-math after OPT. Installed on the
+# Pi from 93b2b01 on 28 October 2026; cb1db4f changes only its plan.
+third octant https://github.com/ABustos2606/octant.git cb1db4f30238f093ec6070f043d73318ca16c579 "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+
 # Requested MODEP/Patchstorage effects, including the remaining main Guitarix
 # LV2 collection. Artifacts, source rebuilds and metadata repairs are locked.
 if bash "$HERE/22-patchstorage.sh" >"$SRC/Patchstorage.log" 2>&1; then

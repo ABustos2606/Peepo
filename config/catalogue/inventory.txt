@@ -239,6 +239,7 @@ https://github.com/ABustos2606/midi-cv#mono
 https://github.com/ABustos2606/midi-cv#poly
 https://github.com/ABustos2606/midi-pc#pc
 https://github.com/ABustos2606/euclidelay#euclidelay
+https://github.com/ABustos2606/octant#octant
 
 # GxPlugins: full collection (source pins in config/catalogue/gxplugins.json)
 http://guitarix.sourceforge.net/plugins/gx_blueamp_#_blueamp_

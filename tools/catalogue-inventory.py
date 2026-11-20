@@ -37,6 +37,7 @@ PEEPO += ['https://github.com/ABustos2606/eureka#slowmo', 'https://github.com/AB
 # Preserve selected project-owned identities when regenerating.
 PEEPO += ['https://github.com/ABustos2606/midi-cv#mono', 'https://github.com/ABustos2606/midi-cv#poly', 'https://github.com/ABustos2606/midi-pc#pc']
 PEEPO += ['https://github.com/ABustos2606/euclidelay#euclidelay']
+PEEPO += ['https://github.com/ABustos2606/octant#octant']
 EXAMPLES = ["eg-amp", "eg-fifths", "eg-metro", "eg-midigate", "eg-params", "eg-scope#Mono", "eg-scope#Stereo"]
 
 

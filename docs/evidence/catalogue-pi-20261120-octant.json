@@ -6466,6 +6466,30 @@
       ]
     },
     {
+      "uri": "https://github.com/ABustos2606/octant#octant",
+      "name": "Octant",
+      "category": "Pitch",
+      "description": "Pitch Shifter",
+      "color": "#bfa1ed",
+      "availability": "available",
+      "reason": "",
+      "origin": "class Pitch Shifter; author Alejandro Bustos; bundle file:///opt/peepo/lib/lv2/octant.lv2/",
+      "enable": "",
+      "ports": [
+        {"symbol": "in", "direction": "input", "type": "audio"},
+        {"symbol": "out", "direction": "output", "type": "audio"}
+      ],
+      "parameters": [
+        {"symbol": "dry", "name": "Dry", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 1, "logarithmic": false, "choices": []},
+        {"symbol": "down_2", "name": "2 oct down", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "down_1", "name": "1 oct down", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.6, "logarithmic": false, "choices": []},
+        {"symbol": "up_1", "name": "1 oct up", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "up_2", "name": "2 oct up", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "tone", "name": "Tone", "unit": "Hz", "kind": "continuous", "minimum": 200, "maximum": 16000, "default": 16000, "logarithmic": true, "choices": []},
+        {"symbol": "swell", "name": "Swell", "unit": "s", "kind": "continuous", "minimum": 0, "maximum": 2, "default": 0, "logarithmic": false, "choices": []}
+      ]
+    },
+    {
       "uri": "https://github.com/michaelwillis/dragonfly-reverb",
       "name": "Dragonfly Hall Reverb",
       "category": "Reverb",

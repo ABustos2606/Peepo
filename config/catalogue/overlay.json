@@ -242,6 +242,11 @@
       {"name": "Voice 4", "parameters": ["voice_4", "steps_4", "hits_4", "shift_4", "feedback_4", "level_4", "pan_4"]},
       {"name": "Tempo and output", "parameters": ["bpm", "peepo_output"]}
     ]},
+    {"uri": "https://github.com/ABustos2606/octant#octant", "name": "Octant", "category": "Pitch", "description": "Adds octaves to what you play, two down to two up, each with its own level. Follows chords as well as single notes.",
+     "groups": [
+      {"name": "Voices", "parameters": ["down_2", "down_1", "dry", "up_1", "up_2"]},
+      {"name": "Shape and output", "parameters": ["tone", "swell", "peepo_output"]}
+    ]},
     {"uri": "https://github.com/ABustos2606/chamber#chamber", "name": "Chamber", "category": "Resonator", "description": "A bell, plate or strings that your guitar rings at its own pitch: cable it to Strike in, no gate needed. It starts as a long bell with reverb. Raise Strike, Bow or Blow level to play it with Play or a gate; Blow in sounds only while one is held.",
      "output": "output", "parameters": [{"symbol": "ominous", "hidden": true}], "groups": [
       {"name": "Resonator", "parameters": ["model", "geometry", "brightness", "damping", "position", "space"]},

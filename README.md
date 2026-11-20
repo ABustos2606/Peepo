@@ -105,7 +105,7 @@ The keyboard stands in for the hardware: **Q/A** and **W/S** turn the encoders, 
 <!-- module-list:start -->
 ## Modules
 
-Everything you can add to a patch, as listed in Add on the instrument (20 November 2026): **215 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
+Everything you can add to a patch, as listed in Add on the instrument (20 November 2026): **216 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
 
 ### Drive
 
@@ -209,6 +209,7 @@ Everything you can add to a patch, as listed in Add on the instrument (20 Novemb
 | Gx Detune | Pitch detuning and octave effects with wet and dry levels. |
 | Gx OC-2 | Octave-down effect with separate octave and dry levels. |
 | Mist Stretch | A granular time stretching and pitch shifting module. |
+| Octant | Adds octaves to what you play, two down to two up, each with its own level. Follows chords as well as single notes. |
 | Pitch Shifter | Changes the pitch of the incoming audio. |
 | RePsycho! | Audio-triggered pitch shifting and sample playback. |
 | Shepard | Shepard-tone processing for an endlessly rising or falling illusion. |
