@@ -256,6 +256,12 @@ third drizzle https://github.com/ABustos2606/drizzle.git 8047478a978c8a9117cfb54
 # milestone 2 commit; move the pin to v0.2.0 once that tag exists.
 third slope https://github.com/ABustos2606/slope.git 13b8d6301be73fa37135a797087d01b51cbe3a0a "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
+# --- Reel and Reel LFO (keyframe mixer with four VCAs; four related LFOs), the
+# project's own port of Emilie Gillet's Frames (MIT). Its Makefile also adds
+# -fno-fast-math after OPT, so it gets the same flags. Pinned at its milestone 2
+# commit; move the pin to v0.2.0 once that tag exists.
+third reel https://github.com/ABustos2606/reel.git 0089184eadbfa86aca83d5e746a848c43c53a3c0 "make" \
+    make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- MIDI to CV and MIDI to CV poly (MIDI notes to Poly's pitch and gate CVs), the project's own.
 third midi-cv https://github.com/ABustos2606/midi-cv.git 03ac4344aeae7e49625fb77f9a770a39d91f9749 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install

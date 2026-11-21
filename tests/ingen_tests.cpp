@@ -1043,6 +1043,52 @@ void looper_monitor() {
     for(std::size_t i=0;i<looper_outputs;++i) check(!subscribed(i),"looper subscription leaked on leaving page");
     engine.disconnect();check(!engine.looper_status(3)[0] && !engine.looper_command(3,5,0,true),"disconnected looper still active");
 }
+void reel_monitor() {
+    using namespace peepo; using namespace peepo::ingen;
+    FakeEngine fake;
+    const std::string path = "ingen:/main/m3", plugin = "https://github.com/ABustos2606/reel#reel";
+    fake.plugins.insert(plugin);
+    register_definitions({{plugin, "Reel", "Utility", "", 0xe8d44d, {{"in_1", Direction::Input}, {"out_1", Direction::Output}},
+                           {{"frame", "Frame", "", ParameterKind::Continuous, 0, 1, 0}}}});
+    fake.objects[path] = {{rdf_type, iri_value(full(uri::ingen, "Block"))}, {full(uri::lv2, "prototype"), iri_value(plugin)}};
+    for (const auto* symbol : reel_outputs)
+        fake.objects[path + "/" + symbol] = {{rdf_type, iri_value(full(uri::lv2, "OutputPort"))},
+            {rdf_type, iri_value(full(uri::lv2, "ControlPort"))}, {full(uri::ingen, "value"), number_value(0)}};
+    fake.objects[path + "/t_keyframes"] = {{rdf_type, iri_value(full(uri::lv2, "OutputPort"))}, {rdf_type, iri_value(full(uri::atom, "AtomPort"))}};
+    Rig rig(fake); auto& engine = *rig.engine; engine.connect(); rig.settle();
+    check(!engine.reel_status(3).keyframes && !engine.reel_status(3).value(ReelValue::Count), "unwatched Reel exposed telemetry");
+    engine.watch_reel(3); check(rig.settle().empty(), "Reel watch rebuilt the graph");
+    const auto subscribed = [&](const std::string& symbol) {
+        const auto* flag = property(fake, path + "/" + symbol, full(uri::ingen, "broadcast")); return flag && flag->boolean;
+    };
+    for (const auto* symbol : reel_outputs) check(subscribed(symbol), "a Reel control output was not watched");
+    check(subscribed("t_keyframes"), "Reel's keyframe list was not watched");
+    // As Ingen sends them (WSL's Ingen, Reel milestone 2): the list is the
+    // activity of the atom output, a plain literal.
+    const auto activity = [&](const std::string& text) {
+        return fake.node("\ta patch:Set ;\n\tpatch:sequenceNumber \"205\"^^xsd:int ;\n\tpatch:subject <" + path +
+                         "/t_keyframes> ;\n\tpatch:property ingen:activity ;\n\tpatch:value \"" + text + "\"");
+    };
+    rig.transport->deliver(activity("1:33330000ffff800000004000cccc000100004000ffffbfff"));
+    rig.transport->deliver(fake.put(1, path + "/t_active", {{full(uri::ingen, "value"), number_value(1)}}));
+    rig.transport->deliver(fake.put(1, path + "/t_frame", {{full(uri::ingen, "value"), number_value(0.8)}}));
+    check(rig.settle().empty() && !rig.graph().dirty, "Reel telemetry rebuilt or modified the patch");
+    const auto live = engine.reel_status(3);
+    check(live.keyframes && live.keyframes->size() == 2 && std::abs((*live.keyframes)[0].position - 0.2) < 1e-4 &&
+          (*live.keyframes)[1].id == 1 && std::abs((*live.keyframes)[1].levels[3] - 0.75) < 1e-4, "Reel's list not decoded");
+    check(live.value(ReelValue::Active) == 1 && std::abs(live.value(ReelValue::Frame).value_or(0) - 0.8) < 1e-6, "Reel's control outputs not read");
+    // Not a list: ignored, the last one kept. An empty list is a list.
+    rig.transport->deliver(activity("2:00"));
+    rig.settle(); check(engine.reel_status(3).keyframes->size() == 2, "a malformed list replaced the known one");
+    rig.transport->deliver(activity("1:"));
+    rig.settle(); check(engine.reel_status(3).keyframes && engine.reel_status(3).keyframes->empty(), "an empty list not taken");
+    check(parse_reel_list("1:0000") == std::nullopt && parse_reel_list("1:" + std::string(24, 'g')) == std::nullopt &&
+          parse_reel_list("1:800000000000000000000000000000000000000000000000") == std::nullopt, "bad lists parsed (short, not hex, unsorted)");
+    engine.watch_reel(std::nullopt); rig.settle();
+    for (const auto* symbol : reel_outputs) check(!subscribed(symbol), "Reel subscription leaked on leaving the page");
+    check(!subscribed("t_keyframes") && !engine.reel_status(3).keyframes, "Reel list subscription or list kept after leaving");
+    engine.disconnect(); check(!engine.reel_status(3).keyframes, "disconnected Reel still reports");
+}
 void midi_cables() {
     using namespace peepo;
     using namespace peepo::ingen;
@@ -1257,6 +1303,7 @@ int main() {
         level_meters();
         euclidean_monitor();
         looper_monitor();
+        reel_monitor();
         std::cout << "Ingen protocol reading, command mapping, acknowledgment, second client, scenes, timeout, reconnect and restart passed.\n";
     } catch (const std::exception& e) { std::cerr << e.what() << '\n'; return 1; }
 }

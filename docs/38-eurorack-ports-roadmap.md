@@ -124,11 +124,14 @@ In Peepo:
 
 ## 4. Reel (Frames)
 
-- [ ] Wrap `frames::Keyframer` and `frames::PolyLfo`: frame position as a control and CV input, four channel levels as CV outputs, and four audio VCAs plus a mix output.
-- [ ] **LV2 state** for the keyframes (up to 64, each with four values and an easing curve), saved and restored by Ingen.
-- [ ] Editing: Add and Delete as momentary controls; the four channel controls edit the keyframe the position is on, as on the hardware.
-- [ ] A custom module page in Peepo, like the Euclidean one, showing keyframes along the position axis; layout accepted on 20 October 2026 (Reel's `docs/peepo-page.md`). This is the largest piece of interface work in the roadmap.
-- [ ] Two plugins in the repository: Reel (keyframe mixer) and Reel LFO.
+**21 November 2026:** milestones 0 to 2 done offline in Reel's repository (`docs/milestone-*-validation.md` there): keyframes, LV2 state, the sequencer, Reel LFO (with a BPM control that follows the patch tempo), and the keyframe list for the page on an atom output, checked through Ingen. Peepo side: overlay entries (Reel in Utility, Reel LFO in Control with `"tempo": "bpm"`), the inventory, `watch_reel` in the Ingen adapter, and the Reel page built from the mockup approved that day (`images/ui-reel.png`; `ui_check` captures `99-reel-*`, `ingen_tests` `reel_monitor`). Build step pinned at Reel's milestone 2 commit `0089184`. Not yet done: the Pi checks (the Pi was off the network) and the catalogue export.
+
+- [x] Wrap `frames::Keyframer` and `frames::PolyLfo`: frame position as a control and CV input, four channel levels as CV outputs, and four audio VCAs plus a mix output.
+- [x] **LV2 state** for the keyframes (up to 64, each with four values and an easing curve), saved and restored by Ingen.
+- [x] Editing: Add and Delete as momentary controls; the four channel controls edit the keyframe the position is on, as on the hardware.
+- [x] A custom module page in Peepo, like the Euclidean one, showing keyframes along the position axis; layout accepted on 20 October 2026 (Reel's `docs/peepo-page.md`). This is the largest piece of interface work in the roadmap.
+- [x] Two plugins in the repository: Reel (keyframe mixer) and Reel LFO.
+- [ ] Installed on the Pi, catalogue exported; xruns measured and keyframes checked after a reboot.
 
 ## Decisions
 

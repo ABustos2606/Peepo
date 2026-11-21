@@ -1325,6 +1325,81 @@ int main(int argc, char** argv) {
             tap(app,"BINDING");
             click(app,70,456);check(!live.watched,"looper monitoring remains after leaving page");
         }
+        // Reel's page: its lanes above its bars, live from its telemetry; Add,
+        // Delete and Clear all in the header (Reel's docs/peepo-page.md).
+        {
+            struct ReelEngine : peepo::Engine {
+                peepo::SimulatedEngine backing; peepo::ReelStatus status{};
+                std::optional<peepo::InstanceId> watched;
+                peepo::RequestId submit(peepo::Command c) override { return backing.submit(std::move(c)); }
+                void connect() override { backing.connect(); } void disconnect() override { backing.disconnect(); }
+                std::vector<peepo::EngineEvent> advance(unsigned ms) override { return backing.advance(ms); }
+                peepo::EngineState state() const override { return backing.state(); }
+                const peepo::Graph& snapshot() const override { return backing.snapshot(); }
+                peepo::EngineCapabilities capabilities() const override { return {false,true,false,false,true}; }
+                void watch_reel(std::optional<peepo::InstanceId> id) override { watched=id; }
+                peepo::ReelStatus reel_status(peepo::InstanceId id) const override { return watched==id?status:peepo::ReelStatus{}; }
+            } live;
+            using K = peepo::ParameterKind;
+            peepo::ModuleDefinition d{"https://github.com/ABustos2606/reel#reel","Reel","Utility","Keyframe mixer",0xe8d44d,
+                {{"in_1",peepo::Direction::Input,1},{"out_1",peepo::Direction::Output,1},{"mix",peepo::Direction::Output,1}},
+                {{"frame","Frame","",K::Continuous,0,1,0},{"frame_cv_amount","Frame CV amount","",K::Continuous,-1,1,1}}};
+            for (int n=1;n<=4;++n) d.parameters.push_back({"ch_"+std::to_string(n),"Level "+std::to_string(n),"",K::Continuous,0,1,1});
+            for (const char* s : {"add","delete","clear_all"}) d.parameters.push_back({s,s,"",K::Toggle,0,1,0});
+            for (int n=1;n<=4;++n) d.parameters.push_back({"easing_"+std::to_string(n),"Easing "+std::to_string(n),"",K::Enumeration,0,5,1,false,
+                {"Step","Linear","In quartic","Out quartic","Sine","Bounce"}});
+            for (int n=1;n<=4;++n) d.parameters.push_back({"response_"+std::to_string(n),"Response "+std::to_string(n),"",K::Continuous,0,1,0});
+            d.parameters.push_back({"mode","Mode","",K::Enumeration,0,1,0,false,{"Keyframes","Sequencer"}});
+            d.parameters.push_back({"output","Output","dB",K::Continuous,-24,12,0});
+            d.groups = {{"Frame",{"frame","frame_cv_amount"}},{"Levels",{"ch_1","ch_2","ch_3","ch_4"}},
+                        {"Curves",{"easing_1","easing_2","easing_3","easing_4","response_1","response_2","response_3","response_4"}},
+                        {"Mode",{"mode","output"}},{"Buttons",{"add","delete","clear_all"}}};
+            peepo::register_definitions({d});
+            live.submit(peepo::LoadGraph{peepo::empty_graph("Scenes")});live.advance(100);
+            live.submit(peepo::AddModule{d.uri,184,132});live.advance(100);
+            peepo::Application app(live);step(app);
+            const auto m=app.graph().modules.back();
+            const auto value=[&](const char* symbol){ for (const auto& p : peepo::find_module(app.graph(),m.id)->parameters) if (p.symbol==symbol) return p.value; return -1.0; };
+            click(app,m.x+48,m.y+72+48);
+            check(app.page()==peepo::Page::Parameters && live.watched==m.id,"Reel page or its watch missing");
+            check(exact_label(app.screen(),"Reading keyframes...") && !exact_label(app.screen(),"BUTTONS") && !exact_label(app.screen(),"CLEAR_ALL"),
+                  "Reel page before its list: no note, or the buttons shown as bars");
+            // Five keyframes, Frame on the third: the bars edit it.
+            live.status.keyframes = std::vector<peepo::ReelKeyframe>{{0.08,0,{1,0,.8,.2}},{0.30,1,{.7,.4,.1,.9}},{0.50,3,{.8,.25,.6,.5}},
+                                                                     {0.72,2,{.2,.9,.6,0}},{0.93,4,{0,1,.3,.7}}};
+            live.status.values = {0.5,5,2,2,0};
+            live.submit(peepo::SetParameter{m.id,"frame",0.5});live.submit(peepo::SetParameter{m.id,"easing_2",4});live.submit(peepo::SetParameter{m.id,"easing_3",0});
+            step(app,256);
+            check(exact_label(app.screen(),"KEYFRAME 3 OF 5"),"Reel's editing target not named");
+            step(app,4200);
+            check(exact_label(app.screen(),"FRAME 0.50 // KEYFRAME 3 OF 5"),"Reel's footer does not say where Frame is");
+            check(bar_value(app,"LEVEL 2")=="0.25","a Level bar does not show the keyframe it edits");
+            capture(app,output/"99-reel-on-keyframe.bmp");
+            // Between keyframes: Add is the main action, nothing to delete.
+            live.status.values = {0.4,5,-1,1,0};
+            live.submit(peepo::SetParameter{m.id,"frame",0.4});step(app,4200);
+            check(exact_label(app.screen(),"NO KEYFRAME AT 0.40") && exact_label(app.screen(),"FRAME 0.40 // BETWEEN 2 AND 3"),"Reel between keyframes");
+            capture(app,output/"99-reel-between.bmp");
+            tap_header(app,"ADD");
+            check(value("add")==1,"Add did not press");
+            step(app,256);check(value("add")==0,"Add did not release");
+            // Tapping near a keyframe's mark puts Frame exactly on it.
+            click(app,64+static_cast<int>(0.735*640),72+80);
+            check(std::abs(value("frame")-0.72)<1e-9,"a tap near a keyframe did not land on it");
+            // Clear all asks in the header first.
+            tap_header(app,"CLEAR ALL");
+            check(exact_label(app.screen(),"CLEAR 5 KEYFRAMES") && exact_label(app.screen(),"CANCEL") && value("clear_all")==0,"Clear all did not ask");
+            capture(app,output/"99-reel-clear.bmp");
+            tap_header(app,"CANCEL");check(value("clear_all")==0 && exact_label(app.screen(),"ADD"),"Cancel cleared or stayed");
+            tap_header(app,"CLEAR ALL");tap_header(app,"CLEAR 5 KEYFRAMES");
+            check(value("clear_all")==1,"confirmed Clear all did not press");step(app,256);check(value("clear_all")==0,"Clear all did not release");
+            // Sequencer mode: the footer says the step.
+            live.status.values = {0.3,5,-1,1,1};
+            live.submit(peepo::SetParameter{m.id,"mode",1});step(app,4200);
+            check(exact_label(app.screen(),"SEQUENCER // STEP 2 OF 5"),"Reel's sequencer step not shown");
+            capture(app,output/"99-reel-sequencer.bmp");
+            click(app,70,456);check(!live.watched,"Reel monitoring remains after leaving its page");
+        }
         {
             struct EuclideanEngine : peepo::Engine {
                 peepo::SimulatedEngine backing;
