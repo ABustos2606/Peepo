@@ -4,6 +4,7 @@
 #include "core/euclidean.hpp"
 #include "core/looper.hpp"
 #include "core/model.hpp"
+#include "core/reel.hpp"
 #include <memory>
 #include <optional>
 #include <variant>
@@ -145,6 +146,9 @@ public:
     virtual void watch_looper(std::optional<InstanceId>) {}
     virtual LooperStatus looper_status(InstanceId) const { return {}; }
     virtual bool looper_command(InstanceId, int, int, bool) { return false; }
+    // Reel's page: its control outputs and keyframe list, while watched.
+    virtual void watch_reel(std::optional<InstanceId>) {}
+    virtual ReelStatus reel_status(InstanceId) const { return {}; }
     // Optional development controls; real adapters keep these unsupported.
     virtual bool simulate_state(EngineState) { return false; }
     virtual bool simulate_rejection() { return false; }

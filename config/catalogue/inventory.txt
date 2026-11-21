@@ -223,6 +223,8 @@ https://github.com/ABustos2606/chamber#chamber
 https://github.com/ABustos2606/drizzle#drizzle
 https://github.com/ABustos2606/drizzle#synth
 https://github.com/ABustos2606/slope#slope
+https://github.com/ABustos2606/reel#reel
+https://github.com/ABustos2606/reel#lfo
 https://github.com/ABustos2606/aura#aura
 https://github.com/ABustos2606/eureka#slowmo
 https://github.com/ABustos2606/eureka#hush

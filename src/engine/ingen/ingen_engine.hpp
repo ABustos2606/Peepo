@@ -35,6 +35,8 @@ public:
     bool looper_command(InstanceId id, int command, int target, bool press) override {
         const bool sent = session_.looper_command(id, command, target, press); flush(); return sent;
     }
+    void watch_reel(std::optional<InstanceId> id) override { session_.watch_reel(id); flush(); }
+    ReelStatus reel_status(InstanceId id) const override { return session_.reel_status(id); }
 private:
     void attempt();
     void lost(std::string reason);

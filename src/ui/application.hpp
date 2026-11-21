@@ -69,7 +69,7 @@ private:
                         MidiToggle, MidiTempoSource, MidiChannel, MidiDevice, MidiLearn, MidiForget, ClockRestart,
                         LoadMessage, AddLoadMessage, RemoveLoadMessage,
                         SceneSelect, SceneAdd, SceneRename, ScenePick, SceneCancel, SceneMode, SceneMark, SceneParameter,
-                        FilesImport, FilesStop, FilesSort, FilesDelete, FilesPick, FilesCancel };
+                        FilesImport, FilesStop, FilesSort, FilesDelete, FilesPick, FilesCancel, ReelPulse, ReelClear };
     struct Binding {
         Application* app;
         Action action;
@@ -193,6 +193,12 @@ private:
     void looper_view(lv_obj_t*, const Module&);
     void update_looper();
     void release_looper();
+    // Reel: its keyframe lanes above its bars, kept live from its telemetry.
+    void reel_lanes(lv_obj_t*, const Module&);
+    void update_reel();
+    void draw_reel(const Module&, const ReelStatus&);
+    void reel_pulse(InstanceId, const std::string& symbol);
+    static void reel_touched(lv_event_t*);
     void patches(lv_obj_t*);
     void settings(lv_obj_t*);
     void diagnostics(lv_obj_t*);
@@ -437,6 +443,16 @@ private:
     struct LooperCard { lv_obj_t *card = nullptr, *state = nullptr, *time = nullptr, *cycle = nullptr, *bar = nullptr; };
     std::array<LooperCard, looper_loops> looper_cards_{};
     std::vector<lv_obj_t*> looper_commands_;
+    lv_obj_t* reel_lanes_ = nullptr;
+    lv_obj_t* reel_heading_ = nullptr;
+    lv_obj_t* reel_add_ = nullptr;
+    lv_obj_t* reel_delete_ = nullptr;
+    lv_obj_t* reel_clear_ = nullptr;
+    std::string reel_drawn_;
+    bool reel_confirm_ = false;
+    std::array<std::array<lv_point_precise_t, 161>, 4> reel_points_{};
+    struct ReelRelease { InstanceId id; std::string symbol; unsigned long long at; };
+    std::vector<ReelRelease> reel_releases_;
     lv_obj_t* euclidean_status_ = nullptr;
     std::array<lv_obj_t*, euclidean_tracks> euclidean_rings_{};
     std::array<lv_obj_t*, euclidean_tracks> euclidean_halos_{};

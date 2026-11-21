@@ -25,13 +25,14 @@ MDA = ["Ambience", "Bandisto", "BeatBox", "Combo", "DX10", "DeEss", "Degrade", "
        "Dynamics", "EPiano", "Image", "JX10", "Leslie", "Limiter", "Loudness", "MultiBand", "Overdrive", "Piano", "RePsycho",
        "RezFilter", "RingMod", "RoundPan", "Shepard", "Splitter", "Stereo", "SubSynth", "TalkBox", "TestTone", "ThruZero",
        "Tracker", "Transient", "VocInput", "Vocoder"]
-# Peepo's own plugins: plugins/ of this repository, and Discipline, Loo-pi, Chamber, Drizzle and Slope from their own.
+# Peepo's own plugins: plugins/ of this repository, and Discipline, Loo-pi, Chamber, Drizzle, Slope and Reel from their own.
 PEEPO = ["urn:peepo:lv2:footswitch",
          "https://github.com/ABustos2606/discipline#discipline", "https://github.com/ABustos2606/discipline#return",
          "https://github.com/ABustos2606/loo-pi#loopi",
          "https://github.com/ABustos2606/chamber#chamber",
          "https://github.com/ABustos2606/drizzle#drizzle", "https://github.com/ABustos2606/drizzle#synth",
          "https://github.com/ABustos2606/slope#slope",
+         "https://github.com/ABustos2606/reel#reel", "https://github.com/ABustos2606/reel#lfo",
          "https://github.com/ABustos2606/aura#aura"]
 # Eureka: twelve independent effects (M7).
 PEEPO += ['https://github.com/ABustos2606/eureka#slowmo', 'https://github.com/ABustos2606/eureka#hush', 'https://github.com/ABustos2606/eureka#bloom', 'https://github.com/ABustos2606/eureka#skip', 'https://github.com/ABustos2606/eureka#ripple', 'https://github.com/ABustos2606/eureka#prism', 'https://github.com/ABustos2606/eureka#spool', 'https://github.com/ABustos2606/eureka#granny', 'https://github.com/ABustos2606/eureka#spark', 'https://github.com/ABustos2606/eureka#chime', 'https://github.com/ABustos2606/eureka#flock', 'https://github.com/ABustos2606/eureka#crinkle']

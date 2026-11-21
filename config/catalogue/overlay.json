@@ -287,6 +287,20 @@
       {"name": "Segment 5", "parameters": ["type_5", "loop_5", "primary_5", "secondary_5", "group_5", "trigger_5", "clock_5"]},
       {"name": "Segment 6", "parameters": ["type_6", "loop_6", "primary_6", "secondary_6", "group_6", "trigger_6", "clock_6"]}
     ]},
+    {"uri": "https://github.com/ABustos2606/reel#reel", "name": "Reel", "category": "Utility", "description": "Keyframe mixer: stores up to 64 snapshots of four levels along Frame and morphs between them as Frame moves, by hand or by CV. Four VCAs, a mix and four level CVs. Open its page to see and edit the keyframes.",
+     "output": "output", "bypass": "port", "groups": [
+      {"name": "Frame", "parameters": ["frame", "frame_cv_amount"]},
+      {"name": "Levels", "parameters": ["ch_1", "ch_2", "ch_3", "ch_4"]},
+      {"name": "Curves", "parameters": ["easing_1", "easing_2", "easing_3", "easing_4", "response_1", "response_2", "response_3", "response_4"]},
+      {"name": "Mode", "parameters": ["mode", "output"]},
+      {"name": "Buttons", "parameters": ["add", "delete", "clear_all"]}
+    ]},
+    {"uri": "https://github.com/ABustos2606/reel#lfo", "name": "Reel LFO", "category": "Control", "description": "Four related LFOs from one rate: shapes, phases or rates spread across the outputs, and each can bend its neighbour. With Tempo sync on, a cycle lasts a note at the patch tempo.",
+     "tempo": "bpm", "groups": [
+      {"name": "Rate", "parameters": ["rate", "sync", "note", "bpm"]},
+      {"name": "Shape", "parameters": ["shape", "shape_spread"]},
+      {"name": "Spread", "parameters": ["spread", "coupling"]}
+    ]},
     {"uri": "urn:peepo:lv2:footswitch", "name": "Foot switch", "category": "Control", "description": "A stomp as a control signal: On value while it is down, Off value otherwise. Latching flips it on each press instead.", "parameters": [
       {"symbol": "stomp", "choices": ["A", "B", "C", "D"]}, {"symbol": "latching"}, {"symbol": "on_value"}, {"symbol": "off_value"}, {"symbol": "pressed"}
     ]},

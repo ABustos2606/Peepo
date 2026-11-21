@@ -141,6 +141,7 @@ void Session::closed(std::string reason, bool retrying) {
     depth_ = 0; cpu_.reset(); fault_.reset(); sent_modified_.reset(); sent_scenes_.clear();
     tuner_.reset(); tuner_port_.clear(); tuner_frequency_.reset();
     looper_.reset(); looper_ports_ = {}; looper_status_ = {};
+    reel_.reset(); reel_ports_ = {}; reel_list_.clear(); reel_status_ = {};
     learning_.clear(); cancelled_learn_.clear();
     euclidean_.reset(); euclidean_ports_ = {}; euclidean_steps_ = {}; euclidean_age_ = 0;
     emit(0, true, std::move(reason));
@@ -255,6 +256,12 @@ void Session::merge(const std::string& path, const Properties& properties) {
         if (!looper_ports_[i].empty() && path == looper_ports_[i]) {
             monitored_output = true;
             if (output_value) looper_status_[i] = finite(find(properties, value_key));
+        }
+    }
+    for (std::size_t i = 0; i < reel_ports_.size(); ++i) {
+        if (!reel_ports_[i].empty() && path == reel_ports_[i]) {
+            monitored_output = true;
+            if (output_value) reel_status_.values[i] = finite(find(properties, value_key));
         }
     }
     // Output meters must not rebuild the graph or interrupt touch gestures.
@@ -433,6 +440,56 @@ bool Session::looper_command(InstanceId id, int command, int target, bool press)
     send(tx, set(seq, port, "ingen:value", "\"" + std::to_string(value) + "\"^^xsd:int"), seq);
     return true;
 }
+void Session::watch_reel(std::optional<InstanceId> id) {
+    std::array<std::string, reel_outputs.size()> ports{};
+    std::string list;
+    if (id && state_ == EngineState::Ready) {
+        const auto* module = find_module(graph_, *id);
+        const auto path = paths_.find(*id);
+        // Bypass keeps Reel running (its own On port), so its telemetry too.
+        if (module && reel_uri(module->uri) && path != paths_.end()) {
+            for (std::size_t i = 0; i < ports.size(); ++i) {
+                const auto candidate = child(path->second, reel_outputs[i]);
+                const auto found = objects_.find(candidate);
+                if (found != objects_.end() && has(found->second, type, iri(uri::lv2, "OutputPort")) &&
+                    has(found->second, type, iri(uri::lv2, "ControlPort"))) ports[i] = candidate;
+            }
+            const auto candidate = child(path->second, reel_list_port);
+            const auto found = objects_.find(candidate);
+            if (found != objects_.end() && has(found->second, type, iri(uri::lv2, "OutputPort")) &&
+                has(found->second, type, iri(uri::atom, "AtomPort"))) list = candidate;
+        }
+    }
+    if (ports == reel_ports_ && list == reel_list_) return;
+    if (state_ == EngineState::Ready) {
+        auto& tx = begin(0, Purpose::Monitor);
+        const auto watch = [&](const std::string& port, bool on) {
+            if (port.empty() || (!on && !objects_.contains(port))) return;
+            const auto seq = sequence(); send(tx, set(seq, port, "ingen:broadcast", on ? "true" : "false"), seq);
+        };
+        for (const auto& port : reel_ports_) watch(port, false);
+        watch(reel_list_, false);
+        for (const auto& port : ports) watch(port, true);
+        watch(list, true);
+    }
+    // Reel sends its list again every half second, so a new watch soon has it.
+    if (reel_ != id || list != reel_list_) reel_status_ = {};
+    reel_ports_ = ports; reel_list_ = list;
+    const bool any = !list.empty() || std::any_of(ports.begin(), ports.end(), [](const std::string& p) { return !p.empty(); });
+    reel_ = any ? id : std::nullopt;
+}
+ReelStatus Session::reel_status(InstanceId id) const {
+    const auto* module = find_module(graph_, id);
+    return state_ == EngineState::Ready && reel_ == id && module && reel_uri(module->uri) ? reel_status_ : ReelStatus{};
+}
+// Reel's keyframe list arrives as the activity of its atom output: telemetry,
+// never part of the graph, and never a change to the patch.
+bool Session::take_reel_list(const std::string& port, const Value& value) {
+    if (reel_list_.empty() || port != reel_list_) return false;
+    if (value.kind == Value::Kind::String)
+        if (auto list = parse_reel_list(value.text)) reel_status_.keyframes = std::move(*list);
+    return true;
+}
 void Session::learned(const std::string& port) {
     // The engine announces what a port learned. Its wait is over, and the
     // patch has changed; unless the wait was ended here, then it goes again.
@@ -475,14 +532,14 @@ void Session::apply(const Message& message) {
                 arcs_.push_back(arc); mirror_changed_ = unreported_ = true;
             }
         } else if (under_main(message.subject) && message.body.size() == 1 && message.body.front().first == activity_key) {
-            take_level(message.subject, message.body.front().second);
+            if (!take_reel_list(message.subject, message.body.front().second)) take_level(message.subject, message.body.front().second);
         } else if (under_main(message.subject)) merge(message.subject, message.body);
         else if (has(message.body, type, iri(uri::lv2, "Plugin")) || has(message.body, type, iri(uri::ingen, "Internal"))) plugins_.insert(message.subject);
         break;
     case Message::Type::Set:
         if (!under_main(message.subject)) break;
         // A port's activity is a meter reading, never part of the graph.
-        if (message.property == activity_key) { take_level(message.subject, message.value); break; }
+        if (message.property == activity_key) { if (!take_reel_list(message.subject, message.value)) take_level(message.subject, message.value); break; }
         merge(message.subject, {{message.property, message.value}});
         if (message.property == binding_key && message.value.kind == Value::Kind::Object) learned(message.subject);
         break;
@@ -580,7 +637,7 @@ void Session::finish(Transaction& done) {
         if (!ok && done.replaces) fault_ = std::string("Engine refused to describe its graph: ") + status_text(done.status);
         break;
     case Purpose::Monitor:
-        if (!ok) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; }
+        if (!ok) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; reel_status_ = {}; }
         break;
     }
 }
@@ -1422,7 +1479,7 @@ std::vector<EngineEvent> Session::advance(unsigned milliseconds) {
         auto node = transactions_.extract(id);
         for (const auto number : node.mapped().sequences) sequences_.erase(number);
         if (node.mapped().purpose == Purpose::Edit) { emit(node.mapped().request, false, "Engine did not answer in time"); resynchronize = true; }
-        else if (node.mapped().purpose == Purpose::Monitor) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; }
+        else if (node.mapped().purpose == Purpose::Monitor) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; reel_status_ = {}; }
         else fault_ = "Engine did not answer while synchronizing";
     }
     // What a late edit did is unknown; read the graph again instead of guessing.

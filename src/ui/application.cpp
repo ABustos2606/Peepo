@@ -3,6 +3,7 @@
 #include "ui/application.hpp"
 #include "core/flow_wave.hpp"
 #include "core/poly_voices.hpp"
+#include "core/reel.hpp"
 #include "core/tuning.hpp"
 #include "ui/fonts/fonts.h"
 // v9.5.0 exposes the hit-test payload through this header. Keep this usage
@@ -106,7 +107,7 @@ std::string metric_text(std::optional<double> reading, bool cpu) {
     if (cpu) value << '%';
     return value.str();
 }
-enum class ModuleLayout { Generic, Tuner, Euclidean, Looper, Pedal };
+enum class ModuleLayout { Generic, Tuner, Euclidean, Looper, Pedal, Reel };
 // Modules with a page of their own on two tabs: the main controls first, two
 // to a row like every bar, and the stomps; the rest on the second tab under
 // the overlay's groups. Flow Envelope draws its wave above its main bars.
@@ -169,6 +170,7 @@ ModuleLayout module_layout(const Module& m) {
     if (tuner_uri(m.uri) && std::any_of(m.parameters.begin(), m.parameters.end(), [](const Parameter& p) { return p.symbol == "tuning"; })) return ModuleLayout::Tuner;
     if (euclidean_uri(m.uri) && has_euclidean_controls(m)) return ModuleLayout::Euclidean;
     if (looper_uri(m.uri)) return ModuleLayout::Looper;
+    if (reel_uri(m.uri)) return ModuleLayout::Reel;
     if (pedal_layout(m.uri)) return ModuleLayout::Pedal;
     return ModuleLayout::Generic;
 }
@@ -310,6 +312,8 @@ void paint_bar(lv_obj_t* bar, const Parameter& p) {
 // The rail left of the module page's list, as on Beebo: a line, and a ball
 // where the list is scrolled to.
 constexpr int rail_width = 56, rail_ball = 14, rail_inset = 14;
+// Reel's lanes, above its bars.
+constexpr int reel_lanes_height = 176;
 // Footer level meters: -48 to 0 dBFS, orange from -6 dB, red for two
 // seconds after full scale; a peak falls back at 36 dB a second.
 constexpr int meter_x = 186, meter_width = 72, meter_height = 8;
@@ -614,10 +618,12 @@ void Application::tick(unsigned ms) {
     engine_.watch_tuner(shown && layout == ModuleLayout::Tuner ? std::optional<InstanceId>{shown->id} : std::nullopt);
     engine_.watch_euclidean(shown && layout == ModuleLayout::Euclidean ? std::optional<InstanceId>{shown->id} : std::nullopt);
     engine_.watch_looper(shown && layout == ModuleLayout::Looper ? std::optional<InstanceId>{shown->id} : std::nullopt);
+    engine_.watch_reel(shown && layout == ModuleLayout::Reel ? std::optional<InstanceId>{shown->id} : std::nullopt);
     update_tuner();
     update_euclidean();
     update_flow();
     update_looper();
+    update_reel();
 }
 void Application::update_meters() {
     const auto readings = engine_.telemetry();
@@ -1143,6 +1149,14 @@ void Application::handle(Binding& b, lv_event_t* e) {
     switch (b.action) {
     case Action::ModulePage:
         if (pedal_page_ != b.number) { pedal_page_ = b.number; parameter_focus_ = 0; parameter_scroll_ = 0; adjusting_ = false; rebuild_ = true; }
+        break;
+    case Action::ReelPulse: reel_pulse(b.id, b.symbol); break;
+    case Action::ReelClear:
+        // 2 asks, 1 clears, 0 cancels.
+        if (b.number == 1) reel_pulse(b.id, "clear_all");
+        reel_confirm_ = b.number == 2;
+        if (reel_confirm_) message("Clear every keyframe? With none, the levels follow the Level bars.");
+        rebuild_ = true;
         break;
     case Action::LooperSection: looper_section_ = b.number; looper_binding_ = false; parameter_focus_ = 0; parameter_scroll_ = 0; rebuild_ = true; break;
     case Action::LooperBind:
@@ -1701,6 +1715,7 @@ void Application::rebuild() {
     for (auto& m : meters_) m.low = m.high = nullptr;
     tuner_note_ = tuner_detail_ = tuner_status_ = tuner_needle_ = nullptr;
     release_looper(); looper_cards_ = {}; looper_commands_.clear();
+    reel_lanes_ = reel_heading_ = reel_add_ = reel_delete_ = reel_clear_ = nullptr; reel_drawn_.clear();
     euclidean_status_ = nullptr;
     euclidean_rings_ = {}; euclidean_halos_ = {}; euclidean_dots_ = {}; euclidean_step_labels_ = {}; euclidean_tiles_ = {};
     flow_line_ = flow_middle_ = nullptr; flow_drawn_.reset();
@@ -1826,6 +1841,26 @@ void Application::rebuild() {
         lv_obj_set_size(pills, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
         lv_obj_set_flex_flow(pills, LV_FLEX_FLOW_ROW); lv_obj_set_style_pad_column(pills, 8, 0);
         lv_obj_remove_flag(pills, LV_OBJ_FLAG_CLICKABLE);
+        // Reel: Add (its main action), Delete and Clear all, which asks first.
+        const bool reel_asking = reel_uri(m->uri) && reel_confirm_;
+        if (reel_uri(m->uri)) {
+            const auto keyframe = [&](const char* name, Action action, const std::string& symbol, int number, bool main) {
+                auto* b = pill(button(pills, name, 0, 0, 0, action, m->id, symbol, number));
+                lv_obj_set_width(b, LV_SIZE_CONTENT); lv_obj_set_style_pad_hor(b, 18, 0);
+                if (main) primary(b);
+                return b;
+            };
+            const auto live = engine_.reel_status(m->id);
+            const auto count = live.keyframes ? live.keyframes->size() : 0;
+            if (reel_asking) {
+                keyframe(("Clear " + std::to_string(count) + (count == 1 ? " keyframe" : " keyframes")).c_str(), Action::ReelClear, {}, 1, true);
+                keyframe("Cancel", Action::ReelClear, {}, 0, false);
+            } else {
+                reel_add_ = keyframe("Add", Action::ReelPulse, "add", 0, true);
+                reel_delete_ = keyframe("Delete", Action::ReelPulse, "delete", 0, false);
+                reel_clear_ = keyframe("Clear all", Action::ReelClear, {}, 2, false);
+            }
+        }
         if (looper_uri(m->uri)) {
             constexpr const char* sections[]{"Commands", "Levels", "Rate", "Global"};
             constexpr int widths[]{104, 80, 64, 80};
@@ -1834,12 +1869,14 @@ void Application::rebuild() {
                 if (looper_section_ == s) primary(tab);
             }
         }
+        if (!reel_asking) {
         auto* power = pill(button(pills, m->bypassed ? "Bypassed" : "On", 0, 0, 0, Action::Bypass, m->id));
         lv_obj_set_width(power, LV_SIZE_CONTENT); lv_obj_set_style_pad_hor(power, 22, 0);
         if (m->bypassed) lv_obj_set_style_text_color(lv_obj_get_child(power, 0), color(muted), 0);
         else { lv_obj_set_style_bg_color(power, color(module_fill(*m)), 0); lv_obj_set_style_border_width(power, 0, 0); }
         auto* actions = pill(button(pills, "Actions", 0, 0, 0, Action::OpenActions, m->id));
         lv_obj_set_width(actions, LV_SIZE_CONTENT); lv_obj_set_style_pad_hor(actions, 18, 0);
+        }
         lv_obj_align(pills, LV_ALIGN_RIGHT_MID, -24, 0);
     } else if (page_ != Page::Halting) {
         auto* mode = label(header, engine_.capabilities().simulation ? "SIMULATED" : "ENGINE", 640, 28, 136, faint, &peepo_mono_14);
@@ -2371,23 +2408,33 @@ void Application::parameters(lv_obj_t* parent) {
     }
     if (layout == ModuleLayout::Looper) { looper_view(parent, *m); return; }
     const auto ink = module_ink(*m);
-    const bool tuner = layout == ModuleLayout::Tuner;
-    const int top = tuner ? 220 : 0;
+    const bool tuner = layout == ModuleLayout::Tuner, reel = layout == ModuleLayout::Reel;
+    // Reel's lanes above its bars; Add, Delete and Clear all are in the header.
+    const int top = tuner ? 220 : reel ? reel_lanes_height : 0;
     lv_obj_t* list = nullptr;
     if (layout == ModuleLayout::Pedal) list = pedal_view(parent, *m);
     else {
         if (tuner) tuner_meter(parent);
+        if (reel) reel_lanes(parent, *m);
         list = bar_list(parent, *m, top);
         if (tuner) lv_obj_set_style_pad_top(list, 4, 0);
         if (const auto* d = definition(m->uri); d && !d->file.property.empty()) file_bar(list, *m);
         for (const auto& section : parameter_sections(*m)) {
+            const auto button = [](const Parameter* p) { return p->symbol == "add" || p->symbol == "delete" || p->symbol == "clear_all"; };
+            if (reel && std::all_of(section.parameters.begin(), section.parameters.end(), button)) continue;
             if (!section.name.empty()) {
                 auto* heading = label(list, upper(section.name), 0, 0, 0, ink, &peepo_mono_14);
                 lv_obj_set_width(heading, LV_PCT(100)); lv_obj_set_style_text_letter_space(heading, 2, 0);
+                // Reel names the keyframe its Level bars edit (update_reel).
+                if (reel && section.name == "Levels") reel_heading_ = heading;
             }
-            for (const auto* p : section.parameters) parameter_bar(list, *m, *p, compact_width, compact_height);
+            for (const auto* p : section.parameters)
+                if (!reel || !button(p))
+                    parameter_bar(list, *m, *p, compact_width, compact_height);
         }
         if (bars_.empty()) { label(list, "This module has no controls.", 0, 0, 600, muted); return; }
+        // While Clear all asks, its bars read as waiting.
+        if (reel && reel_confirm_) lv_obj_set_style_opa(list, LV_OPA_40, 0);
     }
     if (bars_.empty()) return;
     if (!focus_symbol_.empty()) {
@@ -2755,6 +2802,193 @@ void Application::update_looper() {
         lv_label_set_text(footer_, status.c_str());
     }
 }
+// --- Reel (Reel's docs/peepo-page.md) ---------------------------------------
+// The lanes: the Frame axis across the bars' width, one lane per channel with
+// its level along Frame, keyframes as marks in their colours, the one the
+// Level bars edit outlined in white, and Frame as the green cursor.
+constexpr int reel_lanes_x = rail_width + 8, reel_lanes_w = 2 * compact_width + 40;
+constexpr int reel_lane_top = 26, reel_lane_h = 28, reel_lane_gap = 6;
+constexpr int reel_lanes_bottom = reel_lane_top + 4 * reel_lane_h + 3 * reel_lane_gap;
+void Application::reel_lanes(lv_obj_t* parent, const Module& m) {
+    reel_lanes_ = lv_obj_create(parent); lv_obj_remove_style_all(reel_lanes_);
+    lv_obj_set_pos(reel_lanes_, 0, 0); lv_obj_set_size(reel_lanes_, 800, reel_lanes_height);
+    lv_obj_remove_flag(reel_lanes_, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(reel_lanes_, LV_OBJ_FLAG_CLICKABLE); lv_obj_add_flag(reel_lanes_, LV_OBJ_FLAG_PRESS_LOCK);
+    if (m.bypassed) lv_obj_set_style_opa(reel_lanes_, LV_OPA_50, 0);
+    lv_obj_add_event_cb(reel_lanes_, reel_touched, LV_EVENT_ALL, this);
+    reel_drawn_.clear();
+}
+void Application::draw_reel(const Module& m, const ReelStatus& live) {
+    lv_obj_clean(reel_lanes_);
+    const auto still = [](lv_obj_t* o) { lv_obj_remove_flag(o, LV_OBJ_FLAG_CLICKABLE); return o; };
+    const auto flat = [&](int x, int y, int w, int h, std::uint32_t fill) {
+        auto* o = still(panel(reel_lanes_, x, y, w, h, fill));
+        lv_obj_set_style_radius(o, 0, 0); lv_obj_set_style_border_width(o, 0, 0);
+        return o;
+    };
+    const auto ink = module_ink(m);
+    const auto X = [](double x) { return reel_lanes_x + static_cast<int>(std::lround(std::clamp(x, 0.0, 1.0) * reel_lanes_w)); };
+    const auto lane_y = [](std::size_t c) { return reel_lane_top + static_cast<int>(c) * (reel_lane_h + reel_lane_gap); };
+    const auto level_y = [&](std::size_t c, double v) {
+        return lane_y(c) + reel_lane_h - 3 - static_cast<int>(std::lround(std::clamp(v, 0.0, 1.0) * (reel_lane_h - 6)));
+    };
+    const std::vector<ReelKeyframe> none;
+    const auto& list = live.keyframes ? *live.keyframes : none;
+    const double frame = live.value(ReelValue::Frame).value_or(parameter(m, "frame").value);
+    const int active = static_cast<int>(std::lround(live.value(ReelValue::Active).value_or(-1)));
+    const bool sequencer = parameter(m, "mode").value >= 0.5;
+    for (std::size_t c = 0; c < reel_channels; ++c) {
+        const auto ch = std::to_string(c + 1);
+        auto* lane = still(panel(reel_lanes_, reel_lanes_x, lane_y(c), reel_lanes_w, reel_lane_h, surface));
+        lv_obj_set_style_radius(lane, 5, 0);
+        label(reel_lanes_, ch, 40, lane_y(c) + 5, 0, muted, &peepo_bold_14);
+        const int curve = static_cast<int>(std::lround(parameter(m, "easing_" + ch).value));
+        // With no keyframes the levels are the Level bars'.
+        const auto at = [&](double x) { return list.empty() ? parameter(m, "ch_" + ch).value : reel_level(list, c, curve, x); };
+        auto& points = reel_points_[c];
+        for (std::size_t i = 0; i < points.size(); ++i) {
+            const double x = static_cast<double>(i) / static_cast<double>(points.size() - 1);
+            points[i] = {static_cast<lv_value_precise_t>(X(x)), static_cast<lv_value_precise_t>(level_y(c, at(x)))};
+        }
+        auto* line = still(lv_line_create(reel_lanes_));
+        lv_obj_set_style_line_color(line, color(ink), 0); lv_obj_set_style_line_width(line, 2, 0);
+        lv_line_set_points(line, points.data(), static_cast<std::uint32_t>(points.size()));
+        std::ostringstream now; now << std::fixed << std::setprecision(2) << at(frame);
+        label(reel_lanes_, now.str(), reel_lanes_x + reel_lanes_w + 10, lane_y(c) + 6, 0, ink, &peepo_mono_14);
+    }
+    for (std::size_t k = 0; k < list.size(); ++k) {
+        const auto colour = reel_palette[static_cast<std::size_t>(list[k].id) % reel_palette.size()];
+        const int x = X(list[k].position);
+        flat(x - 1, reel_lane_top, 2, reel_lanes_bottom - reel_lane_top, colour);
+        for (std::size_t c = 0; c < reel_channels; ++c) {
+            auto* dot = flat(x - 3, level_y(c, list[k].levels[c]) - 3, 7, 7, colour);
+            lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
+        }
+        const bool editing = static_cast<int>(k) == active;
+        auto* tag = still(panel(reel_lanes_, x - 11, 4, 22, 17, editing ? text : surface));
+        lv_obj_set_style_radius(tag, 4, 0); lv_obj_set_style_border_color(tag, color(editing ? text : colour), 0);
+        auto* number = label(tag, std::to_string(k + 1), 0, 0, 20, editing ? background : text, &peepo_bold_12);
+        lv_obj_set_style_text_align(number, LV_TEXT_ALIGN_CENTER, 0); lv_obj_align(number, LV_ALIGN_CENTER, 0, 0);
+        if (editing) {
+            auto* ring = still(panel(reel_lanes_, x - 5, reel_lane_top - 2, 10, reel_lanes_bottom - reel_lane_top + 4, text));
+            lv_obj_set_style_bg_opa(ring, LV_OPA_TRANSP, 0); lv_obj_set_style_radius(ring, 3, 0);
+            lv_obj_set_style_border_width(ring, 2, 0); lv_obj_set_style_border_color(ring, color(text), 0);
+        }
+    }
+    // Where a keyframe becomes the one the bars edit: within 1/32 of the Frame bar.
+    const double knob = parameter(m, "frame").value;
+    if (!sequencer) flat(X(knob - reel_tolerance), reel_lanes_bottom + 3, X(knob + reel_tolerance) - X(knob - reel_tolerance), 3, 0x2f6b45);
+    const auto cursor = sequencer ? text : accent;
+    const int fx = X(frame);
+    flat(fx - 1, reel_lane_top - 4, 2, reel_lanes_bottom - reel_lane_top + 6, cursor);
+    auto* handle = flat(fx - 6, reel_lanes_bottom + 6, 12, 8, cursor);
+    lv_obj_set_style_radius(handle, 2, 0);
+    label(reel_lanes_, "0", reel_lanes_x - 4, reel_lanes_bottom + 4, 0, faint, &peepo_mono_14);
+    label(reel_lanes_, "1", reel_lanes_x + reel_lanes_w - 4, reel_lanes_bottom + 4, 0, faint, &peepo_mono_14);
+    if (!live.keyframes && engine_.state() == EngineState::Ready)
+        label(reel_lanes_, "Reading keyframes...", reel_lanes_x + 24, reel_lanes_bottom + 4, 300, faint, &peepo_mono_14);
+}
+void Application::reel_pulse(InstanceId id, const std::string& symbol) {
+    // A button press: 1, then 0 once Reel has seen it (it reads its buttons
+    // every period, and latches a press until its next 8-frame step).
+    if (engine_.state() != EngineState::Ready) return;
+    submit(SetParameter{id, symbol, 1.0});
+    reel_releases_.push_back({id, symbol, clock_ms_ + 80});
+    message(symbol == "add" ? "Keyframe added at Frame." : symbol == "delete" ? "Keyframe deleted." : "Every keyframe cleared.");
+}
+void Application::update_reel() {
+    for (auto it = reel_releases_.begin(); it != reel_releases_.end();) {
+        if (clock_ms_ < it->at) { ++it; continue; }
+        if (find_module(graph_, it->id) && engine_.state() == EngineState::Ready) submit(SetParameter{it->id, it->symbol, 0.0});
+        it = reel_releases_.erase(it);
+    }
+    if (!reel_lanes_) return;
+    const auto* m = find_module(graph_, selected_);
+    if (!m || !reel_uri(m->uri)) return;
+    const auto live = engine_.reel_status(m->id);
+    const auto count = live.keyframes ? live.keyframes->size() : 0;
+    const int active = static_cast<int>(std::lround(live.value(ReelValue::Active).value_or(-1)));
+    const bool editing = live.keyframes && active >= 0 && active < static_cast<int>(count);
+    const bool sequencer = parameter(*m, "mode").value >= 0.5;
+    const double frame = live.value(ReelValue::Frame).value_or(parameter(*m, "frame").value);
+    const auto fixed = [](double v) { std::ostringstream s; s << std::fixed << std::setprecision(2) << v; return s.str(); };
+    // The footer says where Frame is, unless a message is newer.
+    if (footer_ && (message_.empty() || clock_ms_ - message_ms_ >= 4000)) {
+        std::string status;
+        const int step = static_cast<int>(std::lround(live.value(ReelValue::Step).value_or(0)));
+        if (!live.keyframes) status = "FRAME " + fixed(frame);
+        else if (!count) status = "NO KEYFRAMES // ADD STORES ONE AT FRAME";
+        else if (sequencer) status = "SEQUENCER // STEP " + std::to_string(step + 1) + " OF " + std::to_string(count);
+        else if (editing) status = "FRAME " + fixed(frame) + " // KEYFRAME " + std::to_string(active + 1) + " OF " + std::to_string(count);
+        else {
+            std::size_t after = 0;
+            while (after < count && (*live.keyframes)[after].position < frame) ++after;
+            status = "FRAME " + fixed(frame) + " // " +
+                     (after == 0 ? std::string("BEFORE 1")
+                      : after == count ? "AFTER " + std::to_string(count)
+                                       : "BETWEEN " + std::to_string(after) + " AND " + std::to_string(after + 1));
+        }
+        if (status != lv_label_get_text(footer_)) lv_label_set_text(footer_, status.c_str());
+    }
+    std::ostringstream signature;
+    signature << std::setprecision(4) << frame << '/' << active << '/' << sequencer << '/' << m->bypassed << '/'
+              << parameter(*m, "frame").value << '/' << live.keyframes.has_value() << '/' << (engine_.state() == EngineState::Ready);
+    for (std::size_t c = 1; c <= reel_channels; ++c)
+        signature << '/' << parameter(*m, "easing_" + std::to_string(c)).value << ',' << parameter(*m, "ch_" + std::to_string(c)).value;
+    if (live.keyframes)
+        for (const auto& k : *live.keyframes)
+            signature << '|' << k.position << ',' << k.id << ',' << k.levels[0] << ',' << k.levels[1] << ',' << k.levels[2] << ',' << k.levels[3];
+    if (signature.str() == reel_drawn_) return;
+    reel_drawn_ = signature.str();
+    draw_reel(*m, live);
+    // Add stores a keyframe only away from one, and not past 64.
+    const bool ready = engine_.state() == EngineState::Ready;
+    const auto enable = [](lv_obj_t* o, bool on) {
+        if (!o) return;
+        if (on) lv_obj_remove_state(o, LV_STATE_DISABLED);
+        else lv_obj_add_state(o, LV_STATE_DISABLED);
+    };
+    enable(reel_add_, ready && live.keyframes && !editing && count < reel_max_keyframes);
+    enable(reel_delete_, ready && editing);
+    enable(reel_clear_, ready && count > 0);
+    if (reel_heading_) {
+        const auto heading = !live.keyframes || !count ? std::string("LEVELS")
+                             : editing ? "KEYFRAME " + std::to_string(active + 1) + " OF " + std::to_string(count)
+                                       : "NO KEYFRAME AT " + fixed(parameter(*m, "frame").value);
+        lv_label_set_text(reel_heading_, heading.c_str());
+    }
+    // The Level bars show the keyframe they edit (plugins can't move their
+    // own controls); with none, the Level controls themselves.
+    for (const auto& bar : bars_) {
+        if (bar.id != m->id || bar.symbol.size() != 4 || bar.symbol.rfind("ch_", 0) != 0) continue;
+        if (stream_ && stream_->id == m->id && stream_->symbol == bar.symbol) continue;
+        auto shown = parameter(*m, bar.symbol);
+        if (editing) shown.value = (*live.keyframes)[static_cast<std::size_t>(active)].levels[static_cast<std::size_t>(bar.symbol[3] - '1')];
+        paint_bar(bar.widget, shown);
+    }
+}
+void Application::reel_touched(lv_event_t* e) {
+    // Tap or drag on the lanes moves Frame there; within 1/32 of a keyframe
+    // it lands on it exactly, so it becomes the one the bars edit.
+    const auto code = lv_event_get_code(e);
+    if (code != LV_EVENT_PRESSED && code != LV_EVENT_PRESSING) return;
+    auto* app = static_cast<Application*>(lv_event_get_user_data(e));
+    const auto* m = find_module(app->graph_, app->selected_);
+    auto* indev = lv_indev_active();
+    if (!m || !reel_uri(m->uri) || !indev || app->engine_.state() != EngineState::Ready) return;
+    lv_point_t point; lv_indev_get_point(indev, &point);
+    lv_area_t area; lv_obj_get_coords(static_cast<lv_obj_t*>(lv_event_get_current_target(e)), &area);
+    double x = std::clamp(static_cast<double>(point.x - area.x1 - reel_lanes_x) / reel_lanes_w, 0.0, 1.0);
+    const auto live = app->engine_.reel_status(m->id);
+    if (live.keyframes) {
+        const ReelKeyframe* nearest = nullptr;
+        for (const auto& k : *live.keyframes)
+            if (std::abs(k.position - x) <= reel_tolerance && (!nearest || std::abs(k.position - x) < std::abs(nearest->position - x))) nearest = &k;
+        if (nearest) x = nearest->position;
+    }
+    if (std::abs(parameter(*m, "frame").value - x) < 1e-6) return;
+    app->stream_parameter(m->id, "frame", x, true);
+}
 void Application::euclidean_view(lv_obj_t* parent, const Module& m) {
     auto* viz = panel(parent, 20, 10, 340, 340);
     if (m.bypassed) lv_obj_set_style_opa(viz, LV_OPA_50, 0);
@@ -3075,7 +3309,15 @@ void Application::turn_parameter(InstanceId id, const std::string& symbol, const
     if (!p) return;
     // Continue from a value still on its way to the engine, not the last acknowledged one.
     const bool streaming = stream_ && stream_->id == id && stream_->symbol == symbol;
-    const auto current = streaming ? stream_->latest : p->value;
+    auto current = streaming ? stream_->latest : p->value;
+    // Reel's Level bars show the keyframe they edit: a turn starts from its level.
+    if (!streaming && reel_uri(m->uri) && symbol.size() == 4 && symbol.rfind("ch_", 0) == 0) {
+        const auto live = engine_.reel_status(id);
+        const auto active = live.value(ReelValue::Active);
+        const auto channel = static_cast<std::size_t>(symbol[3] - '1');
+        if (live.keyframes && active && *active >= 0 && *active < static_cast<double>(live.keyframes->size()) && channel < reel_channels)
+            current = (*live.keyframes)[static_cast<std::size_t>(*active)].levels[channel];
+    }
     // A time in beats turns from one note value to the next; fine turning is free.
     const auto next = p->unit == beats_unit && !g.fine
         ? step_note(current, pin && pin->inverted ? -g.steps : g.steps, pin ? pin->minimum : p->minimum, pin ? pin->maximum : p->maximum)

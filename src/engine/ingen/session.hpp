@@ -47,6 +47,8 @@ public:
     void watch_looper(std::optional<InstanceId>);
     LooperStatus looper_status(InstanceId) const;
     bool looper_command(InstanceId, int command, int target, bool press);
+    void watch_reel(std::optional<InstanceId>);
+    ReelStatus reel_status(InstanceId) const;
 private:
     enum class Purpose { Edit, Sync, Endpoints, Refresh, Monitor };
     struct Local { std::string path, predicate; Value value; };
@@ -168,6 +170,13 @@ private:
     std::optional<InstanceId> looper_;
     std::array<std::string, looper_outputs> looper_ports_{};
     LooperStatus looper_status_{};
+    // Reel: its control outputs (ingen:value) and its keyframe list, an atom
+    // output sent as ingen:activity, a string (Reel's docs/peepo-page.md).
+    std::optional<InstanceId> reel_;
+    std::array<std::string, reel_outputs.size()> reel_ports_{};
+    std::string reel_list_;
+    ReelStatus reel_status_{};
+    bool take_reel_list(const std::string& port, const Value&);
 
     // The engine's objects under ingen:/main, by path.
     std::map<std::string, Properties> objects_;
