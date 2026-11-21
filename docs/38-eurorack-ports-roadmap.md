@@ -108,11 +108,19 @@ In Peepo:
 
 ## 3. Slope (Stages)
 
-- [ ] **Rate** (decided 20 October 2026). Its timing and two lookup tables assume 31.25 kHz. Slope regenerates the tables for 44.1, 48 and 96 kHz with a Python 3 port of upstream's generator and sets `kSampleRate` at instantiate; outputs are CV, so no resampling.
-- [ ] Wrap `stages::SegmentGenerator` for six segments: per segment a level/time slider, a shape control, a type (ramp, hold, step) and a loop switch, as ordinary controls. Patches then keep the configuration without LV2 state.
-- [ ] Grouping: on hardware, a patched gate input starts a new group of segments. Slope adds a "starts group" switch per segment.
-- [ ] Six gate inputs, six CV inputs, six CV outputs; one overlay page per pair of segments.
-- [ ] The harmonic oscillator (`ProcessOuroboros`) is included (decided 20 October 2026), behind a switch. Not in scope at first: chaining several instances (`chain_state.cc`).
+**20 November 2026:** offline work done in Slope's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there). **21 November 2026:** Peepo's build step (pinned at `13b8d63`, milestone 2, until `v0.2.0` is tagged), inventory, overlay entry and notice added, checked under WSL with the exporter and `peepo_catalogue_tests`; built, tested and installed on the Pi and offered in its catalogue; two Slopes in a typical patch for 30 minutes with no xruns ([evidence](evidence/slope-pi-20261121.txt), Slope's `docs/milestone-3-validation.md`). Not yet done: the user's playing test.
+
+- [x] **Rate** (decided 20 October 2026). Its timing and two lookup tables assume 31.25 kHz. Slope regenerates the tables for 44.1, 48 and 96 kHz with a Python 3 port of upstream's generator and sets `kSampleRate` at instantiate; outputs are CV, so no resampling.
+- [x] Wrap `stages::SegmentGenerator` for six segments: per segment a level/time slider, a shape control, a type (ramp, step, hold, alt) and a loop switch, as ordinary controls. Patches then keep the configuration without LV2 state.
+- [x] Grouping: on hardware, a patched gate input starts a new group of segments. Slope adds a "Starts group" switch per segment, and a Trigger per segment so a stomp can play it.
+- [x] Six gate inputs, six CV inputs, six CV outputs.
+- [x] The harmonic oscillator (`ProcessOuroboros`) is included (decided 20 October 2026), behind a switch. Not in scope: chaining several instances (`chain_state.cc`).
+- [x] A clock (BPM, Clock note, Clock 1 to 6) follows the patch tempo (`"tempo": "bpm"`).
+- [x] Overlay: Slope under Control, `"bypass": "port"`; the page settled by mockup (21 November 2026): a "Tempo and mode" heading (Harmonic, BPM, Clock note), then one heading per segment (Type, Loop, Level/time, Shape/glide, Starts group, Trigger, Clock), 45 controls. Not a page per pair of segments, as first planned.
+- [x] On the Pi (21 November 2026): built natively, `make test` 31 PASS, `make test-timing` under 1% of a core per instance; catalogue exported (255 -> 256, only Slope added).
+- [x] CPU and xruns with two Slopes in a typical patch (IN -> Overdrive -> delay -> Mist -> OUT) for 30 minutes: 0 xruns, DSP load 7.3% mean against 2.3% without them, power flags 0x0.
+- [x] `docs/33-module-list.md` regenerated from the Pi's export (21 November 2026).
+- [ ] Played with Peepo's CV modules and stomps (the user).
 
 ## 4. Reel (Frames)
 

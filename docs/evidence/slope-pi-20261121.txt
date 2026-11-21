@@ -1,0 +1,67 @@
+Slope on the Pi, 21 November 2026 (Slope's docs/milestone-3-validation.md)
+
+Pi 5 (patchbox), Debian 12, GCC 12.2. Slope 13b8d6301be73fa37135a797087d01b51cbe3a0a
+(milestone 2, untagged), cloned from GitHub into ~/slope-src, built with
+make -j3 OPT="-O2 -mcpu=cortex-a76" (no warnings), installed into /opt/peepo/lib/lv2.
+
+make test (native arm64): PASS, 31 checks; match_stages bit for bit.
+
+make test-timing (one instance, 48 kHz, 128 frames = 2666.67 us, 10 simulated minutes each):
+  random controls and gates: mean 17.7 us (0.66%), 99.9% 29.6 us, worst 556 us
+  harmonic oscillator:       mean 17.2 us (0.65%), 99.9% 33.4 us, worst 70 us
+  six oscillators:           mean 24.2 us (0.91%), 99.9% 38.9 us, worst 204 us
+
+Catalogue: overlay and inventory differed from the working tree only by Slope's
+lines; copied, re-exported with peepo-export-catalogue: 255 -> 256 modules, only
+Slope added (Available, 45 controls, 18 ports), no other entry changed.
+Backups: /opt/peepo/share/peepo/backups/pre-slope-20261121/. Export copied to
+docs/evidence/catalogue-pi-20261121-slope.json. Engine, routing and interface
+restarted (JACK kept running); "Clouds guitar" reloaded, dirty=0.
+
+Load check: Slope's tools/pi_check.py, run as peepo, built on the running graph
+(the saved patch reloaded afterwards with peepo_effect_live restore):
+  IN -> MDA Overdrive -> Tempo delay (digit_delay) -> Mist -> OUT, live input
+  (no guitar played), JACK 48 kHz, 128 frames.
+  Slope A: ramp+loop, ramp+loop, hold group on Clock 1 (1/4, 120 BPM); a clocked
+  tap LFO (4), sample and hold (5) and locked oscillator (6). Out 1 -> Mist
+  density, Out 4 -> delay feedback, Out 5 -> Mist texture, Out 6 -> Slope B CV in 1.
+  Slope B: harmonic oscillator, the six waveform bytes, every partial plucked by
+  its clock at 1/16, 300 BPM; every 3 minutes switched to alt + loop (free and
+  locked oscillators) and back. Out 1 -> Mist position, Out 2 -> Overdrive drive.
+
+  With the two Slopes, 1800 s: xruns 0, DSP load mean 7.3%, max 8.2%;
+    engine RSS 150736 -> 155344 KiB.
+  Same patch without the Slopes, 300 s: xruns 0, DSP load mean 2.3%, max 2.7%;
+    engine RSS 155344 -> 156368 KiB (it grows without Slope too).
+  Power flags 0x0 throughout; 52-55 C.
+
+--- run-30min.log (controls and cables elided)
+PASS add od
+PASS add dly
+PASS add slope_a
+PASS add slope_b
+PASS Slope A configured (38 controls)
+PASS Slope B harmonic on
+WATCH 1800 s, 48000 Hz, 128 frames, engine pid 5349
+PASS Slope B harmonic off: free and locked oscillators
+   301 s: load mean 7.3% max 7.9%, xruns 0, RSS 151760 KiB
+PASS Slope B harmonic on
+PASS Slope B harmonic off: free and locked oscillators
+   603 s: load mean 7.3% max 8.0%, xruns 0, RSS 152272 KiB
+PASS Slope B harmonic on
+PASS Slope B harmonic off: free and locked oscillators
+   905 s: load mean 7.4% max 8.0%, xruns 0, RSS 152784 KiB
+PASS Slope B harmonic on
+  1207 s: load mean 7.4% max 8.2%, xruns 0, RSS 152784 KiB
+PASS Slope B harmonic off: free and locked oscillators
+PASS Slope B harmonic on
+  1509 s: load mean 7.3% max 8.2%, xruns 0, RSS 153296 KiB
+PASS Slope B harmonic off: free and locked oscillators
+PASS Slope B harmonic on
+RESULT {"seconds": 1800, "xruns": 0, "load_mean": 7.315445192699326, "load_max": 8.17025089263916, "rss_kib_first": 150736, "rss_kib_last": 155344, "rss_kib_max": 155344}
+--- run-baseline.log (controls and cables elided)
+PASS add od
+PASS add dly
+WATCH 300 s, 48000 Hz, 128 frames, engine pid 5349
+   300 s: load mean 2.3% max 2.7%, xruns 0, RSS 156368 KiB
+RESULT {"seconds": 300, "xruns": 0, "load_mean": 2.347260101636251, "load_max": 2.678861379623413, "rss_kib_first": 155344, "rss_kib_last": 156368, "rss_kib_max": 156368}

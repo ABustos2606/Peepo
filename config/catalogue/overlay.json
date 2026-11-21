@@ -277,6 +277,16 @@
       {"name": "CV use", "parameters": ["time_uses_cv", "size_uses_cv", "shape_uses_cv", "pitch_uses_cv", "seed_uses_gate"]},
       {"name": "CV assign and out", "parameters": ["assign_to", "gate_mode", "output"]}
     ]},
+    {"uri": "https://github.com/ABustos2606/slope#slope", "name": "Slope", "category": "Control", "description": "Six segments that chain into envelopes, LFOs and step sequences. Starts group on makes a segment begin a group played by its gate, whose shape comes out of that segment's Out. Alone, a segment is an LFO, envelope, S&H, delay or oscillator.",
+     "bypass": "port", "tempo": "bpm", "groups": [
+      {"name": "Tempo and mode", "parameters": ["harmonic", "bpm", "clock_div"]},
+      {"name": "Segment 1", "parameters": ["type_1", "loop_1", "primary_1", "secondary_1", "group_1", "trigger_1", "clock_1"]},
+      {"name": "Segment 2", "parameters": ["type_2", "loop_2", "primary_2", "secondary_2", "group_2", "trigger_2", "clock_2"]},
+      {"name": "Segment 3", "parameters": ["type_3", "loop_3", "primary_3", "secondary_3", "group_3", "trigger_3", "clock_3"]},
+      {"name": "Segment 4", "parameters": ["type_4", "loop_4", "primary_4", "secondary_4", "group_4", "trigger_4", "clock_4"]},
+      {"name": "Segment 5", "parameters": ["type_5", "loop_5", "primary_5", "secondary_5", "group_5", "trigger_5", "clock_5"]},
+      {"name": "Segment 6", "parameters": ["type_6", "loop_6", "primary_6", "secondary_6", "group_6", "trigger_6", "clock_6"]}
+    ]},
     {"uri": "urn:peepo:lv2:footswitch", "name": "Foot switch", "category": "Control", "description": "A stomp as a control signal: On value while it is down, Off value otherwise. Latching flips it on each press instead.", "parameters": [
       {"symbol": "stomp", "choices": ["A", "B", "C", "D"]}, {"symbol": "latching"}, {"symbol": "on_value"}, {"symbol": "off_value"}, {"symbol": "pressed"}
     ]},

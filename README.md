@@ -105,7 +105,7 @@ The keyboard stands in for the hardware: **Q/A** and **W/S** turn the encoders, 
 <!-- module-list:start -->
 ## Modules
 
-Everything you can add to a patch, as listed in Add on the instrument (20 November 2026): **216 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
+Everything you can add to a patch, as listed in Add on the instrument (21 November 2026): **217 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
 
 ### Drive
 
@@ -329,6 +329,7 @@ Everything you can add to a patch, as listed in Add on the instrument (20 Novemb
 | Retriggerable DAHDSR Envelope | A delay attack hold decay sustain release envelope generator. Can be retriggered. |
 | Ring Modulator - CV | Multiplies two control signals. |
 | Sample&Hold | Samples a control value when a trigger arrives and holds it until the next one. |
+| Slope | Six segments that chain into envelopes, LFOs and step sequences. Starts group on makes a segment begin a group played by its gate, whose shape comes out of that segment's Out. Alone, a segment is an LFO, envelope, S&H, delay or oscillator. |
 | Strum | MIDI and volt per octave controller based on strumming. |
 | Toggle | Toggles the output value on every trigger. |
 | Trigger to gate | Takes in a trigger and outputs a gate with a length related to the tempo. |
