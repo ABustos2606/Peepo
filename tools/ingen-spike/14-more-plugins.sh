@@ -258,8 +258,8 @@ third slope https://github.com/ABustos2606/slope.git 13b8d6301be73fa37135a797087
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- Reel and Reel LFO (keyframe mixer with four VCAs; four related LFOs), the
 # project's own port of Emilie Gillet's Frames (MIT). Its Makefile also adds
-# -fno-fast-math after OPT, so it gets the same flags. Pinned at v0.2.0.
-third reel https://github.com/ABustos2606/reel.git 143488de7012212f10e7708e7462cb073ac91597 "make" \
+# -fno-fast-math after OPT, so it gets the same flags. Pinned at v0.3.0.
+third reel https://github.com/ABustos2606/reel.git 488d9d1534c874aee77b7b3f01aa27d2c9d8d204 "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- MIDI to CV and MIDI to CV poly (MIDI notes to Poly's pitch and gate CVs), the project's own.
 third midi-cv https://github.com/ABustos2606/midi-cv.git 03ac4344aeae7e49625fb77f9a770a39d91f9749 "make" \
