@@ -1,0 +1,127 @@
+Drizzle, Chamber and Mist Beat Repeat on the Pi, 22 November 2026
+(docs/38-eurorack-ports-roadmap.md, docs/20-clouds.md#beat-repeat)
+
+Pi 5 (patchbox), Debian 12, GCC 12.2, package peepo-arm64-20261122-bac75f6-dirty.
+JACK 48 kHz, 128 frames (2666.67 us). Power flags 0x0 throughout (vcgencmd
+get_throttled every minute, 03:50 to 04:48 UTC); 47-59 C.
+
+Plugin tests, built natively as Peepo's build step does: cloned from GitHub into
+~/<name>-src at Peepo's pin, make -j3 OPT="-O2 -mcpu=cortex-a76", no warnings.
+
+  Drizzle v0.2.0 (8047478): make test PASS, 19 checks (match_beads and
+    match_synth bit for bit, allocation, qualities, resampler).
+    make test-timing (rt_timing, 10 simulated minutes of random controls):
+      mean 45.7 us (1.71%), 99.9% 160.3 us, worst 251 us
+  Chamber v0.2.1 (675ac8e): make test PASS, 15 checks (match_elements bit for
+    bit, rate equivalence, external input, switches, defaults).
+    make test-timing, worst-case settings:
+      Strings: mean 52.1 us (1.95%), 99.9% 115.4 us, worst 358 us
+      Ominous: mean 87.7 us (3.29%), 99.9% 136.2 us, worst 235 us
+
+Load checks: tools/pi/load-check.py, run as peepo on the running engine with
+"Clouds guitar" (saved, dirty=0) loaded; the patch was reloaded with
+peepo_effect_live restore after each check and came back dirty=0.
+Base patch: IN -> MDA Overdrive -> Tempo delay (digit_delay) -> Mist -> OUT,
+live input (no guitar played).
+
+  Baseline, the base patch alone, 300 s:
+    xruns 0, DSP load mean 2.3%, max 2.6%; engine RSS 150112 -> 150624 KiB.
+
+  Drizzle and Drizzle Synth, 1200 s: delay -> Drizzle -> Mist, Drizzle Synth
+  into Mist as well. Both at Density 1; Drizzle Size 0.6, Pitch +7, Feedback
+  0.5, Dry/wet 0.6, Reverb 0.5, modulation on Time, Size and Pitch. Quality
+  stepped every 150 s through all four (twice), Freeze on for the second half.
+    xruns 0, DSP load mean 6.3%, max 7.3%; engine RSS 152160 -> 156256 KiB.
+    Per quality (mean / max): 0: 6.1 / 6.4%, 1: 6.1 / 6.8%, 2: 6.7 / 7.2%,
+    3: 6.3 / 7.3%; 0 xruns in each.
+  (A first attempt at 03:52 stopped before building anything: the engine did not
+  answer the first command within 10 s. The rerun waited 30 s and ran whole.)
+
+  Chamber, 1200 s: IN -> Strike in, delay -> Blow in, Chamber -> Mist.
+  Heaviest modal case: strings model, Bow, Blow and Strike levels 0.8,
+  Strength 0.8, Space 0.88, Play toggled every second. The Ominous voice
+  switched on and off every 300 s (two periods each).
+    xruns 0, DSP load mean 6.1%, max 8.1%; engine RSS 146016 -> 146016 KiB.
+    Modal voice: mean 5.2%, max 6.2%, 0 xruns.
+    Ominous voice: mean 6.9%, max 8.1%, 0 xruns.
+  Decision (Chamber's docs/design.md, 20 October 2026: offered only if CPU
+  allows): it fits; the overlay no longer hides `ominous`.
+
+  Mist Beat Repeat, 600 s: delay -> Beat Repeat -> Mist. BPM 120, Clock note
+  1/16 (the fastest clock), Chance 0.5, Slice step Random, Loop shrink 0.5,
+  Loop size 0.7, Pitch -12, Reverb 0.5; Pitch mode stepped through all five
+  and Repeat toggled every 120 s.
+    xruns 0, DSP load mean 2.7%, max 3.3%; engine RSS 147040 -> 149088 KiB.
+
+Pass criteria: 0 xruns, power flags 0x0, peak DSP load below 50%. All passed.
+
+--- run-all.log
+START 2026-11-22T03:50:54+00:00
+== drizzle 8047478a978c8a9117cfb546c4a02b582eddcdc1
+8047478 Milestone 2 implemented
+build exit 0
+0
+test exit 0
+timing exit 0
+== chamber 675ac8eb3b0a9fa56d6a4a0b076b6ca9bd5356c3
+675ac8e friendly default
+build exit 0
+0
+test exit 0
+timing exit 0
+== load drizzle 1200 s 03:52:07
+load drizzle exit 1
+restore exit 0
+== load chamber 1200 s 03:52:22
+load chamber exit 0
+restore exit 0
+== load beat 600 s 04:12:28
+load beat exit 0
+restore exit 0
+== load baseline 300 s 04:22:35
+load baseline exit 0
+restore exit 0
+GRAPH Clouds guitar id=p20261014-222121-f9e0 dirty=0
+DONE 2026-11-22T04:27:41+00:00
+== load drizzle (rerun) 1200 s 04:27:55
+load drizzle exit 0
+restore exit 0
+GRAPH Clouds guitar id=p20261014-222121-f9e0 dirty=0
+DRIZZLE DONE 2026-11-22T04:47:56+00:00
+--- load-drizzle.log
+PHASE quality 0
+WATCH 1200 s, 48000 Hz, 128 frames, engine pid 152791
+PHASE quality 1
+   301 s: load mean 6.2% max 6.8%, xruns 0, RSS 153696 KiB
+PHASE quality 2
+PHASE quality 3
+   602 s: load mean 6.3% max 7.2%, xruns 0, RSS 154208 KiB
+PHASE quality 0, freeze on
+PHASE quality 1, freeze on
+   904 s: load mean 6.3% max 7.2%, xruns 0, RSS 155744 KiB
+PHASE quality 2, freeze on
+PHASE quality 3, freeze on
+RESULT {"seconds": 1200, "xruns": 0, "load_mean": 6.322643680732791, "load_max": 7.2907257080078125, "rss_kib_first": 152160, "rss_kib_last": 156256, "rss_kib_max": 156768, "phases": {"quality 0": {"load_mean": 6.126098346710205, "load_max": 6.428837776184082, "xruns": 0}, "quality 1": {"load_mean": 6.137162979443868, "load_max": 6.816806316375732, "xruns": 0}, "quality 2": {"load_mean": 6.684378179453187, "load_max": 7.197094917297363, "xruns": 0}, "quality 3": {"load_mean": 6.3494102348715575, "load_max": 7.2907257080078125, "xruns": 0}}}
+--- load-chamber.log
+PHASE modal voice
+WATCH 1200 s, 48000 Hz, 128 frames, engine pid 152791
+PHASE Ominous voice
+   310 s: load mean 5.4% max 7.6%, xruns 0, RSS 146016 KiB
+PHASE modal voice
+   619 s: load mean 6.2% max 8.1%, xruns 0, RSS 146016 KiB
+PHASE Ominous voice
+   929 s: load mean 5.9% max 8.1%, xruns 0, RSS 146528 KiB
+RESULT {"seconds": 1200, "xruns": 0, "load_mean": 6.052372051724072, "load_max": 8.098180770874023, "rss_kib_first": 146016, "rss_kib_last": 146016, "rss_kib_max": 146528, "phases": {"modal": {"load_mean": 5.198514956694383, "load_max": 6.204855918884277, "xruns": 0}, "ominous": {"load_mean": 6.921078835362973, "load_max": 8.098180770874023, "xruns": 0}}}
+--- load-beat.log
+PHASE pitch mode 0, Repeat off
+WATCH 600 s, 48000 Hz, 128 frames, engine pid 152791
+PHASE pitch mode 1, Repeat on
+PHASE pitch mode 2, Repeat off
+   301 s: load mean 2.7% max 3.1%, xruns 0, RSS 147040 KiB
+PHASE pitch mode 3, Repeat on
+PHASE pitch mode 4, Repeat off
+RESULT {"seconds": 600, "xruns": 0, "load_mean": 2.671196001918376, "load_max": 3.29705810546875, "rss_kib_first": 147040, "rss_kib_last": 149088, "rss_kib_max": 149088, "phases": {"beat repeat": {"load_mean": 2.671196001918376, "load_max": 3.29705810546875, "xruns": 0}}}
+--- load-baseline.log
+WATCH 300 s, 48000 Hz, 128 frames, engine pid 152791
+   300 s: load mean 2.3% max 2.6%, xruns 0, RSS 150624 KiB
+RESULT {"seconds": 300, "xruns": 0, "load_mean": 2.273236791292826, "load_max": 2.5516085624694824, "rss_kib_first": 150112, "rss_kib_last": 150624, "rss_kib_max": 150624, "phases": {"all": {"load_mean": 2.273236791292826, "load_max": 2.5516085624694824, "xruns": 0}}}

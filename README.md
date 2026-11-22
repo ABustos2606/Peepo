@@ -105,7 +105,7 @@ The keyboard stands in for the hardware: **Q/A** and **W/S** turn the encoders, 
 <!-- module-list:start -->
 ## Modules
 
-Everything you can add to a patch, as listed in Add on the instrument (21 November 2026): **219 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
+Everything you can add to a patch, as listed in Add on the instrument (22 November 2026): **220 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
 
 ### Drive
 
@@ -228,6 +228,7 @@ Everything you can add to a patch, as listed in Add on the instrument (21 Novemb
 | Gx Duck delay (Mono, Stereo) | Delay that reduces the repeats while the input is playing. |
 | Gx Echo Cat | Echo effect with controls for its repeat character. |
 | Loo-pi | Eight stereo loops: record, overdub, multiply, insert, reverse, half and double speed, sync to the tempo or a loop. Open its page for loop cards and commands. |
+| Mist Beat Repeat | Repeats slices of the input on a clock that follows the patch tempo. Chance sets how often a clock repeats; Repeat on repeats every one. Loop size and Loop start set the stutter inside a slice. Pitch below 0 slows the repeats, shaped by Pitch mode. |
 | Mist Looper | Granular pitch shifting, micro looping delay. Freeze loops what is in the buffer. |
 | Stereo delay | Stereo echo with independent left/right delay times, feedback and filtering. |
 | Tempo delay | Flexible delay timed in beats, so it follows the patch tempo. Only the echoes come out: cable the dry signal to OUT as well. |

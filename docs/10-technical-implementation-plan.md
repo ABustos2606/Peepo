@@ -300,7 +300,7 @@ See [Linux and Pi](19-linux-and-pi.md).
 - Pitch tracks whole semitones exactly, and freeze holds the buffer after the input stops.
 - Blend 0 is the dry signal, 9 dB down.
 - Values come back from a bundle; the captured audio does not (Clouds has no LV2 state).
-- In gain does nothing, and beat repeat ignores most of its controls, because the port never sets the firmware's beat-repeat parameters.
+- In gain does nothing, and beat repeat ignores most of its controls, because the port never sets the firmware's beat-repeat parameters. (Beat repeat fixed 21 November 2026 and installed on the Pi 22 November: [Clouds, Beat repeat](20-clouds.md#beat-repeat).)
 - The overlay can now present individual controls. Clouds shows per-mode names, switches for freeze and reverse, and whole-semitone pitch.
 
 See [Clouds](20-clouds.md). Pi guitar listening, native mode/control checks, Clouds patch save/reload and interface-only restart are now recorded above. A full listening sweep (the rest of P6.4), the Clouds-plus-conventional-effect patch (P6.5), and combined-load budgets (P6.6) remain open.

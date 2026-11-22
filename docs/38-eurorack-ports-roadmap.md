@@ -79,7 +79,7 @@ In Peepo:
 
 ## 1. Drizzle (Beads)
 
-**21 October 2026:** offline work done in Drizzle's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step (pinned at `v0.2.0`), inventory, overlay entries and notice added. **22 October:** built, tested and installed on the Pi, offered in its catalogue, and the user's guitar test passed. Not yet done: the measurements below.
+**21 October 2026:** offline work done in Drizzle's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step (pinned at `v0.2.0`), inventory, overlay entries and notice added. **22 October:** built, tested and installed on the Pi, offered in its catalogue, and the user's guitar test passed. **22 November 2026:** CPU and xruns measured on the Pi; Drizzle is finished.
 
 - [x] Wrap `beads::Processor`: delay and reverb buffers allocated in `instantiate`, `Process` in whole 1/4000 s blocks whatever Ingen's slices, stereo in and out. Dirty tape runs at 24 kHz and vintage digital at 32 kHz, as on the hardware, resampled around the processor; latency 95 frames (2 ms) at 48 kHz in every quality, reported to the host.
 - [x] Controls: Time, Size, Shape, Pitch (semitones), Density, Feedback, Dry/wet, Reverb; Freeze switch; Seed as a trigger; random amount per parameter (Beads' attenurandomizers); Quality as an enumeration of its four media (switching fades out, clears the buffer over 16 ms and fades in); Mono switch; Auto gain and Input gain; On (`lv2:enabled`, `"bypass": "port"`: tails ring out).
@@ -87,7 +87,7 @@ In Peepo:
 - [x] The button gestures and "is a cable in" cases are explicit controls: Seed lock, the four "uses CV" switches, Seed uses gate, CV assign to, Gate out, Mono.
 - [x] **Drizzle Synth** (decided 20 October 2026): Beads becomes a synth when its inputs are unplugged, which an LV2 plugin cannot see, so the synth is a second plugin in the same repository, a wavetable sound source.
 - [x] Overlay: Drizzle under Texture (27 controls in seven pages: Grain, Density and mix, Play, Modulation, CV use, Input and output, CV assign and out), Drizzle Synth under Sound source (24 controls in six pages). Checked with the exporter and `peepo_catalogue_tests` under WSL.
-- [ ] CPU and xruns on the Pi (`make test-timing` there, then `tools/pi/measure-effect.py` alone and in a typical patch, Density at maximum, every quality, with a Drizzle Synth).
+- [x] CPU and xruns on the Pi (22 November 2026, [evidence](evidence/eurorack-pi-20261122.txt)): `make test` 19 PASS and `make test-timing` 1.7% of a core (99.9% 160 us) natively; with a Drizzle Synth in a typical patch (IN -> Overdrive -> delay -> Drizzle -> Mist -> OUT), Density at maximum, every quality, Freeze on and off, `tools/pi/load-check.py` for 20 minutes: 0 xruns, DSP load 6.3% mean, 7.3% max (2.3% without them), power flags 0x0.
 - [x] Listened to with guitar on the Pi (22 October 2026): passed, no default changed. Record in Drizzle's `docs/milestone-3-validation.md`.
 - [x] Pi catalogue exported (22 October 2026: 336 -> 338 modules, only Drizzle's two added).
 - [x] `docs/33-module-list.md` regenerated (22 October 2026, from that export: 358 identities, 338 installed).
@@ -95,20 +95,20 @@ In Peepo:
 
 ## 2. Chamber (Elements)
 
-**21 October 2026:** offline work done in Chamber's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step, inventory and overlay entry added. Not yet done: the Pi checks below.
+**21 October 2026:** offline work done in Chamber's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there); Peepo's build step, inventory and overlay entry added. **22 November 2026:** CPU and xruns measured on the Pi, with and without the Ominous voice; it fits, so the overlay now offers it. The user's guitar test had passed on 21 October (below), so Chamber is finished.
 
 - [x] **Resampling** (decided 20 October 2026). Elements' tables, filters and exciter samples assume 32 kHz, so Chamber resamples 48 -> 32 -> 48 kHz around the unchanged voice. Latency, reported to the host: 88 frames (1.83 ms) at 48 kHz.
 - [x] Wrap `elements::Part` with its reverb buffer; inputs: gate, V/oct, strength, external blow and strike audio; outputs: main and aux.
 - [x] 33 controls and 14 CV inputs, in eight overlay pages: Resonator, Input and output, Play, Strike, Bow and blow, Pitch, and the CV amounts for exciter and resonator.
 - [x] Guitar use: external audio into the strike input, with a level control, tested offline as an effect (it rings at the resonator's pitch with no gate). Blow in sounds only while Play or a gate is held, as on the module.
-- [x] **Decision:** the Ominous mode is a switch in Chamber, not a second plugin, offered only if CPU allows. The overlay hides it until the Pi measurement says it fits; on a desktop it costs 1.8 times the worst modal case.
-- [ ] CPU and xruns on the Pi (`make test-timing` there, then `tools/pi/measure-effect.py` alone and in a typical patch), with and without the Ominous voice.
-- [ ] Listened to with guitar on the Pi; defaults tuned for guitar use (Damping, input levels); result in `docs/evidence/`.
+- [x] **Decision:** the Ominous mode is a switch in Chamber, not a second plugin, offered only if CPU allows. The overlay hid it until the Pi measurement said it fits; on a desktop it costs 1.8 times the worst modal case. It fits (below): since 22 November 2026 the overlay shows Ominous in the Resonator page, after Model.
+- [x] CPU and xruns on the Pi (22 November 2026, [evidence](evidence/eurorack-pi-20261122.txt)): `make test` 15 PASS natively; `make test-timing` 2.0% of a core for the strings model, 3.3% for the Ominous voice. In a typical patch (guitar into Strike in, the delay into Blow in, every exciter at 0.8, played every second, strings model), `tools/pi/load-check.py` for 20 minutes switching the Ominous voice every 5: 0 xruns; DSP load 5.2% mean with the modal voice, 6.9% mean and 8.1% max with the Ominous voice (2.3% without Chamber); power flags 0x0.
+- [x] Listened to with guitar on the Pi (21 October 2026): passed, Modal "Bells" the favourite; defaults tuned for guitar use in `v0.2.1` (a new Chamber is that bell, Strike in level -9 dB). Record in Chamber's `docs/milestone-3-validation.md`.
 - [x] Pi catalogue exported; `docs/33-module-list.md` regenerated (22 October 2026, with Drizzle's export: Chamber listed under Resonator, Ready).
 
 ## 3. Slope (Stages)
 
-**20 November 2026:** offline work done in Slope's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there). **21 November 2026:** Peepo's build step (pinned at `13b8d63`, milestone 2, until `v0.2.0` is tagged), inventory, overlay entry and notice added, checked under WSL with the exporter and `peepo_catalogue_tests`; built, tested and installed on the Pi and offered in its catalogue; two Slopes in a typical patch for 30 minutes with no xruns ([evidence](evidence/slope-pi-20261121.txt), Slope's `docs/milestone-3-validation.md`). Not yet done: the user's playing test.
+**20 November 2026:** offline work done in Slope's repository (milestones 0 to 2: `docs/milestone-*-validation.md` there). **21 November 2026:** Peepo's build step (pinned at `13b8d63`, which is `v0.2.0`; the later commits in Slope's repository change only its docs and a Pi check script), inventory, overlay entry and notice added, checked under WSL with the exporter and `peepo_catalogue_tests`; built, tested and installed on the Pi and offered in its catalogue; two Slopes in a typical patch for 30 minutes with no xruns ([evidence](evidence/slope-pi-20261121.txt), Slope's `docs/milestone-3-validation.md`). Not yet done: the user's playing test.
 
 - [x] **Rate** (decided 20 October 2026). Its timing and two lookup tables assume 31.25 kHz. Slope regenerates the tables for 44.1, 48 and 96 kHz with a Python 3 port of upstream's generator and sets `kSampleRate` at instantiate; outputs are CV, so no resampling.
 - [x] Wrap `stages::SegmentGenerator` for six segments: per segment a level/time slider, a shape control, a type (ramp, step, hold, alt) and a loop switch, as ordinary controls. Patches then keep the configuration without LV2 state.
@@ -124,9 +124,9 @@ In Peepo:
 
 ## 4. Reel (Frames)
 
-**21 November 2026:** milestones 0 to 2 done offline in Reel's repository (`docs/milestone-*-validation.md` there): keyframes, LV2 state, the sequencer, Reel LFO (with a BPM control that follows the patch tempo), and the keyframe list for the page on an atom output, checked through Ingen. Peepo side: overlay entries (Reel in Utility, Reel LFO in Control with `"tempo": "bpm"`), the inventory, `watch_reel` in the Ingen adapter, and the Reel page built from the mockup approved that day (`images/ui-reel.png`; `ui_check` captures `99-reel-*`, `ingen_tests` `reel_monitor`). **21-22 November 2026, on the Pi:** installed, `make test` 28 PASS natively, catalogue exported (256 -> 258, only Reel and Reel LFO added; `evidence/catalogue-pi-20261121-reel.json`). 30 minutes with Reel and Reel LFO in an Overdrive / delay / Mist patch: 0 xruns, DSP load 4.4% mean, 9.2% max (2.5% without them); the keyframes came back after a reboot ([evidence](evidence/reel-pi-20261121.txt)). Build step pinned at `v0.2.0` (`143488d`). Still to do: see the page on the Pi with the next interface install.
+**21 November 2026:** milestones 0 to 2 done offline in Reel's repository (`docs/milestone-*-validation.md` there): keyframes, LV2 state, the sequencer, Reel LFO (with a BPM control that follows the patch tempo), and the keyframe list for the page on an atom output, checked through Ingen. Peepo side: overlay entries (Reel in Utility, Reel LFO in Control with `"tempo": "bpm"`), the inventory, `watch_reel` in the Ingen adapter, and the Reel page built from the mockup approved that day (`images/ui-reel.png`; `ui_check` captures `99-reel-*`, `ingen_tests` `reel_monitor`). **21-22 November 2026, on the Pi:** installed, `make test` 28 PASS natively, catalogue exported (256 -> 258, only Reel and Reel LFO added; `evidence/catalogue-pi-20261121-reel.json`). 30 minutes with Reel and Reel LFO in an Overdrive / delay / Mist patch: 0 xruns, DSP load 4.4% mean, 9.2% max (2.5% without them); the keyframes came back after a reboot ([evidence](evidence/reel-pi-20261121.txt)). Build step then pinned at `v0.2.0` (`143488d`); now at `v0.3.0`, below.
 
-**22 November 2026, Reel milestone 3** (its `docs/milestone-3-validation.md`): Reel 0.3 adds a `commands` atom input (port 41) to move a keyframe. The page drags a keyframe by its numbered tag (a move per step, then 0, since Ingen saves the last value and sets it again on load). Dragging a lane up or down on the editing target's mark sets that level. Two stomp actions, **Next keyframe** and **Previous keyframe** (Settings > Controls, under the Reel), set Frame onto the keyframe after or before it, wrapping; the adapter keeps those Reels' lists watched with the page closed (`watch_reel_lists`, `reel_keyframes`, `reel_command`). `ingen_adapter`, `physical_controls` and `ui_workflows` pass on Windows. Still to do: pin Reel at `v0.3.0` once tagged, and try the page and stomps on the Pi by touch and by ear.
+**22 November 2026, Reel milestone 3** (its `docs/milestone-3-validation.md`): Reel 0.3 adds a `commands` atom input (port 41) to move a keyframe. The page drags a keyframe by its numbered tag (a move per step, then 0, since Ingen saves the last value and sets it again on load). Dragging a lane up or down on the editing target's mark sets that level. Two stomp actions, **Next keyframe** and **Previous keyframe** (Settings > Controls, under the Reel), set Frame onto the keyframe after or before it, wrapping; the adapter keeps those Reels' lists watched with the page closed (`watch_reel_lists`, `reel_keyframes`, `reel_command`). `ingen_adapter`, `physical_controls` and `ui_workflows` pass on Windows. Build step pinned at `v0.3.0` (`488d9d1`). **22 November 2026, on the Pi:** installed with package `peepo-arm64-20261122-bac75f6-dirty`, which has Reel 0.3.0 (the installed `reel.ttl` has the `commands` port) and the Reel page; the Pi's catalogue offers Reel and Reel LFO ([export](evidence/catalogue-pi-20261122.json)). Still to do: try the page and stomps on the Pi by touch and by ear.
 
 - [x] Wrap `frames::Keyframer` and `frames::PolyLfo`: frame position as a control and CV input, four channel levels as CV outputs, and four audio VCAs plus a mix output.
 - [x] **LV2 state** for the keyframes (up to 64, each with four values and an easing curve), saved and restored by Ingen.
@@ -134,7 +134,8 @@ In Peepo:
 - [x] A custom module page in Peepo, like the Euclidean one, showing keyframes along the position axis; layout accepted on 20 October 2026 (Reel's `docs/peepo-page.md`). This is the largest piece of interface work in the roadmap.
 - [x] Two plugins in the repository: Reel (keyframe mixer) and Reel LFO.
 - [x] Installed on the Pi, catalogue exported; xruns measured and keyframes checked after a reboot.
-- [ ] Milestone 3: keyframes moved and levels set by touch, Next and Previous keyframe on stomps (built and tested on Windows, 22 November 2026); pinned at `v0.3.0` and tried on the Pi.
+- [x] Milestone 3: keyframes moved and levels set by touch, Next and Previous keyframe on stomps (built and tested on Windows, 22 November 2026); pinned at `v0.3.0` and installed on the Pi (22 November 2026).
+- [ ] Milestone 3 tried on the Pi by touch and by ear (the user).
 
 ## Decisions
 
@@ -150,7 +151,7 @@ Settled with the user on 20 October 2026:
 | Chamber | The Ominous voice is offered only if CPU allows, measured on the Pi in milestone 2 |
 | Reel | Reel LFO is a separate plugin; easing and response are plain controls |
 
-Settled for Chamber on 21 October 2026: no Dry/wet control (Peepo's mixer modules blend the dry guitar); the Ominous voice is a switch in Chamber, hidden by the overlay until it is measured on the Pi.
+Settled for Chamber on 21 October 2026: no Dry/wet control (Peepo's mixer modules blend the dry guitar); the Ominous voice is a switch in Chamber, hidden by the overlay until it is measured on the Pi. Measured on 22 November 2026: it fits, and the overlay offers it.
 
 Settled for Drizzle on 21 October 2026 (Drizzle's `docs/design.md`, Decisions): dirty tape also runs at its hardware rate (24 kHz); Drizzle has an On port and is bypassed through it; Seed lock starts on and Density at 0.7 so a new Drizzle plays grains.
 

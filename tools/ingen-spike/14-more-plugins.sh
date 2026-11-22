@@ -252,8 +252,7 @@ third drizzle https://github.com/ABustos2606/drizzle.git 8047478a978c8a9117cfb54
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- Slope (six-segment envelope, LFO and step sequence generator, CV only),
 # the project's own port of Emilie Gillet's Stages (MIT). Its Makefile also
-# adds -fno-fast-math after OPT, so it gets the same flags. Pinned at its
-# milestone 2 commit; move the pin to v0.2.0 once that tag exists.
+# adds -fno-fast-math after OPT, so it gets the same flags. Pinned at v0.2.0.
 third slope https://github.com/ABustos2606/slope.git 13b8d6301be73fa37135a797087d01b51cbe3a0a "make" \
     make -j"$JOBS" OPT="$DISCIPLINE_OPT" LV2DIR="$LV2DIR" install
 # --- Reel and Reel LFO (keyframe mixer with four VCAs; four related LFOs), the

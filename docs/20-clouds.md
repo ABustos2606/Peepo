@@ -116,7 +116,9 @@ The CV inputs add to these as before; Texture's CV input is the firmware's slice
 
 **Level.** Between repeats the firmware plays the live input from its buffer, fully wet. Its post gain, crossfade and conversion (1.2 x 0.7071 x 0.5) leave 0.424 of the level, which the patch makes up; Blend's dry path outside Clouds is not used here, as it would double the input. Output sets the level as in the other modes. Reverse is hidden: the mode ignores it.
 
-Checked without an engine by `tools/ingen-spike/30-beat-repeat.sh` ([results](evidence/beat-repeat-results.txt)): unity pass-through; with Repeat on, each 1/8 at 120 BPM plays its first half live and then repeats it, at host periods of 128 and 100; Trigger in clocks it and nothing repeats without a trigger; Chance 0.5 repeated 38 of 76 clocks; the other six modes still run. `peepo_catalogue_tests` passes with the overlay and the updated WSL fixture. Not yet done: the Pi (build, catalogue export, CPU) and listening with guitar.
+Checked without an engine by `tools/ingen-spike/30-beat-repeat.sh` ([results](evidence/beat-repeat-results.txt)): unity pass-through; with Repeat on, each 1/8 at 120 BPM plays its first half live and then repeats it, at host periods of 128 and 100; Trigger in clocks it and nothing repeats without a trigger; Chance 0.5 repeated 38 of 76 clocks; the other six modes still run. `peepo_catalogue_tests` passes with the overlay and the updated WSL fixture.
+
+**22 November 2026, on the Pi:** installed with package `peepo-arm64-20261122-bac75f6-dirty`; the installed `polyclouds.ttl` has the clock controls, and the Pi's catalogue offers Mist Beat Repeat as Ready ([export](evidence/catalogue-pi-20261122.json), [module list](33-module-list.md)). CPU and xruns measured the same day ([evidence](evidence/eurorack-pi-20261122.txt)): in IN -> Overdrive -> delay -> Beat Repeat -> Mist -> OUT, clocked at 1/16 and 120 BPM, Chance 0.5, every pitch mode and Repeat on and off, `tools/pi/load-check.py` for 10 minutes gave 0 xruns, DSP load 2.7% mean and 3.3% max (2.3% without it), power flags 0x0. Not yet done: listening with guitar.
 
 ## Run it
 

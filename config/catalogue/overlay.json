@@ -254,8 +254,8 @@
       {"name": "Shape and output", "parameters": ["tone", "swell", "peepo_output"]}
     ]},
     {"uri": "https://github.com/ABustos2606/chamber#chamber", "name": "Chamber", "category": "Resonator", "description": "A bell, plate or strings that your guitar rings at its own pitch: cable it to Strike in, no gate needed. It starts as a long bell with reverb. Raise Strike, Bow or Blow level to play it with Play or a gate; Blow in sounds only while one is held.",
-     "output": "output", "parameters": [{"symbol": "ominous", "hidden": true}], "groups": [
-      {"name": "Resonator", "parameters": ["model", "geometry", "brightness", "damping", "position", "space"]},
+     "output": "output", "groups": [
+      {"name": "Resonator", "parameters": ["model", "ominous", "geometry", "brightness", "damping", "position", "space"]},
       {"name": "Input and output", "parameters": ["strike_in_level", "blow_in_level", "output"]},
       {"name": "Play", "parameters": ["play", "strength", "contour"]},
       {"name": "Strike", "parameters": ["strike_level", "strike_meta", "strike_timbre"]},
