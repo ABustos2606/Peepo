@@ -1,0 +1,77 @@
+Reel on the Pi, 21-22 November 2026 (Reel's docs/milestone-2-validation.md)
+
+Pi 5 (patchbox), Debian 12, GCC 12.2. Reel d2af5633141f5083559a118a49a5b5a940508de9
+(milestone 2; the plugin code is that of the pinned 0089184, the commit after it
+adds only docs and tools/pi_check.py), cloned from GitHub into ~/reel-src, built
+with make -j3 OPT="-O2 -mcpu=cortex-a76" (no warnings), installed into
+/opt/peepo/lib/lv2.
+
+make test (native arm64): PASS, 28 checks.
+
+make test-timing (one instance, 48 kHz, 128 frames = 2666.67 us, 10 simulated minutes each):
+  Reel (rt_timing: edits, presses, Mode, saves from another thread):
+                    mean 6.1 us (0.23%), 99.9% 35.4 us, worst 94 us
+  Reel LFO (every control and Rate CV moving):
+                    mean 12.9 us (0.49%), 99.9% 24.3 us, worst 74 us
+
+Catalogue: overlay and inventory differed from the working tree only by Reel's
+lines; copied, re-exported with peepo-export-catalogue: 256 -> 258 modules, only
+Reel (Available, 19 controls, 16 ports) and Reel LFO (Available, 8 controls,
+5 ports) added, no other entry changed. Backups:
+/opt/peepo/share/peepo/backups/pre-reel-20261121/. Export copied to
+docs/evidence/catalogue-pi-20261121-reel.json. Engine, routing and interface
+restarted (JACK kept running); "Clouds guitar" reloaded, dirty=0.
+
+Load check: Reel's tools/pi_check.py, run as peepo, built on the running graph
+(the saved patch reloaded afterwards with peepo_effect_live restore):
+  IN -> MDA Overdrive -> Reel in 1; IN -> Tempo delay (digit_delay) -> Reel in 2;
+  Reel mix -> Mist (both inputs) -> OUT, live input (no guitar played),
+  JACK 48 kHz, 128 frames.
+  Three keyframes added through the controls as the page adds them (Frame, the
+  four Levels, Add pressed): 0.1 all Overdrive, 0.5 both at 0.6, 0.9 all delay;
+  read back from t_keyframes as Peepo's page watches it.
+  Reel LFO: Rate 0.45, Spread 0.75; Out 2 -> delay feedback, Out 3 -> Mist density.
+  First 900 s Frame set every 200 ms as an encoder sweeping across the
+  keyframes; then Reel LFO Out 1 -> Reel Frame CV. The graph copied to a bundle
+  every minute (29 saves, Reel's state each time).
+
+  With Reel and Reel LFO, 1800 s: xruns 0, DSP load mean 4.4%, max 9.2%;
+    engine RSS 144624 -> 150768 KiB.
+  Same patch without them, 300 s: xruns 0, DSP load mean 2.5%, max 2.8%;
+    engine RSS 151280 -> 152304 KiB (it grows without Reel too, as with Slope).
+  Power flags 0x0 throughout; 49-55 C.
+
+Reboot: the last saved bundle (reel/state.ttl: version 1, the keyframes as an
+atom:Vector of 18 ints, positions 6554, 32768, 58982) kept on the card; the Pi
+rebooted; it came back playing "Clouds guitar" (dirty=0). Reel's
+tools/reboot_check.py loaded the bundle into the fresh engine as Peepo loads a
+patch (Clouds removed, patch:Copy of the bundle into ingen:/main): Reel listed the
+same three keyframes. "Clouds guitar" reloaded, dirty=0.
+
+The page itself was not checked on the Pi: the installed interface predates
+Peepo's Reel page (825ce2b); it is checked in ui_check.
+
+--- run-30min.log (controls and cables elided)
+PASS add od
+PASS add dly
+PASS add reel
+PASS add reel_lfo
+PASS Reel lists 3 keyframes on t_keyframes: 1:199a0000ffff000000000000800000019999999900000000e66600020000ffff00000000
+WATCH 1800 s, 48000 Hz, 128 frames, engine pid 25993
+   300 s: load mean 4.0% max 5.8%, xruns 0, RSS 144624 KiB, saves 5
+   600 s: load mean 4.0% max 5.8%, xruns 0, RSS 145136 KiB, saves 10
+PASS Frame now driven by Reel LFO Out 1
+   900 s: load mean 4.0% max 5.8%, xruns 0, RSS 146672 KiB, saves 15
+  1200 s: load mean 4.2% max 9.2%, xruns 0, RSS 148208 KiB, saves 20
+  1500 s: load mean 4.3% max 9.2%, xruns 0, RSS 149232 KiB, saves 25
+PASS the keyframes are still there: 1:199a0000ffff000000000000800000019999999900000000e66600020000ffff00000000
+RESULT {"seconds": 1800, "xruns": 0, "load_mean": 4.3763388325577, "load_max": 9.230770111083984, "rss_kib_first": 144624, "rss_kib_last": 150768, "rss_kib_max": 150768, "saves": 29}
+--- run-baseline.log (controls and cables elided)
+PASS add od
+PASS add dly
+WATCH 300 s, 48000 Hz, 128 frames, engine pid 25993
+RESULT {"seconds": 300, "xruns": 0, "load_mean": 2.475952152478493, "load_max": 2.7583513259887695, "rss_kib_first": 151280, "rss_kib_last": 152304, "rss_kib_max": 152304, "saves": 0}
+--- reboot.log (after the reboot)
+PASS remove clouds
+PASS load /home/patch/reel-pi-check/save.ingen into ingen:/main
+PASS Reel restored 3 keyframes after the reboot: 1:199a0000ffff000000000000800000019999999900000000e66600020000ffff00000000

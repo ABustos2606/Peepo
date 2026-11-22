@@ -105,7 +105,7 @@ The keyboard stands in for the hardware: **Q/A** and **W/S** turn the encoders, 
 <!-- module-list:start -->
 ## Modules
 
-Everything you can add to a patch, as listed in Add on the instrument (21 November 2026): **217 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
+Everything you can add to a patch, as listed in Add on the instrument (21 November 2026): **219 modules** in 14 categories. A name with options in brackets is one card with a pill for each variant (mono or stereo, internal LFO or CV). Connections, status and plugin identities are in the [complete module list](docs/33-module-list.md).
 
 ### Drive
 
@@ -326,6 +326,7 @@ Everything you can add to a patch, as listed in Add on the instrument (21 Novemb
 | Noise2 - CV | Random control signal: noise or stepped random values at a set rate. |
 | Percussive Envelope | Short attack decay envelope for plucks and hits. Takes in a gate. |
 | Quantizer | Quantizes a volt per octave signal to a musical scale. |
+| Reel LFO | Four related LFOs from one rate: shapes, phases or rates spread across the outputs, and each can bend its neighbour. With Tempo sync on, a cycle lasts a note at the patch tempo. |
 | Retriggerable DAHDSR Envelope | A delay attack hold decay sustain release envelope generator. Can be retriggered. |
 | Ring Modulator - CV | Multiplies two control signals. |
 | Sample&Hold | Samples a control value when a trigger arrives and holds it until the next one. |
@@ -379,6 +380,7 @@ Everything you can add to a patch, as listed in Add on the instrument (21 Novemb
 | Pitch calibration out | Pitch calibration for a volt per octave output. |
 | Product | a times b for control signals. |
 | Ratio | a divided by b for control signals. |
+| Reel | Keyframe mixer: stores up to 64 snapshots of four levels along Frame and morphs between them as Frame moves, by hand or by CV. Four VCAs, a mix and four level CVs. Open its page to see and edit the keyframes. |
 | Scope (Mono, Stereo) | Oscilloscope view of a signal. Audio passes through unchanged. |
 | Signal Absolute Value | Rectifies a control signal: negative values become positive. |
 | Slew Limiter | Slows how fast a control signal changes, with separate rise and fall times. Useful with foot switches. |
