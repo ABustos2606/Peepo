@@ -30,8 +30,10 @@ git -C lenticular_lv2 checkout -q "$LENTICULAR_COMMIT"
 git -C lenticular_lv2 submodule update -q --init eurorack parasites/stmlib
 git -C lenticular_lv2/eurorack submodule update -q --init stmlib
 # Clouds' blend mixes the untouched input with Clouds' own sound, and an
-# Output control sets the level of the mix (the patch explains both). The two
-# files are reset first, so an earlier version of the patch never gets in the way.
+# Output control sets the level of the mix; beat repeat gets its firmware
+# settings from its controls and a clock from the patch tempo (the patch
+# explains all three). The two files are reset first, so an earlier version
+# of the patch never gets in the way.
 CLOUDS_PATCH="$(dirname "$(readlink -f "$0")")/../plugin-patches/clouds-blend-and-output.patch"
 if ! git -C lenticular_lv2 apply --reverse --check "$CLOUDS_PATCH" 2>/dev/null; then
     git -C lenticular_lv2 checkout -q -- src/polyclouds.cpp polyclouds.ttl

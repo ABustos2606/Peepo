@@ -1,87 +1,5 @@
-diff --git a/src/polyclouds.cpp b/src/polyclouds.cpp
---- a/src/polyclouds.cpp
-+++ b/src/polyclouds.cpp
-@@ -63,6 +63,7 @@ typedef enum {
-     FREEZE_PARAM = 26,
- 	REVERSE_PARAM = 27,
- 	BYPASS_PARAM = 28,
-+	OUTPUT_PARAM = 29,
- } PortIndex;
- 
- /**
-@@ -104,6 +105,7 @@ typedef struct {
-     const float* freeze_param;
-     const float* reverse_param;
-     const float* bypass_param;
-+    const float* output_param;
- 	/* bool is_on; */
- 	/* bool was_down; */
- 	int buffersize = 1;
-@@ -127,6 +129,11 @@ typedef struct {
- 
- 	bool prev_trigger = false;
- 	bool prev_bypass = false;
-+	// Peepo: blend mixes the untouched input with Clouds' own sound here,
-+	// rather than inside Clouds (not for Resonestor, where blend is distortion).
-+	bool dry_outside;
-+	// Peepo: the output level, smoothed like the other controls.
-+	float output_smooth;
- 
- } Clouds;
- 
-@@ -161,7 +168,9 @@ instantiate(const LV2_Descriptor*     descriptor,
- 	} else if (!strcmp (descriptor->URI, CLOUDS_URI "beat_repeat")) {
- 		amp->processor->set_playback_mode(clouds::PLAYBACK_MODE_KAMMERL);
- 	}
--	
-+	amp->dry_outside = strcmp(descriptor->URI, CLOUDS_URI "resonestor") != 0;
-+	amp->output_smooth = 1.0f;
-+
- 	return (LV2_Handle)amp;
- }
- 
-@@ -260,6 +269,9 @@ connect_port(LV2_Handle instance,
- 		case BYPASS_PARAM: // kill dry
- 			amp->bypass_param = (const float*)data;
- 			break;
-+		case OUTPUT_PARAM:
-+			amp->output_param = (const float*)data;
-+			break;
- 
- 		default:
- 			break;
-@@ -404,7 +416,9 @@ run(LV2_Handle instance, uint32_t n_samples)
-         texture_smooth += .008f * (texture_param - texture_smooth);
- 		p->texture = clamp(texture_smooth + texture[j], 0.0f, 1.0f);
-         blend_smooth += .008f * (blend_param - blend_smooth);
--		p->dry_wet = clamp(blend_smooth + blend[j], 0.0f, 1.0f);
-+		const float blend_value = clamp(blend_smooth + blend[j], 0.0f, 1.0f);
-+		// Fully wet inside: its reverb then colours only Clouds' sound.
-+		p->dry_wet = amp->dry_outside ? 1.0f : blend_value;
-         spread_smooth += .008f * (spread_param - spread_smooth);
- 		p->stereo_spread =  clamp(spread_smooth + spread[j], 0.0f, 1.0f);
-         feedback_smooth += .008f * (feedback_param - feedback_smooth);
-@@ -415,9 +429,17 @@ run(LV2_Handle instance, uint32_t n_samples)
- 		clouds::ShortFrame output[block_size];
- 		processor->Process(input, output, block_size);
- 
-+		// Like a pedal's mix knob: the input stays at full level up to the
-+		// middle and fades out above it; Clouds comes up to full by the
-+		// middle. Clouds halves its output on conversion (the module's analogue
-+		// stage makes that up), so its sound is doubled back to the input's level.
-+		// Output, in dB, sets the level of the whole mix.
-+		amp->output_smooth += .008f * (powf(10.0f, clamp(*(amp->output_param), -24.0f, 12.0f) / 20.0f) - amp->output_smooth);
-+		const float dry = (amp->dry_outside ? fminf(1.0f, 2.0f * (1.0f - blend_value)) : 0.0f) * amp->output_smooth;
-+		const float wet = (amp->dry_outside ? fminf(1.0f, 2.0f * blend_value) * 2.0f : 1.0f) * amp->output_smooth;
- 		for (uint32_t i = 0; i < block_size; i++) {
--			out_l[pos+i] = output[i].l / 32768.0;
--			out_r[pos+i] = output[i].r / 32768.0;
-+			out_l[pos+i] = dry * in_l[pos+i] + wet * (output[i].l / 32768.0f);
-+			out_r[pos+i] = dry * in_r[pos+i] + wet * (output[i].r / 32768.0f);
- 		}
- 		pos = pos + block_size;
- 		if (pos+block_size > n_samples){
 diff --git a/polyclouds.ttl b/polyclouds.ttl
+index d916275..aca280b 100644
 --- a/polyclouds.ttl
 +++ b/polyclouds.ttl
 @@ -264,6 +264,16 @@ clouds:granular
@@ -186,7 +104,125 @@ diff --git a/polyclouds.ttl b/polyclouds.ttl
  	] .
  
  clouds:beat_repeat
-@@ -1803,4 +1863,14 @@ clouds:beat_repeat
+@@ -1691,8 +1751,8 @@ clouds:beat_repeat
+ 			lv2:ControlPort ;
+ 		lv2:index 16 ;
+ 		lv2:symbol "position_param" ;
+-		lv2:name "Loop Start" ;
+-		lv2:default 0.24 ;
++		lv2:name "Loop start" ;
++		lv2:default 0.0 ;
+ 		lv2:minimum 0.0 ;
+ 		lv2:maximum 1.0 ;
+ 	] , [
+@@ -1700,8 +1760,8 @@ clouds:beat_repeat
+ 			lv2:ControlPort ;
+ 		lv2:index 17 ;
+ 		lv2:symbol "size_param" ;
+-		lv2:name "Loop Size" ;
+-		lv2:default 0.69 ;
++		lv2:name "Loop size" ;
++		lv2:default 0.45 ;
+ 		lv2:minimum 0.0 ;
+ 		lv2:maximum 1.0 ;
+ 	] , [
+@@ -1710,7 +1770,7 @@ clouds:beat_repeat
+ 		lv2:index 18 ;
+ 		lv2:symbol "pitch_param" ;
+ 		lv2:name "Pitch" ;
+-		lv2:default 0.1 ;
++		lv2:default 0.0 ;
+ 		lv2:minimum -48.0 ;
+ 		lv2:maximum 48.0 ;
+ 	] , [
+@@ -1727,8 +1787,8 @@ clouds:beat_repeat
+ 			lv2:ControlPort ;
+ 		lv2:index 20 ;
+ 		lv2:symbol "density_param" ;
+-		lv2:name "Size Mod" ;
+-		lv2:default 0.27 ;
++		lv2:name "Loop shrink" ;
++		lv2:default 0.0 ;
+ 		lv2:minimum 0.0 ;
+ 		lv2:maximum 1.0 ;
+ 	] , [
+@@ -1736,17 +1796,19 @@ clouds:beat_repeat
+ 			lv2:ControlPort ;
+ 		lv2:index 21 ;
+ 		lv2:symbol "texture_param" ;
+-		lv2:name "Slice Step" ;
+-		lv2:default 0.73 ;
+-		lv2:minimum 0.0 ;
+-		lv2:maximum 1.0 ;
++		lv2:name "Slice step" ;
++		lv2:default 0 ;
++		lv2:minimum 0 ;
++		lv2:maximum 7 ;
++		lv2:portProperty lv2:integer , lv2:enumeration ;
++		lv2:scalePoint [ rdfs:label "Off" ; rdf:value 0 ] , [ rdfs:label "1" ; rdf:value 1 ] , [ rdfs:label "2" ; rdf:value 2 ] , [ rdfs:label "3" ; rdf:value 3 ] , [ rdfs:label "5" ; rdf:value 4 ] , [ rdfs:label "6" ; rdf:value 5 ] , [ rdfs:label "7" ; rdf:value 6 ] , [ rdfs:label "Random" ; rdf:value 7 ] ;
+ 	] , [
+ 		a lv2:InputPort ,
+ 			lv2:ControlPort ;
+ 		lv2:index 22 ;
+ 		lv2:symbol "blend_param" ;
+-		lv2:name "Slice Probability" ;
+-		lv2:default 0.78 ;
++		lv2:name "Chance" ;
++		lv2:default 0.5 ;
+ 		lv2:minimum 0.0 ;
+ 		lv2:maximum 1.0 ;
+ 	] , [
+@@ -1754,26 +1816,30 @@ clouds:beat_repeat
+ 			lv2:ControlPort ;
+ 		lv2:index 23 ;
+ 		lv2:symbol "spread_param" ;
+-		lv2:name "Clock Divider" ;
+-		lv2:default 0.7 ;
+-		lv2:minimum 0.0 ;
+-		lv2:maximum 1.0 ;
++		lv2:name "Slice length" ;
++		lv2:default 0 ;
++		lv2:minimum 0 ;
++		lv2:maximum 3 ;
++		lv2:portProperty lv2:integer , lv2:enumeration ;
++		lv2:scalePoint [ rdfs:label "1 clock" ; rdf:value 0 ] , [ rdfs:label "2 clocks" ; rdf:value 1 ] , [ rdfs:label "4 clocks" ; rdf:value 2 ] , [ rdfs:label "8 clocks" ; rdf:value 3 ] ;
+ 	] , [
+ 		a lv2:InputPort ,
+ 			lv2:ControlPort ;
+ 		lv2:index 24 ;
+ 		lv2:symbol "feedback_param" ;
+-		lv2:name "Pitch Mod" ;
+-		lv2:default 0.55 ;
+-		lv2:minimum 0.0 ;
+-		lv2:maximum 1.0 ;
++		lv2:name "Pitch mode" ;
++		lv2:default 0 ;
++		lv2:minimum 0 ;
++		lv2:maximum 4 ;
++		lv2:portProperty lv2:integer , lv2:enumeration ;
++		lv2:scalePoint [ rdfs:label "Fixed" ; rdf:value 0 ] , [ rdfs:label "Reverse" ; rdf:value 1 ] , [ rdfs:label "Slows down" ; rdf:value 2 ] , [ rdfs:label "Speeds up" ; rdf:value 3 ] , [ rdfs:label "Scratch" ; rdf:value 4 ] ;
+ 	] , [
+ 		a lv2:InputPort ,
+ 			lv2:ControlPort ;
+ 		lv2:index 25 ;
+ 		lv2:symbol "reverb_param" ;
+-		lv2:name "Feedback" ;
+-		lv2:default 0.6 ;
++		lv2:name "Reverb" ;
++		lv2:default 0.0 ;
+ 		lv2:minimum 0.0 ;
+ 		lv2:maximum 1.0 ;
+ 	] , [
+@@ -1781,7 +1847,7 @@ clouds:beat_repeat
+ 			lv2:ControlPort ;
+ 		lv2:index 26 ;
+ 		lv2:symbol "freeze_param" ;
+-		lv2:name "freeze" ;
++		lv2:name "Repeat" ;
+ 		lv2:default 0.0 ;
+ 		lv2:minimum 0.0 ;
+ 		lv2:maximum 1.0 ;
+@@ -1803,4 +1869,45 @@ clouds:beat_repeat
  		lv2:default 0.0 ;
  		lv2:minimum 0.0 ;
  		lv2:maximum 1.0 ;
@@ -200,4 +236,221 @@ diff --git a/polyclouds.ttl b/polyclouds.ttl
 +		lv2:default 0.0 ;
 +		lv2:minimum -24.0 ;
 +		lv2:maximum 12.0 ;
++	] , [
++		a lv2:InputPort ,
++			lv2:ControlPort ;
++		lv2:index 30 ;
++		lv2:symbol "bpm" ;
++		lv2:name "BPM" ;
++		units:unit units:bpm ;
++		lv2:default 120.0 ;
++		lv2:minimum 30.0 ;
++		lv2:maximum 300.0 ;
++	] , [
++		a lv2:InputPort ,
++			lv2:ControlPort ;
++		lv2:index 31 ;
++		lv2:symbol "clock_note" ;
++		lv2:name "Clock note" ;
++		lv2:default 1 ;
++		lv2:minimum 0 ;
++		lv2:maximum 4 ;
++		lv2:portProperty lv2:integer , lv2:enumeration ;
++		lv2:scalePoint [ rdfs:label "1/16" ; rdf:value 0 ] , [ rdfs:label "1/8" ; rdf:value 1 ] , [ rdfs:label "1/4" ; rdf:value 2 ] , [ rdfs:label "1/2" ; rdf:value 3 ] , [ rdfs:label "1 bar" ; rdf:value 4 ] ;
++	] , [
++		a lv2:InputPort ,
++			lv2:ControlPort ;
++		lv2:index 32 ;
++		lv2:symbol "clock_in" ;
++		lv2:name "Clock from Trigger in" ;
++		lv2:default 0.0 ;
++		lv2:minimum 0.0 ;
++		lv2:maximum 1.0 ;
++		lv2:portProperty lv2:toggled ;
  	] .
+diff --git a/src/polyclouds.cpp b/src/polyclouds.cpp
+index c4da542..4db0ad2 100644
+--- a/src/polyclouds.cpp
++++ b/src/polyclouds.cpp
+@@ -63,6 +63,11 @@ typedef enum {
+     FREEZE_PARAM = 26,
+ 	REVERSE_PARAM = 27,
+ 	BYPASS_PARAM = 28,
++	OUTPUT_PARAM = 29,
++	// Peepo: beat repeat only. Its clock, from the patch tempo or Trigger in.
++	BPM_PARAM = 30,
++	CLOCK_NOTE_PARAM = 31,
++	CLOCK_IN_PARAM = 32,
+ } PortIndex;
+ 
+ /**
+@@ -104,6 +109,7 @@ typedef struct {
+     const float* freeze_param;
+     const float* reverse_param;
+     const float* bypass_param;
++    const float* output_param;
+ 	/* bool is_on; */
+ 	/* bool was_down; */
+ 	int buffersize = 1;
+@@ -127,9 +133,26 @@ typedef struct {
+ 
+ 	bool prev_trigger = false;
+ 	bool prev_bypass = false;
++	// Peepo: blend mixes the untouched input with Clouds' own sound here,
++	// rather than inside Clouds (not for Resonestor, where blend is distortion).
++	bool dry_outside;
++	// Peepo: the output level, smoothed like the other controls.
++	float output_smooth;
++	// Peepo: beat repeat. The firmware reads its settings (chance, slice
++	// length, pitch mode, slice step, loop shrink) from the knobs; this port
++	// set none of them, and nothing clocked it unless a trigger was cabled.
++	bool beat_repeat;
++	const float* bpm_param;
++	const float* clock_note_param;
++	const float* clock_in_param;
++	double rate;
++	double samples_to_tick;
+ 
+ } Clouds;
+ 
++// Peepo: Clock note values, in beats: 1/16, 1/8, 1/4, 1/2, 1 bar.
++static const float kClockNoteBeats[] = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f };
++
+ static LV2_Handle
+ instantiate(const LV2_Descriptor*     descriptor,
+             double                    rate,
+@@ -161,7 +184,15 @@ instantiate(const LV2_Descriptor*     descriptor,
+ 	} else if (!strcmp (descriptor->URI, CLOUDS_URI "beat_repeat")) {
+ 		amp->processor->set_playback_mode(clouds::PLAYBACK_MODE_KAMMERL);
+ 	}
+-	
++	amp->beat_repeat = strcmp(descriptor->URI, CLOUDS_URI "beat_repeat") == 0;
++	// Beat repeat plays the live input between repeats itself, so a dry
++	// path outside would double it; its Blend is the repeat chance.
++	amp->dry_outside = strcmp(descriptor->URI, CLOUDS_URI "resonestor") != 0
++		&& !amp->beat_repeat;
++	amp->output_smooth = 1.0f;
++	amp->rate = rate;
++	amp->samples_to_tick = 0.0;
++
+ 	return (LV2_Handle)amp;
+ }
+ 
+@@ -260,6 +291,18 @@ connect_port(LV2_Handle instance,
+ 		case BYPASS_PARAM: // kill dry
+ 			amp->bypass_param = (const float*)data;
+ 			break;
++		case OUTPUT_PARAM:
++			amp->output_param = (const float*)data;
++			break;
++		case BPM_PARAM:
++			amp->bpm_param = (const float*)data;
++			break;
++		case CLOCK_NOTE_PARAM:
++			amp->clock_note_param = (const float*)data;
++			break;
++		case CLOCK_IN_PARAM:
++			amp->clock_in_param = (const float*)data;
++			break;
+ 
+ 		default:
+ 			break;
+@@ -361,9 +404,35 @@ run(LV2_Handle instance, uint32_t n_samples)
+ 	processor->set_low_fidelity(false);
+ 	processor->Prepare();
+ 
++	// Peepo: beat repeat's clock. From the patch tempo (BPM and Clock note)
++	// unless Clock from Trigger in is on. A block ends where the next tick
++	// falls, so the firmware measures the clock to the sample.
++	const bool tempo_clock = amp->beat_repeat && *(amp->clock_in_param) < 0.5f;
++	double tick_samples = 0.0;
++	if (tempo_clock) {
++		int note = (int)(*(amp->clock_note_param) + 0.5f);
++		note = note < 0 ? 0 : (note > 4 ? 4 : note);
++		const float bpm = clamp(*(amp->bpm_param), 30.0f, 300.0f);
++		tick_samples = amp->rate * 60.0 / bpm * kClockNoteBeats[note];
++		if (amp->samples_to_tick > tick_samples) {
++			amp->samples_to_tick = tick_samples;
++		}
++	}
++
+ 	while (pos < n_samples){
++		block_size = n_samples - pos < 32 ? n_samples - pos : 32;
+ 		triggered = false;
+-		if (trig[pos] >= 0.4) {
++		if (tempo_clock) {
++			if (amp->samples_to_tick <= 0.0) {
++				triggered = true;
++				amp->samples_to_tick += tick_samples;
++			}
++			const double until_tick = ceil(amp->samples_to_tick);
++			if (until_tick < block_size) {
++				block_size = (uint32_t)until_tick;
++			}
++			amp->samples_to_tick -= block_size;
++		} else if (trig[pos] >= 0.4) {
+ 			if (!(amp->prev_trigger)){
+ 				triggered = true;
+ 				amp->prev_trigger = true;
+@@ -404,25 +473,55 @@ run(LV2_Handle instance, uint32_t n_samples)
+         texture_smooth += .008f * (texture_param - texture_smooth);
+ 		p->texture = clamp(texture_smooth + texture[j], 0.0f, 1.0f);
+         blend_smooth += .008f * (blend_param - blend_smooth);
+-		p->dry_wet = clamp(blend_smooth + blend[j], 0.0f, 1.0f);
++		const float blend_value = clamp(blend_smooth + blend[j], 0.0f, 1.0f);
++		// Fully wet inside: its reverb then colours only Clouds' sound.
++		p->dry_wet = amp->dry_outside ? 1.0f : blend_value;
+         spread_smooth += .008f * (spread_param - spread_smooth);
+ 		p->stereo_spread =  clamp(spread_smooth + spread[j], 0.0f, 1.0f);
+         feedback_smooth += .008f * (feedback_param - feedback_smooth);
+ 		p->feedback =  clamp(feedback_smooth + feedback[j], 0.0f, 1.0f);
+         reverb_smooth += .008f * (reverb_param - reverb_smooth);
+ 		p->reverb =  clamp(reverb_smooth + reverb[j], 0.0f, 1.0f);
++		if (amp->beat_repeat) {
++			// The firmware's knob assignments in this mode (cv_scaler.cc).
++			// Chance, Slice length, Pitch mode and Slice step are the controls
++			// Poly named for them; the stepped ones are choices here.
++			p->kammerl.probability = blend_value;
++			p->kammerl.clock_divider = clamp(spread_param / 3.0f + spread[j], 0.0f, 1.0f);
++			p->kammerl.pitch_mode = clamp(feedback_param / 4.0f + feedback[j], 0.0f, 1.0f);
++			p->kammerl.slice_modulation = clamp(texture_param / 7.0f, 0.0f, 1.0f);
++			p->kammerl.slice_selection = clamp(texture[j], 0.0f, 1.0f);
++			p->kammerl.size_modulation = p->density;
++			// Speed of the repeats: Pitch in semitones, 0 plays them as
++			// recorded; the firmware only slows them down.
++			p->kammerl.pitch = clamp(powf(2.0f, p->pitch / 12.0f), 0.0f, 1.0f);
++			p->kammerl.distortion = 0.0f;
++			// The firmware has no feedback path in this mode; Reverb is the
++			// reverb on the output only.
++			p->feedback = 0.0f;
++			p->stereo_spread = 0.0f;
++		}
+ 
+ 		clouds::ShortFrame output[block_size];
+ 		processor->Process(input, output, block_size);
+ 
++		// Like a pedal's mix knob: the input stays at full level up to the
++		// middle and fades out above it; Clouds comes up to full by the
++		// middle. Clouds halves its output on conversion (the module's analogue
++		// stage makes that up), so its sound is doubled back to the input's level.
++		// Output, in dB, sets the level of the whole mix.
++		amp->output_smooth += .008f * (powf(10.0f, clamp(*(amp->output_param), -24.0f, 12.0f) / 20.0f) - amp->output_smooth);
++		const float dry = (amp->dry_outside ? fminf(1.0f, 2.0f * (1.0f - blend_value)) : 0.0f) * amp->output_smooth;
++		// Beat repeat is fully wet inside, where the firmware's post gain
++		// (1.2), crossfade (0.7071) and conversion (0.5) leave 0.424: made
++		// up here, so the input passes through at its own level.
++		const float wet = (amp->dry_outside ? fminf(1.0f, 2.0f * blend_value) * 2.0f
++			: (amp->beat_repeat ? 1.0f / (1.2f * 0.70710678f * 0.5f) : 1.0f)) * amp->output_smooth;
+ 		for (uint32_t i = 0; i < block_size; i++) {
+-			out_l[pos+i] = output[i].l / 32768.0;
+-			out_r[pos+i] = output[i].r / 32768.0;
++			out_l[pos+i] = dry * in_l[pos+i] + wet * (output[i].l / 32768.0f);
++			out_r[pos+i] = dry * in_r[pos+i] + wet * (output[i].r / 32768.0f);
+ 		}
+ 		pos = pos + block_size;
+-		if (pos+block_size > n_samples){
+-			block_size = n_samples - pos;
+-		}
+ 	}
+ 
+ 	amp->in_gain_smooth = in_gain_smooth;

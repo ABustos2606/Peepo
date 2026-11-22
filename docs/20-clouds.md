@@ -53,7 +53,7 @@ All seven modes declare 4 audio ports, 12 CV inputs and 13 controls. Each requir
 | resonestor | everything except blend | blend |
 | beat_repeat | reverb only | everything else |
 
-**Beat repeat needs adaptation.** The firmware derives its beat-repeat settings from the knobs: probability, clock divider, pitch mode, slice selection. The LV2 port never sets them, so they stay at zero and the mode responds only to reverb. Beebo does not offer it either. It stays loadable but is recorded as *needs adaptation*. Spectral is not offered by Beebo either; it works, and its names follow the firmware source.
+**Beat repeat needed adaptation.** The firmware derives its beat-repeat settings from the knobs: probability, clock divider, pitch mode, slice selection. The LV2 port never set them, so they stayed at zero and the mode responded only to reverb; nor did anything clock it unless a trigger was cabled. Beebo does not offer it either. Fixed on 21 November 2026, see [Beat repeat](#beat-repeat). Spectral is not offered by Beebo either; it works, and its names follow the firmware source.
 
 Spread acts between the two channels, which the screen measures only weakly.
 
@@ -88,11 +88,35 @@ For Clouds the overlay:
 | spectral | Clouds Spectral | Position, Warp, Refresh, Quantize | Pitch, Blend, Output, Freeze |
 | oliverb | Oliverb | Pre-delay, Size, Decay, Damp | Pitch, Blend, Output, Hold |
 | resonestor | Resonestor | Timbre, Chord, Decay, Filter | Pitch, Harmonics, Scatter, Switch voice |
-| beat_repeat | Clouds Beat Repeat | as exported | |
+| beat_repeat | Mist Beat Repeat | Chance, Slice length, Loop size, Loop start | Pitch, Pitch mode, Repeat, Output |
 
 The remaining controls, Reverse and Output among them where not listed above, follow on page 3. Resonestor's Output comes after Random mod there.
 
 The remaining controls follow on a third page. The generic page is the Clouds editor for now. The interface's custom Clouds page still serves only the simulator's demo module; the plan makes a custom editor optional.
+
+## Beat repeat
+
+**21 November 2026.** Peepo's Clouds patch (`tools/plugin-patches/clouds-blend-and-output.patch`) now makes beat repeat work. Poly's Turtle file already named its controls after the firmware's knob assignments in this mode (`cv_scaler.cc`); the patch sets the firmware's settings from them, as the firmware does:
+
+| Control | Firmware setting | Values |
+| --- | --- | --- |
+| Chance (`blend_param`) | probability that a clock starts a repeat | 0 to 1 |
+| Slice length (`spread_param`) | clock divider: a slice lasts 1, 2, 4 or 8 clocks | choice |
+| Pitch mode (`feedback_param`) | Fixed, Reverse, Slows down, Speeds up, Scratch | choice |
+| Slice step (`texture_param`) | which earlier slice the next repeat takes: Off, 1, 2, 3, 5, 6, 7, Random | choice |
+| Loop shrink (`density_param`) | the loop shortens as the slice plays | 0 to 1 |
+| Loop start, Loop size (`position_param`, `size_param`) | the loop inside a slice, quantized; Loop size above the middle plays it back and forth | 0 to 1 |
+| Pitch (`pitch_param`) | the repeats' playback speed, 2^(semitones/12); the firmware only slows them, so above 0 changes nothing | semitones |
+| Repeat (`freeze_param`) | every clock repeats | switch |
+| Reverb (`reverb_param`) | the output reverb. Poly called it Feedback, but the firmware has no feedback path in this mode | 0 to 1 |
+
+The CV inputs add to these as before; Texture's CV input is the firmware's slice selection.
+
+**A clock.** The firmware measures the slice from the interval between triggers, so without a cable it never repeated. Three controls are added after Output, on beat repeat only: **BPM**, which follows the patch tempo (`"tempo": "bpm"`), **Clock note** (1/16 to 1 bar, 1/8 by default), and **Clock from Trigger in**, off by default, which uses the Trigger CV input instead. On the tempo clock a processing block ends where a tick falls, so the firmware measures the clock to the sample at any host period.
+
+**Level.** Between repeats the firmware plays the live input from its buffer, fully wet. Its post gain, crossfade and conversion (1.2 x 0.7071 x 0.5) leave 0.424 of the level, which the patch makes up; Blend's dry path outside Clouds is not used here, as it would double the input. Output sets the level as in the other modes. Reverse is hidden: the mode ignores it.
+
+Checked without an engine by `tools/ingen-spike/30-beat-repeat.sh` ([results](evidence/beat-repeat-results.txt)): unity pass-through; with Repeat on, each 1/8 at 120 BPM plays its first half live and then repeats it, at host periods of 128 and 100; Trigger in clocks it and nothing repeats without a trigger; Chance 0.5 repeated 38 of 76 clocks; the other six modes still run. `peepo_catalogue_tests` passes with the overlay and the updated WSL fixture. Not yet done: the Pi (build, catalogue export, CPU) and listening with guitar.
 
 ## Run it
 
@@ -111,4 +135,3 @@ It prints the build record and both binaries (with `PEEPO_ARM64_ROOT` naming the
 - **P6.1, P6.2 on the Pi:** now checked in the [Pi update](23-pi-bring-up.md#todays-package-brought-to-the-pi). The six offered modes load and their controls and bypass pass native checks; granular Clouds also processes stereo test audio. The guitar listening milestone remains pending.
 - **P6.4.** Needs live guitar input, listening, and the Pi's levels. The checks here establish only that the DSP responds as the source says.
 - **P6.5 and P6.6.**
-- **Beat repeat.** Adapting it means setting the firmware's beat-repeat parameters from controls. That is a change to Poly's port, not to the overlay.

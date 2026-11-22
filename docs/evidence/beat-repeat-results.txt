@@ -1,0 +1,30 @@
+Mist Beat Repeat after the beat-repeat fix in tools/plugin-patches/clouds-blend-and-output.patch
+21 November 2026, WSL Debian (x86-64), lenticular_lv2 141fdc89 built by 02-plugins.sh
+bash tools/ingen-spike/30-beat-repeat.sh
+
+polyclouds.so: /opt/peepo/lib/lv2/polylenticular.lv2/polyclouds.so
+Chance 0, lags per 256 samples: 2 2 2 2 2 2 2 2 2 2 2 2
+PASS  Chance 0 passes the input through at its own level (gain 0.997719)
+Repeat on, period 128, lags per 1000 samples: 3 3 3 3 3 3 6003 6003 6003 6003 6003 6003 3 3 3 3 3 3 6003 6003 6003 6003 6003 6003
+PASS  Repeat on, host period 128: every 1/8 at 120 BPM plays its first half, then repeats it
+Repeat on, period 100, lags per 1000 samples: 3 3 3 3 3 3 6003 6003 6003 6003 6003 6003 3 3 3 3 3 3 6003 6003 6003 6003 6003 6003
+PASS  Repeat on, host period 100: every 1/8 at 120 BPM plays its first half, then repeats it
+PASS  Clock from Trigger in with nothing cabled: no repeats
+Trigger in every 6000 samples, lags per 1000 samples: 3 3 3 2995 2995 2995 3 3 3 3011 3011 3011 3 3 3 2995 2995 2995 3 3 3 3011 3011 3011
+PASS  Clock from Trigger in: a trigger every 6000 samples repeats half-slices of 3000
+PASS  Chance 0.5: 38 of 76 clocks repeated
+PASS  2-clock slices, Reverse, Pitch -12, Random step, Reverb, Loop shrink: finite and sounding (gain 0.673494)
+PASS  Output -6 dB (gain 0.500075)
+granular: gain 1.000
+PASS  granular still runs
+stretch: gain 0.903
+PASS  stretch still runs
+looping_delay: gain 1.076
+PASS  looping_delay still runs
+spectral: gain 9.316
+PASS  spectral still runs
+oliverb: gain 2.231
+PASS  oliverb still runs
+resonestor: gain 0.136
+PASS  resonestor still runs
+ALL PASSED

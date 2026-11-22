@@ -5815,20 +5815,22 @@
         {"symbol": "reverse", "direction": "input", "type": "cv"}
       ],
       "parameters": [
-        {"symbol": "position_param", "name": "Loop Start", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.24, "logarithmic": false, "choices": []},
-        {"symbol": "size_param", "name": "Loop Size", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.69, "logarithmic": false, "choices": []},
-        {"symbol": "pitch_param", "name": "Pitch", "unit": "", "kind": "continuous", "minimum": -48, "maximum": 48, "default": 0.1, "logarithmic": false, "choices": []},
+        {"symbol": "position_param", "name": "Loop start", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "size_param", "name": "Loop size", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.45, "logarithmic": false, "choices": []},
+        {"symbol": "pitch_param", "name": "Pitch", "unit": "", "kind": "continuous", "minimum": -48, "maximum": 48, "default": 0, "logarithmic": false, "choices": []},
         {"symbol": "in_gain_param", "name": "Gain", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
-        {"symbol": "density_param", "name": "Size Mod", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.27, "logarithmic": false, "choices": []},
-        {"symbol": "texture_param", "name": "Slice Step", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.73, "logarithmic": false, "choices": []},
-        {"symbol": "blend_param", "name": "Slice Probability", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.78, "logarithmic": false, "choices": []},
-        {"symbol": "spread_param", "name": "Clock Divider", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.7, "logarithmic": false, "choices": []},
-        {"symbol": "feedback_param", "name": "Pitch Mod", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.55, "logarithmic": false, "choices": []},
-        {"symbol": "reverb_param", "name": "Feedback", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.6, "logarithmic": false, "choices": []},
-        {"symbol": "freeze_param", "name": "Freeze", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
-        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
-,
-        {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []}
+        {"symbol": "density_param", "name": "Loop shrink", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "texture_param", "name": "Slice step", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 7, "default": 0, "logarithmic": false, "choices": ["Off", "1", "2", "3", "5", "6", "7", "Random"]},
+        {"symbol": "blend_param", "name": "Chance", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0.5, "logarithmic": false, "choices": []},
+        {"symbol": "spread_param", "name": "Slice length", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 3, "default": 0, "logarithmic": false, "choices": ["1 clock", "2 clocks", "4 clocks", "8 clocks"]},
+        {"symbol": "feedback_param", "name": "Pitch mode", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 4, "default": 0, "logarithmic": false, "choices": ["Fixed", "Reverse", "Slows down", "Speeds up", "Scratch"]},
+        {"symbol": "reverb_param", "name": "Reverb", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "freeze_param", "name": "Repeat", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "reverse_param", "name": "Reverse", "unit": "", "kind": "continuous", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "output_param", "name": "Output", "unit": "dB", "kind": "continuous", "minimum": -24, "maximum": 12, "default": 0, "logarithmic": false, "choices": []},
+        {"symbol": "bpm", "name": "BPM", "unit": "BPM", "kind": "continuous", "minimum": 30, "maximum": 300, "default": 120, "logarithmic": false, "choices": []},
+        {"symbol": "clock_note", "name": "Clock note", "unit": "", "kind": "enumeration", "minimum": 0, "maximum": 4, "default": 1, "logarithmic": false, "choices": ["1/16", "1/8", "1/4", "1/2", "1 bar"]},
+        {"symbol": "clock_in", "name": "Clock from Trigger in", "unit": "", "kind": "toggle", "minimum": 0, "maximum": 1, "default": 0, "logarithmic": false, "choices": []}
       ]
     },
     {

@@ -326,8 +326,24 @@ void fixture(const std::string& folder) {
     check(spilling == 16, ("the overlay should mark 16 modules to spill, not " + std::to_string(spilling)).c_str());
     for (const auto& d : offered)
         if (d.uri.find("polyclouds#") != std::string::npos)
-            check(d.parameters.size() == 12 && std::none_of(d.parameters.begin(), d.parameters.end(), [](const Parameter& p) { return p.kind == ParameterKind::Continuous && (p.symbol == "freeze_param" || p.symbol == "pitch_param"); }),
+            // Beat repeat adds BPM, Clock note and Clock from Trigger in, and hides Reverse.
+            check(d.parameters.size() == (d.uri == "http://polyeffects.com/lv2/polyclouds#beat_repeat" ? 14u : 12u) && std::none_of(d.parameters.begin(), d.parameters.end(), [](const Parameter& p) { return p.kind == ParameterKind::Continuous && (p.symbol == "freeze_param" || p.symbol == "pitch_param"); }),
                   "a Clouds mode missed the shared rules");
+    // Mist Beat Repeat: offered, clocked by the patch tempo, its stepped
+    // settings as named choices, Chance first.
+    {
+        const auto br = std::find_if(offered.begin(), offered.end(), [](const auto& d) { return d.uri == "http://polyeffects.com/lv2/polyclouds#beat_repeat"; });
+        check(br != offered.end(), "Mist Beat Repeat is not offered");
+        if (br != offered.end()) {
+            const auto find = [&](const char* s) { return std::find_if(br->parameters.begin(), br->parameters.end(), [&](const Parameter& p) { return p.symbol == s; }); };
+            check(br->tempo_symbol == "bpm" && br->parameters[0].symbol == "blend_param" && br->parameters[0].name == "Chance" &&
+                  find("spread_param")->kind == ParameterKind::Enumeration && find("spread_param")->choices.size() == 4 &&
+                  find("feedback_param")->kind == ParameterKind::Enumeration && find("feedback_param")->choices.size() == 5 &&
+                  find("clock_note")->kind == ParameterKind::Enumeration && find("clock_in")->kind == ParameterKind::Toggle &&
+                  find("reverse_param") == br->parameters.end(),
+                  "Mist Beat Repeat not presented as its controls expect");
+        }
+    }
 
     // Two independent readings of the same plugins must agree: the reference
     // entries come from the upstream Turtle files through rdflib, the fixture
@@ -356,15 +372,21 @@ void fixture(const std::string& folder) {
         check(exported->name == "Poly " + reference.name, "exported name differs from the reference reading");
         // Clouds' Output is Peepo's own (tools/plugin-patches/clouds-blend-and-output.patch),
         // added after every upstream control; the reference reads the unpatched files.
+        // The same patch gives beat repeat BPM, Clock note and Clock from Trigger in
+        // after Output, and renames, re-ranges and re-defaults its controls, so
+        // there only the symbols and their order are compared.
         const bool output_added = reference.uri.find("polyclouds#") != std::string::npos;
-        check(!output_added || (!exported->parameters.empty() && exported->parameters.back().symbol == "output_param"), "patched Clouds has no Output control");
-        check(exported->ports.size() == reference.ports.size() && exported->parameters.size() == reference.parameters.size() + (output_added ? 1 : 0),
+        const bool beat_repeat = reference.uri == "http://polyeffects.com/lv2/polyclouds#beat_repeat";
+        const std::size_t added = output_added ? (beat_repeat ? 4 : 1) : 0;
+        check(!output_added || (exported->parameters.size() > reference.parameters.size() && exported->parameters[reference.parameters.size()].symbol == "output_param"), "patched Clouds has no Output control");
+        check(exported->ports.size() == reference.ports.size() && exported->parameters.size() == reference.parameters.size() + added,
               "exported port or control count differs from the reference reading");
         for (std::size_t i = 0; i < reference.ports.size(); ++i)
             check(exported->ports[i].symbol == reference.ports[i].symbol && exported->ports[i].direction == reference.ports[i].direction && exported->ports[i].type == reference.ports[i].type,
                   "exported connector differs from the reference reading");
         for (std::size_t i = 0; i < reference.parameters.size(); ++i) {
             const auto& x = exported->parameters[i]; const auto& y = reference.parameters[i];
+            if (beat_repeat) { check(x.symbol == y.symbol, "exported beat repeat control out of order"); continue; }
             check(x.symbol == y.symbol && x.name == y.name && x.kind == y.kind && x.minimum == y.minimum && x.maximum == y.maximum && x.logarithmic == y.logarithmic &&
                   x.choices == y.choices && std::abs(x.value - y.value) < 1e-6,
                   ("exported control differs from the reference reading: " + reference.uri + " " + y.symbol + " (" + x.name + " / " + y.name + ", " +

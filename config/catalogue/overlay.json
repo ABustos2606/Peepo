@@ -140,7 +140,13 @@
       {"symbol": "pitch_param"}, {"symbol": "feedback_param", "name": "Harmonics"}, {"symbol": "reverb_param", "name": "Scatter"}, {"symbol": "freeze_param", "name": "Switch voice"},
       {"symbol": "spread_param"}, {"symbol": "blend_param", "name": "Random mod"}, {"symbol": "output_param", "name": "Output"}, {"symbol": "reverse_param"}
     ]},
-    {"uri": "http://polyeffects.com/lv2/polyclouds#beat_repeat", "name": "Mist Beat Repeat", "category": "Delay", "description": "Clocked beat repeat: loops and slices recent audio, with pitch and feedback."},
+    {"uri": "http://polyeffects.com/lv2/polyclouds#beat_repeat", "name": "Mist Beat Repeat", "category": "Delay", "description": "Repeats slices of the input on a clock that follows the patch tempo. Chance sets how often a clock repeats; Repeat on repeats every one. Loop size and Loop start set the stutter inside a slice. Pitch below 0 slows the repeats, shaped by Pitch mode.", "tempo": "bpm", "parameters": [
+      {"symbol": "blend_param", "name": "Chance"}, {"symbol": "spread_param", "name": "Slice length"}, {"symbol": "size_param", "name": "Loop size"}, {"symbol": "position_param", "name": "Loop start"},
+      {"symbol": "pitch_param"}, {"symbol": "feedback_param", "name": "Pitch mode"}, {"symbol": "freeze_param", "name": "Repeat"}, {"symbol": "output_param", "name": "Output"},
+      {"symbol": "clock_note", "name": "Clock note"}, {"symbol": "bpm", "name": "BPM"}, {"symbol": "texture_param", "name": "Slice step"}, {"symbol": "density_param", "name": "Loop shrink"},
+      {"symbol": "reverb_param", "name": "Reverb"}, {"symbol": "clock_in", "name": "Clock from Trigger in", "kind": "toggle", "default": 0},
+      {"symbol": "reverse_param", "hidden": true}
+    ]},
     {"match": "polywarps", "category": "Texture"},
     {"match": "polyplaits", "category": "Sound source"},
     {"match": "polyrings", "category": "Resonator"},
@@ -548,7 +554,6 @@
     {"uri": "http://moddevices.com/plugins/tap/pitch", "category": "Pitch", "description": "Changes the pitch of the incoming audio."},
     {"uri": "http://moddevices.com/plugins/tap/sigmoid", "category": "Drive", "description": "Soft saturation and boost."},
     {"uri": "http://moddevices.com/plugins/mod-devel/mod-cv-meter", "description": "Simple CV meter that shows instant values with no smoothing."},
-    {"match": "polyclouds#beat_repeat", "availability": "untested", "reason": "Most controls do nothing in this port: its beat-repeat settings are never set (see docs/20-clouds.md, the Mist modules)."},
     {"match": "polyeffects.com/lv2/polyconvo#", "file": {"property": "http://polyeffects.com/lv2/polyconvo#ir", "label": "Impulse response", "folder": "ir/reverb", "extensions": ["wav", "flac"]}},
     {"match": "polyeffects.com/lv2/polyconvo#Cab", "file": {"property": "http://polyeffects.com/lv2/polyconvo#ir", "label": "Cabinet", "folder": "ir/cab", "extensions": ["wav", "flac"]}},
     {"match": "gareus.org/oss/lv2/convoLV2#", "file": {"property": "http://gareus.org/oss/lv2/convoLV2#impulse", "label": "Impulse response", "folder": "ir/reverb", "extensions": ["wav", "flac"]}},
