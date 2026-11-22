@@ -149,6 +149,12 @@ public:
     // Reel's page: its control outputs and keyframe list, while watched.
     virtual void watch_reel(std::optional<InstanceId>) {}
     virtual ReelStatus reel_status(InstanceId) const { return {}; }
+    // The keyframe lists of these Reels, kept while the page is closed, for
+    // the stomps' next and previous keyframe.
+    virtual void watch_reel_lists(const std::vector<InstanceId>&) {}
+    virtual std::optional<std::vector<ReelKeyframe>> reel_keyframes(InstanceId) const { return {}; }
+    // One value on Reel's commands input (core/reel.hpp, reel_move).
+    virtual bool reel_command(InstanceId, int) { return false; }
     // Optional development controls; real adapters keep these unsupported.
     virtual bool simulate_state(EngineState) { return false; }
     virtual bool simulate_rejection() { return false; }

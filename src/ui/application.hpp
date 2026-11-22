@@ -453,6 +453,19 @@ private:
     std::array<std::array<lv_point_precise_t, 161>, 4> reel_points_{};
     struct ReelRelease { InstanceId id; std::string symbol; unsigned long long at; };
     std::vector<ReelRelease> reel_releases_;
+    // A touch on Reel's lanes: Frame scrubbed, a Level of the editing target
+    // dragged up or down (Pending until the finger shows which way), or a
+    // keyframe dragged by its tag (Reel's commands input).
+    enum class ReelGesture { None, Frame, Pending, Level, Move };
+    ReelGesture reel_gesture_ = ReelGesture::None;
+    InstanceId reel_gesture_module_ = 0;
+    lv_point_t reel_press_{};
+    std::size_t reel_channel_ = 0, reel_keyframe_ = 0;
+    double reel_start_ = 0;          // the level at the press
+    bool reel_follow_ = false;       // Frame moves with the keyframe: it was the editing target
+    std::vector<ReelKeyframe> reel_moving_list_; // the list when the drag began
+    int reel_sent_ = -1;             // the last position sent, in Reel's units
+    void reel_end_gesture();
     lv_obj_t* euclidean_status_ = nullptr;
     std::array<lv_obj_t*, euclidean_tracks> euclidean_rings_{};
     std::array<lv_obj_t*, euclidean_tracks> euclidean_halos_{};

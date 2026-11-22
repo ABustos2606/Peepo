@@ -37,6 +37,9 @@ public:
     }
     void watch_reel(std::optional<InstanceId> id) override { session_.watch_reel(id); flush(); }
     ReelStatus reel_status(InstanceId id) const override { return session_.reel_status(id); }
+    void watch_reel_lists(const std::vector<InstanceId>& ids) override { session_.watch_reel_lists(ids); flush(); }
+    std::optional<std::vector<ReelKeyframe>> reel_keyframes(InstanceId id) const override { return session_.reel_keyframes(id); }
+    bool reel_command(InstanceId id, int value) override { const bool sent = session_.reel_command(id, value); flush(); return sent; }
 private:
     void attempt();
     void lost(std::string reason);

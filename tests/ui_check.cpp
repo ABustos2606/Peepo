@@ -1339,6 +1339,11 @@ int main(int argc, char** argv) {
                 peepo::EngineCapabilities capabilities() const override { return {false,true,false,false,true}; }
                 void watch_reel(std::optional<peepo::InstanceId> id) override { watched=id; }
                 peepo::ReelStatus reel_status(peepo::InstanceId id) const override { return watched==id?status:peepo::ReelStatus{}; }
+                std::vector<peepo::InstanceId> listed; std::vector<int> commands;
+                void watch_reel_lists(const std::vector<peepo::InstanceId>& ids) override { listed=ids; }
+                std::optional<std::vector<peepo::ReelKeyframe>> reel_keyframes(peepo::InstanceId id) const override {
+                    return std::find(listed.begin(),listed.end(),id)!=listed.end() || watched==id ? status.keyframes : std::nullopt; }
+                bool reel_command(peepo::InstanceId,int v) override { commands.push_back(v); return true; }
             } live;
             using K = peepo::ParameterKind;
             peepo::ModuleDefinition d{"https://github.com/ABustos2606/reel#reel","Reel","Utility","Keyframe mixer",0xe8d44d,
@@ -1386,6 +1391,33 @@ int main(int argc, char** argv) {
             // Tapping near a keyframe's mark puts Frame exactly on it.
             click(app,64+static_cast<int>(0.735*640),72+80);
             check(std::abs(value("frame")-0.72)<1e-9,"a tap near a keyframe did not land on it");
+            // On the target's mark, up or down drags that lane's level from the
+            // keyframe's own (Level 3 of keyframe 4 is 0.6); sideways scrubs Frame.
+            live.status.values = {0.72,5,3,3,0}; step(app,256);
+            const int target_x = 64+static_cast<int>(std::lround(0.72*640));
+            drag(app,target_x,72+108,target_x,72+80);
+            check(std::abs(value("ch_3")-0.8)<0.01 && std::abs(value("frame")-0.72)<1e-9,"dragging up on the target's lane did not set its level");
+            drag(app,target_x,72+108,target_x+64,72+108);
+            check(std::abs(value("frame")-0.82)<0.01 && std::abs(value("ch_3")-0.8)<0.01,"sideways from the target did not scrub Frame");
+            live.submit(peepo::SetParameter{m.id,"frame",0.72});step(app,256);
+            // A keyframe's tag drags it (keyframe 2, at 0.30, to 0.40): moves on
+            // Reel's commands input, then 0 when let go. Frame stays.
+            live.commands.clear();
+            drag(app,64+192,72+12,64+256,72+12);
+            check(live.commands.size()>=2 && live.commands.back()==peepo::reel_command_none &&
+                  live.commands[live.commands.size()-2]==peepo::reel_move(1,0.40) && std::abs(value("frame")-0.72)<1e-9,
+                  "dragging a keyframe's tag did not move it, or did not end with 0");
+            check(text_label(app.screen(),"Keyframe 2 moved to 0.40.")!=nullptr,"a keyframe moved without a word");
+            // Never past its neighbour, nor nearer than 1/32: Reel's own limit.
+            live.commands.clear();
+            drag(app,64+192,72+12,64+448,72+12);
+            check(live.commands.size()>=2 && live.commands[live.commands.size()-2]==peepo::reel_move(1,(peepo::reel_code(0.5)-2048)/65535.0),
+                  "a dragged keyframe passed its neighbour");
+            // The editing target's tag: Frame goes with it, so it stays the target.
+            live.commands.clear();
+            drag(app,target_x,72+12,target_x+32,72+12);
+            check(live.commands.size()>=2 && live.commands.back()==0 && std::abs(value("frame")-0.77)<0.002,"Frame did not follow the target it dragged");
+            live.submit(peepo::SetParameter{m.id,"frame",0.72});step(app,256);
             // Clear all asks in the header first.
             tap_header(app,"CLEAR ALL");
             check(exact_label(app.screen(),"CLEAR 5 KEYFRAMES") && exact_label(app.screen(),"CANCEL") && value("clear_all")==0,"Clear all did not ask");
@@ -1399,6 +1431,22 @@ int main(int argc, char** argv) {
             check(exact_label(app.screen(),"SEQUENCER // STEP 2 OF 5"),"Reel's sequencer step not shown");
             capture(app,output/"99-reel-sequencer.bmp");
             click(app,70,456);check(!live.watched,"Reel monitoring remains after leaving its page");
+            // Stomps step Frame through the keyframes, wrapping, with the page
+            // closed: the list is kept for them.
+            live.submit(peepo::SetParameter{m.id,"mode",0});
+            for (const auto& [control, way] : {std::pair{"stomp2","next"},std::pair{"stomp3","previous"}}) {
+                peepo::Assignment a; a.control=control; a.module=m.id; a.action=peepo::ControlAction::Reel; a.parameter=way; a.plugin=d.uri;
+                live.submit(peepo::Assign{a});
+            }
+            step(app,256);
+            check(live.listed==std::vector<peepo::InstanceId>{m.id},"a Reel a stomp steps through is not listed");
+            const auto stomp=[&](const char* control){ app.control({peepo::ControlEvent::Type::Press,control});step(app,256);
+                                                       app.control({peepo::ControlEvent::Type::Release,control});step(app,256); };
+            stomp("stomp2");
+            check(std::abs(value("frame")-0.93)<1e-9,"next keyframe");
+            stomp("stomp2");check(std::abs(value("frame")-0.08)<1e-9,"next keyframe after the last is not the first");
+            stomp("stomp3");check(std::abs(value("frame")-0.93)<1e-9,"previous keyframe before the first is not the last");
+            stomp("stomp3");check(std::abs(value("frame")-0.72)<1e-9,"previous keyframe");
         }
         {
             struct EuclideanEngine : peepo::Engine {

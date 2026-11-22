@@ -126,12 +126,15 @@ In Peepo:
 
 **21 November 2026:** milestones 0 to 2 done offline in Reel's repository (`docs/milestone-*-validation.md` there): keyframes, LV2 state, the sequencer, Reel LFO (with a BPM control that follows the patch tempo), and the keyframe list for the page on an atom output, checked through Ingen. Peepo side: overlay entries (Reel in Utility, Reel LFO in Control with `"tempo": "bpm"`), the inventory, `watch_reel` in the Ingen adapter, and the Reel page built from the mockup approved that day (`images/ui-reel.png`; `ui_check` captures `99-reel-*`, `ingen_tests` `reel_monitor`). **21-22 November 2026, on the Pi:** installed, `make test` 28 PASS natively, catalogue exported (256 -> 258, only Reel and Reel LFO added; `evidence/catalogue-pi-20261121-reel.json`). 30 minutes with Reel and Reel LFO in an Overdrive / delay / Mist patch: 0 xruns, DSP load 4.4% mean, 9.2% max (2.5% without them); the keyframes came back after a reboot ([evidence](evidence/reel-pi-20261121.txt)). Build step pinned at `v0.2.0` (`143488d`). Still to do: see the page on the Pi with the next interface install.
 
+**22 November 2026, Reel milestone 3** (its `docs/milestone-3-validation.md`): Reel 0.3 adds a `commands` atom input (port 41) to move a keyframe. The page drags a keyframe by its numbered tag (a move per step, then 0, since Ingen saves the last value and sets it again on load). Dragging a lane up or down on the editing target's mark sets that level. Two stomp actions, **Next keyframe** and **Previous keyframe** (Settings > Controls, under the Reel), set Frame onto the keyframe after or before it, wrapping; the adapter keeps those Reels' lists watched with the page closed (`watch_reel_lists`, `reel_keyframes`, `reel_command`). `ingen_adapter`, `physical_controls` and `ui_workflows` pass on Windows. Still to do: pin Reel at `v0.3.0` once tagged, and try the page and stomps on the Pi by touch and by ear.
+
 - [x] Wrap `frames::Keyframer` and `frames::PolyLfo`: frame position as a control and CV input, four channel levels as CV outputs, and four audio VCAs plus a mix output.
 - [x] **LV2 state** for the keyframes (up to 64, each with four values and an easing curve), saved and restored by Ingen.
 - [x] Editing: Add and Delete as momentary controls; the four channel controls edit the keyframe the position is on, as on the hardware.
 - [x] A custom module page in Peepo, like the Euclidean one, showing keyframes along the position axis; layout accepted on 20 October 2026 (Reel's `docs/peepo-page.md`). This is the largest piece of interface work in the roadmap.
 - [x] Two plugins in the repository: Reel (keyframe mixer) and Reel LFO.
 - [x] Installed on the Pi, catalogue exported; xruns measured and keyframes checked after a reboot.
+- [ ] Milestone 3: keyframes moved and levels set by touch, Next and Previous keyframe on stomps (built and tested on Windows, 22 November 2026); pinned at `v0.3.0` and tried on the Pi.
 
 ## Decisions
 

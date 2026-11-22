@@ -135,7 +135,9 @@ struct Connection {
 // parameter, a stomp switch to a parameter, to a module's software bypass or
 // to a Loo-pi command. A Loo-pi command keeps its command number in
 // `parameter` and its target (core/looper.hpp) in `minimum` and `maximum`.
-enum class ControlAction { Parameter, Bypass, Looper };
+// A Reel action steps Frame to the next or previous keyframe: `parameter`
+// is "next" or "previous" (Reel's docs/peepo-page.md).
+enum class ControlAction { Parameter, Bypass, Looper, Reel };
 // How a stomp switch drives a parameter: flip it on each press, or hold the
 // top of the range only while pressed.
 enum class SwitchMode { Toggle, Momentary };
@@ -358,6 +360,8 @@ const Parameter* assignment_parameter(const Graph&, const Assignment&);
 // accepts and a valid target; empty otherwise.
 std::optional<int> looper_assignment_command(const Assignment&);
 inline int looper_assignment_target(const Assignment& a) { return static_cast<int>(a.minimum); }
+// A Reel assignment's direction: 1 next, -1 previous; nullopt otherwise.
+std::optional<int> reel_assignment_direction(const Assignment&);
 // An assignment as one engine property value, naming its block by symbol (m3).
 std::string encode_assignment(const Assignment&, const std::string& block);
 // Back again; the module is left 0 and the block symbol returned through `block`.

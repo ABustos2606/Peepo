@@ -49,6 +49,9 @@ public:
     bool looper_command(InstanceId, int command, int target, bool press);
     void watch_reel(std::optional<InstanceId>);
     ReelStatus reel_status(InstanceId) const;
+    void watch_reel_lists(const std::vector<InstanceId>&);
+    std::optional<std::vector<ReelKeyframe>> reel_keyframes(InstanceId) const;
+    bool reel_command(InstanceId, int value);
 private:
     enum class Purpose { Edit, Sync, Endpoints, Refresh, Monitor };
     struct Local { std::string path, predicate; Value value; };
@@ -177,6 +180,13 @@ private:
     std::string reel_list_;
     ReelStatus reel_status_{};
     bool take_reel_list(const std::string& port, const Value&);
+    // Keyframe lists: the page's Reel and those a stomp steps through. The
+    // t_keyframes ports with broadcast on, and the last list each sent.
+    std::vector<InstanceId> reel_listed_;
+    std::set<std::string> reel_watched_lists_;
+    std::map<std::string, std::vector<ReelKeyframe>> reel_lists_;
+    std::string reel_port(InstanceId, const char* symbol, const std::string& kind, bool output) const;
+    void sync_reel_lists();
 
     // The engine's objects under ingen:/main, by path.
     std::map<std::string, Properties> objects_;

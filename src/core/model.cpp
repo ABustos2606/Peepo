@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Peepo contributors
 #include "core/model.hpp"
 #include "core/looper.hpp"
+#include "core/reel.hpp"
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -197,7 +198,14 @@ const Module* assignment_target(const Graph& g, const Assignment& a) {
     if (a.action == ControlAction::Parameter &&
         std::none_of(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == a.parameter; })) return nullptr;
     if (a.action == ControlAction::Looper && (!looper_uri(m->uri) || !looper_assignment_command(a))) return nullptr;
+    if (a.action == ControlAction::Reel && (!reel_uri(m->uri) || !reel_assignment_direction(a))) return nullptr;
     return m;
+}
+std::optional<int> reel_assignment_direction(const Assignment& a) {
+    if (a.action != ControlAction::Reel) return std::nullopt;
+    if (a.parameter == "next") return 1;
+    if (a.parameter == "previous") return -1;
+    return std::nullopt;
 }
 std::optional<int> looper_assignment_command(const Assignment& a) {
     int command = -1;
@@ -222,7 +230,8 @@ std::string number_text(double value) {
 std::string encode_assignment(const Assignment& a, const std::string& block) {
     // action|block|plugin|parameter|minimum|maximum|inverted|mode. No field can
     // hold a '|': blocks and parameters are LV2 symbols, plugins safe IRIs.
-    return std::string(a.action == ControlAction::Bypass ? "bypass" : a.action == ControlAction::Looper ? "looper" : "parameter") + "|" + block + "|" + a.plugin + "|" + a.parameter + "|" +
+    return std::string(a.action == ControlAction::Bypass ? "bypass" : a.action == ControlAction::Looper ? "looper" :
+                       a.action == ControlAction::Reel ? "reel" : "parameter") + "|" + block + "|" + a.plugin + "|" + a.parameter + "|" +
            number_text(a.minimum) + "|" + number_text(a.maximum) + "|" + (a.inverted ? "1" : "0") + "|" + (a.mode == SwitchMode::Momentary ? "momentary" : "toggle");
 }
 bool decode_assignment(const std::string& control, const std::string& text, Assignment& a, std::string& block) {
@@ -242,6 +251,7 @@ bool decode_assignment(const std::string& control, const std::string& text, Assi
     a.control = control;
     if (fields[0] == "bypass") a.action = ControlAction::Bypass;
     else if (fields[0] == "looper" && !fields[3].empty()) a.action = ControlAction::Looper;
+    else if (fields[0] == "reel" && !fields[3].empty()) a.action = ControlAction::Reel;
     else if (fields[0] != "parameter" || fields[3].empty()) return false;
     block = fields[1];
     a.plugin = fields[2];

@@ -1084,10 +1084,43 @@ void reel_monitor() {
     rig.settle(); check(engine.reel_status(3).keyframes && engine.reel_status(3).keyframes->empty(), "an empty list not taken");
     check(parse_reel_list("1:0000") == std::nullopt && parse_reel_list("1:" + std::string(24, 'g')) == std::nullopt &&
           parse_reel_list("1:800000000000000000000000000000000000000000000000") == std::nullopt, "bad lists parsed (short, not hex, unsorted)");
+    // Stepping and moving, as Reel does them (its src/commands.hpp, editing.cpp).
+    const std::vector<ReelKeyframe> three{{0.2, 0, {}}, {0.5, 1, {}}, {0.8, 2, {}}};
+    check(reel_step(three, 0.5, 1) == 2u && reel_step(three, 0.5, -1) == 0u && reel_step(three, 0.9, 1) == 0u &&
+          reel_step(three, 0.1, -1) == 2u && reel_step(three, 0.3, 1) == 1u && !reel_step({}, 0.3, 1), "Reel's next or previous keyframe");
+    check(reel_move(2, 1.0) == (1 << 24 | 2 << 16 | 65535) && reel_move(0, 0) == 1 << 24, "a Reel move's encoding");
+    check(reel_move_limit(three, 1, 0.79) == (reel_code(0.8) - 2048) / 65535.0 && reel_move_limit(three, 1, 0.0) == (reel_code(0.2) + 2048) / 65535.0 &&
+          reel_move_limit(three, 0, -1) == 0.0 && reel_move_limit(three, 2, 2) == 1.0 && !reel_move_limit(three, 3, 0.5),
+          "a Reel move's limits: 1/32 from the neighbours, 0 and 1 at the ends");
     engine.watch_reel(std::nullopt); rig.settle();
     for (const auto* symbol : reel_outputs) check(!subscribed(symbol), "Reel subscription leaked on leaving the page");
     check(!subscribed("t_keyframes") && !engine.reel_status(3).keyframes, "Reel list subscription or list kept after leaving");
+    // A stomp that steps through the keyframes keeps the list watched with
+    // the page closed; the page then has it at once.
+    engine.watch_reel_lists({3}); rig.settle();
+    check(subscribed("t_keyframes") && !subscribed("t_frame") && !engine.reel_keyframes(3), "a stomp's Reel list not watched, or a stale list kept");
+    rig.transport->deliver(activity("1:33330000ffff800000004000cccc000100004000ffffbfff"));
+    check(rig.settle().empty() && !rig.graph().dirty && engine.reel_keyframes(3) && engine.reel_keyframes(3)->size() == 2,
+          "a stomp's Reel list not taken, or taken as an edit");
+    check(!engine.reel_status(3).keyframes, "the page's status reported without the page");
+    engine.watch_reel(3); rig.settle();
+    check(engine.reel_status(3).keyframes && engine.reel_status(3).keyframes->size() == 2, "the page did not start from the list a stomp kept");
+    engine.watch_reel(std::nullopt); rig.settle();
+    check(subscribed("t_keyframes") && engine.reel_keyframes(3), "leaving the page dropped the list a stomp needs");
+    engine.watch_reel_lists({}); rig.settle();
+    check(!subscribed("t_keyframes") && !engine.reel_keyframes(3), "a list no stomp needs still watched");
+    // Moves on Reel's commands input: typed xsd:int, never an edit of the patch.
+    check(!engine.reel_command(3, reel_move(1, 0.6)), "a command sent to a Reel without a commands input");
+    fake.objects[path + "/commands"] = {{rdf_type, iri_value(full(uri::lv2, "InputPort"))}, {rdf_type, iri_value(full(uri::atom, "AtomPort"))}};
+    engine.disconnect(); engine.connect(); rig.settle();
+    check(engine.reel_command(3, reel_move(1, 0.6)), "a Reel move refused"); rig.settle();
+    const auto* sent = property(fake, path + "/commands", full(uri::ingen, "value"));
+    check(sent && sent->number == (1 << 24 | 1 << 16 | 39321) && !rig.graph().dirty, "a Reel move not sent as an atom Int, or marked the patch");
+    check(engine.reel_command(3, reel_command_none), "the end of a drag refused"); rig.settle();
+    sent = property(fake, path + "/commands", full(uri::ingen, "value"));
+    check(sent && sent->number == 0 && !engine.reel_command(3, -1), "the end of a drag not 0, or a negative command sent");
     engine.disconnect(); check(!engine.reel_status(3).keyframes, "disconnected Reel still reports");
+    check(!engine.reel_keyframes(3) && !engine.reel_command(3, 0), "disconnected Reel still lists or takes commands");
 }
 void midi_cables() {
     using namespace peepo;

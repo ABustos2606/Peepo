@@ -619,6 +619,13 @@ void Application::tick(unsigned ms) {
     engine_.watch_euclidean(shown && layout == ModuleLayout::Euclidean ? std::optional<InstanceId>{shown->id} : std::nullopt);
     engine_.watch_looper(shown && layout == ModuleLayout::Looper ? std::optional<InstanceId>{shown->id} : std::nullopt);
     engine_.watch_reel(shown && layout == ModuleLayout::Reel ? std::optional<InstanceId>{shown->id} : std::nullopt);
+    {
+        std::vector<InstanceId> stepped;
+        for (const auto& a : graph_.assignments)
+            if (a.action == ControlAction::Reel && assignment_target(graph_, a) &&
+                std::find(stepped.begin(), stepped.end(), a.module) == stepped.end()) stepped.push_back(a.module);
+        engine_.watch_reel_lists(stepped);
+    }
     update_tuner();
     update_euclidean();
     update_flow();
@@ -1425,7 +1432,10 @@ void Application::handle(Binding& b, lv_event_t* e) {
         Assignment a;
         a.control = editing_control_; a.module = m->id;
         if (b.symbol == "@bypass") a.action = ControlAction::Bypass;
-        else {
+        else if (b.symbol == "@reel-next" || b.symbol == "@reel-previous") {
+            if (!reel_uri(m->uri)) break;
+            a.action = ControlAction::Reel; a.parameter = b.symbol == "@reel-next" ? "next" : "previous";
+        } else {
             const auto it = std::find_if(m->parameters.begin(), m->parameters.end(), [&](const Parameter& p) { return p.symbol == b.symbol; });
             if (it == m->parameters.end()) break;
             a.parameter = it->symbol; a.minimum = it->minimum; a.maximum = it->maximum;
@@ -1715,6 +1725,7 @@ void Application::rebuild() {
     for (auto& m : meters_) m.low = m.high = nullptr;
     tuner_note_ = tuner_detail_ = tuner_status_ = tuner_needle_ = nullptr;
     release_looper(); looper_cards_ = {}; looper_commands_.clear();
+    reel_end_gesture();
     reel_lanes_ = reel_heading_ = reel_add_ = reel_delete_ = reel_clear_ = nullptr; reel_drawn_.clear();
     euclidean_status_ = nullptr;
     euclidean_rings_ = {}; euclidean_halos_ = {}; euclidean_dots_ = {}; euclidean_step_labels_ = {}; euclidean_tiles_ = {};
@@ -2813,6 +2824,8 @@ void Application::reel_lanes(lv_obj_t* parent, const Module& m) {
     reel_lanes_ = lv_obj_create(parent); lv_obj_remove_style_all(reel_lanes_);
     lv_obj_set_pos(reel_lanes_, 0, 0); lv_obj_set_size(reel_lanes_, 800, reel_lanes_height);
     lv_obj_remove_flag(reel_lanes_, LV_OBJ_FLAG_SCROLLABLE);
+    // The lanes keep their drags (a Level up or down): no scrolling the page.
+    lv_obj_remove_flag(reel_lanes_, LV_OBJ_FLAG_SCROLL_CHAIN);
     lv_obj_add_flag(reel_lanes_, LV_OBJ_FLAG_CLICKABLE); lv_obj_add_flag(reel_lanes_, LV_OBJ_FLAG_PRESS_LOCK);
     if (m.bypassed) lv_obj_set_style_opa(reel_lanes_, LV_OPA_50, 0);
     lv_obj_add_event_cb(reel_lanes_, reel_touched, LV_EVENT_ALL, this);
@@ -2968,18 +2981,89 @@ void Application::update_reel() {
     }
 }
 void Application::reel_touched(lv_event_t* e) {
-    // Tap or drag on the lanes moves Frame there; within 1/32 of a keyframe
-    // it lands on it exactly, so it becomes the one the bars edit.
+    // A tap or drag on the lanes moves Frame there; within 1/32 of a keyframe
+    // it lands on it exactly, so it becomes the one the bars edit. On the
+    // editing target's mark, up or down sets that lane's level; a keyframe's
+    // tag drags the keyframe along Frame (Reel's docs/peepo-page.md).
     const auto code = lv_event_get_code(e);
-    if (code != LV_EVENT_PRESSED && code != LV_EVENT_PRESSING) return;
     auto* app = static_cast<Application*>(lv_event_get_user_data(e));
+    if (code == LV_EVENT_PRESS_LOST) { app->reel_end_gesture(); return; }
+    if (code != LV_EVENT_PRESSED && code != LV_EVENT_PRESSING && code != LV_EVENT_RELEASED) return;
+    // The point where the finger lifts counts too; then the gesture ends.
+    struct EndOnRelease {
+        Application* app; bool on;
+        ~EndOnRelease() { if (on) app->reel_end_gesture(); }
+    } end_on_release{app, code == LV_EVENT_RELEASED};
     const auto* m = find_module(app->graph_, app->selected_);
     auto* indev = lv_indev_active();
     if (!m || !reel_uri(m->uri) || !indev || app->engine_.state() != EngineState::Ready) return;
     lv_point_t point; lv_indev_get_point(indev, &point);
     lv_area_t area; lv_obj_get_coords(static_cast<lv_obj_t*>(lv_event_get_current_target(e)), &area);
-    double x = std::clamp(static_cast<double>(point.x - area.x1 - reel_lanes_x) / reel_lanes_w, 0.0, 1.0);
+    const int px = point.x - area.x1, py = point.y - area.y1;
+    const auto X = [](double x) { return reel_lanes_x + x * reel_lanes_w; };
+    double x = std::clamp(static_cast<double>(px - reel_lanes_x) / reel_lanes_w, 0.0, 1.0);
     const auto live = app->engine_.reel_status(m->id);
+    if (code == LV_EVENT_PRESSED) {
+        app->reel_end_gesture();
+        app->reel_gesture_ = ReelGesture::Frame;
+        app->reel_gesture_module_ = m->id;
+        app->reel_press_ = {px, py};
+        if (live.keyframes && !live.keyframes->empty()) {
+            const auto& list = *live.keyframes;
+            const auto apart = [&](std::size_t k) { return std::abs(X(list[k].position) - px); };
+            if (py < reel_lane_top) {
+                std::optional<std::size_t> tag;
+                for (std::size_t k = 0; k < list.size(); ++k)
+                    if (apart(k) <= 14 && (!tag || apart(k) < apart(*tag))) tag = k;
+                if (tag) {
+                    app->reel_gesture_ = ReelGesture::Move;
+                    app->reel_keyframe_ = *tag;
+                    app->reel_moving_list_ = list;
+                    app->reel_follow_ = static_cast<int>(std::lround(live.value(ReelValue::Active).value_or(-1))) == static_cast<int>(*tag);
+                    app->reel_sent_ = reel_code(list[*tag].position);
+                    return;
+                }
+            }
+            const int active = static_cast<int>(std::lround(live.value(ReelValue::Active).value_or(-1)));
+            if (active >= 0 && active < static_cast<int>(list.size()) && py >= reel_lane_top && py < reel_lanes_bottom &&
+                apart(static_cast<std::size_t>(active)) <= 14) {
+                app->reel_gesture_ = ReelGesture::Pending;
+                app->reel_keyframe_ = static_cast<std::size_t>(active);
+                app->reel_channel_ = static_cast<std::size_t>(std::clamp((py - reel_lane_top) / (reel_lane_h + reel_lane_gap), 0, 3));
+                app->reel_start_ = list[app->reel_keyframe_].levels[app->reel_channel_];
+                return;
+            }
+        }
+    }
+    if (app->reel_gesture_module_ != m->id) return;
+    const int dx = px - app->reel_press_.x, dy = py - app->reel_press_.y;
+    switch (app->reel_gesture_) {
+    case ReelGesture::None: return;
+    case ReelGesture::Pending:
+        // On the target's mark: up or down is its level, sideways scrubs Frame.
+        if (std::abs(dx) < 6 && std::abs(dy) < 6) return;
+        app->reel_gesture_ = std::abs(dy) > std::abs(dx) ? ReelGesture::Level : ReelGesture::Frame;
+        if (app->reel_gesture_ == ReelGesture::Frame) break;
+        [[fallthrough]];
+    case ReelGesture::Level: {
+        // 140 px for the whole range, from the keyframe's level: no jump.
+        const double level = std::clamp(app->reel_start_ - dy / 140.0, 0.0, 1.0);
+        const auto symbol = "ch_" + std::to_string(app->reel_channel_ + 1);
+        if (std::abs(parameter(*m, symbol).value - level) >= 1e-6) app->stream_parameter(m->id, symbol, level, true);
+        return;
+    }
+    case ReelGesture::Move: {
+        // Reel keeps it between its neighbours and 1/32 from them; so does this.
+        const auto to = reel_move_limit(app->reel_moving_list_, app->reel_keyframe_, x);
+        if (!to || reel_code(*to) == app->reel_sent_) return;
+        if (!app->engine_.reel_command(m->id, reel_move(app->reel_keyframe_, *to))) return;
+        app->reel_sent_ = reel_code(*to);
+        // The target stays the target: Frame goes with it.
+        if (app->reel_follow_) app->stream_parameter(m->id, "frame", *to, true);
+        return;
+    }
+    case ReelGesture::Frame: break;
+    }
     if (live.keyframes) {
         const ReelKeyframe* nearest = nullptr;
         for (const auto& k : *live.keyframes)
@@ -2988,6 +3072,21 @@ void Application::reel_touched(lv_event_t* e) {
     }
     if (std::abs(parameter(*m, "frame").value - x) < 1e-6) return;
     app->stream_parameter(m->id, "frame", x, true);
+}
+void Application::reel_end_gesture() {
+    // A drag of a keyframe ends with 0 on Reel's commands input: Ingen saves
+    // the last value with the patch and sets it again on load.
+    const auto gesture = reel_gesture_;
+    reel_gesture_ = ReelGesture::None;
+    if (gesture != ReelGesture::Move) return;
+    const auto* m = find_module(graph_, reel_gesture_module_);
+    const bool moved = reel_keyframe_ < reel_moving_list_.size() && reel_sent_ != reel_code(reel_moving_list_[reel_keyframe_].position);
+    if (!m || !reel_uri(m->uri) || engine_.state() != EngineState::Ready) return;
+    engine_.reel_command(m->id, reel_command_none);
+    if (moved) {
+        std::ostringstream at; at << std::fixed << std::setprecision(2) << reel_sent_ / 65535.0;
+        message("Keyframe " + std::to_string(reel_keyframe_ + 1) + " moved to " + at.str() + ".");
+    }
 }
 void Application::euclidean_view(lv_obj_t* parent, const Module& m) {
     auto* viz = panel(parent, 20, 10, 340, 340);
@@ -4292,6 +4391,30 @@ void Application::stomp_action(const Gesture& g) {
             message(name + ": " + joined_names(said));
             return;
         }
+        if (const auto direction = reel_assignment_direction(*pin)) {
+            // Frame to the next or previous keyframe (wrapping), exactly on it
+            // so it becomes the one the Level bars edit.
+            if (!pressed) return;
+            const auto list = engine_.reel_keyframes(m->id);
+            const auto frame_at = std::find_if(m->parameters.begin(), m->parameters.end(), [](const Parameter& p) { return p.symbol == "frame"; });
+            const auto* frame = frame_at == m->parameters.end() ? nullptr : &*frame_at;
+            if (!list || !frame) said.insert(said.begin(), m->name + " is still reading its keyframes");
+            else if (list->empty()) said.insert(said.begin(), m->name + " has no keyframes");
+            else {
+                // A press before the engine confirmed the last steps on from it.
+                auto current = frame->value;
+                if (const auto sent = switch_sent_.find(g.control); sent != switch_sent_.end()) {
+                    if (pending_.contains(sent->second.request) && sent->second.id == m->id && sent->second.symbol == "frame") current = sent->second.value;
+                    else switch_sent_.erase(sent);
+                }
+                const auto k = *reel_step(*list, current, *direction);
+                if (const auto request = submit(SetParameter{m->id, "frame", (*list)[k].position}))
+                    switch_sent_[g.control] = {m->id, "frame", (*list)[k].position, request};
+                said.insert(said.begin(), m->name + " / keyframe " + std::to_string(k + 1) + " of " + std::to_string(list->size()));
+            }
+            message(name + ": " + joined_names(said));
+            return;
+        }
         // Switch actions go straight to the engine: never coalesced with turns.
         const auto* p = assignment_parameter(graph_, *pin);
         auto current = p->value;
@@ -4413,6 +4536,8 @@ std::string Application::assignment_text(const std::string& control) const {
         if (!m) return "Orphaned: its module is gone or changed. Edit to clear it.";
         if (a->action == ControlAction::Looper)
             return m->name + " / " + looper_command_name(*looper_assignment_command(*a)) + ", " + looper_target_name(looper_assignment_target(*a));
+        if (const auto direction = reel_assignment_direction(*a))
+            return m->name + " / " + (*direction > 0 ? "Next keyframe" : "Previous keyframe");
         const auto* p = assignment_parameter(graph_, *a);
         auto low = *p, high = *p; low.value = a->minimum; high.value = a->maximum;
         std::string summary = m->name + " / " + p->name;
@@ -4465,6 +4590,10 @@ void Application::assign_picker(lv_obj_t* parent) {
     if (!m) { list_note(list, "Module no longer exists."); return; }
     list_heading(list, m->name, module_ink(*m));
     if (stomp) list_bar(list, "Bypass", {}, Action::PickTarget, 0, "@bypass");
+    if (stomp && reel_uri(m->uri)) {
+        list_bar(list, "Next keyframe", {}, Action::PickTarget, 0, "@reel-next");
+        list_bar(list, "Previous keyframe", {}, Action::PickTarget, 0, "@reel-previous");
+    }
     for (const auto& p : m->parameters) list_bar(list, p.name, {}, Action::PickTarget, 0, p.symbol);
 }
 void Application::assignment_detail(lv_obj_t* parent) {
@@ -4476,6 +4605,11 @@ void Application::assignment_detail(lv_obj_t* parent) {
     const auto* p = assignment_parameter(graph_, *a);
     if (orphaned(id)) {
         list_note(list, "Its module was removed, or now holds a different plugin, so it is never applied. Clear it, then assign the control again.", warning);
+        return;
+    }
+    if (a->action == ControlAction::Reel) {
+        list_note(list, "Each press moves Frame onto the next keyframe (or the previous one), after the last back to the first. "
+                        "Frame lands exactly on it, so the Level bars on Reel's page edit that keyframe.");
         return;
     }
     if (a->action == ControlAction::Looper) {

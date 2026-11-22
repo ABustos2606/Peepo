@@ -3,6 +3,7 @@
 #pragma once
 // Reel, the keyframe mixer (https://github.com/ABustos2606/reel), and its
 // page's telemetry. The contract is Reel's docs/peepo-page.md.
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -83,4 +84,33 @@ inline double reel_level(const std::vector<ReelKeyframe>& list, std::size_t chan
 inline constexpr std::array<std::uint32_t, 8> reel_palette{0xff0000, 0xff4000, 0xffff00, 0x40ff00, 0x00ff40, 0x0000ff, 0xff00ff, 0xff0040};
 // The editing target is within 1/32 of the Frame control (ui.cc's 2048).
 inline constexpr double reel_tolerance = 2048.0 / 65535.0;
+// Reel's commands input (since Reel 0.3): one xsd:int per edit. 0 does
+// nothing; the page sends it when a gesture ends, because Ingen saves the last
+// value with the patch and sets it again on load.
+inline constexpr int reel_command_none = 0;
+inline int reel_code(double x) { return static_cast<int>(std::lround(std::clamp(x, 0.0, 1.0) * 65535.0)); }
+// Move keyframe `k` (in list order) to `x`.
+inline int reel_move(std::size_t k, double x) { return 1 << 24 | static_cast<int>(k & 0xff) << 16 | reel_code(x); }
+// Where Reel puts keyframe `k` asked to move to `x`: between its neighbours
+// and at least 1/32 from them, so the order never changes. Nullopt when it
+// cannot move at all.
+inline std::optional<double> reel_move_limit(const std::vector<ReelKeyframe>& list, std::size_t k, double x) {
+    if (k >= list.size()) return std::nullopt;
+    const int lo = k ? reel_code(list[k - 1].position) + 2048 : 0;
+    const int hi = k + 1 < list.size() ? reel_code(list[k + 1].position) - 2048 : 65535;
+    if (lo > hi) return std::nullopt;
+    return std::clamp(reel_code(x), lo, hi) / 65535.0;
+}
+// The keyframe a stomp steps to from Frame `frame`: the next one after it
+// (direction 1) or the one before (-1), wrapping at the ends.
+inline std::optional<std::size_t> reel_step(const std::vector<ReelKeyframe>& list, double frame, int direction) {
+    if (list.empty()) return std::nullopt;
+    const double half = 0.5 / 65535.0;
+    if (direction > 0) {
+        for (std::size_t k = 0; k < list.size(); ++k) if (list[k].position > frame + half) return k;
+        return 0;
+    }
+    for (std::size_t k = list.size(); k-- > 0;) if (list[k].position < frame - half) return k;
+    return list.size() - 1;
+}
 }

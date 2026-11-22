@@ -201,6 +201,15 @@ void assignments(const std::filesystem::path& root) {
     command.parameter = "7"; command.minimum = command.maximum = 3; command.plugin = "https://github.com/ABustos2606/loo-pi#loopi";
     check(decode_assignment("stomp2", encode_assignment(command, "m5"), back, block) && back.action == ControlAction::Looper &&
           looper_assignment_command(back) == 7 && looper_assignment_target(back) == 3, "Loo-pi command did not survive encoding");
+    // Reel's next and previous keyframe.
+    for (const char* way : {"next", "previous"}) {
+        Assignment step; step.control = "stomp3"; step.module = 6; step.action = ControlAction::Reel; step.parameter = way;
+        step.plugin = "https://github.com/ABustos2606/reel#reel";
+        check(decode_assignment("stomp3", encode_assignment(step, "m6"), back, block) && back.action == ControlAction::Reel &&
+              reel_assignment_direction(back) == (std::string(way) == "next" ? 1 : -1) && block == "m6", "Reel step did not survive encoding");
+    }
+    Assignment sideways; sideways.action = ControlAction::Reel; sideways.parameter = "sideways";
+    check(!reel_assignment_direction(sideways), "an unknown Reel step accepted");
     auto scratch = command; scratch.parameter = "4"; auto far = command; far.minimum = far.maximum = 10; auto word = command; word.parameter = "7x";
     check(!looper_assignment_command(scratch) && !looper_assignment_command(far) && !looper_assignment_command(word), "unsupported Loo-pi command or target accepted");
 

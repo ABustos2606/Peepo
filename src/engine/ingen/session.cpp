@@ -142,6 +142,7 @@ void Session::closed(std::string reason, bool retrying) {
     tuner_.reset(); tuner_port_.clear(); tuner_frequency_.reset();
     looper_.reset(); looper_ports_ = {}; looper_status_ = {};
     reel_.reset(); reel_ports_ = {}; reel_list_.clear(); reel_status_ = {};
+    reel_listed_.clear(); reel_watched_lists_.clear(); reel_lists_.clear();
     learning_.clear(); cancelled_learn_.clear();
     euclidean_.reset(); euclidean_ports_ = {}; euclidean_steps_ = {}; euclidean_age_ = 0;
     emit(0, true, std::move(reason));
@@ -209,6 +210,8 @@ void Session::handle(const Message& message) {
         if (message.sequence == pending.replaces && message.status == 0) {
             pending.replaces = 0;
             objects_.clear(); arcs_.clear();
+            // Ports may be new: watch the lists again.
+            reel_watched_lists_.clear(); reel_lists_.clear();
             mirror_changed_ = unreported_ = true;
         }
         break;
@@ -440,54 +443,98 @@ bool Session::looper_command(InstanceId id, int command, int target, bool press)
     send(tx, set(seq, port, "ingen:value", "\"" + std::to_string(value) + "\"^^xsd:int"), seq);
     return true;
 }
+// A port of a Reel block: its path when the engine has it, else empty.
+std::string Session::reel_port(InstanceId id, const char* symbol, const std::string& kind, bool output) const {
+    const auto* module = find_module(graph_, id);
+    const auto path = paths_.find(id);
+    if (state_ != EngineState::Ready || !module || !reel_uri(module->uri) || path == paths_.end()) return {};
+    const auto candidate = child(path->second, symbol);
+    const auto found = objects_.find(candidate);
+    if (found == objects_.end() || !has(found->second, type, iri(uri::lv2, output ? "OutputPort" : "InputPort")) ||
+        !has(found->second, type, kind)) return {};
+    return candidate;
+}
 void Session::watch_reel(std::optional<InstanceId> id) {
     std::array<std::string, reel_outputs.size()> ports{};
     std::string list;
-    if (id && state_ == EngineState::Ready) {
-        const auto* module = find_module(graph_, *id);
-        const auto path = paths_.find(*id);
-        // Bypass keeps Reel running (its own On port), so its telemetry too.
-        if (module && reel_uri(module->uri) && path != paths_.end()) {
-            for (std::size_t i = 0; i < ports.size(); ++i) {
-                const auto candidate = child(path->second, reel_outputs[i]);
-                const auto found = objects_.find(candidate);
-                if (found != objects_.end() && has(found->second, type, iri(uri::lv2, "OutputPort")) &&
-                    has(found->second, type, iri(uri::lv2, "ControlPort"))) ports[i] = candidate;
-            }
-            const auto candidate = child(path->second, reel_list_port);
-            const auto found = objects_.find(candidate);
-            if (found != objects_.end() && has(found->second, type, iri(uri::lv2, "OutputPort")) &&
-                has(found->second, type, iri(uri::atom, "AtomPort"))) list = candidate;
-        }
+    // Bypass keeps Reel running (its own On port), so its telemetry too.
+    if (id) {
+        for (std::size_t i = 0; i < ports.size(); ++i) ports[i] = reel_port(*id, reel_outputs[i], iri(uri::lv2, "ControlPort"), true);
+        list = reel_port(*id, reel_list_port, iri(uri::atom, "AtomPort"), true);
     }
-    if (ports == reel_ports_ && list == reel_list_) return;
-    if (state_ == EngineState::Ready) {
+    if (ports == reel_ports_ && list == reel_list_) { sync_reel_lists(); return; }
+    if (state_ == EngineState::Ready && ports != reel_ports_) {
         auto& tx = begin(0, Purpose::Monitor);
         const auto watch = [&](const std::string& port, bool on) {
             if (port.empty() || (!on && !objects_.contains(port))) return;
             const auto seq = sequence(); send(tx, set(seq, port, "ingen:broadcast", on ? "true" : "false"), seq);
         };
         for (const auto& port : reel_ports_) watch(port, false);
-        watch(reel_list_, false);
         for (const auto& port : ports) watch(port, true);
-        watch(list, true);
     }
-    // Reel sends its list again every half second, so a new watch soon has it.
+    // Reel sends its list again every half second, so a new watch soon has
+    // it; a list kept for a stomp is there already.
     if (reel_ != id || list != reel_list_) reel_status_ = {};
     reel_ports_ = ports; reel_list_ = list;
     const bool any = !list.empty() || std::any_of(ports.begin(), ports.end(), [](const std::string& p) { return !p.empty(); });
     reel_ = any ? id : std::nullopt;
+    sync_reel_lists();
+    if (const auto known = reel_lists_.find(reel_list_); !reel_list_.empty() && known != reel_lists_.end()) reel_status_.keyframes = known->second;
+}
+void Session::watch_reel_lists(const std::vector<InstanceId>& ids) {
+    reel_listed_ = ids;
+    sync_reel_lists();
+}
+// Broadcast on for the lists wanted (the page's, and the stomps'), off for
+// the rest; a list no longer watched is forgotten.
+void Session::sync_reel_lists() {
+    std::set<std::string> wanted;
+    if (state_ == EngineState::Ready) {
+        if (!reel_list_.empty()) wanted.insert(reel_list_);
+        for (const auto id : reel_listed_)
+            if (auto port = reel_port(id, reel_list_port, iri(uri::atom, "AtomPort"), true); !port.empty()) wanted.insert(std::move(port));
+    }
+    if (wanted == reel_watched_lists_) return;
+    if (state_ == EngineState::Ready) {
+        auto& tx = begin(0, Purpose::Monitor);
+        for (const auto& port : reel_watched_lists_)
+            if (!wanted.contains(port) && objects_.contains(port)) { const auto seq = sequence(); send(tx, set(seq, port, "ingen:broadcast", "false"), seq); }
+        for (const auto& port : wanted)
+            if (!reel_watched_lists_.contains(port)) { const auto seq = sequence(); send(tx, set(seq, port, "ingen:broadcast", "true"), seq); }
+    }
+    std::erase_if(reel_lists_, [&](const auto& entry) { return !wanted.contains(entry.first); });
+    reel_watched_lists_ = std::move(wanted);
 }
 ReelStatus Session::reel_status(InstanceId id) const {
     const auto* module = find_module(graph_, id);
     return state_ == EngineState::Ready && reel_ == id && module && reel_uri(module->uri) ? reel_status_ : ReelStatus{};
 }
+std::optional<std::vector<ReelKeyframe>> Session::reel_keyframes(InstanceId id) const {
+    const auto port = reel_port(id, reel_list_port, iri(uri::atom, "AtomPort"), true);
+    const auto found = reel_lists_.find(port);
+    if (port.empty() || found == reel_lists_.end()) return std::nullopt;
+    return found->second;
+}
+bool Session::reel_command(InstanceId id, int value) {
+    const auto port = reel_port(id, "commands", iri(uri::atom, "AtomPort"), false);
+    if (port.empty() || value < 0) return false;
+    // Typed xsd:int is mapped to atom:Int by Ingen's Sratom reader. Ingen
+    // keeps the last value with the patch and sets it again on load, so the
+    // page ends each gesture with 0, which does nothing.
+    auto& tx = begin(0, Purpose::Monitor);
+    const auto seq = sequence();
+    send(tx, set(seq, port, "ingen:value", "\"" + std::to_string(value) + "\"^^xsd:int"), seq);
+    return true;
+}
 // Reel's keyframe list arrives as the activity of its atom output: telemetry,
 // never part of the graph, and never a change to the patch.
 bool Session::take_reel_list(const std::string& port, const Value& value) {
-    if (reel_list_.empty() || port != reel_list_) return false;
+    if (!reel_watched_lists_.contains(port)) return false;
     if (value.kind == Value::Kind::String)
-        if (auto list = parse_reel_list(value.text)) reel_status_.keyframes = std::move(*list);
+        if (auto list = parse_reel_list(value.text)) {
+            if (port == reel_list_) reel_status_.keyframes = *list;
+            reel_lists_[port] = std::move(*list);
+        }
     return true;
 }
 void Session::learned(const std::string& port) {
@@ -510,6 +557,8 @@ void Session::learned(const std::string& port) {
 void Session::erase(const std::string& path) {
     const auto prefix = path + "/";
     std::erase_if(objects_, [&](const auto& entry) { return entry.first == path || entry.first.starts_with(prefix); });
+    std::erase_if(reel_watched_lists_, [&](const std::string& port) { return port.starts_with(prefix); });
+    std::erase_if(reel_lists_, [&](const auto& entry) { return entry.first.starts_with(prefix); });
     // The engine drops a deleted block's cables without announcing each one.
     std::erase_if(arcs_, [&](const auto& arc) {
         return arc.first == path || arc.second == path || arc.first.starts_with(prefix) || arc.second.starts_with(prefix);
@@ -637,7 +686,7 @@ void Session::finish(Transaction& done) {
         if (!ok && done.replaces) fault_ = std::string("Engine refused to describe its graph: ") + status_text(done.status);
         break;
     case Purpose::Monitor:
-        if (!ok) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; reel_status_ = {}; }
+        if (!ok) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; reel_status_ = {}; reel_lists_.clear(); }
         break;
     }
 }
@@ -1479,7 +1528,7 @@ std::vector<EngineEvent> Session::advance(unsigned milliseconds) {
         auto node = transactions_.extract(id);
         for (const auto number : node.mapped().sequences) sequences_.erase(number);
         if (node.mapped().purpose == Purpose::Edit) { emit(node.mapped().request, false, "Engine did not answer in time"); resynchronize = true; }
-        else if (node.mapped().purpose == Purpose::Monitor) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; reel_status_ = {}; }
+        else if (node.mapped().purpose == Purpose::Monitor) { tuner_frequency_.reset(); euclidean_steps_ = {}; looper_status_ = {}; reel_status_ = {}; reel_lists_.clear(); }
         else fault_ = "Engine did not answer while synchronizing";
     }
     // What a late edit did is unknown; read the graph again instead of guessing.

@@ -64,6 +64,7 @@ Every source — the simulator's keys today, the GPIO adapter later — produces
 - **Bypass:** each press switches the software bypass of one module or several (16 October 2026). Each module flips: one playing is bypassed, one bypassed plays. So two modules set opposite ways swap places, as Beebo's manual suggests for switching between two delays.
 - **Foot switch modules:** a Foot switch module in the patch listens to one stomp (below) and hears every press and release, beside whatever the stomp is assigned.
 - **Next or previous patch, tap tempo:** instrument-wide (below).
+- **Next or previous keyframe** (22 November 2026): on a Reel, each press sets Frame exactly onto the keyframe after (or before) it, wrapping at the ends, so its page's Level bars edit that keyframe. Offered under the Reel in Settings > Controls; saved as `reel|<block>|<plugin>|next` (or `previous`). Reel's `docs/peepo-page.md` has the contract.
 - A press closer than 25 ms after a release is a bounce and is ignored.
 - **Chords:** two neighbouring stomps pressed together (below). A stomp acts 40 ms after it is pressed, unless its neighbour joins it in that time. In a patch in scene mode the stomps play scenes instead ([scenes](44-scenes.md#on-the-screen-stomps-and-midi)).
 
